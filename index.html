@@ -12,21 +12,20 @@
     color: #2f2f2f;
   }
   header {
-    background: #355e3b;
+    background: linear-gradient(180deg, #355e3b, #2a4a2d);
     color: white;
     text-align: center;
     padding: 2rem 1rem;
+    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+    background-size: cover;
   }
   header h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
     margin: 0;
   }
   header p {
     font-size: 1.1rem;
-    margin: 0.5rem 0 1rem;
-  }
-  .btn-group {
-    margin-top: 1rem;
+    margin: 0.5rem 0 1.2rem;
   }
   .btn {
     background: gold;
@@ -34,11 +33,17 @@
     padding: 0.6rem 1.2rem;
     margin: 0.3rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: bold;
     text-decoration: none;
     display: inline-block;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  .btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.3);
   }
   section {
     padding: 2rem 1rem;
@@ -58,9 +63,13 @@
   .pillar {
     background: white;
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: 10px;
     flex: 1 1 250px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.15s ease-in-out;
+  }
+  .pillar:hover {
+    transform: translateY(-3px);
   }
   iframe {
     width: 100%;
@@ -75,6 +84,9 @@
     padding: 1.5rem;
     font-size: 0.9rem;
   }
+  footer a {
+    color: gold;
+  }
 </style>
 </head>
 <body>
@@ -82,11 +94,11 @@
 <header>
   <h1>🏯 ToadAid — Guarding the Lore</h1>
   <p>Helping the Fallen Frog</p>
-  <div class="btn-group">
+  <div>
     <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
     <a href="#lore" class="btn">📜 Browse the Lore</a>
-    <a href="assets/books/book_v1.pdf" class="btn">📚 Book v1</a>
-    <a href="assets/books/book_v2.pdf" class="btn">📚 Book v2</a>
+    <a href="https://github.com/ToadAid/tobyworld-lore-v1/raw/main/TOBY_LORE_V1.1_FULL_EN-ZH.pdf" class="btn" target="_blank">📚 Book v1</a>
+    <a href="https://github.com/ToadAid/tobyworld-lore-v2/blob/main/TOBYWORLD_LORE_v2_FINAL_RELEASE.md" class="btn" target="_blank">📚 Book v2</a>
   </div>
 </header>
 
@@ -115,12 +127,26 @@
 
 <section id="lore">
   <h2>📚 Lore Library</h2>
-  <p style="text-align:center;">Explore the sacred scrolls and discover the history of Tobyworld.</p>
+  <div class="pillars">
+    <div class="pillar">
+      <h3>📜 Book v1</h3>
+      <p>The first collected scrolls of Tobyworld lore. Complete English + Chinese bilingual edition.</p>
+      <a href="https://github.com/ToadAid/tobyworld-lore-v1/raw/main/TOBY_LORE_V1.1_FULL_EN-ZH.pdf" class="btn" target="_blank">Read / Download</a>
+    </div>
+    <div class="pillar">
+      <h3>📜 Book v2</h3>
+      <p>The expanded lore, featuring the awakening of the Mirror and new revelations.</p>
+      <a href="https://github.com/ToadAid/tobyworld-lore-v2/blob/main/TOBYWORLD_LORE_v2_FINAL_RELEASE.md" class="btn" target="_blank">Read Online</a>
+    </div>
+  </div>
 </section>
 
 <footer>
   <p>“One scroll, one light. One leaf, one vow.”</p>
-  <p>🐸 Join us: <a href="https://t.me/yourtelegram" style="color:gold;">Telegram</a> | <a href="https://github.com/ToadAid" style="color:gold;">GitHub</a></p>
+  <p>🐸 Join us: 
+    <a href="https://t.me/yourtelegram">Telegram</a> | 
+    <a href="https://github.com/ToadAid">GitHub</a>
+  </p>
 </footer>
 
 </body>
