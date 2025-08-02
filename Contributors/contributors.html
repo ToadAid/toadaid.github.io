@@ -80,8 +80,7 @@
 <script>
 async function loadContributors() {
   try {
-    // Prevent cache issues
-    const response = await fetch('contributors.json?v=' + Date.now());
+    const response = await fetch('contributors.json?v=' + Date.now()); // Prevent cache
     const contributors = await response.json();
     const container = document.getElementById('contributors');
 
@@ -89,7 +88,6 @@ async function loadContributors() {
       const card = document.createElement('div');
       card.className = 'card';
 
-      // Artist link handling
       let artistHTML = `<strong>Artist:</strong> ${c.artist}`;
       if (c.artist_type && c.artist_type.toLowerCase() === 'x handle') {
         const cleanHandle = c.artist.replace('@', '');
@@ -97,13 +95,12 @@ async function loadContributors() {
         artistHTML = `<strong>Artist:</strong> <a href="${profileURL}" target="_blank">${c.artist}</a> (${c.artist_type})`;
       }
 
-      // Use exact filename from JSON (no lowercasing)
+      // Use exact filename from JSON without forcing lowercase
       const imagePath = c.image ? `Contributors/${c.image}` : '';
       const placeholder = 'https://via.placeholder.com/400x300?text=No+Image';
 
       card.innerHTML = `
-        <img src="${imagePath}" alt="${c.title} by ${c.artist}" 
-             onerror="this.onerror=null; this.src='${placeholder}';">
+        <img src="${imagePath}" alt="${c.title} by ${c.artist}" onerror="this.onerror=null; this.src='${placeholder}';">
         <p>${artistHTML}</p>
         <p><em>Title:</em> ${c.title}</p>
       `;
