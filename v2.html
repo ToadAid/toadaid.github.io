@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tobyworld Lore — Book V2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="markdown.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+<div class="container" id="content">Loading Book V2...</div>
+
+<script>
+const fileUrl = 'https://raw.githubusercontent.com/ToadAid/tobyworld-lore-v2/main/TOBYWORLD_LORE_v2_FINAL_RELEASE.md';
+
+fetch(fileUrl)
+  .then(response => response.text())
+  .then(md => {
+    document.getElementById('content').innerHTML = marked.parse(md);
+  })
+  .catch(err => {
+    document.getElementById('content').innerHTML = '<p style="color:red;">Error loading Book V2.</p>';
+    console.error(err);
+  });
+</script>
+</body>
+</html>
