@@ -1,103 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>ToadAid — Guarding the Lore</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    background: #f5f1e6;
-    color: #2f2f2f;
-  }
-  header {
-    background: linear-gradient(180deg, #355e3b, #2a4a2d);
-    color: white;
-    text-align: center;
-    padding: 2rem 1rem;
-    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
-    background-size: cover;
-  }
-  header h1 {
-    font-size: 2.2rem;
-    margin: 0;
-  }
-  header p {
-    font-size: 1.1rem;
-    margin: 0.5rem 0 1.2rem;
-  }
-  .btn {
-    background: gold;
-    color: black;
-    padding: 0.6rem 1.2rem;
-    margin: 0.3rem;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
-    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  }
-  .btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 10px rgba(0,0,0,0.3);
-  }
-  section {
-    padding: 2rem 1rem;
-    max-width: 1000px;
-    margin: auto;
-  }
-  h2 {
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  .pillars {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-  }
-  .pillar {
-    background: white;
-    padding: 1rem;
-    border-radius: 10px;
-    flex: 1 1 250px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    transition: transform 0.15s ease-in-out;
-  }
-  .pillar:hover {
-    transform: translateY(-3px);
-  }
-  iframe {
-    width: 100%;
-    height: 400px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-  }
-  footer {
-    background: #355e3b;
-    color: white;
-    text-align: center;
-    padding: 1.5rem;
-    font-size: 0.9rem;
-  }
-  footer a {
-    color: gold;
-  }
-</style>
-</head>
-<body>
-
 <header>
   <h1>🏯 ToadAid — Guarding the Lore</h1>
   <p>Helping the Fallen Frog</p>
   <div>
     <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
     <a href="#lore" class="btn">📜 Browse the Lore</a>
-    <a href="https://github.com/ToadAid/tobyworld-lore-v1/raw/main/TOBY_LORE_V1.1_FULL_EN-ZH.md" class="btn" target="_blank">📚 Book v1</a>
+    <a href="whitepaper.html" class="btn" target="_blank">📄 Whitepaper</a>
+    <a href="https://github.com/ToadAid/tobyworld-lore-v1/raw/main/TOBY_LORE_V1.1_FULL_EN-ZH.pdf" class="btn" target="_blank">📚 Book v1</a>
     <a href="https://github.com/ToadAid/tobyworld-lore-v2/blob/main/TOBYWORLD_LORE_v2_FINAL_RELEASE.md" class="btn" target="_blank">📚 Book v2</a>
   </div>
 </header>
@@ -129,9 +37,14 @@
   <h2>📚 Lore Library</h2>
   <div class="pillars">
     <div class="pillar">
+      <h3>📄 Whitepaper</h3>
+      <p>The updated mission, vision, and principles of ToadAid.</p>
+      <a href="whitepaper.html" class="btn" target="_blank">Read Whitepaper</a>
+    </div>
+    <div class="pillar">
       <h3>📜 Book v1</h3>
       <p>The first collected scrolls of Tobyworld lore. Complete English + Chinese bilingual edition.</p>
-      <a href="https://github.com/ToadAid/tobyworld-lore-v1/raw/main/TOBY_LORE_V1.1_FULL_EN-ZH.md" class="btn" target="_blank">Read / Download</a>
+      <a href="https://github.com/ToadAid/tobyworld-lore-v1/raw/main/TOBY_LORE_V1.1_FULL_EN-ZH.pdf" class="btn" target="_blank">Read / Download</a>
     </div>
     <div class="pillar">
       <h3>📜 Book v2</h3>
@@ -140,14 +53,3 @@
     </div>
   </div>
 </section>
-
-<footer>
-  <p>“One scroll, one light. One leaf, one vow.”</p>
-  <p>🐸 Join us: 
-    <a href="https://t.me/yourtelegram">Telegram</a> | 
-    <a href="https://github.com/ToadAid">GitHub</a>
-  </p>
-</footer>
-
-</body>
-</html>
