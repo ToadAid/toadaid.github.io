@@ -58,6 +58,13 @@
     color: #355e3b;
     font-size: 0.9rem;
   }
+  a {
+    color: #355e3b;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -73,7 +80,7 @@
 <script>
 async function loadContributors() {
   try {
-    const response = await fetch('contributors.json');
+    const response = await fetch('contributors.json?v=' + Date.now()); // Prevent cache
     const contributors = await response.json();
     const container = document.getElementById('contributors');
 
@@ -81,18 +88,21 @@ async function loadContributors() {
       const card = document.createElement('div');
       card.className = 'card';
 
-      let artistDisplay = c.artist;
-      let artistHTML = `<strong>Artist:</strong> ${artistDisplay}`;
+      let artistHTML = `<strong>Artist:</strong> ${c.artist}`;
 
-      // Handle X handle type
+      // Handle X handle type with clickable link
       if (c.artist_type && c.artist_type.toLowerCase() === 'x handle') {
         const cleanHandle = c.artist.replace('@', '');
         const profileURL = `https://x.com/${cleanHandle}`;
         artistHTML = `<strong>Artist:</strong> <a href="${profileURL}" target="_blank">${c.artist}</a> (${c.artist_type})`;
       }
 
+      // Force lowercase for image filenames
+      const imagePath = c.image ? c.image.toLowerCase() : '';
+      const placeholder = 'https://via.placeholder.com/400x300?text=No+Image';
+
       card.innerHTML = `
-        <img src="${c.image}" alt="${c.title} by ${c.artist}" onerror="this.src='placeholder.jpg'">
+        <img src="${imagePath}" alt="${c.title} by ${c.artist}" onerror="this.onerror=null; this.src='${placeholder}';">
         <p>${artistHTML}</p>
         <p><em>Title:</em> ${c.title}</p>
       `;
