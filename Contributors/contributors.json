@@ -1,11 +1,13 @@
 [
   {
     "artist": "@aqio885",
+    "artist_type": "X handle",
     "title": "Tg31",
     "image": "Tg31.jpg"
   },
   {
     "artist": "@Toby777777777",
+    "artist_type": "X handle",
     "title": "Zen",
     "image": "zen.jpg"
   }
