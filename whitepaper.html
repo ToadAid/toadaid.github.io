@@ -5,33 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ToadAid Whitepaper</title>
   <style>
+    /* Body */
     body {
-      background-color: #0f172a;
+      background-color: #f5f1e6; /* parchment */
       font-family: 'Segoe UI', sans-serif;
-      color: #f1f5f9;
+      color: #2f2f2f;
       padding: 40px 20px;
       line-height: 1.8;
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
     }
+
+    /* Headings */
     h1, h2, h3 {
-      color: #38bdf8;
+      color: #355e3b; /* deep green */
+      font-weight: bold;
+      position: relative;
+      display: inline-block;
+      padding-bottom: 0.2rem;
     }
+
+    /* Gold underline accent for headings */
+    h1::after, h2::after, h3::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 4px;
+      width: 100%;
+      background-color: gold;
+      border-radius: 2px;
+    }
+
+    /* Links */
     a {
-      color: #93c5fd;
+      color: #d4af37; /* gold */
+      text-decoration: none;
+      font-weight: bold;
     }
-    ul {
-      margin-top: 0.5rem;
-      margin-bottom: 1.5rem;
+    a:hover {
+      text-decoration: underline;
     }
+
+    /* Back button */
     .back {
       display: inline-block;
       margin-top: 30px;
-      background-color: #3b82f6;
+      background-color: #355e3b; /* deep green */
       padding: 10px 18px;
       color: white;
       text-decoration: none;
       border-radius: 6px;
+      font-weight: bold;
+    }
+    .back:hover {
+      background-color: #2a4a2d;
+    }
+
+    /* Lists */
+    ul {
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding-left: 1.2rem;
     }
   </style>
 </head>
