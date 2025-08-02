@@ -81,12 +81,19 @@ async function loadContributors() {
       const card = document.createElement('div');
       card.className = 'card';
 
-      // If artist_type exists, show it in parentheses
-      const artistLabel = c.artist_type ? `${c.artist} (${c.artist_type})` : c.artist;
+      let artistDisplay = c.artist;
+      let artistHTML = `<strong>Artist:</strong> ${artistDisplay}`;
+
+      // Handle X handle type
+      if (c.artist_type && c.artist_type.toLowerCase() === 'x handle') {
+        const cleanHandle = c.artist.replace('@', '');
+        const profileURL = `https://x.com/${cleanHandle}`;
+        artistHTML = `<strong>Artist:</strong> <a href="${profileURL}" target="_blank">${c.artist}</a> (${c.artist_type})`;
+      }
 
       card.innerHTML = `
-        <img src="${c.image}" alt="${c.title} by ${c.artist}">
-        <p><strong>Artist:</strong> ${artistLabel}</p>
+        <img src="${c.image}" alt="${c.title} by ${c.artist}" onerror="this.src='placeholder.jpg'">
+        <p>${artistHTML}</p>
         <p><em>Title:</em> ${c.title}</p>
       `;
       container.appendChild(card);
@@ -98,6 +105,5 @@ async function loadContributors() {
 
 loadContributors();
 </script>
-
 </body>
 </html>
