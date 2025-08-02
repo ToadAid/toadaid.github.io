@@ -11,38 +11,32 @@
     background: #f5f1e6;
     color: #2f2f2f;
   }
-
-  /* 顶部 Banner（全屏自适应） */
+  /* 顶部 Banner */
   .banner {
     position: relative;
     width: 100%;
-    height: 45vh; /* 桌面高度 */
-    min-height: 220px; /* 手机最小高度 */
-    background: url('banner.jpg') center center / cover no-repeat;
+    height: 240px;
+    background: url('banner.jpg') center/cover no-repeat;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
     color: white;
+    text-align: center;
   }
-  @media (max-width: 768px) {
-    .banner {
-      height: 35vh; /* 手机上稍矮 */
-      min-height: 180px;
-    }
+  @media (min-width: 768px) {
+    .banner { height: 320px; }
   }
   .banner h1 {
-    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-size: 2.2rem;
     margin: 0;
     text-shadow: 0 2px 4px rgba(0,0,0,0.6);
   }
   .banner p {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    font-size: 1.1rem;
     margin-top: 0.5rem;
     text-shadow: 0 2px 4px rgba(0,0,0,0.6);
   }
-
   /* 顶部翻译提示条 */
   .translate-bar {
     background: gold;
@@ -51,7 +45,6 @@
     font-size: 0.95rem;
     text-align: center;
   }
-
   /* 按钮 */
   .btn {
     background: gold;
@@ -71,8 +64,7 @@
     transform: scale(1.05);
     box-shadow: 0 6px 10px rgba(0,0,0,0.3);
   }
-
-  /* 通用 Section */
+  /* Section */
   section {
     padding: 2rem 1rem;
     max-width: 1100px;
@@ -82,8 +74,7 @@
     text-align: center;
     margin-bottom: 1rem;
   }
-
-  /* 模块卡片布局 */
+  /* 卡片布局 */
   .pillars {
     display: flex;
     flex-wrap: wrap;
@@ -101,8 +92,7 @@
   .pillar:hover {
     transform: translateY(-3px);
   }
-
-  /* Mirror 占位盒子 */
+  /* Mirror 占位 */
   .mirror-box {
     background: #fffbea;
     border: 2px dashed gold;
@@ -119,22 +109,6 @@
     from { box-shadow: 0 0 5px gold; }
     to { box-shadow: 0 0 15px gold; }
   }
-
-  /* Wall of Frogs 网格 */
-  .contributors-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  .frog-card {
-    background: white;
-    padding: 0.8rem;
-    border-radius: 8px;
-    text-align: center;
-    border: 1px solid gold;
-  }
-
   /* Footer */
   footer {
     background: #355e3b;
@@ -148,13 +122,13 @@
 </head>
 <body>
 
-<!-- 顶部 Banner -->
+<!-- Banner -->
 <div class="banner">
   <h1>🏯 ToadAid — Guarding the Lore</h1>
   <p>One scroll, one light. One leaf, one vow.</p>
 </div>
 
-<!-- 翻译提示条 -->
+<!-- 翻译提示 -->
 <div class="translate-bar">
   🌐 Want to read in your language? In Chrome: Menu (⋮) → Translate → Select your language.
 </div>
@@ -195,45 +169,19 @@
     <div class="pillar">
       <h3>📄 Whitepaper</h3>
       <p>The updated mission, vision, and principles of ToadAid.</p>
-      <a href="whitepaper.html" class="btn" target="_blank">Read Whitepaper</a>
-    </div>
-    <div class="pillar">
-      <h3>🎨 Contributors</h3>
-      <p>Meet the artists and community members who bring the Lore to life.</p>
-      <a href="Contributors/contributors.html" class="btn">View Contributors</a>
+      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
     </div>
     <div class="pillar">
       <h3>📜 Book v1</h3>
-      <p>The first collected scrolls of Tobyworld lore. Complete English + Chinese bilingual edition.</p>
-      <a href="v1.html" class="btn" target="_blank">Read Online</a>
+      <p>The first collected scrolls of Tobyworld lore. Bilingual EN/ZH edition.</p>
       <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
     </div>
     <div class="pillar">
       <h3>📜 Book v2</h3>
-      <p>The expanded lore, featuring the awakening of the Mirror and new revelations.</p>
-      <a href="v2.html" class="btn" target="_blank">Read Online</a>
+      <p>The expanded lore, with Mirror awakening & new revelations.</p>
       <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
     </div>
   </div>
-</section>
-
-<!-- Wall of Frogs -->
-<section>
-  <h2>🐸 Wall of Frogs</h2>
-  <div class="contributors-grid">
-    <div class="frog-card">Contributor 1</div>
-    <div class="frog-card">Contributor 2</div>
-    <div class="frog-card">Contributor 3</div>
-  </div>
-  <p style="text-align:center; margin-top:1rem;">
-    <a href="https://github.com/ToadAid/Toby_community_scrolls" class="btn">+ Submit Your Scroll</a>
-  </p>
-</section>
-
-<!-- Timeline -->
-<section>
-  <h2>⏳ Tobyworld Timeline</h2>
-  <p style="text-align:center;">Epoch 1 → Epoch 2 → Epoch 3 → Rune3 → [Future Expansion]</p>
 </section>
 
 <!-- Footer -->
