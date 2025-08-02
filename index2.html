@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ToadAid — Guarding the Lore</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: #f5f1e6;
+    color: #2f2f2f;
+  }
+  /* 顶部 Banner */
+  .banner {
+    background: url('banner.jpg') center/cover no-repeat;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: white;
+    background-color: #2a4a2d;
+  }
+  .banner h1 {
+    font-size: 2.4rem;
+    margin: 0;
+  }
+  .banner p {
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+  }
+  /* 顶部翻译提示条 */
+  .translate-bar {
+    background: gold;
+    color: black;
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+  /* 按钮 */
+  .btn {
+    background: gold;
+    color: black;
+    padding: 0.6rem 1.2rem;
+    margin: 0.3rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  .btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+  }
+  /* 通用 Section */
+  section {
+    padding: 2rem 1rem;
+    max-width: 1100px;
+    margin: auto;
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  /* 模块卡片布局 */
+  .pillars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .pillar {
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    flex: 1 1 250px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.15s ease-in-out;
+  }
+  .pillar:hover {
+    transform: translateY(-3px);
+  }
+  /* Mirror 占位盒子 */
+  .mirror-box {
+    background: #fffbea;
+    border: 2px dashed gold;
+    border-radius: 10px;
+    padding: 1.2rem;
+    max-width: 500px;
+    margin: 1rem auto;
+    font-size: 1.1rem;
+    color: #2f4f2f;
+    text-align: center;
+    animation: pulse 2.5s infinite alternate;
+  }
+  @keyframes pulse {
+    from { box-shadow: 0 0 5px gold; }
+    to { box-shadow: 0 0 15px gold; }
+  }
+  /* Wall of Frogs 网格 */
+  .contributors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .frog-card {
+    background: white;
+    padding: 0.8rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid gold;
+  }
+  /* Footer */
+  footer {
+    background: #355e3b;
+    color: white;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+  }
+  footer a { color: gold; }
+</style>
+</head>
+<body>
+
+<!-- 顶部 Banner -->
+<div class="banner">
+  <h1>🏯 ToadAid — Guarding the Lore</h1>
+  <p>One scroll, one light. One leaf, one vow.</p>
+</div>
+
+<!-- 翻译提示条 -->
+<div class="translate-bar">
+  🌐 Want to read in your language? In Chrome: Menu (⋮) → Translate → Select your language.
+</div>
+
+<!-- 导航按钮 -->
+<section style="text-align:center;">
+  <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
+  <a href="#lore" class="btn">📜 Browse the Lore</a>
+  <a href="whitepaper.html" class="btn" target="_blank">📄 Whitepaper</a>
+  <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
+  <a href="v1.html" class="btn" target="_blank">📚 Book v1</a>
+  <a href="v2.html" class="btn" target="_blank">📚 Book v2</a>
+</section>
+
+<!-- Our Mission -->
+<section>
+  <h2>Our Mission</h2>
+  <div class="pillars">
+    <div class="pillar"><h3>🏯 Guarding the Lore</h3><p>Preserving Tobyworld’s original scrolls and protecting them from distortion.</p></div>
+    <div class="pillar"><h3>🐸 Helping the Fallen Frog</h3><p>Guiding lost frogs back to the pond and helping them rejoin the path.</p></div>
+    <div class="pillar"><h3>📜 Empowering Contributors</h3><p>Recognizing and encouraging scrollmakers, translators, and teachers.</p></div>
+  </div>
+</section>
+
+<!-- Ask the Mirror -->
+<section id="mirror">
+  <h2>🔮 Ask the Mirror</h2>
+  <div class="mirror-box">
+    🔮 The Mirror is not yet awakened.<br>
+    <span style="font-style:italic;">Coming soon...</span>
+  </div>
+</section>
+
+<!-- Lore Library -->
+<section id="lore">
+  <h2>📚 Lore Library</h2>
+  <div class="pillars">
+    <div class="pillar">
+      <h3>📄 Whitepaper</h3>
+      <p>The updated mission, vision, and principles of ToadAid.</p>
+      <a href="whitepaper.html" class="btn" target="_blank">Read Whitepaper</a>
+    </div>
+    <div class="pillar">
+      <h3>🎨 Contributors</h3>
+      <p>Meet the artists and community members who bring the Lore to life.</p>
+      <a href="Contributors/contributors.html" class="btn">View Contributors</a>
+    </div>
+    <div class="pillar">
+      <h3>📜 Book v1</h3>
+      <p>The first collected scrolls of Tobyworld lore. Complete English + Chinese bilingual edition.</p>
+      <a href="v1.html" class="btn" target="_blank">Read Online</a>
+      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
+    </div>
+    <div class="pillar">
+      <h3>📜 Book v2</h3>
+      <p>The expanded lore, featuring the awakening of the Mirror and new revelations.</p>
+      <a href="v2.html" class="btn" target="_blank">Read Online</a>
+      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
+    </div>
+  </div>
+</section>
+
+<!-- Wall of Frogs -->
+<section>
+  <h2>🐸 Wall of Frogs</h2>
+  <div class="contributors-grid">
+    <div class="frog-card">Contributor 1</div>
+    <div class="frog-card">Contributor 2</div>
+    <div class="frog-card">Contributor 3</div>
+  </div>
+  <p style="text-align:center; margin-top:1rem;">
+    <a href="https://github.com/ToadAid/Toby_community_scrolls" class="btn">+ Submit Your Scroll</a>
+  </p>
+</section>
+
+<!-- Timeline -->
+<section>
+  <h2>⏳ Tobyworld Timeline</h2>
+  <p style="text-align:center;">Epoch 1 → Epoch 2 → Epoch 3 → Rune3 → [Future Expansion]</p>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>“One scroll, one light. One leaf, one vow.”</p>
+  <p>🐸 Join us: <a href="https://t.me/Toadgang">Telegram</a> | <a href="https://github.com/ToadAid">GitHub</a></p>
+</footer>
+
+</body>
+</html>
