@@ -3,18 +3,21 @@
     "artist": "@aqio885",
     "artist_type": "X handle",
     "title": "Tg31",
-    "image": "Tg31.jpg"
+    "image": "Tg31.jpg",
+    "date": "2025-08-01"
   },
   {
     "artist": "@Toby777777777",
     "artist_type": "X handle",
     "title": "Zen",
-    "image": "zen.jpg"
+    "image": "zen.jpg",
+    "date": "2025-08-01"
   },
   {
     "artist": "@TNG1301",
     "artist_type": "X handle",
     "title": "守望 · The Watcher of the Scroll",
-    "image": "the_watcher_scroll.jpg"
+    "image": "the_watcher_scroll.jpg",
+    "date": "2025-08-02"
   }
 ]
