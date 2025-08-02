@@ -1,82 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ToadAid Contributors</title>
-  <style>
-    /* Body */
-    body {
-      background-color: #f5f1e6; /* parchment */
-      font-family: 'Segoe UI', sans-serif;
-      color: #2f2f2f;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
-
-    /* Heading */
-    h1 {
-      color: #355e3b; /* deep green */
-      font-size: 2rem;
-      font-weight: bold;
-      position: relative;
-      display: inline-block;
-      padding-bottom: 0.3rem;
-    }
-    /* Gold underline accent */
-    h1::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      height: 4px;
-      width: 100%;
-      background-color: gold;
-      border-radius: 2px;
-    }
-
-    /* Contributor Card */
-    .contributor-card {
-      background-color: white;
-      border: 2px solid gold;
-      border-radius: 10px;
-      padding: 20px;
-      max-width: 400px;
-      margin: 20px auto;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .contributor-card img {
-      width: 100%;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .contributor-card p {
-      margin-top: 12px;
-      color: #2f2f2f;
-    }
-
-    /* Footer */
-    footer {
-      margin-top: 60px;
-      color: #355e3b;
-      font-size: 0.9rem;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ToadAid Contributors</title>
+<style>
+  body {
+    background: #f5f1e6;
+    font-family: 'Segoe UI', sans-serif;
+    color: #2f2f2f;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    color: #355e3b;
+    font-size: 2rem;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 5px;
+  }
+  h1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 4px;
+    width: 100%;
+    background: gold;
+    border-radius: 2px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 20px;
+  }
+  .card {
+    background: white;
+    border: 2px solid gold;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.15s ease-in-out;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+  }
+  .card img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  .card p {
+    margin: 8px 0;
+  }
+  footer {
+    margin-top: 60px;
+    color: #355e3b;
+    font-size: 0.9rem;
+  }
+</style>
 </head>
 <body>
-  
+
 <h1>ToadAid Contributor Art</h1>
 
-  <div class="contributor-card">
-    <img src="Tg31.jpg" alt="T.g,31 by Motita97">
-    <p><strong>Artist:</strong>@aqio885 x.com/aqio885</p>
-    <p><em>Title:</em> Tg31</p>
-  </div>
-  
-  <footer>
-    © 2025 ToadAid — Built by the people, for the people.
-  </footer>
+<div id="contributors" class="grid"></div>
+
+<footer>
+  © 2025 ToadAidDAO — Built by the people, for the people.
+</footer>
+
+<script>
+async function loadContributors() {
+  try {
+    const response = await fetch('contributors.json');
+    const contributors = await response.json();
+    const container = document.getElementById('contributors');
+
+    contributors.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${c.image}" alt="${c.title} by ${c.artist}">
+        <p><strong>Artist:</strong> ${c.artist}</p>
+        <p><em>Title:</em> ${c.title}</p>
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error('Error loading contributors:', error);
+  }
+}
+
+loadContributors();
+</script>
 
 </body>
 </html>
