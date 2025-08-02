@@ -80,16 +80,18 @@
 <script>
 async function loadContributors() {
   try {
-    // Prevent browser cache
     const response = await fetch('contributors.json?v=' + Date.now());
-    const contributors = await response.json();
+    let contributors = await response.json();
+
+    // Sort by date (newest first)
+    contributors.sort((a, b) => new Date(b.date) - new Date(a.date));
+
     const container = document.getElementById('contributors');
 
     contributors.forEach(c => {
       const card = document.createElement('div');
       card.className = 'card';
 
-      // Artist display
       let artistHTML = `<strong>Artist:</strong> ${c.artist}`;
       if (c.artist_type && c.artist_type.toLowerCase() === 'x handle') {
         const cleanHandle = c.artist.replace('@', '');
@@ -97,8 +99,7 @@ async function loadContributors() {
         artistHTML = `<strong>Artist:</strong> <a href="${profileURL}" target="_blank">${c.artist}</a> (${c.artist_type})`;
       }
 
-      // No lowercase, no folder prefix — use exactly as in JSON
-      const imagePath = c.image ? c.image : '';
+      const imagePath = c.image || '';
       const placeholder = 'https://via.placeholder.com/400x300?text=No+Image';
 
       card.innerHTML = `
