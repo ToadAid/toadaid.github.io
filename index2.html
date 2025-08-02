@@ -11,22 +11,38 @@
     background: #f5f1e6;
     color: #2f2f2f;
   }
-  /* 顶部 Banner */
+
+  /* 顶部 Banner（全屏自适应） */
   .banner {
-    background: url('banner.jpg') center/cover no-repeat;
+    position: relative;
+    width: 100%;
+    height: 45vh; /* 桌面高度 */
+    min-height: 220px; /* 手机最小高度 */
+    background: url('banner.jpg') center center / cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    padding: 3rem 1rem;
     color: white;
-    background-color: #2a4a2d;
+  }
+  @media (max-width: 768px) {
+    .banner {
+      height: 35vh; /* 手机上稍矮 */
+      min-height: 180px;
+    }
   }
   .banner h1 {
-    font-size: 2.4rem;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
     margin: 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
   }
   .banner p {
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
     margin-top: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
   }
+
   /* 顶部翻译提示条 */
   .translate-bar {
     background: gold;
@@ -35,6 +51,7 @@
     font-size: 0.95rem;
     text-align: center;
   }
+
   /* 按钮 */
   .btn {
     background: gold;
@@ -54,6 +71,7 @@
     transform: scale(1.05);
     box-shadow: 0 6px 10px rgba(0,0,0,0.3);
   }
+
   /* 通用 Section */
   section {
     padding: 2rem 1rem;
@@ -64,6 +82,7 @@
     text-align: center;
     margin-bottom: 1rem;
   }
+
   /* 模块卡片布局 */
   .pillars {
     display: flex;
@@ -82,6 +101,7 @@
   .pillar:hover {
     transform: translateY(-3px);
   }
+
   /* Mirror 占位盒子 */
   .mirror-box {
     background: #fffbea;
@@ -99,6 +119,7 @@
     from { box-shadow: 0 0 5px gold; }
     to { box-shadow: 0 0 15px gold; }
   }
+
   /* Wall of Frogs 网格 */
   .contributors-grid {
     display: grid;
@@ -113,6 +134,7 @@
     text-align: center;
     border: 1px solid gold;
   }
+
   /* Footer */
   footer {
     background: #355e3b;
