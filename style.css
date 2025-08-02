@@ -50,9 +50,39 @@ section {
   max-width: 1000px;
   margin: auto;
 }
+
+/* Scroll-Style Section Headers */
 h2 {
   text-align: center;
   margin-bottom: 1rem;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #2a2a2a;
+  background: linear-gradient(to right, transparent, gold 30%, gold 70%, transparent);
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  display: inline-block;
+  position: relative;
+}
+
+h2::before,
+h2::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  background: gold;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+h2::before {
+  left: -35px;
+}
+
+h2::after {
+  right: -35px;
 }
 
 /* Mission Pillars */
@@ -72,6 +102,11 @@ h2 {
 }
 .pillar:hover {
   transform: translateY(-3px);
+}
+
+/* Gold Border for Lore Library Cards */
+#lore .pillar {
+  border: 2px solid gold;
 }
 
 /* Footer */
