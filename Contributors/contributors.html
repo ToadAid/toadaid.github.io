@@ -5,32 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ToadAid Contributors</title>
   <style>
+    /* Body */
     body {
-      background-color: #0f172a;
+      background-color: #f5f1e6; /* parchment */
       font-family: 'Segoe UI', sans-serif;
-      color: #f1f5f9;
+      color: #2f2f2f;
       margin: 0;
       padding: 20px;
       text-align: center;
     }
+
+    /* Heading */
     h1 {
-      color: #38bdf8;
-      margin-bottom: 40px;
+      color: #355e3b; /* deep green */
+      font-size: 2rem;
+      font-weight: bold;
+      position: relative;
+      display: inline-block;
+      padding-bottom: 0.3rem;
     }
+    /* Gold underline accent */
+    h1::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 4px;
+      width: 100%;
+      background-color: gold;
+      border-radius: 2px;
+    }
+
+    /* Contributor Card */
     .contributor-card {
-      background-color: #1e293b;
+      background-color: white;
+      border: 2px solid gold;
       border-radius: 10px;
       padding: 20px;
       max-width: 400px;
       margin: 20px auto;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
     .contributor-card img {
       width: 100%;
       border-radius: 8px;
+      border: 1px solid #ccc;
     }
     .contributor-card p {
-      color: #cbd5e1;
       margin-top: 12px;
+      color: #2f2f2f;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 60px;
+      color: #355e3b;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -44,9 +74,7 @@
     <p><em>Title:</em> Tg31</p>
   </div>
   
-
-
-  <footer style="margin-top: 60px; color: #64748b;">
+  <footer>
     © 2025 ToadAidDAO — Built by the people, for the people.
   </footer>
 
