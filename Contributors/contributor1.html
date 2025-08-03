@@ -83,8 +83,8 @@ async function loadContributors() {
     const response = await fetch('contributors.json?v=' + Date.now());
     let contributors = await response.json();
 
-    // Sort by date (newest first)
-    contributors.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Sort by date (oldest first → newest last)
+    contributors.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     const container = document.getElementById('contributors');
 
