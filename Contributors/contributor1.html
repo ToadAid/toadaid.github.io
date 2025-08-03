@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ToadAid Contributors</title>
+<style>
+  body {
+    background: #f5f1e6;
+    font-family: 'Segoe UI', sans-serif;
+    color: #2f2f2f;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    color: #355e3b;
+    font-size: 2rem;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 5px;
+  }
+  h1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 4px;
+    width: 100%;
+    background: gold;
+    border-radius: 2px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 20px;
+  }
+  .card {
+    background: white;
+    border: 2px solid gold;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.15s ease-in-out;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+  }
+  .card img, .card video {
+    width: 100%;
+    border-radius: 8px;
+  }
+  .card p {
+    margin: 8px 0;
+  }
+  footer {
+    margin-top: 60px;
+    color: #355e3b;
+    font-size: 0.9rem;
+  }
+  a {
+    color: #355e3b;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<h1>ToadAid Contributor Art</h1>
+
+<div id="contributors" class="grid"></div>
+
+<footer>
+  © 2025 ToadAid — Built by the people, for the people.
+</footer>
+
+<script>
+async function loadContributors() {
+  try {
+    const response = await fetch('contributors.json?v=' + Date.now());
+    let contributors = await response.json();
+
+    // Sort by date (newest first)
+    contributors.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const container = document.getElementById('contributors');
+
+    contributors.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      // Artist info
+      let artistHTML = `<strong>Artist:</strong> ${c.artist}`;
+      if (c.artist_type && c.artist_type.toLowerCase() === 'x handle') {
+        const cleanHandle = c.artist.replace('@', '');
+        const profileURL = `https://x.com/${cleanHandle}`;
+        artistHTML = `<strong>Artist:</strong> <a href="${profileURL}" target="_blank">${c.artist}</a> (${c.artist_type})`;
+      }
+
+      // Media rendering
+      let mediaHTML = '';
+      const placeholder = 'https://via.placeholder.com/400x300?text=No+Media';
+
+      if (c.media_type === 'video') {
+        mediaHTML = `
+          <video controls poster="${c.poster || ''}">
+            <source src="${c.file}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+      } else {
+        mediaHTML = `
+          <img src="${c.file}" alt="${c.title} by ${c.artist}" 
+               onerror="this.onerror=null; this.src='${placeholder}';">
+        `;
+      }
+
+      // Card content
+      card.innerHTML = `
+        ${mediaHTML}
+        <p>${artistHTML}</p>
+        <p><em>Title:</em> ${c.title}</p>
+        ${c.description ? `<p>${c.description}</p>` : ""}
+        <small>${c.date || ''}</small>
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error('Error loading contributors:', error);
+  }
+}
+
+loadContributors();
+</script>
+</body>
+</html>
