@@ -12,28 +12,29 @@
 
 <script>
 const fileUrl = 'https://raw.githubusercontent.com/ToadAid/tobyworld-lore-v2/main/TOBYWORLD_LORE_v2_FINAL_RELEASE.md';
-const bookKey = 'v2.html-scroll';
+const bookKey = 'bookmark-v2';
 
-// 读取 URL 参数中的位置
-const urlParams = new URLSearchParams(window.location.search);
-const pos = urlParams.get("pos");
-
-// 如果有位置参数，页面加载后滚动到这个位置
-if (pos) {
-  window.addEventListener('load', () => {
-    window.scrollTo(0, parseInt(pos));
-  });
-}
-
-// 监听滚动，自动保存位置
+// 保存阅读位置
 window.addEventListener('scroll', () => {
   localStorage.setItem(bookKey, window.scrollY);
 });
 
+// 加载 markdown 并在渲染完成后恢复阅读位置
 fetch(fileUrl)
   .then(response => response.text())
   .then(md => {
     document.getElementById('content').innerHTML = marked.parse(md);
+
+    // 延迟，确保渲染完成再检查书签
+    setTimeout(() => {
+      const savedPos = localStorage.getItem(bookKey);
+      if (savedPos) {
+        const percentage = ((savedPos / document.body.scrollHeight) * 100).toFixed(1);
+        if (confirm(`📌 Last time you stopped at about ${percentage}% of the book. Continue from there?`)) {
+          window.scrollTo(0, parseFloat(savedPos));
+        }
+      }
+    }, 300); // 0.3秒延迟
   })
   .catch(err => {
     document.getElementById('content').innerHTML = '<p style="color:red;">Error loading Book V2.</p>';
