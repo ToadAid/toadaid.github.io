@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ToadAid — Guarding the Lore</title>
+<title>ToadAid — Guarding the Lore (Bookmark Test)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body {
@@ -142,8 +142,8 @@
   <a href="#lore" class="btn">📜 Browse the Lore</a>
   <a href="whitepaper.html" class="btn" target="_blank">📄 Whitepaper</a>
   <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
-  <a href="v1.html" class="btn" target="_blank">📚 Book v1</a>
-  <a href="v2.html" class="btn" target="_blank">📚 Book v2</a>
+  <a href="#" class="btn" onclick="openBook('v1.html')">📚 Book v1</a>
+  <a href="#" class="btn" onclick="openBook('v2.html')">📚 Book v2</a>
 </section>
 
 <!-- Our Mission -->
@@ -192,6 +192,20 @@
   <p>“One scroll, one light. One leaf, one vow.”</p>
   <p>🐸 Join us: <a href="https://t.me/Toadgang">Telegram</a> | <a href="https://github.com/ToadAid">GitHub</a></p>
 </footer>
+
+<!-- Bookmark Script -->
+<script>
+function openBook(bookFile) {
+  const saved = localStorage.getItem(bookFile + '-scroll');
+  if (saved) {
+    if (confirm("📌 Last time you stopped at position " + saved + "px. Continue from there?")) {
+      window.location.href = bookFile + "?pos=" + saved;
+      return;
+    }
+  }
+  window.location.href = bookFile;
+}
+</script>
 
 </body>
 </html>
