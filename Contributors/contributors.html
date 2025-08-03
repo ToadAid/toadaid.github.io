@@ -46,7 +46,7 @@
   .card:hover {
     transform: translateY(-3px);
   }
-  .card img {
+  .card img, .card video {
     width: 100%;
     border-radius: 8px;
   }
@@ -80,11 +80,12 @@
 <script>
 async function loadContributors() {
   try {
-    const response = await fetch('contributor1.json?v=' + Date.now());
+    // Load from the test JSON file instead of live
+    const response = await fetch('contributors.json?v=' + Date.now());
     let contributors = await response.json();
 
-    // Sort by date (newest first)
-    contributors.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Sort oldest first → newest last
+    contributors.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     const container = document.getElementById('contributors');
 
@@ -92,6 +93,7 @@ async function loadContributors() {
       const card = document.createElement('div');
       card.className = 'card';
 
+      // Artist info
       let artistHTML = `<strong>Artist:</strong> ${c.artist}`;
       if (c.artist_type && c.artist_type.toLowerCase() === 'x handle') {
         const cleanHandle = c.artist.replace('@', '');
@@ -99,14 +101,31 @@ async function loadContributors() {
         artistHTML = `<strong>Artist:</strong> <a href="${profileURL}" target="_blank">${c.artist}</a> (${c.artist_type})`;
       }
 
-      const imagePath = c.image || '';
-      const placeholder = 'https://via.placeholder.com/400x300?text=No+Image';
+      // Media rendering
+      let mediaHTML = '';
+      const placeholder = 'https://via.placeholder.com/400x300?text=No+Media';
 
+      if (c.media_type === 'video') {
+        mediaHTML = `
+          <video controls poster="${c.poster || ''}">
+            <source src="${c.file}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+      } else {
+        mediaHTML = `
+          <img src="${c.file}" alt="${c.title} by ${c.artist}" 
+               onerror="this.onerror=null; this.src='${placeholder}';">
+        `;
+      }
+
+      // Card content
       card.innerHTML = `
-        <img src="${imagePath}" alt="${c.title} by ${c.artist}" 
-             onerror="this.onerror=null; this.src='${placeholder}';">
+        ${mediaHTML}
         <p>${artistHTML}</p>
         <p><em>Title:</em> ${c.title}</p>
+        ${c.description ? `<p>${c.description}</p>` : ""}
+        <small>${c.date || ''}</small>
       `;
       container.appendChild(card);
     });
