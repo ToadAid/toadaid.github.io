@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ToadAid Contributors</title>
+<title>ToadAid Contributors (Test)</title>
 <style>
   body {
     background: #f5f1e6;
@@ -69,7 +69,7 @@
 </head>
 <body>
 
-<h1>ToadAid Contributor Art</h1>
+<h1>ToadAid Contributor Art (Test)</h1>
 
 <div id="contributors" class="grid"></div>
 
@@ -80,10 +80,11 @@
 <script>
 async function loadContributors() {
   try {
-    const response = await fetch('contributors.json?v=' + Date.now());
+    // Load from the test JSON file instead of live
+    const response = await fetch('contributor1.json?v=' + Date.now());
     let contributors = await response.json();
 
-    // Sort by date (oldest first → newest last)
+    // Sort oldest first → newest last
     contributors.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     const container = document.getElementById('contributors');
