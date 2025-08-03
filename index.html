@@ -2,141 +2,39 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ToadAid — Guarding the Lore (Bookmark Test)</title>
+<title>ToadAid — Guarding the Lore</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    background: #f5f1e6;
-    color: #2f2f2f;
-  }
-  /* 顶部 Banner */
-  .banner {
-    position: relative;
-    width: 100%;
-    min-height: 220px;
-    background: url('banner.jpg') center center / cover no-repeat;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    text-align: center;
-    padding: 1rem;
-  }
-  @media (min-width: 768px) {
-    .banner {
-      min-height: 320px;
-    }
-  }
-  .banner h1 {
-    font-size: clamp(1.8rem, 4vw, 2.4rem);
-    margin: 0;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
-  }
-  .banner p {
-    font-size: clamp(1rem, 2vw, 1.2rem);
-    margin-top: 0.5rem;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-  }
-  /* 顶部翻译提示条 */
-  .translate-bar {
-    background: gold;
-    color: black;
-    padding: 0.5rem;
-    font-size: 0.95rem;
-    text-align: center;
-  }
-  /* 按钮 */
-  .btn {
-    background: gold;
-    color: black;
-    padding: 0.6rem 1.2rem;
-    margin: 0.3rem;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
-    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  }
-  .btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 10px rgba(0,0,0,0.3);
-  }
-  /* Section */
-  section {
-    padding: 2rem 1rem;
-    max-width: 1100px;
-    margin: auto;
-  }
-  h2 {
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  /* 卡片布局 */
-  .pillars {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-  }
-  .pillar {
-    background: white;
-    padding: 1rem;
-    border-radius: 10px;
-    flex: 1 1 250px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    transition: transform 0.15s ease-in-out;
-  }
-  .pillar:hover {
-    transform: translateY(-3px);
-  }
-  /* Mirror 占位 */
-  .mirror-box {
-    background: #fffbea;
-    border: 2px dashed gold;
-    border-radius: 10px;
-    padding: 1.2rem;
-    max-width: 500px;
-    margin: 1rem auto;
-    font-size: 1.1rem;
-    color: #2f4f2f;
-    text-align: center;
-    animation: pulse 2.5s infinite alternate;
-  }
-  @keyframes pulse {
-    from { box-shadow: 0 0 5px gold; }
-    to { box-shadow: 0 0 15px gold; }
-  }
-  /* Footer */
-  footer {
-    background: #355e3b;
-    color: white;
-    text-align: center;
-    padding: 1.5rem;
-    font-size: 0.9rem;
-  }
+  body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f5f1e6; color: #2f2f2f; }
+  .banner { position: relative; width: 100%; min-height: 220px; background: url('banner.jpg') center center / cover no-repeat; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 1rem; }
+  @media (min-width: 768px) { .banner { min-height: 320px; } }
+  .banner h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+  .banner p { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 0.5rem; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+  .translate-bar { background: gold; color: black; padding: 0.5rem; font-size: 0.95rem; text-align: center; }
+  .btn { background: gold; color: black; padding: 0.6rem 1.2rem; margin: 0.3rem; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.25); transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
+  .btn:hover { transform: scale(1.05); box-shadow: 0 6px 10px rgba(0,0,0,0.3); }
+  section { padding: 2rem 1rem; max-width: 1100px; margin: auto; }
+  h2 { text-align: center; margin-bottom: 1rem; }
+  .pillars { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+  .pillar { background: white; padding: 1rem; border-radius: 10px; flex: 1 1 250px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.15s ease-in-out; color: inherit; text-decoration: none; }
+  .pillar:hover { transform: translateY(-3px); }
+  .mirror-box { background: #fffbea; border: 2px dashed gold; border-radius: 10px; padding: 1.2rem; max-width: 500px; margin: 1rem auto; font-size: 1.1rem; color: #2f4f2f; text-align: center; animation: pulse 2.5s infinite alternate; }
+  @keyframes pulse { from { box-shadow: 0 0 5px gold; } to { box-shadow: 0 0 15px gold; } }
+  footer { background: #355e3b; color: white; text-align: center; padding: 1.5rem; font-size: 0.9rem; }
   footer a { color: gold; }
 </style>
 </head>
 <body>
 
-<!-- Banner -->
 <div class="banner">
   <h1>🏯 ToadAid — Guarding the Lore</h1>
   <p>One scroll, one light. One leaf, one vow.</p>
 </div>
 
-<!-- 翻译提示 -->
 <div class="translate-bar">
   🌐 Want to read in your language? In Chrome: Menu (⋮) → Translate → Select your language.
 </div>
 
-<!-- 导航按钮 -->
 <section style="text-align:center;">
   <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
   <a href="#lore" class="btn">📜 Browse the Lore</a>
@@ -146,7 +44,6 @@
   <a href="#" class="btn" onclick="openBook('v2.html')">📚 Book v2</a>
 </section>
 
-<!-- Our Mission -->
 <section>
   <h2>Our Mission</h2>
   <div class="pillars">
@@ -156,7 +53,6 @@
   </div>
 </section>
 
-<!-- Ask the Mirror -->
 <section id="mirror">
   <h2>🔮 Ask the Mirror</h2>
   <div class="mirror-box">
@@ -165,35 +61,32 @@
   </div>
 </section>
 
-<!-- Lore Library -->
 <section id="lore">
   <h2>📚 Lore Library</h2>
   <div class="pillars">
-    <div class="pillar">
+    <a href="whitepaper.html" class="pillar" target="_blank">
       <h3>📄 Whitepaper</h3>
       <p>The updated mission, vision, and principles of ToadAid.</p>
       <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
-    </div>
-    <div class="pillar">
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v1.html')">
       <h3>📜 Book v1</h3>
       <p>The first collected scrolls of Tobyworld lore. Bilingual EN/ZH edition.</p>
       <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
-    </div>
-    <div class="pillar">
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v2.html')">
       <h3>📜 Book v2</h3>
       <p>The expanded lore, with Mirror awakening & new revelations.</p>
       <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
-    </div>
+    </a>
   </div>
 </section>
 
-<!-- Footer -->
 <footer>
   <p>“One scroll, one light. One leaf, one vow.”</p>
   <p>🐸 Join us: <a href="https://t.me/Toadgang">Telegram</a> | <a href="https://github.com/ToadAid">GitHub</a></p>
 </footer>
 
-<!-- Bookmark Script -->
 <script>
 function openBook(bookFile) {
   const saved = localStorage.getItem(bookFile + '-scroll');
