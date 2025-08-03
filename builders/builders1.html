@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ToadAid — Builders Circle (Test)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: #f5f1e6;
+    color: #2f2f2f;
+  }
+  /* Banner */
+  .banner {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+    background: url('../banner.jpg') center center / cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+  }
+  .banner h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    margin: 0;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  }
+  .banner p {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    margin-top: 0.5rem;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  /* Section */
+  section {
+    padding: 2rem 1rem;
+    max-width: 1100px;
+    margin: auto;
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  /* Grid for Builders */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: white;
+    border: 2px solid gold;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.15s ease-in-out;
+    text-align: center;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+  }
+  .card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.5rem;
+    border: 2px solid gold;
+  }
+  .card h3 {
+    margin: 0.5rem 0 0.2rem;
+    font-size: 1.2rem;
+  }
+  .card p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #444;
+  }
+  /* Footer */
+  footer {
+    background: #355e3b;
+    color: white;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+  }
+  footer a { color: gold; }
+</style>
+</head>
+<body>
+
+<!-- Password Prompt -->
+<script>
+(function(){
+  const pass = prompt("🔒 Enter access password:");
+  if (pass !== "toadaid") {
+    alert("Access denied 🐸");
+    window.location.href = "/";
+  }
+})();
+</script>
+
+<!-- Banner -->
+<div class="banner">
+  <h1>🐸 Builders Circle — Test Zone</h1>
+  <p>Where the lily pads for new creations are grown</p>
+</div>
+
+<!-- Builders List -->
+<section>
+  <h2>Current Builders</h2>
+  <div class="grid" id="buildersGrid">
+    <!-- Cards will load here -->
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>“One scroll, one light. One leaf, one vow.”</p>
+  <p>🐸 Join us: <a href="https://t.me/Toadgang">Telegram</a> | <a href="https://github.com/ToadAid">GitHub</a></p>
+</footer>
+
+<script>
+// Temporary builder data (can later load from builders.json)
+const builders = [
+  {
+    name: "Tommy (@TNG1301)",
+    role: "Founder / Scroll Keeper",
+    img: "https://avatars.githubusercontent.com/u/00000000?v=4",
+    link: "https://x.com/TNG1301"
+  },
+  {
+    name: "Aqio (@aqio885)",
+    role: "Designer / Artist",
+    img: "https://avatars.githubusercontent.com/u/00000000?v=4",
+    link: "https://x.com/aqio885"
+  }
+];
+
+const container = document.getElementById("buildersGrid");
+
+builders.forEach(b => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <a href="${b.link}" target="_blank">
+      <img src="${b.img}" alt="${b.name}">
+    </a>
+    <h3>${b.name}</h3>
+    <p>${b.role}</p>
+  `;
+  container.appendChild(card);
+});
+</script>
+
+</body>
+</html>
