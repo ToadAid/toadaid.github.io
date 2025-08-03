@@ -80,7 +80,6 @@
 <script>
 async function loadContributors() {
   try {
-    // Load from the test JSON file instead of live
     const response = await fetch('contributor1.json?v=' + Date.now());
     let contributors = await response.json();
 
@@ -107,7 +106,7 @@ async function loadContributors() {
 
       if (c.media_type === 'video') {
         mediaHTML = `
-          <video controls poster="${c.poster || ''}">
+          <video autoplay muted loop playsinline poster="${c.poster || ''}">
             <source src="${c.file}" type="video/mp4">
             Your browser does not support the video tag.
           </video>
