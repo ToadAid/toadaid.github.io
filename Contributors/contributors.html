@@ -80,7 +80,7 @@
 <script>
 async function loadContributors() {
   try {
-    const response = await fetch('contributors.json?v=' + Date.now());
+    const response = await fetch('contributor1.json?v=' + Date.now());
     let contributors = await response.json();
 
     // Sort by date (newest first)
