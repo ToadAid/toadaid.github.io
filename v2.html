@@ -12,6 +12,23 @@
 
 <script>
 const fileUrl = 'https://raw.githubusercontent.com/ToadAid/tobyworld-lore-v2/main/TOBYWORLD_LORE_v2_FINAL_RELEASE.md';
+const bookKey = 'v2.html-scroll';
+
+// 读取 URL 参数中的位置
+const urlParams = new URLSearchParams(window.location.search);
+const pos = urlParams.get("pos");
+
+// 如果有位置参数，页面加载后滚动到这个位置
+if (pos) {
+  window.addEventListener('load', () => {
+    window.scrollTo(0, parseInt(pos));
+  });
+}
+
+// 监听滚动，自动保存位置
+window.addEventListener('scroll', () => {
+  localStorage.setItem(bookKey, window.scrollY);
+});
 
 fetch(fileUrl)
   .then(response => response.text())
