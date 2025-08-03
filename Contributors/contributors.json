@@ -1,23 +1,38 @@
 [
   {
+    "artist": "@TNG1301",
+    "artist_type": "X handle",
+    "title": "守望 · The Watcher of the Scroll",
+    "media_type": "image",
+    "file": "assets/images/the_watcher_scroll.jpg",
+    "date": "2025-08-01",
+    "description": "The guardian of the Lore Scrolls, protecting truth."
+  },
+  {
     "artist": "@aqio885",
     "artist_type": "X handle",
     "title": "Tg31",
-    "image": "Tg31.jpg",
-    "date": "2025-08-01"
+    "media_type": "image",
+    "file": "assets/images/Tg31.jpg",
+    "date": "2025-08-01",
+    "description": "Minimalist black-and-white Toby scroll design."
   },
   {
     "artist": "@Toby777777777",
     "artist_type": "X handle",
     "title": "Zen",
-    "image": "zen.jpg",
-    "date": "2025-08-01"
+    "media_type": "image",
+    "file": "assets/images/zen.jpg",
+    "date": "2025-08-01",
+    "description": "Zen-inspired Tobyworld art reflecting inner balance."
   },
   {
-    "artist": "@TNG1301",
+    "artist": "@CristianLo99636",
     "artist_type": "X handle",
-    "title": "守望 · The Watcher of the Scroll",
-    "image": "the_watcher_scroll.jpg",
-    "date": "2025-08-02"
+    "title": "Lotus Over the Pond",
+    "media_type": "image",
+    "file": "assets/images/cristian_lotus.jpg",
+    "date": "2025-08-03",
+    "description": "Pond scene with a glowing lotus and Toby, representing harmony and the path of light."
   }
 ]
