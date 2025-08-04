@@ -5,187 +5,101 @@
 <title>ToadAid — Guarding the Lore</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    background: #f5f1e6;
-    color: #2f2f2f;
-  }
-  header {
-    background: linear-gradient(180deg, #355e3b, #2a4a2d);
-    color: white;
-    text-align: center;
-    padding: 2rem 1rem;
-    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
-    background-size: cover;
-  }
-  header h1 {
-    font-size: 2.2rem;
-    margin: 0;
-  }
-  header p {
-    font-size: 1.1rem;
-    margin: 0.5rem 0 1.2rem;
-  }
-  .btn {
-    background: gold;
-    color: black;
-    padding: 0.6rem 1.2rem;
-    margin: 0.3rem;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
-    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  }
-  .btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 10px rgba(0,0,0,0.3);
-  }
-  section {
-    padding: 2rem 1rem;
-    max-width: 1000px;
-    margin: auto;
-  }
-  h2 {
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  .pillars {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-  }
-  .pillar {
-    background: white;
-    padding: 1rem;
-    border-radius: 10px;
-    flex: 1 1 250px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    transition: transform 0.15s ease-in-out;
-  }
-  .pillar:hover {
-    transform: translateY(-3px);
-  }
-  iframe {
-    width: 100%;
-    height: 400px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-  }
-  footer {
-    background: #355e3b;
-    color: white;
-    text-align: center;
-    padding: 1.5rem;
-    font-size: 0.9rem;
-  }
-  footer a {
-    color: gold;
-  }
-  /* Mirror Coming Soon Box */
-  .mirror-box {
-    background: #fffbea;
-    border: 2px dashed gold;
-    border-radius: 10px;
-    padding: 1.2rem;
-    max-width: 500px;
-    margin: 1rem auto;
-    font-size: 1.1rem;
-    color: #2f4f2f;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
-  .coming-soon {
-    font-style: italic;
-    color: #2f4f2f;
-  }
+  body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f5f1e6; color: #2f2f2f; }
+  .banner { position: relative; width: 100%; min-height: 220px; background: url('banner.jpg') center center / cover no-repeat; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 1rem; }
+  @media (min-width: 768px) { .banner { min-height: 320px; } }
+  .banner h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+  .banner p { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 0.5rem; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+  .translate-bar { background: gold; color: black; padding: 0.5rem; font-size: 0.95rem; text-align: center; }
+  .btn { background: gold; color: black; padding: 0.6rem 1.2rem; margin: 0.3rem; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.25); transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
+  .btn:hover { transform: scale(1.05); box-shadow: 0 6px 10px rgba(0,0,0,0.3); }
+  section { padding: 2rem 1rem; max-width: 1100px; margin: auto; }
+  h2 { text-align: center; margin-bottom: 1rem; }
+  .pillars { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+  .pillar { background: white; padding: 1rem; border-radius: 10px; flex: 1 1 250px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.15s ease-in-out; color: inherit; text-decoration: none; }
+  .pillar:hover { transform: translateY(-3px); }
+  .mirror-box { background: #fffbea; border: 2px dashed gold; border-radius: 10px; padding: 1.2rem; max-width: 500px; margin: 1rem auto; font-size: 1.1rem; color: #2f4f2f; text-align: center; animation: pulse 2.5s infinite alternate; }
+  @keyframes pulse { from { box-shadow: 0 0 5px gold; } to { box-shadow: 0 0 15px gold; } }
+  footer { background: #355e3b; color: white; text-align: center; padding: 1.5rem; font-size: 0.9rem; }
+  footer a { color: gold; }
 </style>
 </head>
 <body>
 
-<header>
+<div class="banner">
   <h1>🏯 ToadAid — Guarding the Lore</h1>
-  <p>Helping the Fallen Frog</p>
-  <div>
-    <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
-    <a href="#lore" class="btn">📜 Browse the Lore</a>
-    <a href="whitepaper.html" class="btn" target="_blank">📄 Whitepaper</a>
-    <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
-    <a href="v1.html" class="btn" target="_blank">📚 Book v1</a>
-    <a href="v2.html" class="btn" target="_blank">📚 Book v2</a>
-  </div>
-</header>
+  <p>One scroll, one light. One leaf, one vow.</p>
+</div>
+
+<div class="translate-bar">
+  🌐 Want to read in your language? In Chrome: Menu (⋮) → Translate → Select your language.
+</div>
+
+<section style="text-align:center;">
+  <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
+  <a href="#lore" class="btn">📜 Browse the Lore</a>
+  <a href="bluepaper.html" class="btn" target="_blank">📄 Blue Paper</a>
+  <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
+  <a href="#" class="btn" onclick="openBook('v1.html')">📚 Book v1</a>
+  <a href="#" class="btn" onclick="openBook('v2.html')">📚 Book v2</a>
+  <a href="https://toadaid-builders.netlify.app/builders.html" class="btn" target="_blank">🛠 Builders</a>
+</section>
 
 <section>
   <h2>Our Mission</h2>
   <div class="pillars">
-    <div class="pillar">
-      <h3>🏯 Guarding the Lore</h3>
-      <p>Preserving Tobyworld’s original scrolls and protecting them from distortion.</p>
-    </div>
-    <div class="pillar">
-      <h3>🐸 Helping the Fallen Frog</h3>
-      <p>Guiding lost frogs back to the pond and helping them rejoin the path.</p>
-    </div>
-    <div class="pillar">
-      <h3>📜 Empowering Contributors</h3>
-      <p>Recognizing and encouraging scrollmakers, translators, and teachers.</p>
-    </div>
+    <div class="pillar"><h3>🏯 Guarding the Lore</h3><p>Preserving Tobyworld’s original scrolls and protecting them from distortion.</p></div>
+    <div class="pillar"><h3>🐸 Helping the Fallen Frog</h3><p>Guiding lost frogs back to the pond and helping them rejoin the path.</p></div>
+    <div class="pillar"><h3>📜 Empowering Contributors</h3><p>Recognizing and encouraging scrollmakers, translators, and teachers.</p></div>
   </div>
 </section>
 
 <section id="mirror">
   <h2>🔮 Ask the Mirror</h2>
   <div class="mirror-box">
-    🔮 The Mirror is not yet awakened.  
-    <span class="coming-soon">Coming soon...</span>
+    🔮 The Mirror is not yet awakened.<br>
+    <span style="font-style:italic;">Coming soon...</span>
   </div>
 </section>
 
 <section id="lore">
   <h2>📚 Lore Library</h2>
   <div class="pillars">
-    <div class="pillar">
-      <h3>📄 Whitepaper</h3>
+    <a href="bluepaper.html" class="pillar" target="_blank">
+      <h3>📄 Bluepaper</h3>
       <p>The updated mission, vision, and principles of ToadAid.</p>
-      <a href="whitepaper.html" class="btn" target="_blank">Read Whitepaper</a>
-    </div>
-    <div class="pillar">
-      <h3>🎨 Contributors</h3>
-      <p>Meet the artists and community members who bring the Lore to life.</p>
-      <a href="Contributors/contributors.html" class="btn">View Contributors</a>
-    </div>
-    <div class="pillar">
+      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v1.html')">
       <h3>📜 Book v1</h3>
-      <p>The first collected scrolls of Tobyworld lore. Complete English + Chinese bilingual edition.</p>
-      <a href="v1.html" class="btn" target="_blank">Read Online</a>
-      <p style="font-size:0.85rem; color:#355e3b; margin-top:0.5rem;">
-        💡 Tip: In Chrome, use <strong>Menu → Translate</strong> to read in your language.
-      </p>
-    </div>
-    <div class="pillar">
+      <p>The first collected scrolls of Tobyworld lore. Bilingual EN/ZH edition.</p>
+      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v2.html')">
       <h3>📜 Book v2</h3>
-      <p>The expanded lore, featuring the awakening of the Mirror and new revelations.</p>
-      <a href="v2.html" class="btn" target="_blank">Read Online</a>
-      <p style="font-size:0.85rem; color:#355e3b; margin-top:0.5rem;">
-        💡 Tip: In Chrome, use <strong>Menu → Translate</strong> to read in your language.
-      </p>
-    </div>
+      <p>The expanded lore, with Mirror awakening & new revelations.</p>
+      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
+    </a>
   </div>
 </section>
 
 <footer>
   <p>“One scroll, one light. One leaf, one vow.”</p>
-  <p>🐸 Join us: 
-    <a href="https://t.me/Toadgang">Telegram</a> | 
-    <a href="https://github.com/ToadAid">GitHub</a>
-  </p>
+  <p>🐸 Join us: <a href="https://t.me/Toadgang">Telegram</a> | <a href="https://github.com/ToadAid">GitHub</a></p>
 </footer>
+
+<script>
+function openBook(bookFile) {
+  const saved = localStorage.getItem(bookFile + '-scroll');
+  if (saved) {
+    if (confirm("📌 Last time you stopped at position " + saved + "px. Continue from there?")) {
+      window.location.href = bookFile + "?pos=" + saved;
+      return;
+    }
+  }
+  window.location.href = bookFile;
+}
+</script>
 
 </body>
 </html>
