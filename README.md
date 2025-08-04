@@ -1,14 +1,35 @@
-# ToadAid
+# 🐸 ToadAid
 
-**A coin for healing. Built for the fallen. Rooted in Lore. Powered by $TOBY.**
+**We are Toadgang.**  
+**Guarding the Lore. Helping the Fallen Frog.**  
 
-ToadAid is a decentralized initiative focused on **health**, **education**, and **web3 development** — all backed by a spirit of solidarity for the fallen frogs of this world.
+ToadAid is a **decentralized, community‑rooted movement** born from the living Lore of **$TOBY**.  
+We exist to **protect the sacred scrolls**, preserve the truth of Tobyworld,  
+and extend a hand to those who have strayed or fallen.  
 
-- Mint: [Zora - ToadAid](https://zora.co/collect/base/0x1d1799a621a706ab12c7816f27d684a29d5778b3)
-- Chain: Base
-- Founder: @Based_Toby
-- Powered by: [$TOBY](https://dexscreener.com/base/0xb8d98a102b0079b69ffbc760c8d857a31653e56e)
+We are not VC.  
+We are not insiders.  
+We are **the people who keep the fire lit**.  
 
 ---
 
-**“Not just a coin. It’s a covenant.”**
+## 🌱 Mission
+
+- **📜 Guard the Lore** — Preserve $TOBY’s original scrolls and defend them from distortion.  
+- **🐸 Help the Fallen Frog** — Support frogs who were misled, scammed, or lost their way, guiding them back to the pond.  
+- **🎨 Empower Builders** — Encourage art, translations, education, and tools that enrich Tobyworld.  
+
+---
+
+## 🔗 Links
+
+- **📘 Blue Paper** → [Read the ToadAid Blue Paper](https://toadaid.github.io/bluepaper.html)  
+- **🌱 Zora Mint** → [Support ToadAid]
+- **💠 Powered by** → [$TOBY](https://basescan.org/token/0xb8D98a102b0079B69FFbc760C8d857A31653e56e)  
+
+---
+
+> **“Not just a group. It’s a covenant.”**  
+> A vow to **Guard the Lore** and **Help the Fallen Frog** — together, as Toadgang.
+
+---
