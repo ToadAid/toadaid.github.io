@@ -18,11 +18,60 @@
   .pillars { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
   .pillar { background: white; padding: 1rem; border-radius: 10px; flex: 1 1 250px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.15s ease-in-out; color: inherit; text-decoration: none; }
   .pillar:hover { transform: translateY(-3px); }
-  .mirror-box { background: #fffbea; border: 2px dashed gold; border-radius: 10px; padding: 1.2rem; max-width: 500px; margin: 1rem auto; font-size: 1.1rem; color: #2f4f2f; text-align: center; animation: pulse 2.5s infinite alternate; }
-  @keyframes pulse { from { box-shadow: 0 0 5px gold; } to { box-shadow: 0 0 15px gold; } }
   footer { background: #355e3b; color: white; text-align: center; padding: 1.5rem; font-size: 0.9rem; }
   footer a { color: gold; }
-  input[type="text"] { width: 80%; padding: 0.6rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; margin-bottom: 0.5rem; }
+
+  /* Mini App Chat */
+  .mirror-chat {
+    background: #fffbea;
+    border: 2px dashed gold;
+    border-radius: 12px;
+    max-width: 650px;
+    margin: 1rem auto;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .chat-box {
+    flex: 1;
+    overflow-y: auto;
+    height: 350px;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
+  }
+  .message {
+    margin-bottom: 1rem;
+  }
+  .message.user {
+    text-align: right;
+  }
+  .message.user span {
+    background: #355e3b;
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 12px;
+    display: inline-block;
+  }
+  .message.mirror span {
+    background: #f0f0f0;
+    padding: 0.5rem 0.8rem;
+    border-radius: 12px;
+    display: inline-block;
+  }
+  .chat-input {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .chat-input input {
+    flex: 1;
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
 </style>
 </head>
 <body>
@@ -57,11 +106,12 @@
 
 <section id="mirror">
   <h2>🔮 Ask the Mirror</h2>
-  <div class="mirror-box">
-    <input type="text" id="mirror-query" placeholder="What do you seek in the Lore?">
-    <br>
-    <button class="btn" onclick="askMirror()">Ask</button>
-    <div id="mirror-response" style="margin-top:1rem; font-size:1rem; text-align:left;"></div>
+  <div class="mirror-chat">
+    <div id="chat-box" class="chat-box"></div>
+    <div class="chat-input">
+      <input type="text" id="mirror-input" placeholder="Ask the Mirror..." />
+      <button class="btn" onclick="sendMessage()">Send</button>
+    </div>
   </div>
 </section>
 
@@ -92,44 +142,48 @@
 </footer>
 
 <script>
-async function askMirror() {
-  const query = document.getElementById("mirror-query").value.trim();
-  if (!query) {
-    alert("Please enter a question.");
-    return;
-  }
+const API_URL = "http://70.91.63.236:8000/ask"; // backend FastAPI server
+const chatBox = document.getElementById("chat-box");
+const inputField = document.getElementById("mirror-input");
 
-  document.getElementById("mirror-response").innerHTML = "⏳ Thinking...";
+function addMessage(text, sender) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", sender);
+  msg.innerHTML = `<span>${text}</span>`;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function sendMessage() {
+  const text = inputField.value.trim();
+  if (!text) return;
+  
+  addMessage(text, "user");
+  inputField.value = "";
+  addMessage("⏳ Thinking...", "mirror");
 
   try {
-    const res = await fetch("http://70.91.63.236:8000/ask", {  // ✅ match FastAPI backend
+    const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: query })
+      body: JSON.stringify({ question: text })
     });
 
-    if (!res.ok) throw new Error("HTTP " + res.status);
-
     const data = await res.json();
-    document.getElementById("mirror-response").innerHTML =
-      `<b>Mirror:</b> ${data.reply || "[No answer from Mirror]"}`;
+    const reply = data.reply || "[No answer]";
+    chatBox.lastChild.remove(); // remove "Thinking..."
+    addMessage(reply, "mirror");
   } catch (err) {
-    document.getElementById("mirror-response").innerHTML =
-      `<span style="color:red;">Error:</span> ${err.message}`;
+    chatBox.lastChild.remove();
+    addMessage(`❌ Error: ${err.message}`, "mirror");
   }
 }
+
+inputField.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
 
 function openBook(bookFile) {
   const saved = localStorage.getItem(bookFile + '-scroll');
   if (saved) {
-    if (confirm("📌 Last time you stopped at position " + saved + "px. Continue from there?")) {
-      window.location.href = bookFile + "?pos=" + saved;
-      return;
-    }
-  }
-  window.location.href = bookFile;
-}
-</script>
-
-</body>
-</html>
+    if (confirm("📌 Last time you stopped at position " + saved + "px. 
