@@ -22,6 +22,7 @@
   @keyframes pulse { from { box-shadow: 0 0 5px gold; } to { box-shadow: 0 0 15px gold; } }
   footer { background: #355e3b; color: white; text-align: center; padding: 1.5rem; font-size: 0.9rem; }
   footer a { color: gold; }
+  input[type="text"] { width: 80%; padding: 0.6rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; margin-bottom: 0.5rem; }
 </style>
 </head>
 <body>
@@ -57,8 +58,10 @@
 <section id="mirror">
   <h2>🔮 Ask the Mirror</h2>
   <div class="mirror-box">
-    🔮 The Mirror is not yet awakened.<br>
-    <span style="font-style:italic;">Coming soon...</span>
+    <input type="text" id="mirror-query" placeholder="What do you seek in the Lore?">
+    <br>
+    <button class="btn" onclick="askMirror()">Ask</button>
+    <div id="mirror-response" style="margin-top:1rem; font-size:1rem; text-align:left;"></div>
   </div>
 </section>
 
@@ -89,6 +92,31 @@
 </footer>
 
 <script>
+async function askMirror() {
+  const query = document.getElementById("mirror-query").value.trim();
+  if (!query) {
+    alert("Please enter a question.");
+    return;
+  }
+
+  document.getElementById("mirror-response").innerHTML = "⏳ Thinking...";
+
+  try {
+    const res = await fetch("https://70.91.63.236:5000/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: query })
+    });
+
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    const data = await res.json();
+    document.getElementById("mirror-response").innerHTML = `<b>Mirror:</b> ${data.answer}`;
+  } catch (err) {
+    document.getElementById("mirror-response").innerHTML = `<span style="color:red;">Error:</span> ${err.message}`;
+  }
+}
+
 function openBook(bookFile) {
   const saved = localStorage.getItem(bookFile + '-scroll');
   if (saved) {
