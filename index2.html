@@ -102,7 +102,7 @@ async function askMirror() {
   document.getElementById("mirror-response").innerHTML = "⏳ Thinking...";
 
   try {
-    const res = await fetch("https://70.91.63.236:5000/query", {
+    const res = await fetch("http://70.91.63.236:8000/ask", {  // ✅ match FastAPI backend
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question: query })
@@ -111,9 +111,11 @@ async function askMirror() {
     if (!res.ok) throw new Error("HTTP " + res.status);
 
     const data = await res.json();
-    document.getElementById("mirror-response").innerHTML = `<b>Mirror:</b> ${data.answer}`;
+    document.getElementById("mirror-response").innerHTML =
+      `<b>Mirror:</b> ${data.reply || "[No answer from Mirror]"}`;
   } catch (err) {
-    document.getElementById("mirror-response").innerHTML = `<span style="color:red;">Error:</span> ${err.message}`;
+    document.getElementById("mirror-response").innerHTML =
+      `<span style="color:red;">Error:</span> ${err.message}`;
   }
 }
 
