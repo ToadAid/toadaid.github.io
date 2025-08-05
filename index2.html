@@ -43,12 +43,10 @@
   <a href="#" class="btn" onclick="openBook('v1.html')">📚 Book v1</a>
   <a href="#" class="btn" onclick="openBook('v2.html')">📚 Book v2</a>
 
-  <!-- 公开 Builders Hall 按钮 -->
   <a href="builders/builders-hall.html" class="btn" style="background:#355e3b; color:white;">
     🏛 Builders Hall
   </a>
 
-  <!-- 仅 Builder 内部访问按钮（密码保护） -->
   <a href="https://toadaid-builders.netlify.app/builders.html" class="btn" style="background:#1f3b2d; color:white;" target="_blank">
     🛠 Builders
   </a>
@@ -65,10 +63,27 @@
 
 <section id="mirror">
   <h2>🔮 Ask the Mirror</h2>
-  <div class="mirror-box">
-    🔮 The Mirror is not yet awakened.<br>
-    <span style="font-style:italic;">Coming soon...</span>
+  <div style="
+    position: relative;
+    padding-bottom: 75%;
+    height: 0;
+    overflow: hidden;
+    border: 4px double goldenrod;
+    border-radius: 14px;
+    box-shadow: 0 0 20px rgba(218,165,32,0.5);
+    background: #fffbea;
+  ">
+    <iframe 
+      src="https://70.91.63.236/" 
+      style="position: absolute; top:0; left:0; width:100%; height:100%;" 
+      frameborder="0"
+      allowfullscreen
+    ></iframe>
   </div>
+  <p style="text-align:center; font-size:0.9rem; color:#355e3b; margin-top:0.5rem;">
+    🌿 The Mirror listens here.<br>
+    If nothing appears, please check your connection or allow the site in your browser.
+  </p>
 </section>
 
 <section id="lore">
@@ -101,24 +116,30 @@
     Here, the Lore wears softer colors — so even the smallest frog can hear its song.
   </p>
 
-  <div class="pillars" style="margin-top:1.5rem;">
-
-    <!-- Story 1 -->
-    <a href="childrens-corner/blue-toby-first-leap.html" class="pillar" style="text-decoration:none;">
-      <img src="images/blue-toby.jpg" alt="Blue Toby’s First Leap" style="width:100%; border-radius:8px;">
-      <h3>Blue Toby’s First Leap</h3>
-      <p>Follow Blue Toby’s very first adventure across the lily pads and discover the Lore of Patience.</p>
+  <div style="text-align:center; margin-top:2rem;">
+    <a href="childrens-corner/index.html" class="btn" style="font-size:1.1rem; padding:1rem 2rem;">
+      🌿 Visit the Children's Corner
     </a>
+  </div>
+</section>
 
-    <!-- Placeholder Story 2 -->
-    <a href="childrens-corner/lantern-lily.html" class="pillar" style="text-decoration:none;">
-      <img src="images/lantern-lily-placeholder.jpg" alt="The Lantern Lily" style="width:100%; border-radius:8px;">
-      <h3>The Lantern Lily</h3>
-      <p>A gentle light upon the pond teaches kindness and courage to little frogs.</p>
-    </a>
+<footer>
+  <p>“One scroll, one light. One leaf, one vow.”</p>
+  <p>🐸 Join us: <a href="https://t.me/Toadgang">Telegram</a> | <a href="https://github.com/ToadAid">GitHub</a></p>
+</footer>
 
-    <!-- Placeholder Story 3 -->
-    <a href="childrens-corner/skys-mirror.html" class="pillar" style="text-decoration:none;">
-      <img src="images/skys-mirror-placeholder.jpg" alt="Sky’s Mirror" style="width:100%; border-radius:8px;">
-      <h3>Sky’s Mirror</h3>
-      <p>A reflection in still waters shows that even the smallest ri
+<script>
+function openBook(bookFile) {
+  const saved = localStorage.getItem(bookFile + '-scroll');
+  if (saved) {
+    if (confirm("📌 Last time you stopped at position " + saved + "px. Continue from there?")) {
+      window.location.href = bookFile + "?pos=" + saved;
+      return;
+    }
+  }
+  window.location.href = bookFile;
+}
+</script>
+
+</body>
+</html>
