@@ -5,12 +5,51 @@
 <title>Submit Your Story — ToadAid Children's Corner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body { font-family: 'Segoe UI', sans-serif; background: #f5f1e6; color: #2f2f2f; margin: 0; padding: 0; }
-  header { background: #355e3b; color: white; text-align: center; padding: 2rem 1rem; }
-  header h1 { margin: 0; }
-  header p { font-style: italic; color: #e2e2e2; }
-  .form-container { max-width: 900px; margin: auto; padding: 1rem; }
-  iframe { width: 100%; height: 1100px; border: none; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f1e6;
+    color: #2f2f2f;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: #355e3b;
+    color: white;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  header p {
+    font-style: italic;
+    color: #e2e2e2;
+  }
+  .form-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 1rem;
+  }
+  iframe {
+    width: 100%;
+    height: 1100px;
+    border: none;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  }
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  footer a {
+    color: #355e3b;
+    text-decoration: none;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
@@ -21,10 +60,15 @@
 </header>
 
 <div class="form-container">
-  <iframe src="YOUR_GOOGLE_FORM_EMBED_LINK_HERE">
+  <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeWezr8tX5P43LAs7ZvcB7pKeQM-OaNwKYMgimqJwDUpgmb2A/viewform?embedded=true" 
+          frameborder="0" marginheight="0" marginwidth="0">
     Loading…
   </iframe>
 </div>
+
+<footer>
+  📜 Part of the <a href="index.html">ToadAid Children's Corner</a> — Thank you for helping grow our forest of stories.
+</footer>
 
 </body>
 </html>
