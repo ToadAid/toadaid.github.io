@@ -142,7 +142,11 @@ async function askMirror() {
     const data = await res.json();
     let reply = data.reply || data.answer || JSON.stringify(data);
     reply = reply.replace(/\\n/g, "\n");
-    ansDiv.innerHTML = `<strong>You asked:</strong> <i>${question}</i>\n\n${reply}`;
+ansDiv.innerHTML = `<strong>You asked:</strong> <i>${question}</i>\n\n${reply}`;
+// ✅ Clear and focus the input after answering
+qInput.value = "";
+qInput.focus();
+
   } catch (err) {
     ansDiv.innerHTML = `❌ Error: ${err.message}`;
   }
