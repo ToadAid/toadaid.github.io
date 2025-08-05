@@ -32,6 +32,35 @@
     margin: auto;
     padding: 2rem 1rem;
   }
+  .action-buttons {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .action-buttons a {
+    display: inline-block;
+    margin: 0.3rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  .action-buttons a.submit-btn {
+    background: gold;
+    color: black;
+  }
+  .action-buttons a.submit-btn:hover {
+    background: darkgoldenrod;
+    color: white;
+  }
+  .action-buttons a.read-btn {
+    background: #355e3b;
+    color: white;
+  }
+  .action-buttons a.read-btn:hover {
+    background: #1f3b2d;
+  }
   .story-card {
     background: white;
     border-radius: 10px;
@@ -99,8 +128,14 @@
 
 <main>
 
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <a href="submit.html" class="submit-btn">🐸📚 Submit Your Story</a>
+    <a href="#stories" class="read-btn">📖 Read Stories</a>
+  </div>
+
   <!-- Story Card: Blue Toby’s First Leap -->
-  <div class="story-card">
+  <div id="stories" class="story-card">
     <div class="story-image" style="background-image: url('images/blue-toby.jpg');"></div>
     <div class="story-content">
       <h2>Blue Toby’s First Leap</h2>
