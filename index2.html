@@ -18,8 +18,6 @@
   .pillars { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
   .pillar { background: white; padding: 1rem; border-radius: 10px; flex: 1 1 250px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.15s ease-in-out; color: inherit; text-decoration: none; }
   .pillar:hover { transform: translateY(-3px); }
-  .mirror-box { background: #fffbea; border: 2px dashed gold; border-radius: 10px; padding: 1.2rem; max-width: 500px; margin: 1rem auto; font-size: 1.1rem; color: #2f4f2f; text-align: center; animation: pulse 2.5s infinite alternate; }
-  @keyframes pulse { from { box-shadow: 0 0 5px gold; } to { box-shadow: 0 0 15px gold; } }
   footer { background: #355e3b; color: white; text-align: center; padding: 1.5rem; font-size: 0.9rem; }
   footer a { color: gold; }
 </style>
@@ -42,14 +40,8 @@
   <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
   <a href="#" class="btn" onclick="openBook('v1.html')">📚 Book v1</a>
   <a href="#" class="btn" onclick="openBook('v2.html')">📚 Book v2</a>
-
-  <a href="builders/builders-hall.html" class="btn" style="background:#355e3b; color:white;">
-    🏛 Builders Hall
-  </a>
-
-  <a href="https://toadaid-builders.netlify.app/builders.html" class="btn" style="background:#1f3b2d; color:white;" target="_blank">
-    🛠 Builders
-  </a>
+  <a href="builders/builders-hall.html" class="btn" style="background:#355e3b; color:white;">🏛 Builders Hall</a>
+  <a href="https://toadaid-builders.netlify.app/builders.html" class="btn" style="background:#1f3b2d; color:white;" target="_blank">🛠 Builders</a>
 </section>
 
 <section>
@@ -61,12 +53,17 @@
   </div>
 </section>
 
-<section id="mirror">
+<!-- 🪞 Ask the Mirror -->
 <section id="mirror">
   <h2>🔮 Ask the Mirror</h2>
-  <div class="mirror-box">
-    🔮 The Mirror is not yet awakened.<br>
-    <span style="font-style:italic;">Coming soon...</span>
+  <div style="max-width:600px;margin:auto;text-align:center;">
+    <input type="text" id="mirror-question" placeholder="What do you seek in the Lore?" 
+           style="width:100%;padding:12px;font-size:1.1rem;border:2px solid gold;border-radius:10px;margin-bottom:10px;">
+    <br>
+    <button id="mirror-ask-btn" class="btn">Ask the Mirror</button>
+    <div id="mirror-answer" style="display:none;margin-top:20px;text-align:left;background:#fffbea;
+         border:2px dashed gold;border-radius:10px;padding:1rem;white-space:pre-wrap;font-size:1.05rem;color:#2f4f2f;">
+    </div>
   </div>
 </section>
 
@@ -76,17 +73,14 @@
     <a href="bluepaper.html" class="pillar" target="_blank">
       <h3>📄 Bluepaper</h3>
       <p>The updated mission, vision, and principles of ToadAid.</p>
-      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
     </a>
     <a href="#" class="pillar" onclick="openBook('v1.html')">
       <h3>📜 Book v1</h3>
       <p>The first collected scrolls of Tobyworld lore. Bilingual EN/ZH edition.</p>
-      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
     </a>
     <a href="#" class="pillar" onclick="openBook('v2.html')">
       <h3>📜 Book v2</h3>
       <p>The expanded lore, with Mirror awakening & new revelations.</p>
-      <p style="font-size:0.85rem; color:#355e3b;">💡 Tip: Chrome → Menu → Translate</p>
     </a>
   </div>
 </section>
@@ -99,11 +93,8 @@
     Every scroll carries truth for the present… and seeds for those who will walk after us.  
     Here, the Lore wears softer colors — so even the smallest frog can hear its song.
   </p>
-
   <div style="text-align:center; margin-top:2rem;">
-    <a href="childrens-corner/index.html" class="btn" style="font-size:1.1rem; padding:1rem 2rem;">
-      🌿 Visit the Children's Corner
-    </a>
+    <a href="childrens-corner/index.html" class="btn" style="font-size:1.1rem; padding:1rem 2rem;">🌿 Visit the Children's Corner</a>
   </div>
 </section>
 
@@ -123,6 +114,35 @@ function openBook(bookFile) {
   }
   window.location.href = bookFile;
 }
+
+// Mirror Logic
+const MIRROR_API = "https://toadaid.duckdns.org/ask";
+const askBtn = document.getElementById('mirror-ask-btn');
+const qInput = document.getElementById('mirror-question');
+const ansDiv = document.getElementById('mirror-answer');
+
+async function askMirror() {
+  const question = qInput.value.trim();
+  if (!question) return;
+  ansDiv.style.display = 'block';
+  ansDiv.innerHTML = "⏳ Seeking reflection...";
+  try {
+    const res = await fetch(MIRROR_API, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question })
+    });
+    const data = await res.json();
+    let reply = data.reply || data.answer || JSON.stringify(data);
+    reply = reply.replace(/\\n/g, "\n");
+    ansDiv.innerHTML = `<strong>You asked:</strong> <i>${question}</i>\n\n${reply}`;
+  } catch (err) {
+    ansDiv.innerHTML = `❌ Error: ${err.message}`;
+  }
+}
+
+askBtn.addEventListener('click', askMirror);
+qInput.addEventListener('keypress', e => { if (e.key === 'Enter') askMirror(); });
 </script>
 
 </body>
