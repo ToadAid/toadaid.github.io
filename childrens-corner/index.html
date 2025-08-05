@@ -74,11 +74,14 @@
   .story-card:hover {
     transform: translateY(-3px);
   }
+  /* UPDATED story-image for better desktop display */
   .story-image {
     width: 100%;
-    height: 300px;
-    background-size: cover;
+    aspect-ratio: 4 / 3; /* Balanced for desktop */
+    background-size: contain; /* Show full image without cropping */
     background-position: center;
+    background-repeat: no-repeat;
+    background-color: #f5f1e6; /* Matches site background */
   }
   .story-content {
     padding: 1rem;
