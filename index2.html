@@ -34,6 +34,7 @@
 </div>
 
 <section style="text-align:center;">
+  <!-- Mirror button is kept but optional to disable -->
   <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
   <a href="#lore" class="btn">📜 Browse the Lore</a>
   <a href="bluepaper.html" class="btn" target="_blank">📄 Blue Paper</a>
@@ -53,18 +54,13 @@
   </div>
 </section>
 
-<!-- 🪞 Ask the Mirror -->
+<!-- 🪞 Ask the Mirror — Temporarily Disabled -->
 <section id="mirror">
   <h2>🔮 Ask the Mirror</h2>
-  <div style="max-width:600px;margin:auto;text-align:center;">
-    <input type="text" id="mirror-question" placeholder="What do you seek in the Lore?" 
-           style="width:100%;padding:12px;font-size:1.1rem;border:2px solid gold;border-radius:10px;margin-bottom:10px;">
-    <br>
-    <button id="mirror-ask-btn" class="btn">Ask the Mirror</button>
-    <div id="mirror-answer" style="display:none;margin-top:20px;text-align:left;background:#fffbea;
-         border:2px dashed gold;border-radius:10px;padding:1rem;white-space:pre-wrap;font-size:1.05rem;color:#2f4f2f;">
-    </div>
-  </div>
+  <p style="text-align:center; color:#444; font-size:1.1rem; padding:1rem;">
+    🪞 <strong>The Mirror is in refinement</strong> — fixing the hallucination bug.<br>
+    Please return soon to seek the true reflection.
+  </p>
 </section>
 
 <section id="lore">
@@ -109,7 +105,6 @@
   </p>
 </footer>
 
-
 <script>
 function openBook(bookFile) {
   const saved = localStorage.getItem(bookFile + '-scroll');
@@ -122,7 +117,8 @@ function openBook(bookFile) {
   window.location.href = bookFile;
 }
 
-// Mirror Logic
+// Mirror logic — disabled for refinement
+/*
 const MIRROR_API = "https://toadaid.duckdns.org/ask";
 const askBtn = document.getElementById('mirror-ask-btn');
 const qInput = document.getElementById('mirror-question');
@@ -142,18 +138,14 @@ async function askMirror() {
     const data = await res.json();
     let reply = data.reply || data.answer || JSON.stringify(data);
     reply = reply.replace(/\\n/g, "\n");
-ansDiv.innerHTML = `<strong>You asked:</strong> <i>${question}</i>\n\n${reply}`;
-// ✅ Clear and focus the input after answering
-qInput.value = "";
-qInput.focus();
-
+    ansDiv.innerHTML = `<strong>You asked:</strong> <i>${question}</i>\n\n${reply}`;
+    qInput.value = "";
+    qInput.focus();
   } catch (err) {
-    ansDiv.innerHTML = `❌ Error: ${err.message}`;
+    ansDiv.innerHTML = "⚠️ The Mirror is silent for now. Please try again later.";
   }
 }
-
-askBtn.addEventListener('click', askMirror);
-qInput.addEventListener('keypress', e => { if (e.key === 'Enter') askMirror(); });
+*/
 </script>
 
 </body>
