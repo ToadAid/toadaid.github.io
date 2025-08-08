@@ -34,7 +34,6 @@
 </div>
 
 <section style="text-align:center;">
-  <!-- Mirror button is kept but optional to disable -->
   <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
   <a href="#lore" class="btn">📜 Browse the Lore</a>
   <a href="bluepaper.html" class="btn" target="_blank">📄 Blue Paper</a>
@@ -54,13 +53,15 @@
   </div>
 </section>
 
-<!-- 🪞 Ask the Mirror — Temporarily Disabled -->
+<!-- 🪞 Ask the Mirror — ENABLED -->
 <section id="mirror">
   <h2>🔮 Ask the Mirror</h2>
-  <p style="text-align:center; color:#444; font-size:1.1rem; padding:1rem;">
-    🪞 <strong>The Mirror is in refinement</strong> — fixing the hallucination bug.<br>
-    Please return soon to seek the true reflection.
-  </p>
+  <div style="text-align:center; max-width:800px; margin:auto;">
+    <input id="mirror-question" type="text" placeholder="Ask the Mirror..." style="width:80%; padding:0.5rem; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
+    <br><br>
+    <button id="mirror-ask-btn" class="btn" onclick="askMirror()">Ask</button>
+    <pre id="mirror-answer" style="white-space:pre-wrap; background:#fff; padding:1rem; border-radius:6px; margin-top:1rem; display:none;"></pre>
+  </div>
 </section>
 
 <section id="lore">
@@ -81,7 +82,6 @@
   </div>
 </section>
 
-<!-- 🐸 Children's Corner Section -->
 <section id="children">
   <h2>🐸📚 Children's Corner — One Leaf for the Young</h2>
   <p style="text-align:center; max-width:800px; margin:auto; font-size:1rem; color:#355e3b;">
@@ -117,8 +117,7 @@ function openBook(bookFile) {
   window.location.href = bookFile;
 }
 
-// Mirror logic — disabled for refinement
-
+// Mirror logic — ENABLED
 const MIRROR_API = "https://toadaid.duckdns.org/ask";
 const askBtn = document.getElementById('mirror-ask-btn');
 const qInput = document.getElementById('mirror-question');
@@ -145,7 +144,6 @@ async function askMirror() {
     ansDiv.innerHTML = "⚠️ The Mirror is silent for now. Please try again later.";
   }
 }
-
 </script>
 
 </body>
