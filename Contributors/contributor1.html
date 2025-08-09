@@ -1,139 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ToadAid Contributors (Test)</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ToadAid Contributors</title>
 <style>
-  body {
-    background: #f5f1e6;
-    font-family: 'Segoe UI', sans-serif;
-    color: #2f2f2f;
-    text-align: center;
-    padding: 20px;
+  :root{
+    --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --gold:#d9b200; --card:#fff;
   }
-  h1 {
-    color: #355e3b;
-    font-size: 2rem;
-    position: relative;
-    display: inline-block;
-    padding-bottom: 5px;
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,system-ui,Arial,sans-serif}
+  header{padding:24px 16px 8px;text-align:center}
+  h1{margin:0 auto 8px;color:var(--leaf);font-size:clamp(1.6rem,3.8vw,2.2rem);display:inline-block;position:relative}
+  h1::after{content:"";position:absolute;left:0;bottom:-6px;height:4px;width:100%;background:var(--gold);border-radius:2px}
+  .actions{margin:14px 0 8px}
+  .btn{
+    display:inline-block;padding:10px 14px;border-radius:999px;background:var(--leaf);color:#fff;
+    text-decoration:none;font-weight:600;border:1px solid #2a4a2f;box-shadow:0 2px 6px rgba(0,0,0,.08)
   }
-  h1::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    height: 4px;
-    width: 100%;
-    background: gold;
-    border-radius: 2px;
+  .btn:hover{filter:brightness(1.05)}
+  main{padding:12px 16px 40px;max-width:1200px;margin:0 auto}
+  .grid{
+    display:grid;gap:16px;
+    grid-template-columns: repeat(1, minmax(0,1fr));
   }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-top: 20px;
+  @media (min-width:768px){.grid{grid-template-columns: repeat(2, minmax(0,1fr));}}
+  @media (min-width:1080px){.grid{grid-template-columns: repeat(3, minmax(0,1fr));}}
+  .card{
+    background:var(--card);border-radius:16px;overflow:hidden;position:relative;
+    box-shadow:0 8px 24px rgba(0,0,0,.08); border-left:6px solid var(--gold);
+    transition:transform .15s ease, box-shadow .15s ease;
   }
-  .card {
-    background: white;
-    border: 2px solid gold;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    transition: transform 0.15s ease-in-out;
+  .card:hover{transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.12)}
+  /* Media wrapper keeps aspect ratio 4:5 */
+  .media-wrap{position:relative;width:100%;aspect-ratio:4/5;background:#eee}
+  .media-wrap img, .media-wrap video{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-bottom:1px solid #eee
   }
-  .card:hover {
-    transform: translateY(-3px);
+  .content{padding:12px 14px 14px;text-align:left}
+  .title{margin:4px 0 6px;font-weight:700}
+  .meta{font-size:.92rem;color:#425a47}
+  .desc{font-size:.95rem;margin:8px 0 10px;line-height:1.4}
+  .row{display:flex;gap:8px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
+  .chip{font-size:.78rem;background:#f0ead4;border:1px solid #e2d9b3;border-radius:999px;padding:4px 8px}
+  .spacer{flex:1}
+  .icon-btn{
+    border:1px solid #d9d9d9;background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer;
   }
-  .card img, .card video {
-    width: 100%;
-    border-radius: 8px;
+  .icon-btn:hover{background:#f7f7f7}
+  .sr-only{position:absolute;left:-9999px}
+  footer{padding:36px 16px;color:var(--leaf);text-align:center;font-size:.92rem}
+
+  /* Lightbox */
+  .lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,.8);
+    display:none;align-items:center;justify-content:center;z-index:50;padding:16px
   }
-  .card p {
-    margin: 8px 0;
-  }
-  footer {
-    margin-top: 60px;
-    color: #355e3b;
-    font-size: 0.9rem;
-  }
-  a {
-    color: #355e3b;
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
+  .lightbox.open{display:flex}
+  .lightbox img, .lightbox video{max-width:min(96vw,1200px);max-height:90vh;object-fit:contain;border-radius:12px;background:#000}
+  .lightbox .close{
+    position:absolute;top:12px;right:12px;background:#000;color:#fff;border:1px solid #333;border-radius:10px;
+    padding:8px 10px;cursor:pointer
   }
 </style>
 </head>
 <body>
 
-<h1>ToadAid Contributor Art (Test)</h1>
+<header>
+  <h1>ToadAid Contributor Art</h1>
+  <div class="actions">
+    <a class="btn" href="Contribute.html">Submit Your Art</a>
+  </div>
+</header>
 
-<div id="contributors" class="grid"></div>
+<main>
+  <section id="contributors" class="grid" aria-live="polite"></section>
+</main>
 
 <footer>
   © 2025 ToadAid — Built by the people, for the people.
 </footer>
 
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Media preview">
+  <button class="close" aria-label="Close preview">✕</button>
+  <div id="lightboxContent"></div>
+</div>
+
 <script>
-async function loadContributors() {
-  try {
-    const response = await fetch('contributor1.json?v=' + Date.now());
-    let contributors = await response.json();
+const PLACEHOLDER = "https://via.placeholder.com/800x1000?text=ToadAid";
 
-    // Sort oldest first → newest last
-    contributors.sort((a, b) => new Date(a.date) - new Date(b.date));
+async function loadContributors(){
+  try{
+    const res = await fetch("contributors.json?v="+Date.now());
+    const data = await res.json();
 
-    const container = document.getElementById('contributors');
+    // Oldest -> newest
+    data.sort((a,b)=> new Date(a.date) - new Date(b.date));
 
-    contributors.forEach(c => {
-      const card = document.createElement('div');
-      card.className = 'card';
-
-      // Artist info
-      let artistHTML = `<strong>Artist:</strong> ${c.artist}`;
-      if (c.artist_type && c.artist_type.toLowerCase() === 'x handle') {
-        const cleanHandle = c.artist.replace('@', '');
-        const profileURL = `https://x.com/${cleanHandle}`;
-        artistHTML = `<strong>Artist:</strong> <a href="${profileURL}" target="_blank">${c.artist}</a> (${c.artist_type})`;
-      }
-
-      // Media rendering
-      let mediaHTML = '';
-      const placeholder = 'https://via.placeholder.com/400x300?text=No+Media';
-
-      if (c.media_type === 'video') {
-        mediaHTML = `
-          <video autoplay muted loop playsinline poster="${c.poster || ''}">
-            <source src="${c.file}" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-        `;
-      } else {
-        mediaHTML = `
-          <img src="${c.file}" alt="${c.title} by ${c.artist}" 
-               onerror="this.onerror=null; this.src='${placeholder}';">
-        `;
-      }
-
-      // Card content
-      card.innerHTML = `
-        ${mediaHTML}
-        <p>${artistHTML}</p>
-        <p><em>Title:</em> ${c.title}</p>
-        ${c.description ? `<p>${c.description}</p>` : ""}
-        <small>${c.date || ''}</small>
-      `;
-      container.appendChild(card);
-    });
-  } catch (error) {
-    console.error('Error loading contributors:', error);
+    const grid = document.getElementById("contributors");
+    data.forEach(c => grid.appendChild(renderCard(c)));
+  }catch(err){
+    console.error("load error:", err);
   }
 }
 
-loadContributors();
-</script>
-</body>
-</html>
+function renderCard(c){
+  const card = document.createElement("article");
+  card.className = "card";
+  card.setAttribute("tabindex","0");
+  card.setAttribute("aria-label", `${c.title} by ${c.artist}`);
+
+  // Media
+  const mediaWrap = document.createElement("div");
+  mediaWrap.className = "media-wrap";
+
+  if(c.media_type === "video"){
+    const v = document.createElement("video");
+    v.setAttribute("playsinline",""); v.setAttribute("muted",""); v.setAttribute("loop","");
+    v.controls = true;
+    if (c.poster) v.poster = c.poster;
+    v.src = c.file;
+    v.onerror = () => { v.poster = PLACEHOLDER; };
+    mediaWrap.appendChild(v);
+    // open in lightbox when clicked
+    v.addEventListener("click", ()=>openLightbox("video", c.file, c.poster || ""));
+  }else{
+    const img = document.createElement("img");
+    img.loading = "lazy";
+    img.alt = `${c.title} by ${c.artist}`;
+    img.src = c.file;
+    img.onerror = () => { img.src = PLACEHOLDER; };
+    img.addEventListener("click", ()=>openLightbox("image", c.file, ""));
+    mediaWrap.appendChild(img);
+  }
+
+  // Content
+  const content = document.createElement("div");
+  content.className = "content";
+
+  // Artist line
+  const artist = document.createElement("div");
+  artist.className = "meta";
+  if((c.artist_type||"").toLowerCase()==="x handle"){
+    const handle = (c.artist||"").replace(/^@/,"");
+    artist.innerHTML = `<strong>Artist:</strong> <a href="https://x.com/${handle}" target="_blank" rel="noopener">@${handle}</a> (${c.artist_type})`;
+  }else{
+    artist.innerHTML = `<strong>Artist:</strong> ${c.artist||"Unknown"}`;
+  }
+
+  const title = document.createElement("div");
+  title.className = "title";
+  title.textContent = c.title || "Untitled";
+
+  const desc = document.createElement("div");
+  desc.className = "desc";
+  if (c.description) desc.textContent = c.description;
+
+  const metaRow = document.createElement("div");
+  metaRow.className = "row";
+  const dateChip = document.createElement("span");
+  dateChip.className = "chip";
+  dateChip.textContent = c.date || "";
+  metaRow.appendChild(dateChip);
+
+  const spacer = document.createElement("div"); spacer.className = "spacer";
+  metaRow.appendChild(spacer);
+
+  // Share button
+  const shareBtn = document.createElement("button");
+  shareBtn.type = "button";
+  shareBtn.className = "icon-btn";
+  shareBtn.textContent = "Share";
+  shareBtn.addEventListener("click", ()=>shareContributor(c));
+  metaRow.appendChild(shareBtn);
+
+  content.append(artist, title, desc, metaRow);
+
+  card.append(mediaWrap, content);
+  return card;
+}
+
+async function shareContributor(c){
+  const url = location.origin + location.pathname;
+  const text = `${c.title} by ${c.artist} — ToadAid Contributor Art`;
+  try{
+    if(navigator.share){
+      await navigator.share({title: c.title, text, url});
+    }else{
+      await navigator.clipboard.writeText(url);
+      alert("Link copied 
