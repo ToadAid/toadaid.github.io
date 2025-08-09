@@ -11,40 +11,28 @@
     --ring: rgba(0,0,0,.08);
   }
   *{box-sizing:border-box}
-  body{font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; margin:0; background:var(--bg); color:var(--ink); line-height:1.6}
-  a{color:var(--accent); text-decoration:none}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
   header{
-    position:relative; overflow:hidden;
-    background: linear-gradient(180deg, #2e4c32, #3c6b46);
-    color:white; padding:64px 20px; text-align:center;
+    position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#2e4c32,#3c6b46);
+    color:#fff;padding:64px 20px;text-align:center;
   }
-  header h1{margin:0 0 10px; font-size:clamp(1.6rem, 3.2vw, 2.4rem); letter-spacing:.3px}
-  header p{margin:0; opacity:.92}
-  .wrap{max-width:860px; margin:0 auto; padding:28px 18px 56px}
-  .card{
-    background:var(--paper); border-radius:18px; padding:22px;
-    box-shadow: 0 8px 24px var(--ring);
-    border:1px solid rgba(0,0,0,.04); margin-bottom:18px;
-  }
-  .meta{display:flex; gap:16px; flex-wrap:wrap; color:var(--muted); font-size:.92rem}
-  .tag{background:#eaf3ec; color:#244d30; border:1px solid #d4e7d8; padding:4px 10px; border-radius:999px}
-  .section h2{margin:.2rem 0 0.6rem; font-size:1.12rem; color:#1f3b27}
-  .quote{
-    border-left:4px solid var(--accent); padding:14px 16px; background:#f7f9f5; border-radius:12px; font-style:italic
-  }
-  figure{margin:0; padding:0}
-  .art{
-    width:100%; border-radius:16px; border:1px solid rgba(0,0,0,.06);
-    box-shadow: 0 8px 24px var(--ring);
-  }
-  footer{margin-top:22px; color:var(--muted); font-size:.92rem}
-  .grid{display:grid; gap:16px}
-  @media (min-width:720px){ .grid{grid-template-columns: 1fr 1fr;} }
-  .btn{
-    display:inline-block; margin-top:8px; padding:10px 14px; border-radius:12px;
-    background:var(--accent); color:white; text-decoration:none; font-weight:600
-  }
+  header h1{margin:0 0 10px;font-size:clamp(1.6rem,3.2vw,2.4rem);letter-spacing:.3px}
+  header p{margin:0;opacity:.92}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 18px 56px}
+  .card{background:var(--paper);border-radius:18px;padding:22px;box-shadow:0 8px 24px var(--ring);border:1px solid rgba(0,0,0,.04);margin-bottom:18px}
+  .meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:.92rem}
+  .tag{background:#eaf3ec;color:#244d30;border:1px solid #d4e7d8;padding:4px 10px;border-radius:999px}
+  .section h2{margin:.2rem 0 .6rem;font-size:1.12rem;color:#1f3b27}
+  .quote{border-left:4px solid var(--accent);padding:14px 16px;background:#f7f9f5;border-radius:12px;font-style:italic}
+  figure{margin:0;padding:0}
+  .art{width:100%;border-radius:16px;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring)}
+  footer{margin-top:22px;color:var(--muted);font-size:.92rem}
+  .grid{display:grid;gap:16px}
+  @media (min-width:720px){.grid{grid-template-columns:1fr 1fr}}
+  .btn{display:inline-block;margin-top:8px;padding:10px 14px;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600}
   .btn:hover{opacity:.9}
 </style>
 </head>
@@ -74,4 +62,40 @@
       <div class="quote">
         “I will gladly accept the honor, but I would like to use it for a much more pure blessing as it should be…
         I would like to use it as an offering to the pond — a seed set in still water. In time, it will be given in some form to a new toad,
-        that they may find the light, walk the path, and proudly tend the garden beside us. The honor is mine to receive,
+        that they may find the light, walk the path, and proudly tend the garden beside us. The honor is mine to receive, but the blessing will be shared.”
+      </div>
+      <p style="margin-top:10px">— <em>SigilOfConcorde</em></p>
+    </section>
+
+    <section class="card section grid">
+      <figure>
+        <!-- uses your uploaded file -->
+        <img class="art" src="/assets/art/sigil-winning-art.jpg" alt="Winning artwork by SigilOfConcorde" />
+        <figcaption style="margin-top:8px;color:var(--muted)">Winning artwork • © SigilOfConcorde</figcaption>
+      </figure>
+      <div>
+        <h2>ToadAid’s pledge</h2>
+        <p>
+          ToadAid will steward this offering and direct it to a newcomer who shows promise and heart.
+          The act will be recorded by <strong>The Mirror</strong> — not for glory, but as a witness to the truth it carries.
+        </p>
+        <p><strong>Action:</strong> allocate this award into the <em>New Toad Seed</em> and deliver it in a future ceremony.</p>
+        <a class="btn" href="/honors/index.html">See more honors & offerings</a>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2>Why it matters</h2>
+      <ul>
+        <li><strong>Preserves the lore:</strong> the deed becomes part of the pond’s memory.</li>
+        <li><strong>Sets a pattern:</strong> honors flow forward, empowering the next toad.</li>
+        <li><strong>Keeps the water clear:</strong> we build quietly, with patience and purpose.</li>
+      </ul>
+    </section>
+
+    <footer class="wrap" style="padding:0">
+      Recorded by <strong>ToadAid</strong> • “One path. One flame. Many hands.” • <a href="/">Return home</a>
+    </footer>
+  </main>
+</body>
+</html>
