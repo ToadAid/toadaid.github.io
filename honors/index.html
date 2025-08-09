@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Honors & Offerings | ToadAid</title>
+<meta name="description" content="A living hall of honors and offerings recorded by ToadAid." />
+<style>
+  :root{
+    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:56px 20px;text-align:center}
+  header h1{margin:0 0 8px;font-size:clamp(1.6rem,3.2vw,2.4rem)}
+  header p{margin:0;opacity:.92}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
+  .grid{display:grid;gap:18px}
+  @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
+  .thumb{aspect-ratio:4/3;object-fit:cover;width:100%}
+  .body{padding:14px 14px 16px}
+  .title{font-weight:700;margin:0 0 6px}
+  .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
+  .tag{display:inline-block;background:#eaf3ec;color:#244d30;border:1px solid #d4e7d8;padding:2px 8px;border-radius:999px;font-size:.78rem;margin-right:6px}
+  nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
+  nav.breadcrumb a{opacity:.9}
+  footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
+</style>
+</head>
+<body>
+  <header>
+    <h1>🐸 Honors & Offerings</h1>
+    <p>A living hall where deeds become memory. One path. One flame. Many hands.</p>
+  </header>
+
+  <nav class="breadcrumb"><a href="/">← Back to Home</a></nav>
+
+  <main class="wrap">
+    <section class="grid">
+
+      <!-- Entry 1: Sigil -->
+      <a class="card" href="/honors/sigil-seed.html">
+        <img class="thumb" src="/assets/art/sigil-winning-art.jpg" alt="Sigil’s winning artwork" />
+        <div class="body">
+          <h3 class="title">The Seed in Still Water — Sigil’s Offering</h3>
+          <div class="meta">Toadgang Art Contest • 1st Place • Recorded by ToadAid</div>
+          <div>
+            <span class="tag">Offering</span>
+            <span class="tag">Community</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Template for future honors (duplicate & edit) -->
+      <a class="card" href="#" title="Coming soon">
+        <img class="thumb" src="/assets/art/placeholder.jpg" alt="Placeholder" />
+        <div class="body">
+          <h3 class="title">Next Offering</h3>
+          <div class="meta">Soon • Recorded by ToadAid</div>
+          <div>
+            <span class="tag">Pending</span>
+          </div>
+        </div>
+      </a>
+
+    </section>
+
+    <footer>
+      Want to dedicate an honor or offering? Contact ToadAid to be recorded by The Mirror.
+    </footer>
+  </main>
+</body>
+</html>
