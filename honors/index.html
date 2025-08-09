@@ -20,7 +20,14 @@
   .grid{display:grid;gap:18px}
   @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
   .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
-  .thumb{aspect-ratio:4/3;object-fit:cover;width:100%}
+  /* Updated thumbnail style for more vertical image */
+  .thumb{
+    width:100%;
+    height:auto;
+    object-fit:contain;
+    max-height:320px; /* adjust height as needed */
+    background:var(--bg);
+  }
   .body{padding:14px 14px 16px}
   .title{font-weight:700;margin:0 0 6px}
   .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
