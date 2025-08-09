@@ -85,14 +85,15 @@
   <button class="close" aria-label="Close preview">✕</button>
   <div class="content" id="lightboxContent"></div>
 </div>
-
+  
 <script>
 const PLACEHOLDER = 'https://via.placeholder.com/1200x800?text=ToadAid';
 const grid = document.getElementById('contributors');
 
-/* 观察器：图片/视频进视口淡入；视频进视口播放、离开暂停 */
-let revealObserver, videoObserver;
+let revealObserver, ioPlay;
+
 function initObservers(){
+  // 媒体淡入
   revealObserver = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{
       if(e.isIntersecting){
@@ -102,15 +103,14 @@ function initObservers(){
     });
   }, {threshold:.2});
 
-  videoObserver = new IntersectionObserver((entries)=>{
+  // 进入视口播放/离开暂停
+  ioPlay = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
       const v = entry.target;
       if(entry.isIntersecting){
-        // 确保自动播放
-        const p = v.play();
-        if(p && typeof p.catch==='function'){ p.catch(()=>{}); }
+        ensureAutoplay(v);
       }else{
-        try{ v.pause(); }catch(e){}
+        try{ v.pause(); }catch(_){}
       }
     });
   }, {threshold:.4});
@@ -124,6 +124,16 @@ async function loadContributors(){
 
     initObservers();
     contributors.forEach(c => grid.appendChild(renderCard(c)));
+
+    // 用户首次交互兜底：若有被拦截的，点一下页面就播放
+    window.addEventListener('pointerdown', kickAllVideosOnce, { once:true });
+    document.addEventListener('visibilitychange', ()=> {
+      if (document.visibilityState === 'visible') {
+        document.querySelectorAll('video.ta-auto').forEach(v => ensureAutoplay(v));
+      } else {
+        document.querySelectorAll('video.ta-auto').forEach(v => { try{ v.pause(); }catch(_){} });
+      }
+    });
   }catch(err){
     console.error('Error loading contributors:', err);
     grid.innerHTML = "<p style='text-align:center;margin:24px 0;'>Failed to load contributor list.</p>";
@@ -135,23 +145,31 @@ function renderCard(c){
   card.className = 'card';
   card.setAttribute('aria-label', `${c.title} by ${c.artist}`);
 
-  // 媒体（保留自然比例）
   const media = document.createElement('div');
   media.className = 'media';
 
   if(c.media_type === 'video'){
     const v = document.createElement('video');
-    v.autoplay = true; v.muted = true; v.loop = true; v.playsInline = true;
-    v.preload = 'metadata';
+    // 关键属性：移动端自动播放必须静音 + 内联
+    v.autoplay = true; v.muted = true; v.playsInline = true; v.loop = true;
+    v.setAttribute('muted',''); v.setAttribute('playsinline','');
+    v.preload = 'auto';                              // 直接加载，提升首帧
     if(c.poster) v.poster = c.poster;
     v.src = c.file;
-    v.onerror = ()=>{ v.poster = PLACEHOLDER; };
+
+    // UI：点击开灯箱
     v.addEventListener('click', ()=>openLightbox('video', c.file, c.poster || ''));
+
     media.appendChild(v);
 
-    // 观察：淡入 + 自动播放控制
+    // 观察器：淡入 + 视口内尝试播放
+    v.classList.add('ta-auto');
     revealObserver.observe(v);
-    videoObserver.observe(v);
+    ioPlay.observe(v);
+
+    // 媒体就绪/可播时也尝试
+    v.addEventListener('loadedmetadata', ()=>ensureAutoplay(v), { once:true });
+    v.addEventListener('canplay', ()=>ensureAutoplay(v));
   }else{
     const img = document.createElement('img');
     img.loading = 'lazy';
@@ -160,8 +178,6 @@ function renderCard(c){
     img.onerror = ()=>{ img.src = PLACEHOLDER; };
     img.addEventListener('click', ()=>openLightbox('image', c.file, ''));
     media.appendChild(img);
-
-    // 观察：淡入
     revealObserver.observe(img);
   }
 
@@ -189,13 +205,16 @@ function renderCard(c){
     ${rowHTML}
   `;
 
-  // 由于用了 outerHTML，给新节点重新绑定
+  // 重新绑定（outerHTML 后）
   const newMedia = card.querySelector('.media');
   if(c.media_type === 'video'){
     const v2 = newMedia.querySelector('video');
     v2.addEventListener('click', ()=>openLightbox('video', c.file, c.poster || ''));
+    v2.classList.add('ta-auto');
     revealObserver.observe(v2);
-    videoObserver.observe(v2);
+    ioPlay.observe(v2);
+    v2.addEventListener('loadedmetadata', ()=>ensureAutoplay(v2), { once:true });
+    v2.addEventListener('canplay', ()=>ensureAutoplay(v2));
   }else{
     const img2 = newMedia.querySelector('img');
     img2.addEventListener('click', ()=>openLightbox('image', c.file, ''));
@@ -205,7 +224,26 @@ function renderCard(c){
   return card;
 }
 
-/* Share / Copy 链接 */
+/* 多重兜底尝试自动播放 */
+function ensureAutoplay(v){
+  if (!v) return;
+  v.muted = true; v.setAttribute('muted',''); v.playsInline = true; v.setAttribute('playsinline','');
+  // 连续多次尝试，覆盖不同时机
+  const tryPlay = () => {
+    const p = v.play();
+    if (p && typeof p.catch === 'function') p.catch(()=>{ /* 忽略异常 */ });
+  };
+  tryPlay();
+  setTimeout(tryPlay, 150);
+  setTimeout(tryPlay, 400);
+}
+
+/* 首次用户交互兜底：强制所有在场视频再尝试一次播放 */
+function kickAllVideosOnce(){
+  document.querySelectorAll('video.ta-auto').forEach(v => ensureAutoplay(v));
+}
+
+/* Share */
 async function shareItem(payloadStr){
   const p = JSON.parse(payloadStr);
   const url = location.href;
@@ -245,5 +283,3 @@ function closeLightbox(){ lb.classList.remove('open'); lbContent.innerHTML = '';
 
 loadContributors();
 </script>
-</body>
-</html>
