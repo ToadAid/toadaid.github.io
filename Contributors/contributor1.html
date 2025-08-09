@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,188 +6,187 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ToadAid Contributors</title>
 <style>
-  :root{
-    --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --gold:#d9b200; --card:#fff;
-  }
+  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --gold:#d9b200; --card:#fff; }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,system-ui,Arial,sans-serif}
   header{padding:24px 16px 8px;text-align:center}
   h1{margin:0 auto 8px;color:var(--leaf);font-size:clamp(1.6rem,3.8vw,2.2rem);display:inline-block;position:relative}
   h1::after{content:"";position:absolute;left:0;bottom:-6px;height:4px;width:100%;background:var(--gold);border-radius:2px}
-  .actions{margin:14px 0 8px}
-  .btn{
-    display:inline-block;padding:10px 14px;border-radius:999px;background:var(--leaf);color:#fff;
-    text-decoration:none;font-weight:600;border:1px solid #2a4a2f;box-shadow:0 2px 6px rgba(0,0,0,.08)
-  }
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;margin:14px 16px}
+  .btn{display:inline-block;padding:10px 14px;border-radius:999px;background:var(--leaf);color:#fff;text-decoration:none;
+       font-weight:600;border:1px solid #2a4a2f;box-shadow:0 2px 6px rgba(0,0,0,.08)}
   .btn:hover{filter:brightness(1.05)}
   main{padding:12px 16px 40px;max-width:1200px;margin:0 auto}
-  .grid{
-    display:grid;gap:16px;
-    grid-template-columns: repeat(1, minmax(0,1fr));
-  }
-  @media (min-width:768px){.grid{grid-template-columns: repeat(2, minmax(0,1fr));}}
-  @media (min-width:1080px){.grid{grid-template-columns: repeat(3, minmax(0,1fr));}}
-  .card{
-    background:var(--card);border-radius:16px;overflow:hidden;position:relative;
-    box-shadow:0 8px 24px rgba(0,0,0,.08); border-left:6px solid var(--gold);
-    transition:transform .15s ease, box-shadow .15s ease;
-  }
-  .card:hover{transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.12)}
-  /* Media wrapper keeps aspect ratio 4:5 */
-  .media-wrap{position:relative;width:100%;aspect-ratio:4/5;background:#eee}
-  .media-wrap img, .media-wrap video{
-    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-bottom:1px solid #eee
-  }
-  .content{padding:12px 14px 14px;text-align:left}
-  .title{margin:4px 0 6px;font-weight:700}
-  .meta{font-size:.92rem;color:#425a47}
-  .desc{font-size:.95rem;margin:8px 0 10px;line-height:1.4}
-  .row{display:flex;gap:8px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
-  .chip{font-size:.78rem;background:#f0ead4;border:1px solid #e2d9b3;border-radius:999px;padding:4px 8px}
-  .spacer{flex:1}
-  .icon-btn{
-    border:1px solid #d9d9d9;background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer;
-  }
-  .icon-btn:hover{background:#f7f7f7}
-  .sr-only{position:absolute;left:-9999px}
-  footer{padding:36px 16px;color:var(--leaf);text-align:center;font-size:.92rem}
-
-  /* Lightbox */
-  .lightbox{
-    position:fixed;inset:0;background:rgba(0,0,0,.8);
-    display:none;align-items:center;justify-content:center;z-index:50;padding:16px
-  }
-  .lightbox.open{display:flex}
-  .lightbox img, .lightbox video{max-width:min(96vw,1200px);max-height:90vh;object-fit:contain;border-radius:12px;background:#000}
-  .lightbox .close{
-    position:absolute;top:12px;right:12px;background:#000;color:#fff;border:1px solid #333;border-radius:10px;
-    padding:8px 10px;cursor:pointer
-  }
+  .ta-grid{display:grid;gap:16px;grid-template-columns: repeat(1, minmax(0,1fr));}
+  @media (min-width:768px){.ta-grid{grid-template-columns: repeat(2, minmax(0,1fr));}}
+  @media (min-width:1080px){.ta-grid{grid-template-columns: repeat(3, minmax(0,1fr));}}
+  .ta-card{background:var(--card);border-radius:16px;overflow:hidden;position:relative;
+        box-shadow:0 8px 24px rgba(0,0,0,.08); border-left:6px solid var(--gold);
+        transition:transform .15s ease, box-shadow .15s ease;}
+  .ta-card:hover{transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.12)}
+  .ta-media{position:relative;width:100%;aspect-ratio:4/5;background:#eee}
+  .ta-media img, .ta-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-bottom:1px solid #eee}
+  .ta-content{padding:12px 14px 14px;text-align:left}
+  .ta-title{margin:4px 0 6px;font-weight:700}
+  .ta-meta{font-size:.92rem;color:#425a47}
+  .ta-desc{font-size:.95rem;margin:8px 0 10px;line-height:1.4}
+  .ta-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .ta-chip{font-size:.78rem;background:#f0ead4;border:1px solid #e2d9b3;border-radius:999px;padding:4px 8px}
+  .ta-spacer{flex:1}
+  .ta-ibtn{border:1px solid #d9d9d9;background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
+  .ta-ibtn:hover{background:#f7f7f7}
+  footer{padding:36px 16px;color:#355e3b;text-align:center;font-size:.92rem}
+  .ta-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .ta-lightbox.open{display:flex}
+  .ta-lightbox img, .ta-lightbox video{max-width:min(96vw,1200px);max-height:90vh;object-fit:contain;border-radius:12px;background:#000}
+  .ta-lightbox .ta-close{position:absolute;top:12px;right:12px;background:#000;color:#fff;border:1px solid #333;border-radius:10px;padding:8px 10px;cursor:pointer}
 </style>
 </head>
 <body>
-
 <header>
   <h1>ToadAid Contributor Art</h1>
-  <div class="actions">
-    <a class="btn" href="Contribute.html">Submit Your Art</a>
+  <div class="toolbar">
+    <a class="btn" href="/Contributors/Contribute.html">Submit Your Art</a>
   </div>
 </header>
 
 <main>
-  <section id="contributors" class="grid" aria-live="polite"></section>
+  <section id="contributors" class="ta-grid" aria-live="polite"></section>
 </main>
 
-<footer>
-  © 2025 ToadAid — Built by the people, for the people.
-</footer>
+<footer>© 2025 ToadAid — Built by the people, for the people.</footer>
 
-<!-- Lightbox -->
-<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Media preview">
-  <button class="close" aria-label="Close preview">✕</button>
-  <div id="lightboxContent"></div>
+<div id="ta-lightbox" class="ta-lightbox" role="dialog" aria-modal="true" aria-label="Media preview">
+  <button class="ta-close" aria-label="Close preview">✕</button>
+  <div id="ta-lightbox-content"></div>
 </div>
 
 <script>
-const PLACEHOLDER = "https://via.placeholder.com/800x1000?text=ToadAid";
+const TA_PLACEHOLDER = "https://via.placeholder.com/800x1000?text=ToadAid";
 
-async function loadContributors(){
+async function taLoadContributors(){
   try{
-    const res = await fetch("contributors.json?v="+Date.now());
+    const res = await fetch("/Contributors/contributors.json?v="+Date.now());
     const data = await res.json();
-
-    // Oldest -> newest
+    if(!Array.isArray(data)) throw new Error("contributors.json must be an array");
     data.sort((a,b)=> new Date(a.date) - new Date(b.date));
-
     const grid = document.getElementById("contributors");
-    data.forEach(c => grid.appendChild(renderCard(c)));
-  }catch(err){
-    console.error("load error:", err);
+    data.forEach(c => grid.appendChild(taRenderCard(c)));
+  }catch(e){
+    console.error(e);
+    document.getElementById("contributors").innerHTML =
+      "<p style='text-align:center;margin:24px 0;'>Failed to load contributor list.</p>";
   }
 }
 
-function renderCard(c){
+function taRenderCard(c){
   const card = document.createElement("article");
-  card.className = "card";
+  card.className = "ta-card";
   card.setAttribute("tabindex","0");
   card.setAttribute("aria-label", `${c.title} by ${c.artist}`);
 
-  // Media
-  const mediaWrap = document.createElement("div");
-  mediaWrap.className = "media-wrap";
+  const media = document.createElement("div");
+  media.className = "ta-media";
 
   if(c.media_type === "video"){
     const v = document.createElement("video");
     v.setAttribute("playsinline",""); v.setAttribute("muted",""); v.setAttribute("loop","");
     v.controls = true;
-    if (c.poster) v.poster = c.poster;
+    if(c.poster) v.poster = c.poster;
     v.src = c.file;
-    v.onerror = () => { v.poster = PLACEHOLDER; };
-    mediaWrap.appendChild(v);
-    // open in lightbox when clicked
-    v.addEventListener("click", ()=>openLightbox("video", c.file, c.poster || ""));
+    v.onerror = () => { v.poster = TA_PLACEHOLDER; };
+    v.addEventListener("click", ()=>taOpenLightbox("video", c.file, c.poster || ""));
+    media.appendChild(v);
   }else{
     const img = document.createElement("img");
     img.loading = "lazy";
     img.alt = `${c.title} by ${c.artist}`;
     img.src = c.file;
-    img.onerror = () => { img.src = PLACEHOLDER; };
-    img.addEventListener("click", ()=>openLightbox("image", c.file, ""));
-    mediaWrap.appendChild(img);
+    img.onerror = () => { img.src = TA_PLACEHOLDER; };
+    img.addEventListener("click", ()=>taOpenLightbox("image", c.file, ""));
+    media.appendChild(img);
   }
 
-  // Content
   const content = document.createElement("div");
-  content.className = "content";
+  content.className = "ta-content";
 
-  // Artist line
-  const artist = document.createElement("div");
-  artist.className = "meta";
+  const meta = document.createElement("div");
+  meta.className = "ta-meta";
   if((c.artist_type||"").toLowerCase()==="x handle"){
     const handle = (c.artist||"").replace(/^@/,"");
-    artist.innerHTML = `<strong>Artist:</strong> <a href="https://x.com/${handle}" target="_blank" rel="noopener">@${handle}</a> (${c.artist_type})`;
+    meta.innerHTML = `<strong>Artist:</strong> <a href="https://x.com/${handle}" target="_blank" rel="noopener">@${handle}</a> (${c.artist_type})`;
   }else{
-    artist.innerHTML = `<strong>Artist:</strong> ${c.artist||"Unknown"}`;
+    meta.innerHTML = `<strong>Artist:</strong> ${c.artist||"Unknown"}`;
   }
 
   const title = document.createElement("div");
-  title.className = "title";
+  title.className = "ta-title";
   title.textContent = c.title || "Untitled";
 
   const desc = document.createElement("div");
-  desc.className = "desc";
-  if (c.description) desc.textContent = c.description;
+  desc.className = "ta-desc";
+  if(c.description) desc.textContent = c.description;
 
-  const metaRow = document.createElement("div");
-  metaRow.className = "row";
-  const dateChip = document.createElement("span");
-  dateChip.className = "chip";
-  dateChip.textContent = c.date || "";
-  metaRow.appendChild(dateChip);
+  const row = document.createElement("div");
+  row.className = "ta-row";
 
-  const spacer = document.createElement("div"); spacer.className = "spacer";
-  metaRow.appendChild(spacer);
+  const chip = document.createElement("span");
+  chip.className = "ta-chip";
+  chip.textContent = c.date || "";
+  row.appendChild(chip);
 
-  // Share button
-  const shareBtn = document.createElement("button");
-  shareBtn.type = "button";
-  shareBtn.className = "icon-btn";
-  shareBtn.textContent = "Share";
-  shareBtn.addEventListener("click", ()=>shareContributor(c));
-  metaRow.appendChild(shareBtn);
+  const spacer = document.createElement("div");
+  spacer.className = "ta-spacer";
+  row.appendChild(spacer);
 
-  content.append(artist, title, desc, metaRow);
+  const share = document.createElement("button");
+  share.className = "ta-ibtn";
+  share.type = "button";
+  share.textContent = "Share";
+  share.addEventListener("click", ()=>taShare(c));
+  row.appendChild(share);
 
-  card.append(mediaWrap, content);
+  content.append(meta, title, desc, row);
+  card.append(media, content);
   return card;
 }
 
-async function shareContributor(c){
-  const url = location.origin + location.pathname;
+async function taShare(c){
+  const url = location.origin + "/Contributors/contributors.html";
   const text = `${c.title} by ${c.artist} — ToadAid Contributor Art`;
   try{
-    if(navigator.share){
-      await navigator.share({title: c.title, text, url});
-    }else{
-      await navigator.clipboard.writeText(url);
-      alert("Link copied 
+    if(navigator.share){ await navigator.share({title:c.title, text, url}); }
+    else { await navigator.clipboard.writeText(url); alert("Link copied to clipboard."); }
+  }catch(e){
+    try{ await navigator.clipboard.writeText(url); alert("Link copied to clipboard."); }catch(_){}
+  }
+}
+
+const lb = document.getElementById("ta-lightbox");
+const lbContent = document.getElementById("ta-lightbox-content");
+document.querySelector("#ta-lightbox .ta-close").addEventListener("click", taCloseLightbox);
+lb.addEventListener("click", e => { if(e.target===lb) taCloseLightbox(); });
+document.addEventListener("keydown", e => { if(e.key==="Escape") taCloseLightbox(); });
+
+function taOpenLightbox(kind, src, poster){
+  lbContent.innerHTML = "";
+  if(kind==="video"){
+    const v = document.createElement("video");
+    v.controls = true; v.autoplay = true; v.playsInline = true;
+    if(poster) v.poster = poster;
+    v.src = src;
+    lbContent.appendChild(v);
+  }else{
+    const img = document.createElement("img");
+    img.src = src; img.alt = "Preview";
+    img.onerror = ()=>{ img.src = TA_PLACEHOLDER; };
+    lbContent.appendChild(img);
+  }
+  lb.classList.add("open");
+}
+function taCloseLightbox(){ lb.classList.remove("open"); lbContent.innerHTML = ""; }
+
+taLoadContributors();
+</script>
+</body>
+</html>
