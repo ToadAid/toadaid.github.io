@@ -20,13 +20,14 @@
   .grid{display:grid;gap:18px}
   @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
   .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
-  /* Updated thumbnail style for more vertical image */
+  /* Updated thumbnail style for more vertical image & video */
   .thumb{
     width:100%;
     height:auto;
     object-fit:contain;
     max-height:320px; /* adjust height as needed */
     background:var(--bg);
+    display:block;
   }
   .body{padding:14px 14px 16px}
   .title{font-weight:700;margin:0 0 6px}
@@ -57,6 +58,23 @@
           <div>
             <span class="tag">Offering</span>
             <span class="tag">Community</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Entry 2: Morita -->
+      <a class="card" href="/honors/morita-patience.html">
+        <video class="thumb" autoplay loop muted playsinline>
+          <source src="/Contributors/assets/videos/morita_patience.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="body">
+          <h3 class="title">The Day the Hall Was Seen — Morita’s Offering</h3>
+          <div class="meta">Builder’s vow chosen by Toadgod • S1 #patience Signal • Recorded by ToadAid</div>
+          <div>
+            <span class="tag">Offering</span>
+            <span class="tag">Builder</span>
+            <span class="tag">Prophecy</span>
           </div>
         </div>
       </a>
