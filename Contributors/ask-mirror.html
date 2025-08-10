@@ -3,13 +3,28 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
 <title>ToadAid — Ask the Mirror</title>
-<meta name="description" content="Ask the Mirror for guidance about the Lore. Learn what it is and how to use it." />
+<meta name="description" content="Ask the Mirror for guidance drawn from the Tobyworld scrolls. Use the embedded mini app right on this page." />
+
+<!-- Open Graph -->
 <meta property="og:title" content="ToadAid — Ask the Mirror" />
-<meta property="og:description" content="Ask the Mirror for guidance about the Lore." />
+<meta property="og:description" content="Ask the Mirror for guidance drawn from the Tobyworld scrolls." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://toadaid.github.io/ask-mirror/" />
+<meta property="og:url" content="https://toadaid.github.io/Contributors/ask-mirror.html" />
+<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
+
+<!-- Canonical -->
+<link rel="canonical" href="https://toadaid.github.io/Contributors/ask-mirror.html" />
+
+<!-- Favicons (served from /assets/icons/) -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
 <meta name="theme-color" content="#355e3b" />
+
 <style>
   :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --leaf-ink:#2a4a2f; --gold:#d9b200; --card:#fff; }
   *{box-sizing:border-box} html,body{margin:0}
@@ -19,56 +34,126 @@
   h1{margin:0;color:var(--leaf);font-size:clamp(1.6rem,4vw,2.4rem);display:inline-block;position:relative;padding-bottom:6px}
   h1::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;background:var(--gold);border-radius:2px}
   .lead{max-width:760px;margin:8px auto 0;color:#425a47}
-  .btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px}
-  .btn{display:inline-block;padding:12px 16px;border-radius:999px;border:1px solid var(--leaf-ink);background:var(--leaf);color:#fff;font-weight:700;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-  .btn:hover{filter:brightness(1.05)}
-  .btn.ghost{background:#fff;color:var(--leaf-ink);border:1px solid #c8c1ab}
   section{padding:22px 0}
   .card{background:var(--card);border:1px solid #e8e1cc;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:16px}
-  .grid{display:grid;gap:16px}
-  @media (min-width:900px){ .grid.cols-2{grid-template-columns:1.1fr .9fr} }
-  ul{margin:8px 0 0 20px}
+
+  /* iframe + fallback */
+  .iframe-wrap{margin-top:14px}
+  .mirror-frame{width:100%;min-height:80vh;border:0;border-radius:12px;background:#000;box-shadow:0 10px 28px rgba(0,0,0,.12)}
+  .fallback{display:none;margin-top:16px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn{display:inline-block;padding:10px 14px;border-radius:999px;border:1px solid #c8c1ab;background:#fff;color:var(--leaf-ink);font-weight:700;cursor:pointer;text-decoration:none}
+  .btn.solid{background:var(--leaf);color:#fff;border-color:var(--leaf-ink)}
+  .btn:hover{filter:brightness(1.03)}
+  input[type="text"]{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #ccc;font-size:1rem}
+  pre{white-space:pre-wrap;background:#fff;border:1px solid #e8e1cc;border-radius:10px;padding:12px;margin-top:10px}
   footer{padding:28px 0 40px;text-align:center;color:#445a48}
-  .muted{color:#687a6b}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>Ask the Mirror</h1>
-    <p class="lead">The Mirror reflects the Lore. Ask a question, and the Mirror will return passages and guidance drawn from the scrolls.</p>
-    <div class="btns">
-      <!-- Update this href if your actual tool path is different -->
-      <a class="btn" href="/AskMirror.html">Open Ask the Mirror</a>
-      <a class="btn ghost" href="/">Back to Home</a>
+    <p class="lead">The Mirror reflects the Lore. Ask a question, and it returns passages and guidance from the scrolls — right here on this page.</p>
+    <div style="margin-top:10px">
+      <a class="btn" href="/Contributors/">← Back to Contributors</a>
+      <a class="btn" href="/">Back to Home</a>
     </div>
   </header>
 
-  <section class="grid cols-2">
-    <div class="card">
-      <h2 style="margin:0 0 10px;color:var(--leaf)">What is the Mirror?</h2>
-      <p>It’s a reading assistant for Tobyworld’s Lore. You can ask questions in natural language. The Mirror pulls relevant scrolls and highlights key lines.</p>
-      <ul>
-        <li>Use clear questions (“What does Scroll 2 say about patience?”).</li>
-        <li>Try keywords (e.g., <em>virtues, lotus, reflection</em>).</li>
-        <li>Follow links to read the full scrolls.</li>
-      </ul>
+  <!-- Embedded mini app -->
+  <section class="card">
+    <div class="iframe-wrap">
+      <iframe
+        id="mirrorFrame"
+        class="mirror-frame"
+        src="/mirror-app/index.html"
+        title="Ask the Mirror"
+        loading="eager"
+        referrerpolicy="no-referrer"
+        allow="clipboard-write"
+      ></iframe>
     </div>
+    <p style="color:#687a6b;margin-top:8px">If the embedded app doesn’t load (adblock or CSP), use the fallback widget below.</p>
 
-    <div class="card">
-      <h2 style="margin:0 0 10px;color:var(--leaf)">Tips & Notes</h2>
-      <ul>
-        <li>Results are grounded in our stored scrolls; we update them over time.</li>
-        <li>Language: use your browser’s translate feature if needed.</li>
-        <li>Respect the Lore. Cite what you share and don’t misrepresent it.</li>
-      </ul>
-      <p class="muted" style="margin-top:8px">Questions or feedback? DM us on X or Telegram.</p>
+    <!-- Fallback mini widget (direct API) -->
+    <div id="fallbackBox" class="fallback">
+      <div class="row">
+        <input id="mirrorQuestion" type="text" placeholder="Ask the Mirror…" />
+        <button class="btn solid" id="askBtn">Ask</button>
+      </div>
+      <pre id="mirrorAnswer" style="display:none"></pre>
     </div>
+  </section>
+
+  <section class="card">
+    <h2 style="margin:0 0 10px;color:var(--leaf)">Tips</h2>
+    <ul style="margin:8px 0 0 20px">
+      <li>Ask clearly: “What does Scroll 2 say about patience?”</li>
+      <li>Try keywords: <em>virtues, lotus, reflection</em></li>
+      <li>Use your browser’s translate feature if needed.</li>
+    </ul>
   </section>
 
   <footer>
     © 2025 ToadAid — Built by the people, for the people.
   </footer>
 </div>
+
+<script>
+  // Auto-resize when mini app posts its height
+  window.addEventListener('message', (e) => {
+    if (!e || !e.data) return;
+    try {
+      const msg = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+      if (msg && msg.type === 'mirror:height' && Number.isFinite(msg.height)) {
+        const frame = document.getElementById('mirrorFrame');
+        frame.style.minHeight = Math.max(600, msg.height) + 'px';
+      }
+    } catch (_) {}
+  });
+
+  // Show fallback if iframe fails to render in time
+  const frame = document.getElementById('mirrorFrame');
+  let failTimer = setTimeout(() => {
+    document.getElementById('fallbackBox').style.display = 'block';
+  }, 4000);
+
+  frame.addEventListener('load', () => clearTimeout(failTimer));
+
+  // Fallback widget → calls your API directly
+  const MIRROR_API = "https://toadaid.duckdns.org/ask";
+  const askBtn = document.getElementById('askBtn');
+  const qInput = document.getElementById('mirrorQuestion');
+  const ansDiv = document.getElementById('mirrorAnswer');
+
+  async function askMirrorFallback() {
+    const question = (qInput?.value || "").trim();
+    if (!question) return;
+    ansDiv.style.display = 'block';
+    ansDiv.textContent = "⏳ Seeking reflection...";
+    try {
+      const res = await fetch(MIRROR_API, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+      const data = await res.json();
+      let reply = data.answer || data.reply || JSON.stringify(data);
+      reply = String(reply).replace(/\\n/g, "\n");
+      ansDiv.innerHTML = `<strong>You asked:</strong> <i>${escapeHtml(question)}</i>\n\n${reply}`;
+      qInput.value = "";
+      qInput.focus();
+    } catch (err) {
+      ansDiv.textContent = "⚠️ The Mirror is silent for now. Please try again later.";
+    }
+  }
+  askBtn?.addEventListener('click', askMirrorFallback);
+  qInput?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') askMirrorFallback(); });
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+  }
+</script>
 </body>
 </html>
