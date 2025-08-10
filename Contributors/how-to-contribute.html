@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ToadAid — How to Contribute (By Invitation)</title>
+<meta name="description" content="How to contribute art to ToadAid. We’re invite-only for now. See requirements and how to contact us." />
+<meta property="og:title" content="ToadAid — How to Contribute" />
+<meta property="og:description" content="Invite-only for now. Read requirements and contact us to add your piece." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://toadaid.github.io/contributors/how-to-contribute.html" />
+<meta name="theme-color" content="#355e3b" />
+<style>
+  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --leaf-ink:#2a4a2f; --gold:#d9b200; --card:#fff; }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;line-height:1.45}
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  header{text-align:center;padding:24px 0 8px}
+  h1{margin:0;color:var(--leaf);font-size:clamp(1.6rem,4vw,2.4rem);display:inline-block;position:relative;padding-bottom:6px}
+  h1::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;background:var(--gold);border-radius:2px}
+  .lead{max-width:760px;margin:8px auto 0;color:#425a47}
+  section{padding:22px 0}
+  .card{background:var(--card);border:1px solid #e8e1cc;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:16px}
+  h2{margin:0 0 10px;color:var(--leaf)}
+  ul{margin:8px 0 0 20px}
+  code,pre{background:#fff;border:1px solid #e8e1cc;border-radius:10px;padding:10px;display:block;overflow:auto}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:10px 14px;border-radius:999px;border:1px solid var(--leaf-ink);background:var(--leaf);color:#fff;font-weight:700;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.ghost{background:#fff;color:var(--leaf-ink);border:1px solid #c8c1ab}
+  footer{padding:28px 0 40px;text-align:center;color:#445a48}
+  .muted{color:#687a6b}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>How to Contribute</h1>
+    <p class="lead">We’re currently <strong>invite-only</strong>. You can still prepare your piece following the rules below and contact us — we’ll add it manually.</p>
+  </header>
+
+  <section class="card">
+    <h2>Contact</h2>
+    <p>Send us a DM with your files and metadata:</p>
+    <div class="cta-row" style="margin-top:8px">
+      <a class="btn" href="https://x.com/ToadAid" target="_blank" rel="noopener">DM us on X</a>
+      <a class="btn ghost" href="https://t.me/your_telegram" target="_blank" rel="noopener">Telegram</a>
+      <a class="btn ghost" href="mailto:hello@toadaid.org">Email</a>
+    </div>
+    <p class="muted" style="margin-top:8px">Replace links with your real handles/emails when you deploy.</p>
+  </section>
+
+  <section class="card">
+    <h2>What to Send</h2>
+    <ul>
+      <li><strong>Artwork file</strong> (image JPG/PNG ≤ 5 MB; video MP4 H.264 ≤ 20 MB; gif ≤ 8 MB)</li>
+      <li><strong>Poster image</strong> for videos (recommended)</li>
+      <li><strong>Metadata</strong> (see JSON example)</li>
+      <li><strong>Date</strong> your work was created/published (YYYY-MM-DD)</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Filenames & Folders</h2>
+    <ul>
+      <li>Images → <code>/contributors/assets/images/</code></li>
+      <li>Videos → <code>/contributors/assets/videos/</code></li>
+      <li>GIFs → <code>/contributors/assets/gifs/</code></li>
+      <li>Use lowercase, hyphenated names (e.g., <code>lotus-over-the-pond.jpg</code>)</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>JSON Metadata Example</h2>
+<pre>{
+  "artist": "@YourHandle",
+  "artist_type": "X handle",
+  "title": "Lotus Over the Pond",
+  "media_type": "image",
+  "file": "/contributors/assets/images/lotus-over-the-pond.jpg",
+  "date": "2025-08-03",
+  "description": "In the still water, Toby meets its reflection — the Mirror holding light and shadow."
+}</pre>
+    <p class="muted">For videos, include <code>"poster": "/contributors/assets/images/lotus-poster.jpg"</code> and set <code>"media_type": "video"</code>.</p>
+  </section>
+
+  <section class="card">
+    <h2>Review & Publishing</h2>
+    <ul>
+      <li>We check for quality, format, author attribution, and fit with the Lore.</li>
+      <li>Approved works are added to the gallery (usually within a few days).</li>
+      <li>By submitting, you allow us to display your work on ToadAid with credit.</li>
+    </ul>
+  </section>
+
+  <footer>
+    © 2025 ToadAid — Built by the people, for the people.
+  </footer>
+</div>
+</body>
+</html>
