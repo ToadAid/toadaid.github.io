@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ToadAid — Ask the Mirror</title>
+<meta name="description" content="Ask the Mirror for guidance about the Lore. Learn what it is and how to use it." />
+<meta property="og:title" content="ToadAid — Ask the Mirror" />
+<meta property="og:description" content="Ask the Mirror for guidance about the Lore." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://toadaid.github.io/ask-mirror/" />
+<meta name="theme-color" content="#355e3b" />
+<style>
+  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --leaf-ink:#2a4a2f; --gold:#d9b200; --card:#fff; }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;line-height:1.45}
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  header{text-align:center;padding:24px 0 8px}
+  h1{margin:0;color:var(--leaf);font-size:clamp(1.6rem,4vw,2.4rem);display:inline-block;position:relative;padding-bottom:6px}
+  h1::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;background:var(--gold);border-radius:2px}
+  .lead{max-width:760px;margin:8px auto 0;color:#425a47}
+  .btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px}
+  .btn{display:inline-block;padding:12px 16px;border-radius:999px;border:1px solid var(--leaf-ink);background:var(--leaf);color:#fff;font-weight:700;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.ghost{background:#fff;color:var(--leaf-ink);border:1px solid #c8c1ab}
+  section{padding:22px 0}
+  .card{background:var(--card);border:1px solid #e8e1cc;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:16px}
+  .grid{display:grid;gap:16px}
+  @media (min-width:900px){ .grid.cols-2{grid-template-columns:1.1fr .9fr} }
+  ul{margin:8px 0 0 20px}
+  footer{padding:28px 0 40px;text-align:center;color:#445a48}
+  .muted{color:#687a6b}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Ask the Mirror</h1>
+    <p class="lead">The Mirror reflects the Lore. Ask a question, and the Mirror will return passages and guidance drawn from the scrolls.</p>
+    <div class="btns">
+      <!-- Update this href if your actual tool path is different -->
+      <a class="btn" href="/AskMirror.html">Open Ask the Mirror</a>
+      <a class="btn ghost" href="/">Back to Home</a>
+    </div>
+  </header>
+
+  <section class="grid cols-2">
+    <div class="card">
+      <h2 style="margin:0 0 10px;color:var(--leaf)">What is the Mirror?</h2>
+      <p>It’s a reading assistant for Tobyworld’s Lore. You can ask questions in natural language. The Mirror pulls relevant scrolls and highlights key lines.</p>
+      <ul>
+        <li>Use clear questions (“What does Scroll 2 say about patience?”).</li>
+        <li>Try keywords (e.g., <em>virtues, lotus, reflection</em>).</li>
+        <li>Follow links to read the full scrolls.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 10px;color:var(--leaf)">Tips & Notes</h2>
+      <ul>
+        <li>Results are grounded in our stored scrolls; we update them over time.</li>
+        <li>Language: use your browser’s translate feature if needed.</li>
+        <li>Respect the Lore. Cite what you share and don’t misrepresent it.</li>
+      </ul>
+      <p class="muted" style="margin-top:8px">Questions or feedback? DM us on X or Telegram.</p>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 ToadAid — Built by the people, for the people.
+  </footer>
+</div>
+</body>
+</html>
