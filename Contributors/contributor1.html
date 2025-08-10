@@ -16,14 +16,14 @@
 <!-- Canonical -->
 <link rel="canonical" href="https://toadaid.github.io/Contributors/" />
 
-<!-- Favicons -->
+<!-- Favicons (served from /assets/icons/) -->
 <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
 <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="/assets/icons/site.webmanifest">
 <meta name="theme-color" content="#355e3b" />
-
+  
 <style>
   :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --gold:#d9b200; --card:#fff; }
   *{ box-sizing:border-box }
@@ -39,6 +39,8 @@
     content:""; position:absolute; left:0; bottom:0; height:4px; width:100%;
     background:var(--gold); border-radius:2px;
   }
+
+  /* Grid & Card */
   .grid{
     display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap:16px; margin:20px auto 0; max-width:1200px; padding:0 6px;
@@ -50,6 +52,8 @@
     transition: transform .15s ease, box-shadow .15s ease;
   }
   .card:hover{ transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.12) }
+
+  /* Media：保留原比例，不强裁切；加最大高度保护与淡入 */
   .media{
     width:100%; background:#eee; border-radius:12px; overflow:hidden; border:1px solid #eee;
   }
@@ -60,6 +64,7 @@
     opacity:0;
   }
   .reveal{ opacity:1 !important }
+
   .meta{ margin:10px 0 4px; color:#425a47; font-size:.95rem }
   .title{ margin:0 0 6px; font-weight:700 }
   .desc{ margin:6px 0 10px; line-height:1.45 }
@@ -71,6 +76,8 @@
   a{ color:var(--leaf); text-decoration:none }
   a:hover{ text-decoration:underline }
   footer{ margin-top:46px; color:var(--leaf); font-size:.9rem }
+
+  /* Lightbox */
   .lightbox{
     position:fixed; inset:0; background:rgba(0,0,0,.8);
     display:none; align-items:center; justify-content:center; z-index:50; padding:16px;
@@ -103,6 +110,7 @@
 const PLACEHOLDER = 'https://via.placeholder.com/1200x800?text=ToadAid';
 const grid = document.getElementById('contributors');
 
+/* ============ 深链工具（slug + URL 构造） ============ */
 function getSlug(c){
   const base = (c.file||'').split('/').pop().replace(/\.[^/.]+$/, '');
   const raw  = (c.title ? `${c.title}-${base}` : base) || 'item';
@@ -114,8 +122,10 @@ function buildItemUrl(slug){
   return u.toString();
 }
 
+/* ============ 媒体淡入 & 自动播放观察器 ============ */
 let revealObserver, ioPlay;
 function initObservers(){
+  // 媒体淡入
   revealObserver = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{
       if(e.isIntersecting){
@@ -124,31 +134,43 @@ function initObservers(){
       }
     });
   }, {threshold:.2});
+
+  // 进入视口播放/离开暂停（仅视频）
   ioPlay = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
       const v = entry.target;
-      if(entry.isIntersecting){ ensureAutoplay(v); }
-      else{ try{ v.pause(); }catch(_){ } }
+      if(entry.isIntersecting){
+        ensureAutoplay(v);
+      }else{
+        try{ v.pause(); }catch(_){}
+      }
     });
   }, {threshold:.4});
 }
 
+/* ============ 加载 & 渲染 ============ */
 async function loadContributors(){
   try{
     const res = await fetch('./contributors.json?v='+Date.now());
     let contributors = await res.json();
     contributors.sort((a,b)=> new Date(a.date) - new Date(b.date));
+
     initObservers();
     contributors.forEach(c => grid.appendChild(renderCard(c)));
+
+    // 首次交互兜底（极少数机型需要手势）
     window.addEventListener('pointerdown', kickAllVideosOnce, { once:true });
     document.addEventListener('visibilitychange', ()=> {
       if (document.visibilityState === 'visible') {
         document.querySelectorAll('video.ta-auto').forEach(v => ensureAutoplay(v));
       } else {
-        document.querySelectorAll('video.ta-auto').forEach(v => { try{ v.pause(); }catch(_){ } });
+        document.querySelectorAll('video.ta-auto').forEach(v => { try{ v.pause(); }catch(_){} });
       }
     });
+
+    // 渲染完成后处理 ?item=slug
     openItemFromQuery();
+    // 前进/后退时也处理
     window.addEventListener('popstate', openItemFromQuery);
   }catch(err){
     console.error('Error loading contributors:', err);
@@ -158,16 +180,19 @@ async function loadContributors(){
 
 function renderCard(c){
   const slug = getSlug(c);
+
   const card = document.createElement('article');
   card.className = 'card';
   card.id = 'art-' + slug;
   card.setAttribute('aria-label', `${c.title} by ${c.artist}`);
 
+  // 媒体（保留原始比例）
   const mediaWrap = document.createElement('div');
   mediaWrap.className = 'media';
 
   if(c.media_type === 'video'){
     const v = document.createElement('video');
+    // 自动播放关键：muted + playsinline
     v.autoplay = true; v.muted = true; v.playsInline = true; v.loop = true;
     v.setAttribute('muted',''); v.setAttribute('playsinline','');
     v.preload = 'auto';
@@ -179,6 +204,8 @@ function renderCard(c){
       openLightbox('video', c.file, c.poster || '');
     });
     mediaWrap.appendChild(v);
+
+    // 观察：淡入 + 视口内播放
     v.classList.add('ta-auto');
     revealObserver.observe(v);
     ioPlay.observe(v);
@@ -198,10 +225,11 @@ function renderCard(c){
     revealObserver.observe(img);
   }
 
+  // 文案
   const metaArtist = (() => {
     if((c.artist_type||'').toLowerCase()==='x handle'){
       const clean = (c.artist||'').replace('@','');
-      return `<strong>Artist:</strong> <a href="https://x.com/${clean}" target="_blank">@${clean}</a> (${c.artist_type})`;
+      return `<strong>Artist:</strong> <a href="https://x.com/${clean}" target="_blank" rel="noopener noreferrer">@${clean}</a> (${c.artist_type})`;
     }
     return `<strong>Artist:</strong> ${c.artist||'Unknown'}`;
   })();
@@ -212,15 +240,12 @@ function renderCard(c){
       <span class="spacer"></span>
       <button class="btn" type="button"
         onclick='shareItem(${JSON.stringify(JSON.stringify({slug}))})'>
-        Copy Link
-      </button>
-      <button class="btn" type="button"
-        onclick='shareItemWithTitle(${JSON.stringify(JSON.stringify({title:c.title, artist:c.artist, slug}))})'>
-        Copy with Title
+        Share
       </button>
     </div>
   `;
 
+  // 组装（用 innerHTML 简洁，随后重新绑定媒体事件）
   card.innerHTML = `
     ${mediaWrap.outerHTML}
     <p class="meta">${metaArtist}</p>
@@ -229,6 +254,7 @@ function renderCard(c){
     ${rowHTML}
   `;
 
+  // 重新绑定媒体点击（因为用了 outerHTML）
   const newMedia = card.querySelector('.media');
   if(c.media_type === 'video'){
     const v2 = newMedia.querySelector('video');
@@ -249,9 +275,11 @@ function renderCard(c){
     });
     revealObserver.observe(img2);
   }
+
   return card;
 }
 
+/* ============ 深链：从 ?item=slug 定位并开灯箱 ============ */
 function openItemFromQuery(){
   const slug = new URLSearchParams(location.search).get('item');
   if(!slug) return;
@@ -259,9 +287,12 @@ function openItemFromQuery(){
   if(!el) return;
   el.scrollIntoView({ behavior:'smooth', block:'center' });
   const media = el.querySelector('img,video');
-  if(media){ setTimeout(()=> media.click(), 250); }
+  if(media){
+    setTimeout(()=> media.click(), 250); // 等滚动停一下
+  }
 }
 
+/* ============ 自动播放兜底 ============ */
 function ensureAutoplay(v){
   if (!v) return;
   v.muted = true; v.setAttribute('muted',''); v.playsInline = true; v.setAttribute('playsinline','');
@@ -275,31 +306,26 @@ function kickAllVideosOnce(){
   document.querySelectorAll('video.ta-auto').forEach(v => ensureAutoplay(v));
 }
 
-/* Updated Share: URL only */
+/* ============ Share：带 item 深链（URL only） ============ */
 async function shareItem(payloadStr){
-  const p = JSON.parse(payloadStr); // { slug }
-  const url = buildItemUrl(p.slug);
+  const p = JSON.parse(payloadStr);   // { slug }
+  const url = buildItemUrl(p.slug);   // pure deep link
   try{
-    await navigator.clipboard.writeText(url);
-    alert('Link copied to clipboard.');
+    if (navigator.share) {
+      await navigator.share({ url }); // no title/text
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard.');
+    }
   }catch(e){
-    console.error('Copy failed', e);
+    try{
+      await navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard.');
+    }catch(_){}
   }
 }
 
-/* Optional Share with Title for social posts */
-async function shareItemWithTitle(payloadStr){
-  const p = JSON.parse(payloadStr); // { title, artist, slug }
-  const url = buildItemUrl(p.slug);
-  const text = `${p.title} by ${p.artist} — ToadAid Contributor Art ${url}`;
-  try{
-    await navigator.clipboard.writeText(text);
-    alert('Link + title copied to clipboard.');
-  }catch(e){
-    console.error('Copy failed', e);
-  }
-}
-
+/* ============ Lightbox ============ */
 const lb = document.getElementById('lightbox');
 const lbContent = document.getElementById('lightboxContent');
 document.querySelector('#lightbox .close').addEventListener('click', closeLightbox);
@@ -324,6 +350,7 @@ function openLightbox(kind, src, poster){
 }
 function closeLightbox(){ lb.classList.remove('open'); lbContent.innerHTML = ''; }
 
+/* 启动 */
 loadContributors();
 </script>
 </body>
