@@ -305,17 +305,23 @@ function ensureAutoplay(v){
 function kickAllVideosOnce(){
   document.querySelectorAll('video.ta-auto').forEach(v => ensureAutoplay(v));
 }
-
-/* ============ Share：带 item 深链 ============ */
+  
+/* ============ Share：带 item 深链 ============ */p
 async function shareItem(payloadStr){
-  const p = JSON.parse(payloadStr);   // { title, artist, slug }
+  const p = JSON.parse(payloadStr); // { slug }
   const url = buildItemUrl(p.slug);
-  const text = `${p.title} by ${p.artist} — ToadAid Contributor Art`;
   try{
-    if(navigator.share){ await navigator.share({title:p.title, text, url}); }
-    else { await navigator.clipboard.writeText(url); alert('Link copied to clipboard.'); }
-  }catch(e){
-    try{ await navigator.clipboard.writeText(url); alert('Link copied to clipboard.'); }catch(_){}
+    if (navigator.share) {
+      await navigator.share({ url });        // <-- no text/title, link only
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard.');
+    }
+  } catch(e){
+    try {                                     // fallback if share denied
+      await navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard.');
+    } catch(_) {}
   }
 }
 
