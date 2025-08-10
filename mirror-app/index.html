@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Tobyworld Mini App — Ask the Lore Guardian</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- Social/SEO -->
+<meta name="description" content="Ask the Lore Guardian about Tobyworld. Mini app embedded across ToadAid." />
+<meta property="og:title" content="Tobyworld Mini App — Ask the Lore Guardian" />
+<meta property="og:description" content="Ask questions about the Lore and get grounded answers from the scrolls." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://toadaid.github.io/mirror-app/" />
+<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
+<link rel="canonical" href="https://toadaid.github.io/mirror-app/" />
+
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+
+<!-- ===== Styles ===== -->
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#ffffff; --ink:#222326; --muted:#6b7280;
+    --brand:#2f6d3a; --brand-strong:#275b30; --ring:#93c5aa; --border:#e5e7eb;
+    --shadow: 0 8px 24px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);
+    --radius:14px;
+  }
+  * { box-sizing: border-box; }
+  html,body { height:100%; margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial; color:var(--ink); background:var(--bg); }
+  header { background: linear-gradient(135deg, #315a37, #3e7a47); color:#fff; padding:42px 20px 56px; text-align:center; }
+  header h1 { margin:0 0 6px; font-size: clamp(22px, 3vw, 28px); font-weight:700; letter-spacing:.2px; }
+  header p { margin:0; opacity:.9; font-size:14px; }
+  main { max-width: 720px; margin: -36px auto 40px; padding: 0 16px; }
+  .panel { background: var(--card); border:1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; }
+  .prompt { display:grid; gap:12px; }
+  label { text-align:left; font-size: 13px; color: var(--muted); }
+  textarea { width:100%; min-height:80px; max-height:260px; padding:14px 16px; font-size:16px; line-height:1.45; border:1px solid var(--border); border-radius:12px; background:#fafafa; resize:vertical; transition: border-color .15s, box-shadow .15s, background .15s; }
+  textarea:focus { outline:none; border-color: var(--ring); background:#fff; box-shadow: 0 0 0 4px rgba(147,197,170,.25); }
+  .actions { display:flex; gap:10px; justify-content:flex-end; }
+  button { appearance:none; border:0; border-radius:12px; padding:12px 18px; background: var(--brand); color:#fff; font-weight:600; font-size:15px; cursor:pointer; transition: transform .04s, background .15s, box-shadow .15s; box-shadow: 0 6px 14px rgba(47,109,58,.18); }
+  button:hover { background: var(--brand-strong); }
+  button:active { transform: translateY(1px); }
+  button[disabled]{ opacity:.65; cursor:not-allowed; box-shadow:none; }
+  .response { margin-top:16px; padding:18px; border:1px solid var(--border); border-radius:12px; background:#fff; text-align:left; white-space:pre-wrap; }
+  .meta { color:var(--muted); font-size:13px; }
+  .brand { display:inline-flex; align-items:center; gap:10px; justify-content:center; }
+  .brand .logo { display:grid; place-items:center; width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,.2); font-size:20px; }
+  @media (prefers-reduced-motion:no-preference){ .fade-in { animation: fade .25s ease both; } @keyframes fade { from {opacity:0; transform:translateY(4px)} to {opacity:1; transform:none} } }
+</style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">🍃</span>
+      <div>
+        <h1>Tobyworld Mini App</h1>
+        <p>Ask the Lore Guardian</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="prompt">
+        <label for="question">Your question</label>
+        <textarea id="question" placeholder="Ask anything about Toby, Satoby, epochs, Taboshi…"></textarea>
+        <div class="actions">
+          <button id="askBtn" onclick="askLore()">Ask</button>
+        </div>
+        <div class="meta">Tip: Press <strong>Enter</strong> to submit, <strong>Shift+Enter</strong> for a new line.</div>
+      </div>
+      <div class="response fade-in" id="response" style="display:none;"></div>
+    </section>
+  </main>
+
+<script>
+const MIRROR_API = "https://toadaid.duckdns.org/ask"; // <-- use absolute API path (works from GitHub Pages)
+
+const textarea = document.getElementById("question");
+const btn = document.getElementById("askBtn");
+const out = document.getElementById("response");
+
+textarea.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    askLore();
+  }
+});
+
+function setLoading(isLoading){
+  btn.disabled = isLoading;
+  btn.textContent = isLoading ? "Thinking…" : "Ask";
+}
+
+async function askLore() {
+  const question = textarea.value.trim();
+  if (!question) { textarea.focus(); return; }
+
+  setLoading(true);
+  out.style.display = "block";
+  out.textContent = "⏳ Thinking…";
+  sendHeightSoon();
+
+  try {
+    const res = await fetch(MIRROR_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question })
+    });
+    if (!res.ok) throw new Error(\`Server error (\${res.status})\`);
+
+    const data = await res.json();
+    const answer = data.answer || data.reply || "No answer.";
+    out.innerHTML = \`<strong>You asked:</strong> <em>\${escapeHtml(question)}</em><br><br>\${answer}\`;
+    textarea.value = "";
+    textarea.focus();
+  } catch (err) {
+    out.textContent = "⚠️ " + err.message;
+  } finally {
+    setLoading(false);
+    sendHeightSoon();
+  }
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>\"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+}
+
+/* ---- iframe auto-resize helper (for embedding) ---- */
+function sendHeight(){
+  try {
+    const h = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight
+    );
+    window.parent.postMessage({ type:"mirror:height", height:h }, "*");
+  } catch(_) {}
+}
+function sendHeightSoon(){ setTimeout(sendHeight, 50); setTimeout(sendHeight, 250); setTimeout(sendHeight, 1000); }
+window.addEventListener("load", sendHeightSoon);
+window.addEventListener("resize", () => sendHeightSoon());
+</script>
+</body>
+</html>
