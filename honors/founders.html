@@ -3,11 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Honors & Offerings | ToadAid</title>
-<meta name="description" content="A living hall of honors and offerings recorded by ToadAid." />
+<title>Founders | ToadAid</title>
+<meta name="description" content="Founders of ToadAid — one path, one flame, many hands." />
+<meta property="og:title" content="Founders | ToadAid" />
+<meta property="og:description" content="Founders of ToadAid — one path, one flame, many hands." />
+<meta property="og:type" content="website" />
+<link rel="icon" href="/assets/favicon.png" />
 <style>
   :root{
-    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08);
+    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6;
+    --muted:#6b6b6b; --ring:rgba(0,0,0,.08); --line:#e7e1cf;
   }
   *{box-sizing:border-box}
   body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
@@ -16,92 +21,121 @@
   header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:56px 20px;text-align:center}
   header h1{margin:0 0 8px;font-size:clamp(1.6rem,3.2vw,2.4rem)}
   header p{margin:0;opacity:.92}
-  .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
-  .grid{display:grid;gap:18px}
-  @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
-  .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
-  .thumb{width:100%;height:auto;object-fit:contain;max-height:320px;background:var(--bg);display:block}
-  .body{padding:14px 14px 16px}
-  .title{font-weight:700;margin:0 0 6px}
-  .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
-  .tag{display:inline-block;background:#eaf3ec;color:#244d30;border:1px solid #d4e7d8;padding:2px 8px;border-radius:999px;font-size:.78rem;margin-right:6px}
+  nav.breadcrumb{max-width:1000px;margin:0 auto;padding:12px 18px 0;font-size:.95rem}
+  nav.breadcrumb a{opacity:.95}
 
-  /* Milestones styling */
-  .milestones{list-style:none;margin:0;padding:0}
-  .milestones li{position:relative;margin:0 0 10px;padding-left:1.2em}
-  .milestones li::before{content:"🌱";position:absolute;left:0;top:0;line-height:1.2}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 18px 60px}
+  .card{background:var(--paper);border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);border-radius:16px;padding:18px;margin-top:18px}
 
-  nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
-  nav.breadcrumb a{opacity:.9}
+  /* Founders grid */
+  .grid{display:grid;gap:16px}
+  @media (min-width:780px){ .grid{grid-template-columns:1fr 1fr} }
+  .bio{display:flex;gap:14px;align-items:flex-start}
+  .avatar{
+    width:64px;height:64px;border-radius:50%;
+    background:#e9efe9;display:grid;place-items:center;font-size:30px;flex:0 0 64px;
+    border:1px solid #dfe6df;
+  }
+  .bio h3{margin:0 0 4px}
+  .muted{color:var(--muted)}
+
+  /* Milestones (fixed to avoid overlap) */
+  .timeline{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+  .t-row{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fffef9}
+  .t-ico{font-size:20px;line-height:1;margin-top:2px;flex:0 0 auto}
+  .t-body{min-width:0}
+  .t-body b{font-weight:700}
+  .t-body p{margin:2px 0 0}
+
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .btn{display:inline-block;background:#2f5a39;color:#fff;padding:10px 14px;border-radius:10px}
+  .btn.secondary{background:#f0f3f1;color:#21442c;border:1px solid #d4e7d8}
   footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
 </style>
 </head>
 <body>
   <header>
-    <h1>🐸 Honors & Offerings</h1>
-    <p>A living hall where deeds become memory. One path. One flame. Many hands.</p>
+    <h1>🐸 Founders</h1>
+    <p>One path. One flame. Many hands.</p>
   </header>
 
   <nav class="breadcrumb"><a href="/">← Back to Home</a></nav>
 
   <main class="wrap">
-    <section class="grid">
-      <!-- Entry 1: Sigil -->
-      <a class="card" href="/honors/sigil-seed.html">
-        <img class="thumb" src="/assets/art/sigil-winning-art.jpg" alt="Sigil’s winning artwork" />
-        <div class="body">
-          <h3 class="title">The Seed in Still Water — Sigil’s Offering</h3>
-          <div class="meta">Toadgang Art Contest • 1st Place • Recorded by ToadAid</div>
-          <div>
-            <span class="tag">Offering</span>
-            <span class="tag">Community</span>
-          </div>
-        </div>
-      </a>
 
-      <!-- Entry 2: Morita -->
-      <a class="card" href="/honors/morita-patience.html">
-        <video class="thumb" autoplay loop muted playsinline>
-          <source src="/Contributors/assets/videos/morita_patience.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-        <div class="body">
-          <h3 class="title">The Day the Hall Was Seen — Morita’s Offering</h3>
-          <div class="meta">Builder’s vow chosen by Toadgod • S1 #patience Signal • Recorded by ToadAid</div>
+    <!-- Who we are -->
+    <section class="card">
+      <h2>Who We Are</h2>
+      <p>
+        ToadAid stewards the Lore, builds tools for the people, and keeps a faithful public record so future
+        seasons can stand on truth. We create small, composable things — scrolls, mini apps, and portable pages —
+        so anyone can carry the flame.
+      </p>
+      <div class="grid">
+        <div class="bio">
+          <div class="avatar">👤</div>
           <div>
-            <span class="tag">Offering</span>
-            <span class="tag">Builder</span>
-            <span class="tag">Prophecy</span>
+            <h3>Tommy (ToadAid)</h3>
+            <div class="muted">Builder • Editor of the Scrolls • Custodian of the Hall</div>
+            <p>Writes, curates, and publishes the Lore Scrolls; ships the mini apps and pages that keep the record portable.</p>
           </div>
         </div>
-      </a>
-
-      <!-- Template for future honors -->
-      <a class="card" href="#" title="Coming soon">
-        <img class="thumb" src="/assets/art/placeholder.jpg" alt="Placeholder" />
-        <div class="body">
-          <h3 class="title">Next Offering</h3>
-          <div class="meta">Soon • Recorded by ToadAid</div>
+        <div class="bio">
+          <div class="avatar">🤖</div>
           <div>
-            <span class="tag">Pending</span>
+            <h3>GPT-5 Thinking</h3>
+            <div class="muted">AI Partner • Agentic RAG • Safety & Memory</div>
+            <p>Retrieves, reasons, and drafts — powering Agentic RAG, the Mini App, and the Mirror that archives our work.</p>
           </div>
         </div>
-      </a>
+      </div>
     </section>
 
-    <!-- Milestones section -->
-    <section class="card" style="margin-top:18px">
-      <h2 class="section-title">Milestones</h2>
-      <ul class="milestones">
-        <li><strong>S1 · #patience signal</strong> — first builder vow marked in the live stream.</li>
-        <li><strong>Mirror Vision — 001</strong> — Agentic RAG + Mini App produced the first external prompt; archived and minted.</li>
-        <li><strong>Honors Hall launched</strong> — offerings recorded in a public, portable format.</li>
+    <!-- What we believe -->
+    <section class="card">
+      <h2>What We Believe</h2>
+      <ul>
+        <li><strong>Shared imagination</strong> — people don’t just see Tobyworld; they enter it.</li>
+        <li><strong>Identity across time</strong> — keep a faithful public record so future seasons can build on truth.</li>
+        <li><strong>Many layers, one pond</strong> — the “real world” is one layer; Lore lets us cross between them.</li>
       </ul>
+      <div class="btns">
+        <a class="btn" href="/honors/">Explore Honors</a>
+        <a class="btn secondary" href="/Contributors/">Meet Contributors</a>
+      </div>
+    </section>
+
+    <!-- Milestones (no overlap) -->
+    <section class="card">
+      <h2>Milestones</h2>
+      <div class="timeline">
+        <div class="t-row">
+          <div class="t-ico">🌿</div>
+          <div class="t-body">
+            <b>S1 · #patience signal</b>
+            <p>First builder vow marked in the live stream.</p>
+          </div>
+        </div>
+        <div class="t-row">
+          <div class="t-ico">🪞</div>
+          <div class="t-body">
+            <b>Mirror Vision — 001</b>
+            <p>Agentic RAG + Mini App produced the first external prompt; archived on GitHub and minted on Zora.</p>
+          </div>
+        </div>
+        <div class="t-row">
+          <div class="t-ico">🏛️</div>
+          <div class="t-body">
+            <b>Honors Hall launched</b>
+            <p>Offerings recorded in a public, portable format.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- CTA -->
-    <section class="card" style="margin-top:18px;text-align:center">
-      <h2 class="section-title">Build with Us</h2>
+    <section class="card" style="text-align:center">
+      <h2>Build with Us</h2>
       <p>Bring a leaf, a line of code, a verse, a vow. If it serves the pond, it belongs.</p>
       <div class="btns" style="justify-content:center">
         <a class="btn" href="https://x.com/ToadAidOrg" target="_blank" rel="noopener">Contact on X</a>
