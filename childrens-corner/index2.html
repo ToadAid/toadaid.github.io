@@ -12,38 +12,41 @@
   header{background:linear-gradient(180deg,#2f6b4f,#3a7a5a);color:#fff;text-align:center;padding:52px 20px}
   header h1{margin:0 0 8px;font-size:clamp(1.7rem,3.2vw,2.4rem)}
   header p{margin:0;opacity:.95}
-  nav{max-width:1000px;margin:0 auto;padding:12px 18px 0;font-size:.95rem}
   main{max-width:1000px;margin:0 auto;padding:22px 18px 64px}
-  .card{background:var(--paper);border:1px solid var(--ring);border-radius:16px;box-shadow:0 8px 24px var(--ring);padding:18px;margin-bottom:16px}
-  .chapter h2{margin:6px 0 10px;font-size:1.2rem}
-  .pair{margin:10px 0}
-  .cn{font-weight:700; white-space:pre-wrap}
-  .en{color:#2a473b;margin-top:2px}
-  .muted{color:var(--muted)}
-  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-  .toc a{background:#eaf6ef;border:1px solid #d7e9df;color:#1e3f31;padding:6px 10px;border-radius:999px;font-size:.9rem}
-  .btn{display:inline-block;margin-top:10px;padding:9px 12px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600}
-  .btn.secondary{background:#f0f5f3;color:#1e3f31;border:1px solid #d7e9df}
+  .card{background:var(--paper);border:1px solid var(--ring);border-radius:16px;box-shadow:0 8px 24px var(--ring);padding:22px;margin-bottom:16px}
+  h2{margin-top:0;color:#2a473b}
   footer{text-align:center;color:var(--muted);font-size:.92rem;margin-top:18px}
 </style>
 </head>
 <body>
   <header>
     <h1>Children’s Corner · Chinese Classics</h1>
-    <p>Bilingual scrolls for study & preservation</p>
+    <p>Bilingual scrolls & guides for families</p>
   </header>
   <main style="max-width:1000px;margin:0 auto;padding:22px 18px 64px">
     <section class="card">
       <h2>Featured Scrolls</h2>
       <ul>
-        <li><a href="dizigui.html">《弟子规》 · Di Zi Gui (Bilingual — simplified)</a></li>
-        <li><a href="dizigui_complete.html">《弟子规》 · Di Zi Gui (Complete Bilingual Edition)</a></li>
-        <li><a href="sanzijing.html">《三字经》 · San Zi Jing (Bilingual — simplified)</a></li>
-        <li><a href="sanzijing_complete.html">《三字经》 · San Zi Jing (Complete Bilingual Edition)</a></li>
+        <li>
+          《弟子规》 · Di Zi Gui  
+          <ul>
+            <li><a href="dizigui.html">Bilingual — simplified</a></li>
+            <li><a href="dizigui_complete.html">Complete Bilingual Edition</a></li>
+            <li><a href="about_dizigui.html">About (for Parents)</a></li>
+          </ul>
+        </li>
+        <li>
+          《三字经》 · San Zi Jing  
+          <ul>
+            <li><a href="sanzijing.html">Bilingual — simplified</a></li>
+            <li><a href="sanzijing_complete.html">Complete Bilingual Edition</a></li>
+            <li><a href="about_sanzijing.html">About (for Parents)</a></li>
+          </ul>
+        </li>
       </ul>
     </section>
     <section class="card">
-      <p class="muted">Tip: You can mint the preservation edition on-chain (Zora) and generate a PDF for offline teaching.</p>
+      <p class="muted">Tip: Families may read the classics with children, then visit the “About” pages for reflection and guidance.</p>
     </section>
   </main>
 </body>
