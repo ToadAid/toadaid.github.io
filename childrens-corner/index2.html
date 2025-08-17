@@ -1,196 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>ToadAid Children's Corner — One Leaf for the Young</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Children’s Corner · Classics Index</title>
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f5f1e6;
-    color: #2f2f2f;
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
-  }
-  header {
-    background: #355e3b;
-    color: white;
-    text-align: center;
-    padding: 2rem 1rem;
-  }
-  header h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-  header p {
-    font-style: italic;
-    color: #e2e2e2;
-  }
-  main {
-    max-width: 1000px;
-    margin: auto;
-    padding: 2rem 1rem;
-  }
-  .action-buttons {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  .action-buttons a {
-    display: inline-block;
-    margin: 0.3rem;
-    padding: 0.8rem 1.5rem;
-    border-radius: 10px;
-    font-weight: bold;
-    text-decoration: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
-    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  }
-  .action-buttons a.submit-btn {
-    background: gold;
-    color: black;
-  }
-  .action-buttons a.submit-btn:hover {
-    background: darkgoldenrod;
-    color: white;
-  }
-  .action-buttons a.read-btn {
-    background: #355e3b;
-    color: white;
-  }
-  .action-buttons a.read-btn:hover {
-    background: #1f3b2d;
-  }
-  .story-card {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.15s ease-in-out;
-  }
-  .story-card:hover {
-    transform: translateY(-3px);
-  }
-  .story-image {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: #f5f1e6;
-  }
-  .story-content {
-    padding: 1rem;
-  }
-  .story-content h2 {
-    margin: 0 0 0.5rem 0;
-    color: #355e3b;
-  }
-  .story-content p {
-    font-size: 0.95rem;
-    color: #444;
-  }
-  .story-link {
-    display: inline-block;
-    margin-top: 0.8rem;
-    padding: 0.5rem 1rem;
-    background: gold;
-    color: black;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 6px;
-    transition: background 0.2s;
-  }
-  .story-link:hover {
-    background: darkgoldenrod;
-    color: white;
-  }
-  footer {
-    text-align: center;
-    padding: 2rem 1rem;
-    font-size: 0.9rem;
-    color: #666;
-  }
-  footer a {
-    color: #355e3b;
-    text-decoration: none;
-    font-weight: bold;
-  }
+  :root{--bg:#f5f1e6;--paper:#fffdf6;--ink:#2f2f2f;--muted:#6b6b6b;--accent:#2f6b4f;--ring:rgba(0,0,0,.06)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;line-height:1.75}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  header{background:linear-gradient(180deg,#2f6b4f,#3a7a5a);color:#fff;text-align:center;padding:52px 20px}
+  header h1{margin:0 0 8px;font-size:clamp(1.7rem,3.2vw,2.4rem)}
+  header p{margin:0;opacity:.95}
+  nav{max-width:1000px;margin:0 auto;padding:12px 18px 0;font-size:.95rem}
+  main{max-width:1000px;margin:0 auto;padding:22px 18px 64px}
+  .card{background:var(--paper);border:1px solid var(--ring);border-radius:16px;box-shadow:0 8px 24px var(--ring);padding:18px;margin-bottom:16px}
+  .chapter h2{margin:6px 0 10px;font-size:1.2rem}
+  .pair{margin:10px 0}
+  .cn{font-weight:700; white-space:pre-wrap}
+  .en{color:#2a473b;margin-top:2px}
+  .muted{color:var(--muted)}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .toc a{background:#eaf6ef;border:1px solid #d7e9df;color:#1e3f31;padding:6px 10px;border-radius:999px;font-size:.9rem}
+  .btn{display:inline-block;margin-top:10px;padding:9px 12px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600}
+  .btn.secondary{background:#f0f5f3;color:#1e3f31;border:1px solid #d7e9df}
+  footer{text-align:center;color:var(--muted);font-size:.92rem;margin-top:18px}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>🐸📚 ToadAid Children's Corner</h1>
-  <p>One scroll for the wise, one leaf for the young.</p>
-</header>
-
-<main>
-
-  <!-- Action Buttons -->
-  <div class="action-buttons">
-    <a href="submit.html" class="submit-btn">🐸📚 Submit Your Story</a>
-    <a href="#stories" class="read-btn">📖 Read Stories</a>
-  </div>
-
-  <!-- Story Card: Blue Toby’s First Leap -->
-  <div id="stories" class="story-card">
-    <div class="story-image" style="background-image: url('images/blue-toby.jpg');"></div>
-    <div class="story-content">
-      <h2>Blue Toby’s First Leap</h2>
-      <p>Follow Blue Toby’s very first adventure across the lily pads and discover the Lore of Patience.</p>
-      <a class="story-link" href="blue-toby-first-leap.html">Read Story</a>
-    </div>
-  </div>
-
-  <!-- Story Card: 三字经 -->
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/sanzi-jing-cover.jpg');"></div>
-    <div class="story-content">
-      <h2>三字经 · The Three Character Classic</h2>
-      <p>《三字经》 is one of the most famous Chinese classics for children. With just three characters per line, it teaches virtue, respect, study, and harmony. A scroll for guiding the young mind.</p>
-      <a class="story-link" href="sanzijing.html">Read Scroll</a>
-    </div>
-  </div>
-
-  <!-- Story Card: 弟子规 -->
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/dizi-gui-cover.jpg');"></div>
-    <div class="story-content">
-      <h2>弟子规 · Standards for Being a Good Student and Child</h2>
-      <p>《弟子规》 lays out the rules of respect, humility, and care in family and society. A foundational guide for children to learn kindness, order, and filial piety.</p>
-      <a class="story-link" href="dizigui.html">Read Scroll</a>
-    </div>
-  </div>
-
-  <!-- Story Card Placeholder: Blue Toby and the Lantern Lily -->
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/lantern-lily-placeholder.jpg');"></div>
-    <div class="story-content">
-      <h2>Blue Toby and the Lantern Lily <span style="color:#888;">(Coming Soon)</span></h2>
-      <p>One moonlit night, a glowing lily appears in the pond — and Blue Toby learns that courage sometimes blooms in the dark.</p>
-      <a class="story-link" href="#">Coming Soon</a>
-    </div>
-  </div>
-
-  <!-- Story Card Placeholder: The Day Toby Found the Sky’s Mirror -->
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/skys-mirror-placeholder.jpg');"></div>
-    <div class="story-content">
-      <h2>The Day Toby Found the Sky’s Mirror <span style="color:#888;">(Coming Soon)</span></h2>
-      <p>When the pond becomes still as glass, Blue Toby sees the sky below him — and discovers a truth about reflection and the heart.</p>
-      <a class="story-link" href="#">Coming Soon</a>
-    </div>
-  </div>
-
-</main>
-
-<footer>
-  📜 Part of the <a href="#">ToadAid Children's Corner</a> — One scroll for the wise, one leaf for the young.
-</footer>
-
+  <header>
+    <h1>Children’s Corner · Chinese Classics</h1>
+    <p>Bilingual scrolls for study & preservation</p>
+  </header>
+  <main style="max-width:1000px;margin:0 auto;padding:22px 18px 64px">
+    <section class="card">
+      <h2>Featured Scrolls</h2>
+      <ul>
+        <li><a href="dizigui.html">《弟子规》 · Di Zi Gui (Bilingual — simplified)</a></li>
+        <li><a href="dizigui_complete.html">《弟子规》 · Di Zi Gui (Complete Bilingual Edition)</a></li>
+        <li><a href="sanzijing.html">《三字经》 · San Zi Jing (Bilingual — simplified)</a></li>
+        <li><a href="sanzijing_complete.html">《三字经》 · San Zi Jing (Complete Bilingual Edition)</a></li>
+      </ul>
+    </section>
+    <section class="card">
+      <p class="muted">Tip: You can mint the preservation edition on-chain (Zora) and generate a PDF for offline teaching.</p>
+    </section>
+  </main>
 </body>
 </html>
