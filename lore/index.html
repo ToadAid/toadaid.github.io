@@ -4,7 +4,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Toadgod Lore Library — Original Tweets & Commentary</title>
-<meta name="description" content="A living book of Toadgod’s original lore tweets, side-by-side with commentary and symbolism." />
 <meta name="theme-color" content="#2f6e4f" />
 <style>
   :root{ --bg:#f7f5ef; --paper:#fffdfa; --ink:#2e2e2e; --muted:#666; --accent:#2f6e4f; --ring:rgba(0,0,0,.1); --shadow:0 6px 20px rgba(0,0,0,.08); }
@@ -87,7 +86,7 @@ let LORE_DATA=[],ALL_TAGS=[],activeTag=null,searchText="";
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const content=$("#content"), toc=$("#toc"), tagsBox=$("#tags"), q=$("#q"), clearBtn=$("#clear");
 
-function escapeHtml(s){return (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+function escapeHtml(s){return (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;","'":"&#39;"}[m]) ).replace(" >", "&gt;");}
 function escapeWithBr(s){return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>");}
 
 function groupByYear(arr){const map=new Map();arr.forEach(it=>{const y=(it.date||"").slice(0,4)||"Unknown";if(!map.has(y))map.set(y,[]);map.get(y).push(it);});return Array.from(map.entries()).sort((a,b)=>a[0].localeCompare(b[0]));}
@@ -157,10 +156,7 @@ async function loadLoreFromMarkdown(mdPath){
     let commentary_html=parts.join(""); if(!commentary_html){const any=extractBetween(body,/##\s*[\s\S]*?\(EN\)\s*\n/i,/\n## |\n---|\n```|$/); if(any) commentary_html=mdToSimpleHtml(any);}
 
     const media = fm.media ? {type:"image", src: fm.media} : null;
-
-    // NORMALIZE ID: TOBY_T### -> TOBY_L### (case-insensitive). Preserve raw in _raw_id.
-    const rawId = fm.id || "";
-    const normId = (rawId.match(/^TOBY_T(\d+)$/i) ? ("TOBY_L"+RegExp.$1) : rawId);
+    const rawId=fm.id||""; const normId=(rawId.match(/^TOBY_T(\d+)$/i)?("TOBY_L"+RegExp.$1):rawId);
     const id = normId || slugify(fm.title || ("lore-"+(i+1)));
     const title=fm.title || ("Lore "+(i+1)), date=fm.date || "";
     let tweet_url=fm.tweet_url || ""; if(!tweet_url && tweetBlock){const u=tweetBlock.match(/https?:\/\/\S+/); if(u) tweet_url=u[0];}
@@ -171,7 +167,21 @@ async function loadLoreFromMarkdown(mdPath){
 }
 
 async function tryLoad(){
-  const candidates=["toadgod_all_tweets.md","./toadgod_all_tweets.md","/lore/toadgod_all_tweets.md","./TOADGOD_ALL_TWEETS.md","/lore/TOADGOD_ALL_TWEETS.md"];
+  const owner = (location.hostname.split('.')[0]||'');
+  const repo = owner ? (owner + '.github.io') : '';
+  const branch = 'main';
+  const rawBase = (owner && repo) ? `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/lore/` : null;
+  const candidates = [
+    "toadgod_all_tweets.md",
+    "./toadgod_all_tweets.md",
+    "/lore/toadgod_all_tweets.md",
+    "toadgod_all_tweets.md.txt",
+    "./toadgod_all_tweets.md.txt",
+    "/lore/toadgod_all_tweets.md.txt",
+    rawBase ? rawBase + "toadgod_all_tweets.md" : null,
+    rawBase ? rawBase + "toadgod_all_tweets.md.txt" : null
+  ].filter(Boolean);
+
   let lastErr=null;
   for(const p of candidates){
     try{const items=await loadLoreFromMarkdown(p); if(items.length){console.log("Loaded lore from",p); return items;}}catch(e){lastErr=e;}
@@ -188,7 +198,7 @@ async function tryLoad(){
     renderTags(); paint();
   }catch(err){
     console.error(err);
-    content.innerHTML = "<article class='scroll'><div class='head'><h2>Load error</h2></div><p>"+escapeHtml(String(err))+"</p><p><strong>Checklist:</strong> Ensure the file exists at <code>/lore/toadgod_all_tweets.md</code> and the filename casing matches.</p></article>";
+    content.innerHTML = "<article class='scroll'><div class='head'><h2>Load error</h2></div><p>"+escapeHtml(String(err))+"</p><p><strong>Tip:</strong> If GitHub Pages is converting <code>.md</code> to HTML, either add a <code>.nojekyll</code> file at repo root, or rename the data file to <code>toadgod_all_tweets.md.txt</code> and let this page fetch that instead.</p></article>";
   }
 })();
 </script>
