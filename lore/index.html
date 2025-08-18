@@ -21,10 +21,10 @@
   main{display:grid;grid-template-columns:360px 1fr;gap:20px;max-width:1180px;margin:16px auto;padding:0 18px}
   aside{align-self:start;background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:sticky;top:76px}
   aside h3{margin:4px 0 10px;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-  form .row{display:flex;gap:10px;margin-bottom:8px}
-  form label{display:block;font-size:.85rem;color:var(--muted)}
+  form .row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+  form label{display:block;font-size:.85rem;color:var(--muted);flex:1}
   input[type=text],input[type=date],textarea{width:100%;padding:8px 10px;border:1px solid var(--ring);border-radius:10px;background:#fff;color:#222}
-  textarea{min-height:90px;resize:vertical}
+  textarea{min-height:110px;resize:vertical}
   .hint{font-size:.8rem;color:var(--muted);margin-top:2px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .danger{background:#ffe8e8;border-color:#ffb3b3}
@@ -54,11 +54,20 @@
   .tweet-btn{background:#1d9bf0;color:#fff;border-color:#1d9bf0}
   .tweet-btn:hover{filter:brightness(.95)}
   .muted{color:#999}
-  /* markdown defaults inside commentary */
+  /* commentary markdown tweaks */
   .commentary h1,.commentary h2,.commentary h3{margin:0.2rem 0 0.4rem}
   .commentary p{margin:0.3rem 0}
   .commentary ul{margin:0.3rem 0 0.3rem 1.2rem}
   .commentary li{margin:0.15rem 0}
+  /* Markdown help tooltip */
+  details.md-help{min-width:220px;max-width:320px}
+  details.md-help>summary{list-style:none;cursor:pointer;user-select:none}
+  details.md-help>summary::marker{display:none}
+  details.md-help>summary .icon{display:inline-block;padding:6px 9px;border:1px solid var(--ring);border-radius:10px;background:var(--paper);box-shadow:var(--shadow);font-weight:600}
+  details.md-help[open] .icon{background:#eef8f1;border-color:#cfe8db}
+  .md-card{margin-top:8px;background:#fff;border:1px solid var(--ring);border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;font-size:.9rem}
+  .md-card code{background:#f4f4f4;border:1px solid #e8e8e8;border-radius:6px;padding:1px 5px}
+  pre{background:#f5f5f5;border:1px solid #e8e8e8;border-radius:10px;padding:10px;overflow:auto}
   @media(max-width:1060px){main{grid-template-columns:1fr}.twocol{grid-template-columns:1fr}aside{position:relative;top:0}}
 </style>
 <!-- Markdown renderer -->
@@ -93,6 +102,7 @@
       <button class="btn danger hidden" id="hideForm">✖ Close</button>
       <button class="btn" id="saveAsData">⬇ Export as data.json</button>
     </div>
+
     <form id="entryForm" class="hidden">
       <div class="row grid2">
         <div><label>ID<input type="text" id="fid" placeholder="TOBY_T002 or TOBY_L002" required></label></div>
@@ -100,7 +110,35 @@
       </div>
       <div class="row"><label>Title<input type="text" id="ftitle" placeholder="People’s Script" required></label></div>
       <div class="row"><label>Original Lore (tweet text)<textarea id="ftweet" placeholder="Paste exact original tweet…"></textarea></label></div>
-      <div class="row"><label>Commentary (Markdown)<textarea id="fcomment" placeholder="### ✨ Literal Explanation\n...\n\n### 🌱 Spiritual Interpretation\n...\n\n### 🔮 Symbolic Meaning\n- **Point**\n- **Point**\n\n_Final note…_"></textarea></label></div>
+
+      <div class="row">
+        <label>Commentary (Markdown)
+          <textarea id="fcomment" placeholder="### ✨ Literal Explanation\n...\n\n### 🌱 Spiritual Interpretation\n...\n\n### 🔮 Symbolic Meaning\n- **Point**\n- **Point**\n\n_Final note…_"></textarea>
+        </label>
+        <details class="md-help">
+          <summary><span class="icon">❓ Markdown help</span></summary>
+          <div class="md-card">
+            <strong>Basics</strong><br/>
+            <code>#</code> Heading, <code>**bold**</code>, <code>*italic*</code>,<br/>
+            <code>-</code> list item, <code>[link](https://x.com/)</code>
+            <hr/>
+            <strong>Your standard layout</strong>
+<pre>### ✨ Literal Explanation (EN)
+Short literal meaning...
+
+### 🌱 Spiritual Interpretation (EN)
+Deeper / moral teaching...
+
+### 🔮 Symbolic Meaning (EN)
+- **A = B** description
+- **C = D** description
+
+_Last line with emphasis..._</pre>
+            <em>Tip:</em> blank lines = new paragraph. Links open in a new tab.
+          </div>
+        </details>
+      </div>
+
       <div class="row grid2">
         <div><label>Tags (comma)<input type="text" id="ftags" placeholder="Identity, People, Decentralization"></label></div>
         <div><label>Tweet URL<input type="text" id="furl" placeholder="https://x.com/..."></label></div>
@@ -152,10 +190,10 @@ let activeTag=null, searchText="";
 let sourceLoaded = ""; // "public" | "local" | "empty"
 
 /* ---------- Utils ---------- */
-function escapeHtml(s){return (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
-function escapeWithBr(s){return escapeHtml(s).replace(/(?:\\r?\\n){1,}/g,"<br>");}
+function escapeHtml(s){return (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;","<": "&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+function escapeWithBr(s){return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>");}
 function slugify(s){return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");}
-function normalizeId(raw){const m=(raw||"").match(/^TOBY_T(\\d+)$/i);return m?("TOBY_L"+m[1]):(raw||"");}
+function normalizeId(raw){const m=(raw||"").match(/^TOBY_T(\d+)$/i);return m?("TOBY_L"+m[1]):(raw||"");}
 function saveLocal(){ localStorage.setItem(LOCAL_KEY, JSON.stringify(LORE_DATA)); $("#saveNote").textContent="Saved ✓"; setTimeout(()=>$("#saveNote").textContent="",1500); }
 
 /* ---------- Load order: data.json → local fallback ---------- */
@@ -242,9 +280,7 @@ function renderScroll(item){
   const left=document.createElement("div"); left.className="panel";
   left.innerHTML=`<h3>Original Lore</h3><div class="orig">${escapeWithBr(item.tweet_text||"")}</div>`;
   const right=document.createElement("div"); right.className="panel commentary";
-  // Markdown → HTML (safe-ish; trusted admin input)
   const html = marked.parse(item.commentary_md || "");
-  // ensure links open safely
   const tmp = document.createElement("div"); tmp.innerHTML = html;
   tmp.querySelectorAll("a").forEach(a=>{ a.setAttribute("target","_blank"); a.setAttribute("rel","noopener"); });
   right.innerHTML=`<h3>Commentary</h3><div class="comm">${tmp.innerHTML || "<p class='muted'>—</p>"}</div>`;
@@ -298,8 +334,7 @@ function bindRowButtons(){
 }
 function paint(){
   const list=LORE_DATA.filter(matches).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.title.localeCompare(b.title));
-  $("#content").innerHTML="";
-  list.forEach(it=>$("#content").appendChild(renderScroll(it)));
+  $("#content").innerHTML=""; list.forEach(it=>$("#content").appendChild(renderScroll(it)));
   renderTags(); bindRowButtons(); applyAdminUI();
 }
 
@@ -330,7 +365,7 @@ $("#addEntry").addEventListener("click",(e)=>{
     date:$("#fdate").value.trim(),
     title:$("#ftitle").value.trim(),
     tweet_text:$("#ftweet").value,
-    commentary_md:$("#fcomment").value,         // store markdown!
+    commentary_md:$("#fcomment").value,         // store markdown
     tweet_url:$("#furl").value.trim(),
     tags:$("#ftags").value.split(",").map(s=>s.trim()).filter(Boolean),
     media:$("#fimg").value.trim()?{type:"image",src:$("#fimg").value.trim()}:null
