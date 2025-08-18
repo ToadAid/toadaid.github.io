@@ -82,7 +82,7 @@
       <span class="badge mode viewer" id="modeBadge" title="Click to unlock Admin">🔒 Viewer Mode</span>
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
-      <button class="btn" id="fontReset">A</button>
+      <button class="btn" id="fontReset">A-</button>
       <button class="btn" id="exportJson">Export JSON</button>
       <label class="btn hidden" id="importWrap" style="cursor:pointer">
         Import JSON<input type="file" id="importJson" accept="application/json" style="display:none">
@@ -441,6 +441,12 @@ $("#clearAll").addEventListener("click",()=>{
   if(confirm("Clear local working copy? This does not touch data.json on the server.")){
     LORE_DATA=[]; localStorage.removeItem(LOCAL_KEY); paint();
   }
+});
+
+(async()=>{ await loadData(); paint(); })();
+</script>
+</body>
+</html>
 });
 
 (async()=>{ await loadData(); paint(); })();
