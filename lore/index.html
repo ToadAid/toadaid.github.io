@@ -83,6 +83,8 @@
   .footerbar{display:flex; justify-content:space-between; gap:10px; margin-top:12px; flex-wrap:wrap}
   .footerbar a, .footerbar button{padding:8px 12px; border:1px solid var(--ring); border-radius:10px; background:#fff; color:#222; text-decoration:none; cursor:pointer}
   [data-theme="dark"] .footerbar a, [data-theme="dark"] .footerbar button{ background:#0f1311; color:#e9efe8 }
+  .tweet-btn{background:#1d9bf0; color:#fff; border-color:#1d9bf0;}
+  .tweet-btn:hover{filter:brightness(0.95)}
 
   footer{max-width:1180px; margin:24px auto 40px; padding:0 18px; color:var(--muted)}
   .note{margin-top:10px; font-size:.9rem; color:var(--muted)}
@@ -136,27 +138,6 @@
   <p class="note">Tip: Use the <em>Toggle Commentary</em> button to switch between pure reading and study mode.</p>
 </footer>
 
-<!-- ===== Markdown format expected in /lore/TOBYWORLD_LORE_v1.0.md =====
-Each entry is two blocks separated by `---` lines:
-
----
-id: L001
-date: 2024-03-29
-title: People’s Script
-tweet_url: https://x.com/yourstatus
-tags: Identity, People, Decentralization
-media: lore-images/L001.jpg
----
-Tweet:
-a hint of future’s script…
-for $toby is the people,
-and the people is $toby.
-
-Commentary:
-<em>Identity without rulers.</em> The Lore mirrors a circle:
-<strong>$TOBY is the people; the people is $TOBY</strong>.
-================================================================ -->
-
 <script>
 /* ========= core state / helpers ========= */
 let LORE_DATA = [];                       // will be filled from markdown
@@ -169,7 +150,7 @@ const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
 const content = $("#content"), toc = $("#toc"), tagsBox = $("#tags"), q = $("#q"), clearBtn = $("#clear");
 
 function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-function escapeWithBr(s){ return escapeHtml(s).replace(/\n/g,"<br>"); }
+function escapeWithBr(s){ return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>"); }
 
 /* ========= UI building ========= */
 function groupByYear(arr){
@@ -282,6 +263,7 @@ function renderScroll(item, idx, list){
   const prev = list[idx-1], next = list[idx+1];
   foot.innerHTML = `
     <a ${prev?`href="#${prev.id}"`:"style='opacity:.4;pointer-events:none'"}>← Previous</a>
+    ${item.tweet_url ? `<a class="tweet-btn" href="${item.tweet_url}" target="_blank" rel="noopener">Open Original Tweet</a>` : `<a class="tweet-btn" style="opacity:.5;pointer-events:none" title="No tweet link provided.">Open Original Tweet</a>`}
     <button onclick="copyLink('${item.id}')">Copy link</button>
     <a ${next?`href="#${next.id}"`:"style='opacity:.4;pointer-events:none'"}>Next →</a>
   `;
@@ -302,7 +284,6 @@ function paint(){
 }
 
 /* ========= interactions ========= */
-// progress bar
 (function(){
   const bar = $("#progressBar");
   const onScroll = ()=>{
@@ -315,7 +296,6 @@ function paint(){
   onScroll();
 })();
 
-// save/restore last section
 (function(){
   const KEY="lore:last";
   const secs = ()=> $$(".scroll[id]");
@@ -334,7 +314,6 @@ function paint(){
   window.observeSections = ()=> secs().forEach(s=> io.observe(s));
 })();
 
-// highlight TOC by scroll position
 function observeSections(){
   const links = $$(".toc a");
   const map = {}; links.forEach(a=>{ map[a.getAttribute("href").slice(1)] = a; });
@@ -350,7 +329,6 @@ function observeSections(){
   $$(".scroll").forEach(s=> io.observe(s));
 }
 
-// toggle commentary
 $("#toggleComm").addEventListener("click", ()=>{
   const off = document.body.dataset.comm === "off";
   document.body.dataset.comm = off ? "on" : "off";
@@ -358,7 +336,6 @@ $("#toggleComm").addEventListener("click", ()=>{
   $("#toggleComm").textContent = off ? "Toggle Commentary" : "Show Commentary";
 });
 
-// font size
 (function(){
   const KEY="lore:fontScale";
   let scale = parseFloat(localStorage.getItem(KEY) || "1");
@@ -368,17 +345,14 @@ $("#toggleComm").addEventListener("click", ()=>{
   $("#fontReset").addEventListener("click", ()=>{ scale=1; localStorage.setItem(KEY, scale); apply(); });
 })();
 
-// search
 q.addEventListener("input", ()=>{ searchText=q.value.trim(); paint(); });
 clearBtn.addEventListener("click", ()=>{ q.value=""; searchText=""; activeTag=null; paint(); });
 
-// copy permalink
 function copyLink(id){
   const url = location.origin + location.pathname + "#" + id;
   navigator.clipboard.writeText(url).then(()=> alert("Link copied: " + url));
 }
 
-// theme toggle (persist)
 (function(){
   const KEY="lore:theme";
   const saved = localStorage.getItem(KEY);
@@ -390,64 +364,171 @@ function copyLink(id){
   });
 })();
 
-/* ========= markdown auto-loader ========= */
-async function loadLoreFromMarkdown(mdPath){
-  try{
-    const res = await fetch(mdPath, {cache: "no-store"});
-    if(!res.ok) throw new Error("Fetch failed: " + res.status);
-    const md = await res.text();
-
-    // split by lines of only --- (two blocks per entry: frontmatter + content)
-    const blocks = md.split(/\n---\s*\n/).map(s=>s.trim()).filter(Boolean);
-    const items = [];
-
-    for(let i=0; i<blocks.length; ){
-      const front = blocks[i++] || "";
-      const fm = Object.fromEntries(
-        [...front.matchAll(/^(id|date|title|tweet_url|tags|media):\s*(.+)$/gmi)]
-          .map(m=>[m[1].toLowerCase(), m[2].trim()])
-      );
-      const contentBlock = (blocks[i++] || "");
-
-      const tweetMatch = contentBlock.match(/(?:^|\n)Tweet:\s*([\s\S]*?)(?:\n(?:Commentary|$))/i);
-      const commMatch  = contentBlock.match(/(?:^|\n)Commentary:\s*([\s\S]*)$/i);
-
-      const tweet_text = tweetMatch ? tweetMatch[1].trim() : "";
-      const commentary_html = commMatch ? commMatch[1].trim() : "";
-
-      const tags = (fm.tags||"").split(",").map(x=>x.trim()).filter(Boolean);
-      const media = fm.media ? {type:"image", src: fm.media} : null;
-
-      if(!fm.id || !fm.date || !fm.title || !tweet_text){
-        console.warn("Skipping incomplete block:", fm);
-        continue;
-      }
-
-      items.push({
-        id: fm.id,
-        date: fm.date,
-        title: fm.title,
-        tweet_url: fm.tweet_url || "",
-        tweet_text,
-        commentary_html,
-        tags,
-        media
-      });
-    }
-    return items;
-  }catch(e){
-    console.error("Lore MD load error:", e);
-    return [];
+/* ========= markdown auto-loader (toadgod_all_tweets.md) ========= */
+function parseTagList(val){
+  if(!val) return [];
+  let s = val.trim();
+  if (s.startsWith("[")){
+    s = s.replace(/[\[\]]/g,"");
   }
+  return s.split(",").map(x=>x.trim()).filter(Boolean);
 }
 
-// boot: load markdown, compute tags, paint
+function kvParse(text){
+  const out = {};
+  (text||"").split(/\r?\n/).forEach(line=>{
+    const m = line.match(/^\s*([A-Za-z_]+)\s*:\s*(.+)\s*$/);
+    if(m){
+      out[m[1].toLowerCase()] = m[2].trim();
+    }
+  });
+  if(out.tags) out.tags = parseTagList(out.tags);
+  return out;
+}
+
+function slugify(s){
+  return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+}
+
+function extractBetween(md, startRegex, endRegex){
+  const m = md.match(startRegex);
+  if(!m) return "";
+  const start = m.index + m[0].length;
+  const md2 = md.slice(start);
+  const e = md2.search(endRegex);
+  return (e === -1 ? md2 : md2.slice(0, e)).trim();
+}
+
+function mdToSimpleHtml(md){
+  let s = md;
+  s = s.replace(/^##\s*(.+)$/gim, "<h4>$1</h4>");
+  s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  if (/^\s*-\s+/m.test(s)){
+    const lines = s.split(/\r?\n/);
+    let out = "", inList = false;
+    for (const L of lines){
+      const m = L.match(/^\s*-\s+(.*)$/);
+      if (m){
+        if(!inList){ out += "<ul>"; inList = true; }
+        out += "<li>"+escapeHtml(m[1])+"</li>";
+      } else {
+        if(inList){ out += "</ul>"; inList = false; }
+        if (L.trim()) out += "<p>"+escapeHtml(L)+"</p>";
+      }
+    }
+    if(inList) out += "</ul>";
+    s = out || "";
+  } else {
+    s = "<p>"+escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>")+"</p>";
+  }
+  return s;
+}
+
+async function loadLoreFromMarkdown(mdPath){
+  const res = await fetch(mdPath, {cache:"no-store"});
+  if(!res.ok) throw new Error("Failed to fetch markdown: "+res.status);
+  const md = await res.text();
+
+  // Find all frontmatter blocks: either --- ... --- or ```yaml ... ```
+  const blocks = [];
+  const reFM = /(^|\n)---\s*\n([\s\S]*?)\n---\s*\n/g;
+  let m;
+  while((m = reFM.exec(md))){
+    const start = m.index + m[1].length;
+    blocks.push({type:"fm", start, end: reFM.lastIndex, text: m[2]});
+  }
+  const reY = /(^|\n)```yaml\s*\n([\s\S]*?)\n```\s*\n/g;
+  while((m = reY.exec(md))){
+    const start = m.index + m[1].length;
+    blocks.push({type:"yaml", start, end: reY.lastIndex, text: m[2]});
+  }
+  blocks.sort((a,b)=>a.start-b.start);
+
+  const items = [];
+  for (let i=0;i<blocks.length;i++){
+    const b = blocks[i];
+    const fm = kvParse(b.text);
+    if(!fm.title && !fm.date) continue; // Not a lore entry marker
+
+    const contentStart = b.end;
+    const contentEnd = (i+1 < blocks.length ? blocks[i+1].start : md.length);
+    const body = md.slice(contentStart, contentEnd);
+
+    // Extract tweet section (prefer EN, allow generic)
+    let tweetBlock = extractBetween(body, /##[^\n]*Original Tweet[^\n]*\n/i, /\n## |\n---|\n```|$/);
+    if(!tweetBlock){
+      tweetBlock = extractBetween(body, /##[^\n]*Tweet[^\n]*\n/i, /\n## |\n---|\n```|$/);
+    }
+    let tweet_text = "";
+    if (/>/.test(tweetBlock)){
+      tweet_text = tweetBlock.split(/\r?\n/).map(L=>L.replace(/^\s*>\s?/,"")).filter(Boolean).join("\n");
+    } else {
+      tweet_text = tweetBlock.replace(/\*\*Timestamp:[\s\S]*/i,"").trim();
+    }
+
+    // Extract commentary: Literal + Spiritual + Symbolic (EN), fallback any EN
+    const parts = [];
+    const secNames = [
+      /##\s*✨\s*Literal Explanation\s*\(EN\)\s*\n/i,
+      /##\s*🌱\s*Spiritual Interpretation\s*\(EN\)\s*\n/i,
+      /##\s*🔮\s*Symbolic Meaning\s*\(EN\)\s*\n/i
+    ];
+    for (const sr of secNames){
+      const chunk = extractBetween(body, sr, /\n## |\n---|\n```|$/);
+      if (chunk) parts.push(mdToSimpleHtml(chunk));
+    }
+    let commentary_html = parts.join("");
+    if(!commentary_html){
+      const any = extractBetween(body, /##\s*[\s\S]*?\(EN\)\s*\n/i, /\n## |\n---|\n```|$/);
+      if (any) commentary_html = mdToSimpleHtml(any);
+    }
+
+    // media path if declared
+    let media = null;
+    if (fm.media){
+      media = {type:"image", src: fm.media};
+    }
+
+    // tags/id/date/title/url
+    const id = fm.id || slugify(fm.title || ("lore-"+(i+1)));
+    const title = fm.title || ("Lore "+(i+1));
+    const date = fm.date || "";
+    let tweet_url = fm.tweet_url || "";
+    if (!tweet_url && tweetBlock){
+      const urlMatch = tweetBlock.match(/https?:\/\/\S+/);
+      if (urlMatch) tweet_url = urlMatch[0];
+    }
+
+    // skip if minimal fields missing
+    if (!tweet_text && !commentary_html && !title) continue;
+
+    items.push({
+      id, title, date, tweet_url,
+      tweet_text,
+      commentary_html,
+      tags: Array.isArray(fm.tags) ? fm.tags : parseTagList(fm.tags),
+      media
+    });
+  }
+  return items;
+}
+
+// boot
 (async ()=>{
-  const loaded = await loadLoreFromMarkdown("TOBYWORLD_LORE_v1.0.md");
-  LORE_DATA = loaded;
-  ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
-  renderTags();
-  paint();
+  try{
+    const loaded = await loadLoreFromMarkdown("toadgod_all_tweets.md");
+    if (!loaded.length){
+      content.innerHTML = "<article class='scroll'><div class='head'><h2>No entries parsed</h2></div><p>Please check toadgod_all_tweets.md format.</p></article>";
+      return;
+    }
+    LORE_DATA = loaded;
+    ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
+    renderTags();
+    paint();
+  }catch(err){
+    console.error(err);
+    content.innerHTML = "<article class='scroll'><div class='head'><h2>Load error</h2></div><p>"+escapeHtml(String(err))+"</p></article>";
+  }
 })();
 </script>
 </body>
