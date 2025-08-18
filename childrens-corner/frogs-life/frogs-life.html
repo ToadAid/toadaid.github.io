@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Frog’s Life — A Pond’s Secret</title>
+<meta name="description" content="A children’s book about a frog’s life with gentle commentary for parents — fairness, patience, transformation, belief, and the eternal return." />
+<meta property="og:title" content="Frog’s Life — A Pond’s Secret" />
+<meta property="og:description" content="A dual-layer children’s book: simple story for kids, reflective commentary for parents." />
+<meta property="og:type" content="article" />
+<meta property="og:image" content="images/cover.jpg" />
+
+<style>
+  :root{
+    --bg: #f7f5ef;
+    --paper: #fffdfa;
+    --ink: #2f2f2f;
+    --muted:#666;
+    --accent:#2f6e4f;
+    --ring: rgba(0,0,0,.08);
+    --shadow: 0 6px 20px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{
+    position:sticky; top:0; z-index:10;
+    background:linear-gradient(#ffffffcc,#ffffffcc);
+    backdrop-filter:saturate(150%) blur(6px);
+    border-bottom:1px solid var(--ring);
+  }
+  .bar{
+    height:4px; background:var(--accent); width:0%;
+    transition:width .15s ease;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:18px 18px}
+  .title{display:flex;gap:14px;align-items:center;justify-content:space-between}
+  .title h1{margin:0;font-size:1.6rem;letter-spacing:.2px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{
+    background:var(--paper); border:1px solid var(--ring); box-shadow:var(--shadow);
+    padding:8px 10px; border-radius:12px; cursor:pointer; font-size:.95rem;
+  }
+  .btn:active{transform:translateY(1px)}
+  main{display:grid;grid-template-columns:260px 1fr;gap:20px;max-width:1100px;margin:18px auto;padding:0 18px}
+  nav{
+    position:sticky; top:72px; align-self:start; background:var(--paper);
+    border:1px solid var(--ring); border-radius:16px; padding:14px; box-shadow:var(--shadow);
+  }
+  nav h3{margin:6px 0 10px; font-size:1rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+  nav ol{margin:0;padding-left:18px}
+  nav li{margin:.35rem 0}
+  .content{min-width:0}
+  section.chapter{
+    background:var(--paper); border:1px solid var(--ring); border-radius:18px;
+    box-shadow:var(--shadow); margin:0 0 18px; padding:18px;
+  }
+  section.chapter h2{
+    margin:0 0 10px; font-size:1.3rem; letter-spacing:.2px;
+  }
+  .subtitle{color:var(--muted); margin:0 0 12px; font-size:.95rem}
+  figure{margin:10px 0 16px}
+  figure img{
+    width:100%; height:auto; display:block; border-radius:14px; border:1px solid var(--ring);
+  }
+  figure figcaption{
+    font-size:.9rem; color:var(--muted); margin-top:6px;
+  }
+  .twocol{
+    display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;
+  }
+  .panel{
+    background:#fff; border:1px solid var(--ring); border-radius:14px; padding:14px;
+  }
+  .panel h3{margin:0 0 6px; font-size:1.05rem; color:var(--accent)}
+  .panel p{margin:.5rem 0}
+  .story p{font-size:1.05rem;}
+  .commentary em{font-style:italic}
+  .meta{
+    margin-top:8px; font-size:.9rem; color:var(--muted)
+  }
+  footer{
+    max-width:1100px;margin:26px auto; padding:0 18px 40px; color:var(--muted);
+  }
+  .note{
+    background:var(--paper); border:1px dashed var(--ring); border-radius:14px; padding:14px; margin:16px 0;
+  }
+  /* mobile */
+  @media (max-width: 960px){
+    main{grid-template-columns:1fr}
+    nav{position:relative; top:0}
+    .twocol{grid-template-columns:1fr}
+  }
+  /* print */
+  @media print{
+    header, nav, .btn, .bar { display:none !important; }
+    main{display:block; max-width:100%; padding:0}
+    section.chapter{break-inside:avoid; border:none; box-shadow:none; background:transparent; padding:0; margin:0 0 18px}
+    .panel{border:none; padding:0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar" id="progressBar"></div>
+  <div class="wrap title">
+    <h1>🐸 Frog’s Life — <span style="color:var(--accent)">A Pond’s Secret</span></h1>
+    <div class="actions">
+      <button class="btn" id="toggleCommentary">Toggle Commentary</button>
+      <button class="btn" id="increaseFont">A+</button>
+      <button class="btn" id="resetFont">A</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <nav aria-label="Chapters">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#ch-0-intro">About this book</a></li>
+      <li><a href="#ch-1-eggs">Chapter 1 — Eggs: The Beginning</a></li>
+      <li><a href="#ch-2-tadpole">Chapter 2 — Tadpole: Patience in the Water</a></li>
+      <li><a href="#ch-3-froglet">Chapter 3 — Froglet: The Great Change</a></li>
+      <li><a href="#ch-4-adult">Chapter 4 — Adult Frog: The Song of the Pond</a></li>
+      <li><a href="#ch-5-circle">Chapter 5 — The Pond’s Circle: Eternal Return</a></li>
+      <li><a href="#ch-6-letter">Letter to Parents</a></li>
+    </ol>
+    <div class="note">
+      📌 Your place is saved automatically.<br/>
+      Next time you open this page, we’ll resume where you left off.
+    </div>
+  </nav>
+
+  <div class="content">
+    <!-- Intro -->
+    <section class="chapter" id="ch-0-intro">
+      <h2>About this Book</h2>
+      <p class="subtitle">A dual-layer reading experience — simple story for children, reflective commentary for parents.</p>
+      <figure>
+        <img src="images/cover.jpg" alt="A serene pond at dusk with lily pads and a small frog resting." />
+        <figcaption>Cover — The pond holds many quiet lessons.</figcaption>
+      </figure>
+      <div class="panel">
+        <p>
+          <strong>Frog’s Life</strong> follows five gentle chapters through the pond:
+          <em>Eggs, Tadpole, Froglet, Adult Frog, and the Pond’s Eternal Circle.</em>
+          Each chapter pairs a child’s lyrical story with commentary for parents, inspired by timeless principles:
+          fairness, patience, courage through change, belief in action, and the eternal return.
+        </p>
+      </div>
+    </section>
+
+    <!-- Chapter 1 -->
+    <section class="chapter" id="ch-1-eggs">
+      <h2>Chapter 1 — Eggs: The Beginning</h2>
+      <p class="subtitle">Theme: <em>Fairness &amp; Unity</em></p>
+      <figure>
+        <img src="images/ch1_eggs.jpg" alt="Moonlit pond with clusters of frog eggs that glow like small pearls, lily pads and soft ripples around." />
+        <figcaption>Picture — The pond keeps the eggs safe beneath the moon.</figcaption>
+      </figure>
+      <div class="twocol">
+        <div class="panel story">
+          <h3>Children’s Story</h3>
+          <p>The pond is quiet.<br/>The moon shines softly on the water.</p>
+          <p>Inside the pond, tiny eggs float together — round, clear, and shining like little pearls.</p>
+          <p>They are small, almost hidden, but each egg carries a secret: <strong>a new life, waiting to begin.</strong></p>
+          <p>The eggs stay close, side by side, safe in the still water, as if the pond itself is holding them gently.</p>
+        </div>
+        <div class="panel commentary">
+          <h3>Parent’s Commentary</h3>
+          <p><em>In stillness, life begins.</em> Under the same moonlight, every egg is equal. This is the pond’s lesson: fairness and unity.</p>
+          <p>No one is born above another; every beginning is sacred. Nurture gently — inside each child rests a universe unfolding.</p>
+        </div>
+      </div>
+      <div class="meta">Illustration idea: moonlit palette, soft glow on egg clusters; fireflies scattered.</div>
+    </section>
+
+    <!-- Chapter 2 -->
+    <section class="chapter" id="ch-2-tadpole">
+      <h2>Chapter 2 — Tadpole: Patience in the Water</h2>
+      <p class="subtitle">Theme: <em>Patience &amp; Proof of Time</em></p>
+      <figure>
+        <img src="images/ch2_tadpoles.jpg" alt="Sunbeams through pond water with many tiny tadpoles swimming among reeds and lily pads." />
+        <figcaption>Picture — The first swim lessons begin under warm light.</figcaption>
+      </figure>
+      <div class="twocol">
+        <div class="panel story">
+          <h3>Children’s Story</h3>
+          <p>One morning, the eggs tremble. The shells crack… and out swim tiny tadpoles!</p>
+          <p>They wriggle their long tails, swish-swish through the water, breathing with little gills like fish.</p>
+          <p>They cannot jump yet. They cannot sing yet. So they wait… and grow… day by day.</p>
+        </div>
+        <div class="panel commentary">
+          <h3>Parent’s Commentary</h3>
+          <p><em>Patience is strength.</em> The tadpole does not hurry its body or its season. Growth that is rushed becomes fragile.</p>
+          <p>Trust time. Endurance over days and weeks becomes true ability — the pond’s <strong>Proof of Time</strong>.</p>
+        </div>
+      </div>
+      <div class="meta">Illustration idea: underwater scene, floating dust motes in light, calm rhythm.</div>
+    </section>
+
+    <!-- Chapter 3 -->
+    <section class="chapter" id="ch-3-froglet">
+      <h2>Chapter 3 — Froglet: The Great Change</h2>
+      <p class="subtitle">Theme: <em>Courage through Transformation</em></p>
+      <figure>
+        <img src="images/ch3_froglet.jpg" alt="A small froglet with tiny legs and a fading tail climbing onto a wet rock at the pond’s edge." />
+        <figcaption>Picture — Between two worlds: water and air.</figcaption>
+      </figure>
+      <div class="twocol">
+        <div class="panel story">
+          <h3>Children’s Story</h3>
+          <p>The tadpole keeps swimming. Then one day… something new!</p>
+          <p>Little legs begin to grow — first the back legs, then the front. The tail grows smaller; the body grows rounder.</p>
+          <p>The froglet learns to breathe air. Now it can swim <strong>and</strong> climb onto rocks. Half tadpole, half frog — changing every day.</p>
+          <p>The pond whispers: “Do not be afraid. Change is part of life.”</p>
+        </div>
+        <div class="panel commentary">
+          <h3>Parent’s Commentary</h3>
+          <p><em>Transformation takes courage.</em> To grow, we release what no longer serves us. Old forms make way for new strength.</p>
+          <p>Guide gently: help a child meet change without fear, trusting that the spirit remains while the form evolves.</p>
+        </div>
+      </div>
+      <div class="meta">Illustration idea: dewy rock, reeds, soft morning glow; tail visibly shrinking.</div>
+    </section>
+
+    <!-- Chapter 4 -->
+    <section class="chapter" id="ch-4-adult">
+      <h2>Chapter 4 — Adult Frog: The Song of the Pond</h2>
+      <p class="subtitle">Theme: <em>Belief in Action</em></p>
+      <figure>
+        <img src="images/ch4_adult.jpg" alt="An adult frog on a lily pad beneath a starry sky, mouth open as if singing, distant frogs echoing." />
+        <figcaption>Picture — Night falls, the chorus rises.</figcaption>
+      </figure>
+      <div class="twocol">
+        <div class="panel story">
+          <h3>Children’s Story</h3>
+          <p>At last, the froglet becomes a frog. Its legs are strong. It leaps from lily pad to lily pad.</p>
+          <p>By day, it rests in the sun. By night, it lifts its voice: <strong>“Croak, croak!”</strong></p>
+          <p>The pond comes alive with many voices. Each has its own song, yet all belong to the same pond.</p>
+        </div>
+        <div class="panel commentary">
+          <h3>Parent’s Commentary</h3>
+          <p><em>To find one’s voice is to live with belief.</em> The frog does not sing to be the loudest — it sings to join the harmony.</p>
+          <p>Encourage your child to speak truth kindly and to respect other voices. Unity without rulers is a practiced art.</p>
+        </div>
+      </div>
+      <div class="meta">Illustration idea: moon reflected on water, concentric ripples from the singing frog.</div>
+    </section>
+
+    <!-- Chapter 5 -->
+    <section class="chapter" id="ch-5-circle">
+      <h2>Chapter 5 — The Pond’s Circle: Eternal Return</h2>
+      <p class="subtitle">Theme: <em>Legacy &amp; Eternal Return</em></p>
+      <figure>
+        <img src="images/ch5_circle.jpg" alt="Wide dawn view of a pond showing eggs, tadpoles, froglets, and frogs in one scene — a gentle life cycle panorama." />
+        <figcaption>Picture — The circle is never broken.</figcaption>
+      </figure>
+      <div class="twocol">
+        <div class="panel story">
+          <h3>Children’s Story</h3>
+          <p>The frogs leap, swim, and sing. Seasons turn; they return to the water.</p>
+          <p>There, new eggs are laid — round and shining, side by side, just as before.</p>
+          <p>Egg → Tadpole → Froglet → Frog. The pond remembers. Life goes on, forever and ever.</p>
+        </div>
+        <div class="panel commentary">
+          <h3>Parent’s Commentary</h3>
+          <p><em>What begins will return.</em> Each ending is a beginning in disguise. Time writes wisdom in circles, not straight lines.</p>
+          <p>Teach perseverance and gratitude — the gifts we pass on today become tomorrow’s starting place.</p>
+        </div>
+      </div>
+      <div class="meta">Illustration idea: gentle sunrise; subtle arrows or flow showing the cycle.</div>
+    </section>
+
+    <!-- Letter to Parents -->
+    <section class="chapter" id="ch-6-letter">
+      <h2>Letter to Parents</h2>
+      <div class="panel">
+        <p><strong>Dear Parents,</strong></p>
+        <p>
+          This book carries two layers: the child’s wonder and the parent’s reflection.
+          The frog’s journey is a mirror — for them, for us.
+          In these pages are quiet principles: fairness at the beginning, patience in growth,
+          courage in change, belief expressed, and the circle that returns.
+        </p>
+        <ul>
+          <li><strong>Eggs — Fairness:</strong> Every life begins equal; nurture gently.</li>
+          <li><strong>Tadpoles — Patience:</strong> Trust time; endurance becomes real strength.</li>
+          <li><strong>Froglet — Courage:</strong> Let go of old forms to grow into new ones.</li>
+          <li><strong>Adult Frog — Belief:</strong> Every voice matters; sing truth into the night.</li>
+          <li><strong>Circle — Legacy:</strong> Endings feed beginnings; what we pass on returns.</li>
+        </ul>
+        <p>
+          The frog also teaches stillness. It waits in silence, then leaps with timing.
+          Read together, linger, and let the pond’s calm shape your days.
+        </p>
+        <p>With patience and belief,<br/><em>The Pond</em></p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <p>© Frog’s Life — A Pond’s Secret. For learning and reflection. Images are placeholders — replace with your artwork under <code>images/</code>.</p>
+</footer>
+
+<script>
+  // --- Reading Progress Bar
+  (function(){
+    const bar = document.getElementById("progressBar");
+    const onScroll = ()=>{
+      const h = document.documentElement;
+      const scrolled = (h.scrollTop || document.body.scrollTop);
+      const height = h.scrollHeight - h.clientHeight;
+      const pct = height ? (scrolled/height)*100 : 0;
+      bar.style.width = pct + "%";
+    };
+    document.addEventListener("scroll", onScroll, {passive:true});
+    onScroll();
+  })();
+
+  // --- Save/restore last read section using IntersectionObserver
+  (function(){
+    const KEY = "frogs-life:lastSection";
+    const secs = Array.from(document.querySelectorAll("section.chapter[id]"));
+    let lastId = localStorage.getItem(KEY) || "";
+
+    if (lastId && document.getElementById(lastId)) {
+      // If user didn't explicitly jump to a hash, resume
+      if (!location.hash) {
+        document.getElementById(lastId).scrollIntoView({behavior:"auto", block:"start"});
+      }
+    }
+
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if (e.isIntersecting && e.intersectionRatio > 0.5) {
+          const id = e.target.id;
+          localStorage.setItem(KEY, id);
+        }
+      });
+    }, {root:null, threshold:[0.51]});
+    secs.forEach(s=>obs.observe(s));
+  })();
+
+  // --- Toggle Commentary
+  (function(){
+    const btn = document.getElementById("toggleCommentary");
+    let hidden = false;
+    btn.addEventListener("click", ()=>{
+      hidden = !hidden;
+      document.querySelectorAll(".commentary").forEach(el=>{
+        el.style.display = hidden ? "none" : "";
+      });
+      btn.textContent = hidden ? "Show Commentary" : "Toggle Commentary";
+    });
+  })();
+
+  // --- Font size controls (content only)
+  (function(){
+    const inc = document.getElementById("increaseFont");
+    const reset = document.getElementById("resetFont");
+    const CONTENT_KEY = "frogs-life:fontScale";
+    let scale = parseFloat(localStorage.getItem(CONTENT_KEY) || "1");
+
+    const apply = ()=>{
+      document.querySelectorAll(".panel.story, .panel.commentary").forEach(el=>{
+        el.style.fontSize = (1.0 * scale) + "rem";
+      });
+    };
+    apply();
+
+    inc.addEventListener("click", ()=>{
+      scale = Math.min(1.4, +(scale + 0.05).toFixed(2));
+      localStorage.setItem(CONTENT_KEY, scale);
+      apply();
+    });
+    reset.addEventListener("click", ()=>{
+      scale = 1;
+      localStorage.setItem(CONTENT_KEY, scale);
+      apply();
+    });
+  })();
+</script>
+</body>
+</html>
