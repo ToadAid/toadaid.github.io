@@ -136,46 +136,42 @@
   <p class="note">Tip: Use the <em>Toggle Commentary</em> button to switch between pure reading and study mode.</p>
 </footer>
 
-<script>
-/* ========== 1) DATA — Paste Book v1 items below ==========
-Each item = one tweet/scroll.
+<!-- ===== Markdown format expected in /lore/TOBYWORLD_LORE_v1.0.md =====
+Each entry is two blocks separated by `---` lines:
 
-Fields:
-- id: unique anchor string (e.g. "L025")
-- date: "YYYY-MM-DD" (tweet date)
-- title: short title for TOC
-- tweet_url: link to tweet (X)
-- tweet_text: original text (line breaks preserved)
-- commentary_html: our explanation (HTML allowed)
-- tags: ["Patience","Taboshi","777"] etc.
-- media (optional): {type:"image"|"video", src:"path-or-url", poster:"optional"}
-*/
-const LORE_DATA = [
-  {
-    id: "L001",
-    date: "2024-03-29",
-    title: "People’s Script",
-    tweet_url: "#", // replace with original link
-    tweet_text:
-`a hint of future’s script…
+---
+id: L001
+date: 2024-03-29
+title: People’s Script
+tweet_url: https://x.com/yourstatus
+tags: Identity, People, Decentralization
+media: lore-images/L001.jpg
+---
+Tweet:
+a hint of future’s script…
 for $toby is the people,
-and the people is $toby.`,
-    commentary_html:
-`<p><em>Identity without rulers.</em> The Lore mirrors a circle: <strong>$TOBY is the people; the people is $TOBY</strong>. Do not search for a throne—become the mirror and the flame.</p>`,
-    tags: ["Identity","People","Decentralization"],
-    media: { type:"image", src:"lore-images/L001.jpg" }
-  }
-  // Paste more items here…
-];
+and the people is $toby.
 
-/* ========== 2) UI ENGINE ========== */
-const $ = (s, r=document)=>r.querySelector(s);
-const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
-const content = $("#content"), toc = $("#toc"), tagsBox = $("#tags"), q = $("#q"), clearBtn = $("#clear");
+Commentary:
+<em>Identity without rulers.</em> The Lore mirrors a circle:
+<strong>$TOBY is the people; the people is $TOBY</strong>.
+================================================================ -->
 
-const ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
+<script>
+/* ========= core state / helpers ========= */
+let LORE_DATA = [];                       // will be filled from markdown
+let ALL_TAGS = [];
 let activeTag = null, searchText = "";
 
+const $ = (s, r=document)=>r.querySelector(s);
+const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+
+const content = $("#content"), toc = $("#toc"), tagsBox = $("#tags"), q = $("#q"), clearBtn = $("#clear");
+
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function escapeWithBr(s){ return escapeHtml(s).replace(/\n/g,"<br>"); }
+
+/* ========= UI building ========= */
 function groupByYear(arr){
   const map = new Map();
   arr.forEach(it=>{
@@ -305,10 +301,7 @@ function paint(){
   observeSections();
 }
 
-function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-function escapeWithBr(s){ return escapeHtml(s).replace(/\n/g,"<br>"); }
-
-/* ========== 3) INTERACTIONS ========== */
+/* ========= interactions ========= */
 // progress bar
 (function(){
   const bar = $("#progressBar");
@@ -382,12 +375,10 @@ clearBtn.addEventListener("click", ()=>{ q.value=""; searchText=""; activeTag=nu
 // copy permalink
 function copyLink(id){
   const url = location.origin + location.pathname + "#" + id;
-  navigator.clipboard.writeText(url).then(()=>{
-    alert("Link copied: " + url);
-  });
+  navigator.clipboard.writeText(url).then(()=> alert("Link copied: " + url));
 }
 
-// theme toggle (persists)
+// theme toggle (persist)
 (function(){
   const KEY="lore:theme";
   const saved = localStorage.getItem(KEY);
@@ -399,10 +390,65 @@ function copyLink(id){
   });
 })();
 
-// init
-const tagsPresent = ALL_TAGS.length>0;
-if (tagsPresent) renderTags();
-paint();
+/* ========= markdown auto-loader ========= */
+async function loadLoreFromMarkdown(mdPath){
+  try{
+    const res = await fetch(mdPath, {cache: "no-store"});
+    if(!res.ok) throw new Error("Fetch failed: " + res.status);
+    const md = await res.text();
+
+    // split by lines of only --- (two blocks per entry: frontmatter + content)
+    const blocks = md.split(/\n---\s*\n/).map(s=>s.trim()).filter(Boolean);
+    const items = [];
+
+    for(let i=0; i<blocks.length; ){
+      const front = blocks[i++] || "";
+      const fm = Object.fromEntries(
+        [...front.matchAll(/^(id|date|title|tweet_url|tags|media):\s*(.+)$/gmi)]
+          .map(m=>[m[1].toLowerCase(), m[2].trim()])
+      );
+      const contentBlock = (blocks[i++] || "");
+
+      const tweetMatch = contentBlock.match(/(?:^|\n)Tweet:\s*([\s\S]*?)(?:\n(?:Commentary|$))/i);
+      const commMatch  = contentBlock.match(/(?:^|\n)Commentary:\s*([\s\S]*)$/i);
+
+      const tweet_text = tweetMatch ? tweetMatch[1].trim() : "";
+      const commentary_html = commMatch ? commMatch[1].trim() : "";
+
+      const tags = (fm.tags||"").split(",").map(x=>x.trim()).filter(Boolean);
+      const media = fm.media ? {type:"image", src: fm.media} : null;
+
+      if(!fm.id || !fm.date || !fm.title || !tweet_text){
+        console.warn("Skipping incomplete block:", fm);
+        continue;
+      }
+
+      items.push({
+        id: fm.id,
+        date: fm.date,
+        title: fm.title,
+        tweet_url: fm.tweet_url || "",
+        tweet_text,
+        commentary_html,
+        tags,
+        media
+      });
+    }
+    return items;
+  }catch(e){
+    console.error("Lore MD load error:", e);
+    return [];
+  }
+}
+
+// boot: load markdown, compute tags, paint
+(async ()=>{
+  const loaded = await loadLoreFromMarkdown("TOBYWORLD_LORE_v1.0.md");
+  LORE_DATA = loaded;
+  ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
+  renderTags();
+  paint();
+})();
 </script>
 </body>
 </html>
