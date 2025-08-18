@@ -46,7 +46,7 @@
   .twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   .panel{background:#fff;border:1px solid var(--ring);border-radius:14px;padding:14px}
   .panel h3{margin:0 0 6px;font-size:1.02rem;color:var(--accent)}
-  .orig{white-space:pre-wrap;font-family:ui-serif,Georgia,"Times New Roman",serif}
+  .orig{font-family:ui-serif,Georgia,"Times New Roman",serif}
   .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   .chip{font-size:.8rem;border:1px solid var(--ring);border-radius:999px;padding:2px 8px;background:#fff}
   .footerbar{display:flex;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap}
@@ -59,8 +59,10 @@
   .commentary p{margin:0.3rem 0}
   .commentary ul{margin:0.3rem 0 0.3rem 1.2rem}
   .commentary li{margin:0.15rem 0}
-  /* Markdown help tooltip */
-  details.md-help{min-width:220px;max-width:320px}
+  /* layout helper for full-width blocks within a row */
+  .full{flex:1 1 100%}
+  /* Markdown help visuals */
+  details.md-help{min-width:220px;max-width:100%}
   details.md-help>summary{list-style:none;cursor:pointer;user-select:none}
   details.md-help>summary::marker{display:none}
   details.md-help>summary .icon{display:inline-block;padding:6px 9px;border:1px solid var(--ring);border-radius:10px;background:var(--paper);box-shadow:var(--shadow);font-weight:600}
@@ -103,48 +105,71 @@
       <button class="btn" id="saveAsData">⬇ Export as data.json</button>
     </div>
 
+    <!-- FORM -->
     <form id="entryForm" class="hidden">
       <div class="row grid2">
         <div><label>ID<input type="text" id="fid" placeholder="TOBY_T002 or TOBY_L002" required></label></div>
         <div><label>Date<input type="date" id="fdate" required></label></div>
       </div>
+
       <div class="row"><label>Title<input type="text" id="ftitle" placeholder="People’s Script" required></label></div>
-      <div class="row"><label>Original Lore (tweet text)<textarea id="ftweet" placeholder="Paste exact original tweet…"></textarea></label></div>
+
+      <div class="row">
+        <label>Original Lore (Markdown)
+          <textarea id="ftweet" placeholder="### The First Ripple&#10;I am making a new account, sir Elon.&#10;&#10;- frustration with shadow bans&#10;- new account = new start"></textarea>
+        </label>
+      </div>
 
       <div class="row">
         <label>Commentary (Markdown)
-          <textarea id="fcomment" placeholder="### ✨ Literal Explanation\n...\n\n### 🌱 Spiritual Interpretation\n...\n\n### 🔮 Symbolic Meaning\n- **Point**\n- **Point**\n\n_Final note…_"></textarea>
+          <textarea id="fcomment" placeholder="### ✨ Literal Explanation&#10;...&#10;&#10;### 🌱 Spiritual Interpretation&#10;...&#10;&#10;### 🔮 Symbolic Meaning&#10;- **Point**&#10;- **Point**&#10;&#10;_Final note…_"></textarea>
         </label>
-        <details class="md-help">
-          <summary><span class="icon">❓ Markdown help</span></summary>
-          <div class="md-card">
-            <strong>Basics</strong><br/>
-            <code>#</code> Heading, <code>**bold**</code>, <code>*italic*</code>,<br/>
-            <code>-</code> list item, <code>[link](https://x.com/)</code>
-            <hr/>
-            <strong>Your standard layout</strong>
+      </div>
+
+      <!-- Markdown help BELOW the textareas -->
+      <div class="row">
+        <div class="full">
+          <details class="md-help">
+            <summary><span class="icon">❓ Markdown help</span></summary>
+            <div class="md-card">
+              <strong>Basics</strong><br/>
+              <code>#</code> Heading, <code>**bold**</code>, <code>*italic*</code>, <code>-</code> list, <code>[link](https://x.com/)</code>
+              <hr/>
+              <strong>Original Lore example</strong>
+<pre>### The First Ripple
+I am making a new account, sir Elon.
+
+- frustration with shadow bans
+- new account = new start</pre>
+              <strong>Commentary template</strong>
 <pre>### ✨ Literal Explanation (EN)
-Short literal meaning...
+...
 
 ### 🌱 Spiritual Interpretation (EN)
-Deeper / moral teaching...
+...
 
 ### 🔮 Symbolic Meaning (EN)
-- **A = B** description
-- **C = D** description
+- **A = B**
+- **C = D**
 
-_Last line with emphasis..._</pre>
-            <em>Tip:</em> blank lines = new paragraph. Links open in a new tab.
-          </div>
-        </details>
+_Final note…_</pre>
+            </div>
+          </details>
+        </div>
       </div>
 
       <div class="row grid2">
         <div><label>Tags (comma)<input type="text" id="ftags" placeholder="Identity, People, Decentralization"></label></div>
         <div><label>Tweet URL<input type="text" id="furl" placeholder="https://x.com/..."></label></div>
       </div>
-      <div class="row"><label>Image URL<input type="text" id="fimg" placeholder="lore-images/L001.jpg"></label>
-      <div class="hint">If provided, an image shows above the text.</div></div>
+
+      <div class="row">
+        <label>Image URL
+          <input type="text" id="fimg" placeholder="lore-images/L001.jpg">
+        </label>
+        <div class="hint">If provided, an image shows above the text.</div>
+      </div>
+
       <div class="bar">
         <button class="btn success" id="addEntry">Add Entry</button>
         <button class="btn" id="resetForm" type="reset">Reset</button>
@@ -190,8 +215,11 @@ let activeTag=null, searchText="";
 let sourceLoaded = ""; // "public" | "local" | "empty"
 
 /* ---------- Utils ---------- */
-function escapeHtml(s){return (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;","<": "&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
-function escapeWithBr(s){return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>");}
+function escapeHtml(s){
+  return (s||"").replace(/[&<>\"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[m]));
+}
 function slugify(s){return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");}
 function normalizeId(raw){const m=(raw||"").match(/^TOBY_T(\d+)$/i);return m?("TOBY_L"+m[1]):(raw||"");}
 function saveLocal(){ localStorage.setItem(LOCAL_KEY, JSON.stringify(LORE_DATA)); $("#saveNote").textContent="Saved ✓"; setTimeout(()=>$("#saveNote").textContent="",1500); }
@@ -259,11 +287,18 @@ function matches(it){
   const tagOK = activeTag ? (it.tags||[]).includes(activeTag) : true;
   if(!tagOK) return false;
   if(!searchText) return true;
-  const hay=(it.title+" "+it.date+" "+(it.tweet_text||"")+" "+(it.commentary_md||"")+" "+(it.tags||[]).join(" ")).toLowerCase();
+  const hay=(it.title+" "+it.date+" "+(it.tweet_md||"")+" "+(it.commentary_md||"")+" "+(it.tags||[]).join(" ")).toLowerCase();
   return hay.includes(searchText.toLowerCase());
 }
 
 /* ---------- Render ---------- */
+function mdToHtml(md){
+  const html = marked.parse(md || "");
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  tmp.querySelectorAll("a").forEach(a=>{ a.target="_blank"; a.rel="noopener"; });
+  return tmp.innerHTML || "<p class='muted'>—</p>";
+}
 function renderScroll(item){
   const el=document.createElement("article"); el.className="scroll"; el.id=item.id;
   const head=document.createElement("div"); head.className="head";
@@ -276,14 +311,15 @@ function renderScroll(item){
     art.innerHTML=`<img src="${item.media.src}" alt="${escapeHtml(item.title)} artwork">`;
     el.appendChild(art);
   }
+
   const twocol=document.createElement("div"); twocol.className="twocol";
+
   const left=document.createElement("div"); left.className="panel";
-  left.innerHTML=`<h3>Original Lore</h3><div class="orig">${escapeWithBr(item.tweet_text||"")}</div>`;
+  left.innerHTML = `<h3>Original Lore</h3><div class="orig">${mdToHtml(item.tweet_md)}</div>`;
+
   const right=document.createElement("div"); right.className="panel commentary";
-  const html = marked.parse(item.commentary_md || "");
-  const tmp = document.createElement("div"); tmp.innerHTML = html;
-  tmp.querySelectorAll("a").forEach(a=>{ a.setAttribute("target","_blank"); a.setAttribute("rel","noopener"); });
-  right.innerHTML=`<h3>Commentary</h3><div class="comm">${tmp.innerHTML || "<p class='muted'>—</p>"}</div>`;
+  right.innerHTML = `<h3>Commentary</h3><div class="comm">${mdToHtml(item.commentary_md)}</div>`;
+
   twocol.append(left,right); el.appendChild(twocol);
 
   if(item.tags?.length){
@@ -312,8 +348,8 @@ function bindRowButtons(){
       $("#fid").value=it._raw_id||it.id;
       $("#fdate").value=it.date||"";
       $("#ftitle").value=it.title||"";
-      $("#ftweet").value=it.tweet_text||"";
-      $("#fcomment").value=it.commentary_md||""; // markdown
+      $("#ftweet").value=it.tweet_md || it.tweet_text || "";
+      $("#fcomment").value=it.commentary_md || it.commentary_html || "";
       $("#ftags").value=(it.tags||[]).join(", ");
       $("#furl").value=it.tweet_url||"";
       $("#fimg").value=it.media?.src||"";
@@ -364,8 +400,8 @@ $("#addEntry").addEventListener("click",(e)=>{
     id,_raw_id:rawId,
     date:$("#fdate").value.trim(),
     title:$("#ftitle").value.trim(),
-    tweet_text:$("#ftweet").value,
-    commentary_md:$("#fcomment").value,         // store markdown
+    tweet_md:$("#ftweet").value,              // store Original Lore as MARKDOWN
+    commentary_md:$("#fcomment").value,       // store Commentary as MARKDOWN
     tweet_url:$("#furl").value.trim(),
     tags:$("#ftags").value.split(",").map(s=>s.trim()).filter(Boolean),
     media:$("#fimg").value.trim()?{type:"image",src:$("#fimg").value.trim()}:null
@@ -392,9 +428,10 @@ $("#importJson").addEventListener("change",async(ev)=>{
   try{
     const arr=JSON.parse(t);
     if(!Array.isArray(arr)) throw new Error("JSON must be an array");
-    // migrate old commentary_html → commentary_md if present
+    // migrate legacy fields
     LORE_DATA=arr.map(x=>{
       if(!x.commentary_md && x.commentary_html){ x.commentary_md = x.commentary_html; delete x.commentary_html; }
+      if(!x.tweet_md && x.tweet_text){ x.tweet_md = x.tweet_text; } // keep old if present
       return {...x, id: normalizeId(x._raw_id || x.id || slugify(x.title||""))};
     });
     saveLocal(); paint();
