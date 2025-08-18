@@ -3,31 +3,38 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Toadgod Lore Library — Original Tweets & Commentary</title>
+<title>Toadgod Lore Library — Editor</title>
 <meta name="theme-color" content="#2f6e4f" />
 <style>
   :root{ --bg:#f7f5ef; --paper:#fffdfa; --ink:#2e2e2e; --muted:#666; --accent:#2f6e4f; --ring:rgba(0,0,0,.1); --shadow:0 6px 20px rgba(0,0,0,.08); }
   *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
   a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   header{position:sticky;top:0;z-index:20;background:#ffffffcc;backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid var(--ring)}
-  .bar{height:4px;background:var(--accent);width:0%}
   .wrap{max-width:1180px;margin:0 auto;padding:14px 18px}
   .title{display:flex;gap:12px;align-items:center;justify-content:space-between}
   .title h1{margin:0;font-size:1.35rem}
   .controls{display:flex;gap:8px;flex-wrap:wrap}
   .btn,.pill{background:var(--paper);border:1px solid var(--ring);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow);font-size:.95rem}
-  main{display:grid;grid-template-columns:300px 1fr;gap:20px;max-width:1180px;margin:16px auto;padding:0 18px}
-  nav{position:sticky;top:76px;align-self:start;background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
-  nav h3{margin:4px 0 10px;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .btn:active{transform:translateY(1px)}
+  main{display:grid;grid-template-columns:360px 1fr;gap:20px;max-width:1180px;margin:16px auto;padding:0 18px}
+  aside{align-self:start;background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:sticky;top:76px}
+  aside h3{margin:4px 0 10px;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  form .row{display:flex;gap:10px;margin-bottom:8px}
+  form label{display:block;font-size:.85rem;color:var(--muted)}
+  input[type=text],input[type=date],textarea{width:100%;padding:8px 10px;border:1px solid var(--ring);border-radius:10px;background:#fff;color:#222}
+  textarea{min-height:90px;resize:vertical}
+  .hint{font-size:.8rem;color:var(--muted);margin-top:2px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .danger{background:#ffe8e8;border-color:#ffb3b3}
+  .success{background:#e8fff0;border-color:#b3ffd3}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .content{min-width:0}
+  .toc{background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:14px;box-shadow:var(--shadow);margin-bottom:10px}
   .search{display:flex;gap:8px;margin-bottom:10px}
   .search input{flex:1;padding:8px 10px;border:1px solid var(--ring);border-radius:10px;background:#fff}
   .tags{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px}
   .tag{font-size:.85rem;padding:4px 8px;border:1px solid var(--ring);border-radius:999px;background:#fff;cursor:pointer}
   .tag.active{background:var(--accent);color:#fff;border-color:transparent}
-  .toc{max-height:60vh;overflow:auto;padding-right:6px}
-  .toc a{display:block;padding:.35rem .25rem;border-radius:8px}
-  .toc a.active{background:#eaf4ef}
-  .content{min-width:0}
   article.scroll{background:var(--paper);border:1px solid var(--ring);border-radius:18px;box-shadow:var(--shadow);padding:18px;margin:0 0 18px}
   .head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
   .head h2{margin:0;font-size:1.2rem}
@@ -44,163 +51,266 @@
   .footerbar a,.footerbar button{padding:8px 12px;border:1px solid var(--ring);border-radius:10px;background:#fff;text-decoration:none;cursor:pointer}
   .tweet-btn{background:#1d9bf0;color:#fff;border-color:#1d9bf0}
   .tweet-btn:hover{filter:brightness(.95)}
-  @media(max-width:980px){main{grid-template-columns:1fr}.twocol{grid-template-columns:1fr}nav{position:relative;top:0}}
+  .muted{color:#999}
+  @media(max-width:1060px){main{grid-template-columns:1fr}.twocol{grid-template-columns:1fr}aside{position:relative;top:0}}
 </style>
 </head>
 <body>
 <header>
-  <div class="bar" id="progressBar"></div>
   <div class="wrap title">
-    <h1>🐸 Toadgod Lore Library</h1>
+    <h1>🐸 Toadgod Lore Library — Editor Mode</h1>
     <div class="controls">
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
       <button class="btn" id="fontReset">A</button>
-      <button class="btn" id="theme">Light/Dark</button>
+      <button class="btn" id="exportJson">Export JSON</button>
+      <label class="btn" style="cursor:pointer">
+        Import JSON<input type="file" id="importJson" accept="application/json" style="display:none">
+      </label>
+      <button class="btn danger" id="clearAll">Clear All (local)</button>
     </div>
   </div>
 </header>
 
 <main>
-  <nav>
-    <h3>Browse</h3>
-    <div class="search">
-      <input id="q" type="search" placeholder="Search text, tags, dates…" />
-      <button class="pill" id="clear">Clear</button>
-    </div>
-    <div class="tags" id="tags"></div>
-    <h3>Chapters</h3>
-    <div class="toc" id="toc"></div>
-    <div class="pill" style="margin-top:10px;cursor:default">Saves your place automatically</div>
-  </nav>
+  <aside>
+    <h3>New Lore Entry</h3>
+    <form id="entryForm">
+      <div class="row grid2">
+        <div><label>ID<input type="text" id="fid" placeholder="TOBY_T002 or TOBY_L002" required></label></div>
+        <div><label>Date<input type="date" id="fdate" required></label></div>
+      </div>
+      <div class="row"><label>Title<input type="text" id="ftitle" placeholder="People’s Script" required></label></div>
+      <div class="row"><label>Original Lore (tweet text)<textarea id="ftweet" placeholder="Paste exact original tweet…"></textarea></label></div>
+      <div class="row"><label>Commentary (HTML or plain)<textarea id="fcomment" placeholder="<p>Literal…</p><p>Spiritual…</p>"></textarea></label></div>
+      <div class="row grid2">
+        <div><label>Tags (comma)<input type="text" id="ftags" placeholder="Identity, People, Decentralization"></label></div>
+        <div><label>Tweet URL<input type="text" id="furl" placeholder="https://x.com/..."></label></div>
+      </div>
+      <div class="row"><label>Image URL<input type="text" id="fimg" placeholder="lore-images/L001.jpg"></label>
+      <div class="hint">If provided, an image shows above the text.</div></div>
+      <div class="bar">
+        <button class="btn success" id="addEntry">Add Entry</button>
+        <button class="btn" id="resetForm" type="reset">Reset</button>
+      </div>
+      <div id="saveNote" class="hint muted"></div>
+    </form>
+  </aside>
 
-  <div class="content" id="content"></div>
+  <div class="content">
+    <div class="toc">
+      <div class="search">
+        <input id="q" type="search" placeholder="Search text, tags, dates…">
+        <button class="pill" id="clear">Clear</button>
+      </div>
+      <div class="tags" id="tags"></div>
+    </div>
+    <div id="content"></div>
+  </div>
 </main>
 
 <footer class="wrap">
-  <p>© Toadgod Lore. Original tweets preserved for study; commentary provided for learning and reflection.</p>
+  <p class="muted">Your changes save automatically to this browser (localStorage). Use Export JSON to back up to a file.</p>
 </footer>
 
 <script>
-let LORE_DATA=[],ALL_TAGS=[],activeTag=null,searchText="";
-const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-const content=$("#content"), toc=$("#toc"), tagsBox=$("#tags"), q=$("#q"), clearBtn=$("#clear");
+// ===== State & helpers =====
+const KEY = "toadgod:lore:data";
+let LORE_DATA = JSON.parse(localStorage.getItem(KEY) || "[]");
+let ALL_TAGS = [];
+let activeTag = null, searchText = "";
 
-function escapeHtml(s){return (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;","'":"&#39;"}[m]) ).replace(" >", "&gt;");}
-function escapeWithBr(s){return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>");}
+const $ = (s, r=document)=>r.querySelector(s);
+const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
 
-function groupByYear(arr){const map=new Map();arr.forEach(it=>{const y=(it.date||"").slice(0,4)||"Unknown";if(!map.has(y))map.set(y,[]);map.get(y).push(it);});return Array.from(map.entries()).sort((a,b)=>a[0].localeCompare(b[0]));}
-function renderTOC(list){toc.innerHTML="";groupByYear(list).forEach(([year,items])=>{const y=document.createElement("div");y.className="year";y.textContent=year;toc.appendChild(y);items.forEach(item=>{const a=document.createElement("a");a.href="#"+item.id;a.textContent=`${item.date} — ${item.title}`;toc.appendChild(a);});});}
-function renderTags(){tagsBox.innerHTML="";if(!ALL_TAGS.length)return;const reset=document.createElement("button");reset.className="tag";reset.textContent="All";reset.addEventListener("click",()=>{activeTag=null;paint();});tagsBox.appendChild(reset);ALL_TAGS.forEach(t=>{const b=document.createElement("button");b.className="tag"+(activeTag===t?" active":"");b.textContent=t;b.addEventListener("click",()=>{activeTag=(activeTag===t?null:t);paint();toc.scrollTop=0;});tagsBox.appendChild(b);});}
-function matches(item){const tagOK=activeTag?(item.tags||[]).includes(activeTag):true;if(!tagOK)return false;if(!searchText)return true;const hay=(item.title+" "+item.date+" "+(item.tweet_text||"")+" "+(item.commentary_html||"")+" "+(item.tags||[]).join(" ")).toLowerCase();return hay.includes(searchText.toLowerCase());}
-
-function renderScroll(item,idx,list){
-  const el=document.createElement("article");el.className="scroll";el.id=item.id;
-  const head=document.createElement("div");head.className="head";
-  head.innerHTML=`<h2>${escapeHtml(item.title)}</h2><div class="meta">${escapeHtml(item.date)} · ${item.tweet_url?`<a href="${item.tweet_url}" target="_blank" rel="noopener">Original Tweet ↗</a>`:""}</div>`; el.appendChild(head);
-  if(item.media?.type==="image"){const art=document.createElement("div");art.className="art";art.innerHTML=`<img src="${item.media.src}" alt="${escapeHtml(item.title)} artwork">`; el.appendChild(art);}
-  const twocol=document.createElement("div");twocol.className="twocol";
-  const left=document.createElement("div");left.className="panel";left.innerHTML=`<h3>Original Lore</h3><div class="orig">${escapeWithBr(item.tweet_text||"")}</div>`;
-  const right=document.createElement("div");right.className="panel commentary";right.innerHTML=`<h3>Commentary</h3><div class="comm">${item.commentary_html||""}</div>`;
-  twocol.append(left,right); el.appendChild(twocol);
-  if(item.tags?.length){const chips=document.createElement("div");chips.className="chips";item.tags.forEach(t=>{const span=document.createElement("span");span.className="chip";span.textContent=t;chips.appendChild(span);});el.appendChild(chips);}
-  const foot=document.createElement("div");foot.className="footerbar";const prev=list[idx-1],next=list[idx+1];
-  foot.innerHTML=`<a ${prev?`href="#${prev.id}"`:"style='opacity:.4;pointer-events:none'"}>← Previous</a>
-    ${item.tweet_url?`<a class="tweet-btn" href="${item.tweet_url}" target="_blank" rel="noopener">Open Original Tweet</a>`:`<a class="tweet-btn" style="opacity:.5;pointer-events:none" title="No tweet link">Open Original Tweet</a>`}
-    <button onclick="copyLink('${item.id}')">Copy link</button>
-    <a ${next?`href="#${next.id}"`:"style='opacity:.4;pointer-events:none'"}>Next →</a>`;
-  el.appendChild(foot); return el;
-}
-function paint(){const filtered=LORE_DATA.filter(matches).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.title.localeCompare(b.title));renderTOC(filtered);content.innerHTML="";filtered.forEach((it,i)=>content.appendChild(renderScroll(it,i,filtered)));observeSections();}
-
-(function(){const bar=$("#progressBar");const onScroll=()=>{const h=document.documentElement;const scrolled=h.scrollTop||document.body.scrollTop;const height=h.scrollHeight-h.clientHeight;bar.style.width=(height?(scrolled/height)*100:0)+"%";};document.addEventListener("scroll",onScroll,{passive:true});onScroll();})();
-(function(){const KEY="lore:last";const secs=()=>$$(".scroll[id]");const last=localStorage.getItem(KEY);if(last&&!location.hash){const node=document.getElementById(last);if(node)node.scrollIntoView({behavior:"auto",block:"start"});}const io=new IntersectionObserver((ents)=>{ents.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>0.5){localStorage.setItem(KEY,e.target.id);}});},{threshold:[0.51]});window.observeSections=()=>secs().forEach(s=>io.observe(s));})();
-function observeSections(){const links=$$(".toc a");const map={};links.forEach(a=>{map[a.getAttribute("href").slice(1)]=a;});const io=new IntersectionObserver((ents)=>{ents.forEach(e=>{const id=e.target.id;if(e.isIntersecting){links.forEach(x=>x.classList.remove("active"));map[id]?.classList.add("active");}});},{threshold:[0.6]});$$(".scroll").forEach(s=>io.observe(s));}
-$("#toggleComm").addEventListener("click",()=>{const off=document.body.dataset.comm==="off";document.body.dataset.comm=off?"on":"off";$$(".commentary").forEach(el=>el.classList.toggle("hidden",!off));$("#toggleComm").textContent=off?"Toggle Commentary":"Show Commentary";});
-(function(){const KEY="lore:fontScale";let scale=parseFloat(localStorage.getItem(KEY)||"1");const apply=()=>$$(".panel").forEach(el=>el.style.fontSize=(1.0*scale)+"rem");apply();$("#fontPlus").addEventListener("click",()=>{scale=Math.min(1.4,+(scale+0.05).toFixed(2));localStorage.setItem(KEY,scale);apply();});$("#fontReset").addEventListener("click",()=>{scale=1;localStorage.setItem(KEY,scale);apply();});})();
-q.addEventListener("input",()=>{searchText=q.value.trim();paint();}); clearBtn.addEventListener("click",()=>{q.value="";searchText="";activeTag=null;paint();});
-function copyLink(id){const url=location.origin+location.pathname+"#"+id;navigator.clipboard.writeText(url).then(()=>alert("Link copied: "+url));}
-(function(){const KEY="lore:theme";const saved=localStorage.getItem(KEY);if(saved)document.documentElement.setAttribute("data-theme",saved);$("#theme").addEventListener("click",()=>{const cur=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",cur);localStorage.setItem(KEY,cur);});})();
-
-function parseTagList(val){if(!val)return[];let s=val.trim();if(s.startsWith("["))s=s.replace(/[\[\]]/g,"");return s.split(",").map(x=>x.trim()).filter(Boolean);}
-function kvParse(text){const out={};(text||"").split(/\r?\n/).forEach(line=>{const m=line.match(/^\s*([A-Za-z_]+)\s*:\s*(.+)\s*$/);if(m){out[m[1].toLowerCase()]=m[2].trim();}});if(out.tags)out.tags=parseTagList(out.tags);return out;}
+function escapeHtml(s){ return (s||"").replace(/[&<>\"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+function escapeWithBr(s){ return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>"); }
 function slugify(s){return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");}
-function extractBetween(md,startRegex,endRegex){const m=md.match(startRegex);if(!m)return"";const start=m.index+m[0].length;const md2=md.slice(start);const e=md2.search(endRegex);return (e===-1?md2:md2.slice(0,e)).trim();}
-function mdToSimpleHtml(md){let s=md;s=s.replace(/^##\s*(.+)$/gim,"<h4>$1</h4>");s=s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");if(/^\s*-\s+/m.test(s)){const lines=s.split(/\r?\n/);let out="",inList=false;for(const L of lines){const m=L.match(/^\s*-\s+(.*)$/);if(m){if(!inList){out+="<ul>";inList=true;}out+="<li>"+escapeHtml(m[1])+"</li>";}else{if(inList){out+="</ul>";inList=false;}if(L.trim())out+="<p>"+escapeHtml(L)+"</p>";}}if(inList)out+="</ul>";s=out||"";}else{s="<p>"+escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>")+"</p>";}return s;}
+function normalizeId(raw){ const m = (raw||"").match(/^TOBY_T(\d+)$/i); return m ? ("TOBY_L" + m[1]) : (raw||""); }
 
-async function loadLoreFromMarkdown(mdPath){
-  const res = await fetch(mdPath,{cache:"no-store"});
-  if(!res.ok) throw new Error("Failed to fetch markdown: "+res.status);
-  const md = await res.text();
+function save(){ localStorage.setItem(KEY, JSON.stringify(LORE_DATA)); $("#saveNote").textContent = "Saved ✓"; setTimeout(()=>$("#saveNote").textContent="",1500); }
 
-  const blocks=[];
-  const reFM = /(^|\n)---\s*\n([\s\S]*?)\n---\s*\n/g; let m;
-  while((m=reFM.exec(md))){blocks.push({start:m.index+(m[1]?.length||0),end:reFM.lastIndex,text:m[2]});}
-  const reY = /(^|\n)```yaml\s*\n([\s\S]*?)\n```\s*\n/g;
-  while((m=reY.exec(md))){blocks.push({start:m.index+(m[1]?.length||0),end:reY.lastIndex,text:m[2]});}
-  blocks.sort((a,b)=>a.start-b.start);
-
-  const items=[];
-  for(let i=0;i<blocks.length;i++){
-    const b=blocks[i], fm=kvParse(b.text);
-    if(!fm.title && !fm.date) continue;
-    const contentStart=b.end, contentEnd=(i+1<blocks.length?blocks[i+1].start:md.length);
-    const body=md.slice(contentStart,contentEnd);
-
-    let tweetBlock=extractBetween(body,/##[^\n]*Original Tweet[^\n]*\n/i,/\n## |\n---|\n```|$/);
-    if(!tweetBlock) tweetBlock=extractBetween(body,/##[^\n]*Tweet[^\n]*\n/i,/\n## |\n---|\n```|$/);
-    let tweet_text=""; if(/>/.test(tweetBlock)){tweet_text=tweetBlock.split(/\r?\n/).map(L=>L.replace(/^\s*>\s?/,"")).filter(Boolean).join("\n");}else{tweet_text=tweetBlock.replace(/\*\*Timestamp:[\s\S]*/i,"").trim();}
-
-    const parts=[], secNames=[/##\s*✨\s*Literal Explanation\s*\(EN\)\s*\n/i,/##\s*🌱\s*Spiritual Interpretation\s*\(EN\)\s*\n/i,/##\s*🔮\s*Symbolic Meaning\s*\(EN\)\s*\n/i];
-    for(const sr of secNames){const chunk=extractBetween(body,sr,/\n## |\n---|\n```|$/); if(chunk) parts.push(mdToSimpleHtml(chunk));}
-    let commentary_html=parts.join(""); if(!commentary_html){const any=extractBetween(body,/##\s*[\s\S]*?\(EN\)\s*\n/i,/\n## |\n---|\n```|$/); if(any) commentary_html=mdToSimpleHtml(any);}
-
-    const media = fm.media ? {type:"image", src: fm.media} : null;
-    const rawId=fm.id||""; const normId=(rawId.match(/^TOBY_T(\d+)$/i)?("TOBY_L"+RegExp.$1):rawId);
-    const id = normId || slugify(fm.title || ("lore-"+(i+1)));
-    const title=fm.title || ("Lore "+(i+1)), date=fm.date || "";
-    let tweet_url=fm.tweet_url || ""; if(!tweet_url && tweetBlock){const u=tweetBlock.match(/https?:\/\/\S+/); if(u) tweet_url=u[0];}
-
-    items.push({id,_raw_id:rawId,title,date,tweet_url,tweet_text,commentary_html,tags:Array.isArray(fm.tags)?fm.tags:parseTagList(fm.tags),media});
-  }
-  return items;
+function groupByYear(arr){
+  const map = new Map();
+  arr.forEach(it=>{
+    const y = (it.date||"").slice(0,4) || "Unknown";
+    if(!map.has(y)) map.set(y, []);
+    map.get(y).push(it);
+  });
+  return Array.from(map.entries()).sort((a,b)=>a[0].localeCompare(b[0]));
 }
 
-async function tryLoad(){
-  const owner = (location.hostname.split('.')[0]||'');
-  const repo = owner ? (owner + '.github.io') : '';
-  const branch = 'main';
-  const rawBase = (owner && repo) ? `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/lore/` : null;
-  const candidates = [
-    "toadgod_all_tweets.md",
-    "./toadgod_all_tweets.md",
-    "/lore/toadgod_all_tweets.md",
-    "toadgod_all_tweets.md.txt",
-    "./toadgod_all_tweets.md.txt",
-    "/lore/toadgod_all_tweets.md.txt",
-    rawBase ? rawBase + "toadgod_all_tweets.md" : null,
-    rawBase ? rawBase + "toadgod_all_tweets.md.txt" : null
-  ].filter(Boolean);
-
-  let lastErr=null;
-  for(const p of candidates){
-    try{const items=await loadLoreFromMarkdown(p); if(items.length){console.log("Loaded lore from",p); return items;}}catch(e){lastErr=e;}
-  }
-  throw lastErr || new Error("Could not load markdown from any known path.");
+function renderTags(){
+  ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
+  const tagsBox = $("#tags");
+  tagsBox.innerHTML = "";
+  if (!ALL_TAGS.length) return;
+  const reset = document.createElement("button");
+  reset.className = "tag"; reset.textContent = "All";
+  reset.addEventListener("click", ()=>{ activeTag=null; paint(); });
+  tagsBox.appendChild(reset);
+  ALL_TAGS.forEach(t=>{
+    const b = document.createElement("button");
+    b.className = "tag"+(activeTag===t?" active":"");
+    b.textContent = t;
+    b.addEventListener("click", ()=>{ activeTag = (activeTag===t? null : t); paint(); });
+    tagsBox.appendChild(b);
+  });
 }
 
-// boot
-(async ()=>{
-  try{
-    const loaded = await tryLoad();
-    LORE_DATA = loaded;
-    ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
-    renderTags(); paint();
-  }catch(err){
-    console.error(err);
-    content.innerHTML = "<article class='scroll'><div class='head'><h2>Load error</h2></div><p>"+escapeHtml(String(err))+"</p><p><strong>Tip:</strong> If GitHub Pages is converting <code>.md</code> to HTML, either add a <code>.nojekyll</code> file at repo root, or rename the data file to <code>toadgod_all_tweets.md.txt</code> and let this page fetch that instead.</p></article>";
+function matches(item){
+  const tagOK = activeTag ? (item.tags||[]).includes(activeTag) : true;
+  if (!tagOK) return false;
+  if (!searchText) return true;
+  const hay = (item.title+" "+item.date+" "+(item.tweet_text||"")+" "+(item.commentary_html||"")+" "+(item.tags||[]).join(" ")).toLowerCase();
+  return hay.includes(searchText.toLowerCase());
+}
+
+function renderScroll(item, idx, list){
+  const el = document.createElement("article"); el.className="scroll"; el.id=item.id;
+  const head = document.createElement("div"); head.className="head";
+  head.innerHTML = `<h2>${escapeHtml(item.title)}</h2>
+  <div class="meta">${escapeHtml(item.date)} · ${item.tweet_url ? `<a href="${item.tweet_url}" target="_blank" rel="noopener">Original Tweet ↗</a>` : `<span class="muted">No tweet link</span>`}</div>`;
+  el.appendChild(head);
+
+  if (item.media?.type === "image"){
+    const art = document.createElement("div"); art.className="art";
+    art.innerHTML = `<img src="${item.media.src}" alt="${escapeHtml(item.title)} artwork">`;
+    el.appendChild(art);
   }
+
+  const twocol = document.createElement("div"); twocol.className="twocol";
+  const left = document.createElement("div"); left.className="panel";
+  left.innerHTML = `<h3>Original Lore</h3><div class="orig">${escapeWithBr(item.tweet_text||"")}</div>`;
+
+  const right = document.createElement("div"); right.className="panel commentary";
+  right.innerHTML = `<h3>Commentary</h3><div class="comm">${item.commentary_html||"<p class='muted'>—</p>"}</div>`;
+
+  twocol.append(left, right); el.appendChild(twocol);
+
+  if (item.tags?.length){
+    const chips = document.createElement("div"); chips.className="chips";
+    item.tags.forEach(t=>{ const span=document.createElement("span"); span.className="chip"; span.textContent=t; chips.appendChild(span); });
+    el.appendChild(chips);
+  }
+
+  const foot = document.createElement("div"); foot.className="footerbar";
+  foot.innerHTML = `
+    <div class="bar">
+      ${item.tweet_url ? `<a class="tweet-btn" href="${item.tweet_url}" target="_blank" rel="noopener">Open Original Tweet</a>` : `<a class="tweet-btn" style="opacity:.5;pointer-events:none">Open Original Tweet</a>`}
+    </div>
+    <div class="bar">
+      <button class="btn" data-edit="${item.id}">Edit</button>
+      <button class="btn danger" data-del="${item.id}">Delete</button>
+      <button class="btn" onclick="copyLink('${item.id}')">Copy link</button>
+    </div>`;
+  el.appendChild(foot);
+  return el;
+}
+
+function paint(){
+  const list = LORE_DATA.filter(matches).sort((a,b)=> a.date<b.date? -1 : a.date>b.date? 1 : a.title.localeCompare(b.title));
+  $("#content").innerHTML = "";
+  list.forEach((it,i)=> $("#content").appendChild(renderScroll(it,i,list)));
+  renderTags();
+  bindRowButtons();
+}
+
+function bindRowButtons(){
+  $$("button[data-edit]").forEach(b=>{
+    b.onclick = ()=>{
+      const id = b.getAttribute("data-edit");
+      const it = LORE_DATA.find(x=>x.id===id);
+      if(!it) return;
+      // load into form for editing
+      $("#fid").value = it._raw_id || it.id;
+      $("#fdate").value = it.date || "";
+      $("#ftitle").value = it.title || "";
+      $("#ftweet").value = it.tweet_text || "";
+      $("#fcomment").value = it.commentary_html || "";
+      $("#ftags").value = (it.tags||[]).join(", ");
+      $("#furl").value = it.tweet_url || "";
+      $("#fimg").value = it.media?.src || "";
+      $("#saveNote").textContent = "Editing: " + it.id;
+      window.scrollTo({top:0, behavior:"smooth"});
+    };
+  });
+  $$("button[data-del]").forEach(b=>{
+    b.onclick = ()=>{
+      const id = b.getAttribute("data-del");
+      if (!confirm("Delete "+id+"?")) return;
+      LORE_DATA = LORE_DATA.filter(x=>x.id!==id);
+      save(); paint();
+    };
+  });
+}
+
+function copyLink(id){
+  const url = location.origin + location.pathname + "#" + id;
+  navigator.clipboard.writeText(url).then(()=> alert("Link copied: " + url));
+}
+
+// ===== Form handlers =====
+$("#addEntry").addEventListener("click", (e)=>{
+  e.preventDefault();
+  const rawId = $("#fid").value.trim();
+  const id = normalizeId(rawId) || slugify($("#ftitle").value.trim());
+  const existsIdx = LORE_DATA.findIndex(x=>x.id===id);
+  const entry = {
+    id,
+    _raw_id: rawId,
+    date: $("#fdate").value.trim(),
+    title: $("#ftitle").value.trim(),
+    tweet_text: $("#ftweet").value,
+    commentary_html: $("#fcomment").value,
+    tweet_url: $("#furl").value.trim(),
+    tags: $("#ftags").value.split(",").map(s=>s.trim()).filter(Boolean),
+    media: $("#fimg").value.trim() ? {type:"image", src: $("#fimg").value.trim()} : null
+  };
+  if (existsIdx >= 0){ LORE_DATA[existsIdx] = entry; } else { LORE_DATA.push(entry); }
+  save(); paint();
+  $("#entryForm").reset();
+});
+
+$("#resetForm").addEventListener("click", ()=> { $("#saveNote").textContent=""; });
+
+// search
+$("#q").addEventListener("input", ()=>{ searchText=$("#q").value.trim(); paint(); });
+$("#clear").addEventListener("click", ()=>{ $("#q").value=""; searchText=""; activeTag=null; paint(); });
+
+// toggle commentary (hide/show right column content)
+$("#toggleComm").addEventListener("click", ()=>{
+  document.body.classList.toggle("hide-comm");
+  $$(".commentary").forEach(el=> el.style.display = document.body.classList.contains("hide-comm") ? "none" : "");
+});
+
+// font size
+(function(){ const KEYFS="lore:fontScale"; let scale = parseFloat(localStorage.getItem(KEYFS) || "1");
+  const apply = ()=> $$(".panel").forEach(el=> el.style.fontSize = (1.0*scale)+"rem"); apply();
+  $("#fontPlus").addEventListener("click", ()=>{ scale=Math.min(1.4, +(scale+0.05).toFixed(2)); localStorage.setItem(KEYFS, scale); apply(); });
+  $("#fontReset").addEventListener("click", ()=>{ scale=1; localStorage.setItem(KEYFS, scale); apply(); });
 })();
+
+// export/import
+$("#exportJson").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(LORE_DATA, null, 2)], {type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "toadgod_lore.json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+});
+$("#importJson").addEventListener("change", async (ev)=>{
+  const file = ev.target.files[0]; if(!file) return;
+  const text = await file.text();
+  try{
+    const arr = JSON.parse(text);
+    if(!Array.isArray(arr)) throw new Error("JSON must be an array of entries");
+    // apply normalizeId to all
+    LORE_DATA = arr.map(x=>({...x, id: normalizeId(x._raw_id || x.id || slugify(x.title||""))}));
+    save(); paint();
+  }catch(e){ alert("Import error: " + e.message); }
+});
+
+// initial paint
+paint();
 </script>
 </body>
 </html>
