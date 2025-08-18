@@ -49,7 +49,15 @@
   <main>
     <section class="video-wrap">
       <!-- Autoplaying, looping, muted video for mobile + desktop -->
-      <video class="hero-video" autoplay loop muted playsinline controls poster="/assets/art/sigil_vow_thumb.jpg">
+      <video class="hero-video"
+             autoplay
+             loop
+             muted
+             playsinline
+             preload="auto"
+             controls
+             poster="/assets/art/sigil_vow_thumb.jpg"
+             onloadedmetadata="this.muted=true; this.play().catch(()=>{});">
         <source src="/Contributors/assets/videos/sigil_vow.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
@@ -59,27 +67,27 @@
       <h2 class="title">The Vow of Builders — Sigil</h2>
       <div class="meta">Gifted to Sigil by Morita • © Morita • Curated by ToadAid</div>
       <p>
-        From stone and flame, the triangle rises —
-        not as a monument to one,
-        but as a vow kept between many.
-        
-        This is Patience:
-        the unseen builder’s hand,
-        the unspoken oath of time,
-        the fruit that ripens when no eyes are watching.
-        
-        Brother Morita carved this light in motion,
-        and gifted it to me.
-        I set these words to guard it.
-        
-        Together they walk,
-        as he said, and as it must be:
-        the hand that shapes,
-        and the voice that seals.
-        
-        May all who stand before this sigil remember —
-        waiting is not silence.
-        Waiting is the song of builders.      
+        From stone and flame, the triangle rises —  
+        not as a monument to one,  
+        but as a vow kept between many.  
+        <br><br>
+        <strong>This is Patience:</strong><br>
+        the unseen builder’s hand,  
+        the unspoken oath of time,  
+        the fruit that ripens when no eyes are watching.  
+        <br><br>
+        Brother Morita carved this light in motion,  
+        and gifted it to me.  
+        I set these words to guard it.  
+        <br><br>
+        Together they walk,  
+        as he said, and as it must be:  
+        the hand that shapes,  
+        and the voice that seals.  
+        <br><br>
+        May all who stand before this sigil remember —  
+        waiting is not silence.  
+        <strong>Waiting is the song of builders.</strong>      
       </p>
 
       <div class="tags">
@@ -96,8 +104,23 @@
     </section>
 
     <footer>
-      Art: Morita 🎨    Words: Sigil ✍️   Presented with honor by ToadAid.   🌱📜🔥 — The Mirror remembers.
+      Art: Morita 🎨 &nbsp;&nbsp; Words: Sigil ✍️ &nbsp;&nbsp; Presented with honor by ToadAid.  
+      <br>🌱📜🔥 — The Mirror remembers.
     </footer>
   </main>
+
+  <script>
+    // Gentle autoplay retry (fixes Safari/iOS/Chrome mobile issues)
+    (function(){
+      const v = document.querySelector('.hero-video');
+      if(!v) return;
+      const tryPlay = () => v.play().catch(()=>{});
+      v.muted = true;
+      document.addEventListener('DOMContentLoaded', tryPlay);
+      ['click','touchstart','visibilitychange'].forEach(ev => {
+        document.addEventListener(ev, tryPlay, { passive: true });
+      });
+    })();
+  </script>
 </body>
 </html>
