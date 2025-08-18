@@ -13,10 +13,13 @@
   .wrap{max-width:1180px;margin:0 auto;padding:14px 18px}
   .title{display:flex;gap:12px;align-items:center;justify-content:space-between}
   .title h1{margin:0;font-size:1.35rem}
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .btn,.pill{background:var(--paper);border:1px solid var(--ring);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow);font-size:.95rem}
   .btn:active{transform:translateY(1px)}
-  .badge{padding:4px 8px;border-radius:999px;border:1px solid var(--ring);background:var(--paper);font-size:.8rem}
+  .badge{padding:6px 10px;border-radius:999px;border:1px solid var(--ring);background:var(--paper);font-size:.85rem}
+  .badge.mode{cursor:pointer;user-select:none}
+  .badge.viewer{background:#fff;border-color:var(--ring)}
+  .badge.admin{background:#e8fff0;border-color:#b3ffd3}
   .hidden{display:none!important}
   main{display:grid;grid-template-columns:360px 1fr;gap:20px;max-width:1180px;margin:16px auto;padding:0 18px}
   aside{align-self:start;background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:sticky;top:76px}
@@ -54,14 +57,11 @@
   .tweet-btn{background:#1d9bf0;color:#fff;border-color:#1d9bf0}
   .tweet-btn:hover{filter:brightness(.95)}
   .muted{color:#999}
-  /* commentary markdown tweaks */
   .commentary h1,.commentary h2,.commentary h3{margin:0.2rem 0 0.4rem}
   .commentary p{margin:0.3rem 0}
   .commentary ul{margin:0.3rem 0 0.3rem 1.2rem}
   .commentary li{margin:0.15rem 0}
-  /* layout helper for full-width blocks within a row */
   .full{flex:1 1 100%}
-  /* Markdown help visuals */
   details.md-help{min-width:220px;max-width:100%}
   details.md-help>summary{list-style:none;cursor:pointer;user-select:none}
   details.md-help>summary::marker{display:none}
@@ -72,7 +72,6 @@
   pre{background:#f5f5f5;border:1px solid #e8e8e8;border-radius:10px;padding:10px;overflow:auto}
   @media(max-width:1060px){main{grid-template-columns:1fr}.twocol{grid-template-columns:1fr}aside{position:relative;top:0}}
 </style>
-<!-- Markdown renderer -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="admin-off">
@@ -80,8 +79,7 @@
   <div class="wrap title">
     <h1>🐸 Toadgod Lore Library</h1>
     <div class="controls">
-      <span class="badge viewer-note" id="modeBadge">Read-only</span>
-      <span class="badge hidden" id="sourceBadge"></span>
+      <span class="badge mode viewer" id="modeBadge" title="Click to unlock Admin">🔒 Viewer Mode</span>
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
       <button class="btn" id="fontReset">A</button>
@@ -90,6 +88,7 @@
         Import JSON<input type="file" id="importJson" accept="application/json" style="display:none">
       </label>
       <button class="btn danger hidden" id="clearAll">Clear All (local)</button>
+      <!-- Optional legacy buttons kept for redundancy -->
       <button class="btn" id="enterAdmin">Enter Admin</button>
       <button class="btn hidden" id="exitAdmin">Lock</button>
     </div>
@@ -105,7 +104,6 @@
       <button class="btn" id="saveAsData">⬇ Export as data.json</button>
     </div>
 
-    <!-- FORM -->
     <form id="entryForm" class="hidden">
       <div class="row grid2">
         <div><label>ID<input type="text" id="fid" placeholder="TOBY_T002 or TOBY_L002" required></label></div>
@@ -126,7 +124,6 @@
         </label>
       </div>
 
-      <!-- Markdown help BELOW the textareas -->
       <div class="row">
         <div class="full">
           <details class="md-help">
@@ -195,26 +192,21 @@ _Final note…_</pre>
 </footer>
 
 <script>
-/* ---------- Simple Admin Lock (plain-text) ---------- */
 const PASSPHRASE = "TOADLOCK";
 const ADMIN_KEY  = "toadgod:lore:admin";
 let isAdmin = localStorage.getItem(ADMIN_KEY) === "1";
 
-/* ---------- Data source ---------- */
-const PUBLIC_JSON = "/lore/data.json"; // repo file served to visitors
-const LOCAL_KEY   = "toadgod:lore:data"; // working copy stored locally
+const PUBLIC_JSON = "/lore/data.json";
+const LOCAL_KEY   = "toadgod:lore:data";
 
-/* ---------- DOM helpers ---------- */
 const $ = (s,r=document)=>r.querySelector(s);
 const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
 
-/* ---------- State ---------- */
 let LORE_DATA = [];
 let ALL_TAGS = [];
 let activeTag=null, searchText="";
-let sourceLoaded = ""; // "public" | "local" | "empty"
+let sourceLoaded = "";
 
-/* ---------- Utils ---------- */
 function escapeHtml(s){
   return (s||"").replace(/[&<>\"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
@@ -224,14 +216,13 @@ function slugify(s){return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").repl
 function normalizeId(raw){const m=(raw||"").match(/^TOBY_T(\d+)$/i);return m?("TOBY_L"+m[1]):(raw||"");}
 function saveLocal(){ localStorage.setItem(LOCAL_KEY, JSON.stringify(LORE_DATA)); $("#saveNote").textContent="Saved ✓"; setTimeout(()=>$("#saveNote").textContent="",1500); }
 
-/* ---------- Load order: data.json → local fallback ---------- */
 async function loadData(){
   try{
     const res = await fetch(PUBLIC_JSON, {cache:"no-store"});
     if(res.ok){
       LORE_DATA = await res.json();
       sourceLoaded = "public";
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(LORE_DATA)); // sync working copy
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(LORE_DATA));
     }else{
       const local = localStorage.getItem(LOCAL_KEY);
       if(local){ LORE_DATA = JSON.parse(local); sourceLoaded="local"; }
@@ -246,32 +237,51 @@ async function loadData(){
 }
 
 function updateSourceBadge(){
-  const b = $("#sourceBadge");
-  b.classList.remove("hidden");
-  if(sourceLoaded==="public") b.textContent = "Source: data.json (public)";
-  else if(sourceLoaded==="local") b.textContent = "Source: local (unsynced)";
-  else b.textContent = "Source: none";
+  const badge = $("#modeBadge");
+  if(isAdmin){
+    badge.textContent = "🔑 Admin Mode";
+    badge.classList.remove("viewer"); badge.classList.add("admin");
+    badge.title = "Click to lock";
+  }else{
+    badge.textContent = "🔒 Viewer Mode";
+    badge.classList.remove("admin"); badge.classList.add("viewer");
+    badge.title = "Click to unlock Admin";
+  }
 }
 
-/* ---------- Admin UI ---------- */
 function applyAdminUI(){
   $("#editor").classList.toggle("hidden", !isAdmin);
   $("#importWrap").classList.toggle("hidden", !isAdmin);
   $("#clearAll").classList.toggle("hidden", !isAdmin);
   $("#exitAdmin").classList.toggle("hidden",  !isAdmin);
   $("#enterAdmin").classList.toggle("hidden",  isAdmin);
-  $("#modeBadge").textContent = isAdmin ? "Admin" : "Read-only";
+  $("#modeBadge").classList.add("mode");
+  $("#modeBadge").classList.toggle("admin", isAdmin);
+  $("#modeBadge").classList.toggle("viewer", !isAdmin);
+  $("#modeBadge").setAttribute("aria-pressed", isAdmin ? "true" : "false");
+  updateSourceBadge();
   $$("[data-edit], [data-del]").forEach(b=> b.classList.toggle("hidden", !isAdmin));
 }
+
+$("#modeBadge").addEventListener("click", ()=>{
+  if(isAdmin){
+    if(confirm("Lock and exit Admin mode?")){
+      isAdmin=false; localStorage.removeItem(ADMIN_KEY); applyAdminUI();
+    }
+  }else{
+    const pw = prompt("Enter admin passphrase:");
+    if(!pw) return;
+    if(pw.trim() === PASSPHRASE){ isAdmin = true; localStorage.setItem(ADMIN_KEY,"1"); applyAdminUI(); alert("Admin mode enabled."); }
+    else alert("Incorrect passphrase.");
+  }
+});
 $("#enterAdmin").addEventListener("click", ()=>{
-  const pw = prompt("Enter admin passphrase:");
-  if(!pw) return;
+  const pw = prompt("Enter admin passphrase:"); if(!pw) return;
   if(pw.trim() === PASSPHRASE){ isAdmin = true; localStorage.setItem(ADMIN_KEY,"1"); applyAdminUI(); alert("Admin mode enabled."); }
   else alert("Incorrect passphrase.");
 });
 $("#exitAdmin").addEventListener("click", ()=>{ isAdmin=false; localStorage.removeItem(ADMIN_KEY); applyAdminUI(); });
 
-/* ---------- Tags & Filters ---------- */
 function renderTags(){
   ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
   const box=$("#tags"); box.innerHTML="";
@@ -290,8 +300,6 @@ function matches(it){
   const hay=(it.title+" "+it.date+" "+(it.tweet_md||"")+" "+(it.commentary_md||"")+" "+(it.tags||[]).join(" ")).toLowerCase();
   return hay.includes(searchText.toLowerCase());
 }
-
-/* ---------- Render ---------- */
 function mdToHtml(md){
   const html = marked.parse(md || "");
   const tmp = document.createElement("div");
@@ -311,15 +319,11 @@ function renderScroll(item){
     art.innerHTML=`<img src="${item.media.src}" alt="${escapeHtml(item.title)} artwork">`;
     el.appendChild(art);
   }
-
   const twocol=document.createElement("div"); twocol.className="twocol";
-
   const left=document.createElement("div"); left.className="panel";
   left.innerHTML = `<h3>Original Lore</h3><div class="orig">${mdToHtml(item.tweet_md)}</div>`;
-
   const right=document.createElement("div"); right.className="panel commentary";
   right.innerHTML = `<h3>Commentary</h3><div class="comm">${mdToHtml(item.commentary_md)}</div>`;
-
   twocol.append(left,right); el.appendChild(twocol);
 
   if(item.tags?.length){
@@ -374,7 +378,6 @@ function paint(){
   renderTags(); bindRowButtons(); applyAdminUI();
 }
 
-/* ---------- Misc UI ---------- */
 function copyLink(id){
   const url=location.origin+location.pathname+"#"+id;
   navigator.clipboard.writeText(url).then(()=>alert("Link copied: "+url));
@@ -387,7 +390,6 @@ $("#toggleComm").addEventListener("click",()=>{document.body.classList.toggle("h
   $("#fontReset").addEventListener("click",()=>{s=1;localStorage.setItem(KEYFS,s);apply();});
 })();
 
-/* ---------- Form handlers ---------- */
 $("#showForm").addEventListener("click",()=>{ $("#entryForm").classList.remove("hidden"); $("#showForm").classList.add("hidden"); $("#hideForm").classList.remove("hidden"); });
 $("#hideForm").addEventListener("click",()=>{ $("#entryForm").classList.add("hidden"); $("#showForm").classList.remove("hidden"); $("#hideForm").classList.add("hidden"); });
 
@@ -400,8 +402,8 @@ $("#addEntry").addEventListener("click",(e)=>{
     id,_raw_id:rawId,
     date:$("#fdate").value.trim(),
     title:$("#ftitle").value.trim(),
-    tweet_md:$("#ftweet").value,              // store Original Lore as MARKDOWN
-    commentary_md:$("#fcomment").value,       // store Commentary as MARKDOWN
+    tweet_md:$("#ftweet").value,
+    commentary_md:$("#fcomment").value,
     tweet_url:$("#furl").value.trim(),
     tags:$("#ftags").value.split(",").map(s=>s.trim()).filter(Boolean),
     media:$("#fimg").value.trim()?{type:"image",src:$("#fimg").value.trim()}:null
@@ -411,7 +413,6 @@ $("#addEntry").addEventListener("click",(e)=>{
 });
 $("#resetForm").addEventListener("click",()=>{$("#saveNote").textContent="";});
 
-/* ---------- Export / Import ---------- */
 $("#exportJson").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify(LORE_DATA,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="toadgod_lore.json"; a.click();
@@ -428,10 +429,9 @@ $("#importJson").addEventListener("change",async(ev)=>{
   try{
     const arr=JSON.parse(t);
     if(!Array.isArray(arr)) throw new Error("JSON must be an array");
-    // migrate legacy fields
     LORE_DATA=arr.map(x=>{
       if(!x.commentary_md && x.commentary_html){ x.commentary_md = x.commentary_html; delete x.commentary_html; }
-      if(!x.tweet_md && x.tweet_text){ x.tweet_md = x.tweet_text; } // keep old if present
+      if(!x.tweet_md && x.tweet_text){ x.tweet_md = x.tweet_text; }
       return {...x, id: normalizeId(x._raw_id || x.id || slugify(x.title||""))};
     });
     saveLocal(); paint();
@@ -443,7 +443,6 @@ $("#clearAll").addEventListener("click",()=>{
   }
 });
 
-/* ---------- Boot ---------- */
 (async()=>{ await loadData(); paint(); })();
 </script>
 </body>
