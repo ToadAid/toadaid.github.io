@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Toadgod Lore Library — Editor</title>
+<title>Toadgod Lore Library</title>
 <meta name="theme-color" content="#2f6e4f" />
 <style>
   :root{ --bg:#f7f5ef; --paper:#fffdfa; --ink:#2e2e2e; --muted:#666; --accent:#2f6e4f; --ring:rgba(0,0,0,.1); --shadow:0 6px 20px rgba(0,0,0,.08); }
@@ -16,6 +16,8 @@
   .controls{display:flex;gap:8px;flex-wrap:wrap}
   .btn,.pill{background:var(--paper);border:1px solid var(--ring);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow);font-size:.95rem}
   .btn:active{transform:translateY(1px)}
+  .badge{padding:4px 8px;border-radius:999px;border:1px solid var(--ring);background:var(--paper);font-size:.8rem}
+  .hidden{display:none!important}
   main{display:grid;grid-template-columns:360px 1fr;gap:20px;max-width:1180px;margin:16px auto;padding:0 18px}
   aside{align-self:start;background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:sticky;top:76px}
   aside h3{margin:4px 0 10px;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -55,27 +57,35 @@
   @media(max-width:1060px){main{grid-template-columns:1fr}.twocol{grid-template-columns:1fr}aside{position:relative;top:0}}
 </style>
 </head>
-<body>
+<body class="admin-off">
 <header>
   <div class="wrap title">
-    <h1>🐸 Toadgod Lore Library — Editor Mode</h1>
+    <h1>🐸 Toadgod Lore Library</h1>
     <div class="controls">
+      <span class="badge viewer-note" id="modeBadge">Read-only</span>
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
       <button class="btn" id="fontReset">A</button>
       <button class="btn" id="exportJson">Export JSON</button>
-      <label class="btn" style="cursor:pointer">
+      <label class="btn hidden" id="importWrap" style="cursor:pointer">
         Import JSON<input type="file" id="importJson" accept="application/json" style="display:none">
       </label>
-      <button class="btn danger" id="clearAll">Clear All (local)</button>
+      <button class="btn danger hidden" id="clearAll">Clear All (local)</button>
+      <button class="btn" id="enterAdmin">Enter Admin</button>
+      <button class="btn hidden" id="exitAdmin">Lock</button>
     </div>
   </div>
 </header>
 
 <main>
-  <aside>
-    <h3>New Lore Entry</h3>
-    <form id="entryForm">
+  <!-- Editor shell (hidden unless admin). Inside it, the actual form toggles with the ➕ button. -->
+  <aside id="editor" class="hidden">
+    <h3>Editor</h3>
+    <div class="bar" style="margin-bottom:10px;">
+      <button class="btn success" id="showForm">➕ New Lore Entry</button>
+      <button class="btn danger hidden" id="hideForm">✖ Close</button>
+    </div>
+    <form id="entryForm" class="hidden">
       <div class="row grid2">
         <div><label>ID<input type="text" id="fid" placeholder="TOBY_T002 or TOBY_L002" required></label></div>
         <div><label>Date<input type="date" id="fdate" required></label></div>
@@ -110,207 +120,194 @@
 </main>
 
 <footer class="wrap">
-  <p class="muted">Your changes save automatically to this browser (localStorage). Use Export JSON to back up to a file.</p>
+  <p class="muted">Entries are stored locally in this browser. Use Export JSON to back up. Admin Mode enables editing and import.</p>
 </footer>
 
 <script>
-// ===== State & helpers =====
+/* ---------- Admin lock (passphrase = TOADLOCK) ---------- */
+const ADMIN_SHA256 = "9f7850bce5d909e410d72a14214ede3cc1e8e1e698a79a9cd46876879ff32305"; /* sha256("TOADLOCK") */
+const ADMIN_KEY = "toadgod:lore:admin";
+let isAdmin = localStorage.getItem(ADMIN_KEY) === "1";
+
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+async function sha256Hex(text){
+  const buf = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function applyAdminUI(){
+  $("#editor").classList.toggle("hidden", !isAdmin);
+  $("#importWrap").classList.toggle("hidden", !isAdmin);
+  $("#clearAll").classList.toggle("hidden", !isAdmin);
+  $("#exitAdmin").classList.toggle("hidden", !isAdmin);
+  $("#enterAdmin").classList.toggle("hidden", isAdmin);
+  $("#modeBadge").textContent = isAdmin ? "Admin" : "Read-only";
+  // show edit/delete buttons only in admin
+  $$("[data-edit], [data-del]").forEach(b=> b.classList.toggle("hidden", !isAdmin));
+}
+$("#enterAdmin").addEventListener("click", async ()=>{
+  const pw = prompt("Enter admin passphrase:");
+  if(!pw) return;
+  const h = await sha256Hex(pw);
+  if(h===ADMIN_SHA256){ isAdmin=true; localStorage.setItem(ADMIN_KEY,"1"); applyAdminUI(); alert("Admin mode enabled."); }
+  else alert("Incorrect passphrase.");
+});
+$("#exitAdmin").addEventListener("click", ()=>{ isAdmin=false; localStorage.removeItem(ADMIN_KEY); applyAdminUI(); });
+
+/* ---------- Data + helpers ---------- */
 const KEY = "toadgod:lore:data";
 let LORE_DATA = JSON.parse(localStorage.getItem(KEY) || "[]");
 let ALL_TAGS = [];
-let activeTag = null, searchText = "";
+let activeTag=null, searchText="";
 
-const $ = (s, r=document)=>r.querySelector(s);
-const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
-
-function escapeHtml(s){ return (s||"").replace(/[&<>\"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
-function escapeWithBr(s){ return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>"); }
+function escapeHtml(s){return (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+function escapeWithBr(s){return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>");}
 function slugify(s){return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");}
-function normalizeId(raw){ const m = (raw||"").match(/^TOBY_T(\d+)$/i); return m ? ("TOBY_L" + m[1]) : (raw||""); }
-
-function save(){ localStorage.setItem(KEY, JSON.stringify(LORE_DATA)); $("#saveNote").textContent = "Saved ✓"; setTimeout(()=>$("#saveNote").textContent="",1500); }
-
-function groupByYear(arr){
-  const map = new Map();
-  arr.forEach(it=>{
-    const y = (it.date||"").slice(0,4) || "Unknown";
-    if(!map.has(y)) map.set(y, []);
-    map.get(y).push(it);
-  });
-  return Array.from(map.entries()).sort((a,b)=>a[0].localeCompare(b[0]));
-}
+function normalizeId(raw){const m=(raw||"").match(/^TOBY_T(\d+)$/i);return m?("TOBY_L"+m[1]):(raw||"");}
+function save(){localStorage.setItem(KEY, JSON.stringify(LORE_DATA)); $("#saveNote").textContent="Saved ✓"; setTimeout(()=>$("#saveNote").textContent="",1500);}
 
 function renderTags(){
   ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
-  const tagsBox = $("#tags");
-  tagsBox.innerHTML = "";
-  if (!ALL_TAGS.length) return;
-  const reset = document.createElement("button");
-  reset.className = "tag"; reset.textContent = "All";
-  reset.addEventListener("click", ()=>{ activeTag=null; paint(); });
-  tagsBox.appendChild(reset);
+  const box=$("#tags"); box.innerHTML="";
+  if(!ALL_TAGS.length) return;
+  const reset=document.createElement("button"); reset.className="tag"; reset.textContent="All";
+  reset.onclick=()=>{activeTag=null;paint();}; box.appendChild(reset);
   ALL_TAGS.forEach(t=>{
-    const b = document.createElement("button");
-    b.className = "tag"+(activeTag===t?" active":"");
-    b.textContent = t;
-    b.addEventListener("click", ()=>{ activeTag = (activeTag===t? null : t); paint(); });
-    tagsBox.appendChild(b);
+    const b=document.createElement("button"); b.className="tag"+(activeTag===t?" active":""); b.textContent=t;
+    b.onclick=()=>{activeTag=(activeTag===t?null:t);paint();}; box.appendChild(b);
   });
 }
-
-function matches(item){
-  const tagOK = activeTag ? (item.tags||[]).includes(activeTag) : true;
-  if (!tagOK) return false;
-  if (!searchText) return true;
-  const hay = (item.title+" "+item.date+" "+(item.tweet_text||"")+" "+(item.commentary_html||"")+" "+(item.tags||[]).join(" ")).toLowerCase();
+function matches(it){
+  const tagOK = activeTag ? (it.tags||[]).includes(activeTag) : true;
+  if(!tagOK) return false;
+  if(!searchText) return true;
+  const hay=(it.title+" "+it.date+" "+(it.tweet_text||"")+" "+(it.commentary_html||"")+" "+(it.tags||[]).join(" ")).toLowerCase();
   return hay.includes(searchText.toLowerCase());
 }
-
-function renderScroll(item, idx, list){
-  const el = document.createElement("article"); el.className="scroll"; el.id=item.id;
-  const head = document.createElement("div"); head.className="head";
-  head.innerHTML = `<h2>${escapeHtml(item.title)}</h2>
-  <div class="meta">${escapeHtml(item.date)} · ${item.tweet_url ? `<a href="${item.tweet_url}" target="_blank" rel="noopener">Original Tweet ↗</a>` : `<span class="muted">No tweet link</span>`}</div>`;
+function renderScroll(item,idx,list){
+  const el=document.createElement("article"); el.className="scroll"; el.id=item.id;
+  const head=document.createElement("div"); head.className="head";
+  head.innerHTML=`<h2>${escapeHtml(item.title)}</h2>
+  <div class="meta">${escapeHtml(item.date)} · ${item.tweet_url?`<a href="${item.tweet_url}" target="_blank" rel="noopener">Original Tweet ↗</a>`:`<span class="muted">No tweet link</span>`}</div>`;
   el.appendChild(head);
 
-  if (item.media?.type === "image"){
-    const art = document.createElement("div"); art.className="art";
-    art.innerHTML = `<img src="${item.media.src}" alt="${escapeHtml(item.title)} artwork">`;
+  if(item.media?.type==="image"){
+    const art=document.createElement("div"); art.className="art";
+    art.innerHTML=`<img src="${item.media.src}" alt="${escapeHtml(item.title)} artwork">`;
     el.appendChild(art);
   }
+  const twocol=document.createElement("div"); twocol.className="twocol";
+  const left=document.createElement("div"); left.className="panel";
+  left.innerHTML=`<h3>Original Lore</h3><div class="orig">${escapeWithBr(item.tweet_text||"")}</div>`;
+  const right=document.createElement("div"); right.className="panel commentary";
+  right.innerHTML=`<h3>Commentary</h3><div class="comm">${item.commentary_html||"<p class='muted'>—</p>"}</div>`;
+  twocol.append(left,right); el.appendChild(twocol);
 
-  const twocol = document.createElement("div"); twocol.className="twocol";
-  const left = document.createElement("div"); left.className="panel";
-  left.innerHTML = `<h3>Original Lore</h3><div class="orig">${escapeWithBr(item.tweet_text||"")}</div>`;
-
-  const right = document.createElement("div"); right.className="panel commentary";
-  right.innerHTML = `<h3>Commentary</h3><div class="comm">${item.commentary_html||"<p class='muted'>—</p>"}</div>`;
-
-  twocol.append(left, right); el.appendChild(twocol);
-
-  if (item.tags?.length){
-    const chips = document.createElement("div"); chips.className="chips";
-    item.tags.forEach(t=>{ const span=document.createElement("span"); span.className="chip"; span.textContent=t; chips.appendChild(span); });
+  if(item.tags?.length){
+    const chips=document.createElement("div"); chips.className="chips";
+    item.tags.forEach(t=>{const s=document.createElement("span"); s.className="chip"; s.textContent=t; chips.appendChild(s);});
     el.appendChild(chips);
   }
-
-  const foot = document.createElement("div"); foot.className="footerbar";
-  foot.innerHTML = `
+  const foot=document.createElement("div"); foot.className="footerbar";
+  foot.innerHTML=`
     <div class="bar">
-      ${item.tweet_url ? `<a class="tweet-btn" href="${item.tweet_url}" target="_blank" rel="noopener">Open Original Tweet</a>` : `<a class="tweet-btn" style="opacity:.5;pointer-events:none">Open Original Tweet</a>`}
+      ${item.tweet_url?`<a class="tweet-btn" href="${item.tweet_url}" target="_blank" rel="noopener">Open Original Tweet</a>`:`<a class="tweet-btn" style="opacity:.5;pointer-events:none">Open Original Tweet</a>`}
     </div>
     <div class="bar">
-      <button class="btn" data-edit="${item.id}">Edit</button>
-      <button class="btn danger" data-del="${item.id}">Delete</button>
+      <button class="btn hidden" data-edit="${item.id}">Edit</button>
+      <button class="btn danger hidden" data-del="${item.id}">Delete</button>
       <button class="btn" onclick="copyLink('${item.id}')">Copy link</button>
     </div>`;
   el.appendChild(foot);
   return el;
 }
-
-function paint(){
-  const list = LORE_DATA.filter(matches).sort((a,b)=> a.date<b.date? -1 : a.date>b.date? 1 : a.title.localeCompare(b.title));
-  $("#content").innerHTML = "";
-  list.forEach((it,i)=> $("#content").appendChild(renderScroll(it,i,list)));
-  renderTags();
-  bindRowButtons();
-}
-
 function bindRowButtons(){
   $$("button[data-edit]").forEach(b=>{
-    b.onclick = ()=>{
-      const id = b.getAttribute("data-edit");
-      const it = LORE_DATA.find(x=>x.id===id);
-      if(!it) return;
-      // load into form for editing
-      $("#fid").value = it._raw_id || it.id;
-      $("#fdate").value = it.date || "";
-      $("#ftitle").value = it.title || "";
-      $("#ftweet").value = it.tweet_text || "";
-      $("#fcomment").value = it.commentary_html || "";
-      $("#ftags").value = (it.tags||[]).join(", ");
-      $("#furl").value = it.tweet_url || "";
-      $("#fimg").value = it.media?.src || "";
-      $("#saveNote").textContent = "Editing: " + it.id;
-      window.scrollTo({top:0, behavior:"smooth"});
+    b.onclick=()=>{
+      const id=b.getAttribute("data-edit");
+      const it=LORE_DATA.find(x=>x.id===id); if(!it) return;
+      $("#fid").value=it._raw_id||it.id;
+      $("#fdate").value=it.date||"";
+      $("#ftitle").value=it.title||"";
+      $("#ftweet").value=it.tweet_text||"";
+      $("#fcomment").value=it.commentary_html||"";
+      $("#ftags").value=(it.tags||[]).join(", ");
+      $("#furl").value=it.tweet_url||"";
+      $("#fimg").value=it.media?.src||"";
+      $("#saveNote").textContent="Editing: "+it.id;
+      // Open form if closed
+      $("#entryForm").classList.remove("hidden");
+      $("#showForm").classList.add("hidden");
+      $("#hideForm").classList.remove("hidden");
+      window.scrollTo({top:0,behavior:"smooth"});
     };
   });
   $$("button[data-del]").forEach(b=>{
-    b.onclick = ()=>{
-      const id = b.getAttribute("data-del");
-      if (!confirm("Delete "+id+"?")) return;
-      LORE_DATA = LORE_DATA.filter(x=>x.id!==id);
-      save(); paint();
+    b.onclick=()=>{
+      const id=b.getAttribute("data-del");
+      if(!confirm("Delete "+id+"?")) return;
+      LORE_DATA=LORE_DATA.filter(x=>x.id!==id); save(); paint();
     };
   });
 }
-
+function paint(){
+  const list=LORE_DATA.filter(matches).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.title.localeCompare(b.title));
+  $("#content").innerHTML=""; list.forEach((it,i)=>$("#content").appendChild(renderScroll(it,i,list)));
+  renderTags(); bindRowButtons(); applyAdminUI();
+}
 function copyLink(id){
-  const url = location.origin + location.pathname + "#" + id;
-  navigator.clipboard.writeText(url).then(()=> alert("Link copied: " + url));
+  const url=location.origin+location.pathname+"#"+id;
+  navigator.clipboard.writeText(url).then(()=>alert("Link copied: "+url));
 }
 
-// ===== Form handlers =====
-$("#addEntry").addEventListener("click", (e)=>{
+/* ---------- Form & UI controls ---------- */
+$("#addEntry").addEventListener("click",(e)=>{
   e.preventDefault();
-  const rawId = $("#fid").value.trim();
-  const id = normalizeId(rawId) || slugify($("#ftitle").value.trim());
-  const existsIdx = LORE_DATA.findIndex(x=>x.id===id);
-  const entry = {
-    id,
-    _raw_id: rawId,
-    date: $("#fdate").value.trim(),
-    title: $("#ftitle").value.trim(),
-    tweet_text: $("#ftweet").value,
-    commentary_html: $("#fcomment").value,
-    tweet_url: $("#furl").value.trim(),
-    tags: $("#ftags").value.split(",").map(s=>s.trim()).filter(Boolean),
-    media: $("#fimg").value.trim() ? {type:"image", src: $("#fimg").value.trim()} : null
+  const rawId=$("#fid").value.trim();
+  const id=normalizeId(rawId)||slugify($("#ftitle").value.trim());
+  const idx=LORE_DATA.findIndex(x=>x.id===id);
+  const entry={
+    id,_raw_id:rawId,
+    date:$("#fdate").value.trim(),
+    title:$("#ftitle").value.trim(),
+    tweet_text:$("#ftweet").value,
+    commentary_html:$("#fcomment").value,
+    tweet_url:$("#furl").value.trim(),
+    tags:$("#ftags").value.split(",").map(s=>s.trim()).filter(Boolean),
+    media:$("#fimg").value.trim()?{type:"image",src:$("#fimg").value.trim()}:null
   };
-  if (existsIdx >= 0){ LORE_DATA[existsIdx] = entry; } else { LORE_DATA.push(entry); }
-  save(); paint();
-  $("#entryForm").reset();
+  if(idx>=0) LORE_DATA[idx]=entry; else LORE_DATA.push(entry);
+  save(); paint(); $("#entryForm").reset();
+});
+$("#resetForm").addEventListener("click",()=>{$("#saveNote").textContent="";});
+
+/* — show/hide the form inside the editor — */
+$("#showForm").addEventListener("click",()=>{
+  $("#entryForm").classList.remove("hidden");
+  $("#showForm").classList.add("hidden");
+  $("#hideForm").classList.remove("hidden");
+});
+$("#hideForm").addEventListener("click",()=>{
+  $("#entryForm").classList.add("hidden");
+  $("#showForm").classList.remove("hidden");
+  $("#hideForm").classList.add("hidden");
 });
 
-$("#resetForm").addEventListener("click", ()=> { $("#saveNote").textContent=""; });
-
-// search
-$("#q").addEventListener("input", ()=>{ searchText=$("#q").value.trim(); paint(); });
-$("#clear").addEventListener("click", ()=>{ $("#q").value=""; searchText=""; activeTag=null; paint(); });
-
-// toggle commentary (hide/show right column content)
-$("#toggleComm").addEventListener("click", ()=>{
-  document.body.classList.toggle("hide-comm");
-  $$(".commentary").forEach(el=> el.style.display = document.body.classList.contains("hide-comm") ? "none" : "");
-});
-
-// font size
-(function(){ const KEYFS="lore:fontScale"; let scale = parseFloat(localStorage.getItem(KEYFS) || "1");
-  const apply = ()=> $$(".panel").forEach(el=> el.style.fontSize = (1.0*scale)+"rem"); apply();
-  $("#fontPlus").addEventListener("click", ()=>{ scale=Math.min(1.4, +(scale+0.05).toFixed(2)); localStorage.setItem(KEYFS, scale); apply(); });
-  $("#fontReset").addEventListener("click", ()=>{ scale=1; localStorage.setItem(KEYFS, scale); apply(); });
+$("#clearAll").addEventListener("click",()=>{ if(confirm("Clear all local entries?")){ LORE_DATA=[]; localStorage.removeItem(KEY); paint(); }});
+$("#q").addEventListener("input",()=>{searchText=$("#q").value.trim();paint();});
+$("#clear").addEventListener("click",()=>{$("#q").value="";searchText="";activeTag=null;paint();});
+$("#toggleComm").addEventListener("click",()=>{document.body.classList.toggle("hide-comm"); $$(".commentary").forEach(el=>el.style.display=document.body.classList.contains("hide-comm")?"none":"");});
+(function(){const KEYFS="lore:fontScale";let s=parseFloat(localStorage.getItem(KEYFS)||"1");const apply=()=>$$(".panel").forEach(el=>el.style.fontSize=(1.0*s)+"rem");apply();
+  $("#fontPlus").addEventListener("click",()=>{s=Math.min(1.4,+(s+0.05).toFixed(2));localStorage.setItem(KEYFS,s);apply();});
+  $("#fontReset").addEventListener("click",()=>{s=1;localStorage.setItem(KEYFS,s);apply();});
 })();
+$("#exportJson").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(LORE_DATA,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="toadgod_lore.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);});
+$("#importJson").addEventListener("change",async(ev)=>{const f=ev.target.files[0];if(!f)return;const t=await f.text();try{const arr=JSON.parse(t);if(!Array.isArray(arr))throw new Error("JSON must be an array");LORE_DATA=arr.map(x=>({...x,id:normalizeId(x._raw_id||x.id||slugify(x.title||""))}));localStorage.setItem(KEY,JSON.stringify(LORE_DATA));paint();}catch(e){alert("Import error: "+e.message);}});
 
-// export/import
-$("#exportJson").addEventListener("click", ()=>{
-  const blob = new Blob([JSON.stringify(LORE_DATA, null, 2)], {type:"application/json"});
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "toadgod_lore.json"; a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
-});
-$("#importJson").addEventListener("change", async (ev)=>{
-  const file = ev.target.files[0]; if(!file) return;
-  const text = await file.text();
-  try{
-    const arr = JSON.parse(text);
-    if(!Array.isArray(arr)) throw new Error("JSON must be an array of entries");
-    // apply normalizeId to all
-    LORE_DATA = arr.map(x=>({...x, id: normalizeId(x._raw_id || x.id || slugify(x.title||""))}));
-    save(); paint();
-  }catch(e){ alert("Import error: " + e.message); }
-});
-
-// initial paint
-paint();
+/* Initial render */
+paint(); applyAdminUI();
 </script>
 </body>
 </html>
