@@ -74,7 +74,7 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body class="admin-off">
+<body>
 <header>
   <div class="wrap title">
     <h1>🐸 Toadgod Lore Library</h1>
@@ -82,13 +82,12 @@
       <span class="badge mode viewer" id="modeBadge" title="Click to unlock Admin">🔒 Viewer Mode</span>
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
-      <button class="btn" id="fontReset">A-</button>
+      <button class="btn" id="fontReset">A</button>
       <button class="btn" id="exportJson">Export JSON</button>
       <label class="btn hidden" id="importWrap" style="cursor:pointer">
         Import JSON<input type="file" id="importJson" accept="application/json" style="display:none">
       </label>
       <button class="btn danger hidden" id="clearAll">Clear All (local)</button>
-      <!-- Optional legacy buttons kept for redundancy -->
       <button class="btn" id="enterAdmin">Enter Admin</button>
       <button class="btn hidden" id="exitAdmin">Lock</button>
     </div>
@@ -190,8 +189,7 @@ _Final note…_</pre>
 <footer class="wrap">
   <p class="muted">
     © Toadgod Lore · Preserved by <strong>ToadAid</strong> 🐸<br/>
-    Original tweets preserved for study; commentary provided for learning and reflection.<br/>
-    Admin edits are local until you export and commit the new <code>data.json</code> to the repo.
+    Original tweets preserved for study; commentary provided for learning and reflection.
   </p>
 </footer>
 
@@ -237,10 +235,10 @@ async function loadData(){
     if(local){ LORE_DATA = JSON.parse(local); sourceLoaded="local"; }
     else { LORE_DATA = []; sourceLoaded="empty"; }
   }
-  updateSourceBadge();
+  updateModeBadge();
 }
 
-function updateSourceBadge(){
+function updateModeBadge(){
   const badge = $("#modeBadge");
   if(isAdmin){
     badge.textContent = "🔑 Admin Mode";
@@ -259,11 +257,7 @@ function applyAdminUI(){
   $("#clearAll").classList.toggle("hidden", !isAdmin);
   $("#exitAdmin").classList.toggle("hidden",  !isAdmin);
   $("#enterAdmin").classList.toggle("hidden",  isAdmin);
-  $("#modeBadge").classList.add("mode");
-  $("#modeBadge").classList.toggle("admin", isAdmin);
-  $("#modeBadge").classList.toggle("viewer", !isAdmin);
-  $("#modeBadge").setAttribute("aria-pressed", isAdmin ? "true" : "false");
-  updateSourceBadge();
+  updateModeBadge();
   $$("[data-edit], [data-del]").forEach(b=> b.classList.toggle("hidden", !isAdmin));
 }
 
@@ -442,15 +436,9 @@ $("#importJson").addEventListener("change",async(ev)=>{
   }catch(e){ alert("Import error: "+e.message); }
 });
 $("#clearAll").addEventListener("click",()=>{
-  if(confirm("Clear local working copy? This does not touch data.json on the server.")){
+  if(confirm("Clear local working copy?")){
     LORE_DATA=[]; localStorage.removeItem(LOCAL_KEY); paint();
   }
-});
-
-(async()=>{ await loadData(); paint(); })();
-</script>
-</body>
-</html>
 });
 
 (async()=>{ await loadData(); paint(); })();
