@@ -1,323 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>🐸 Toadgod Lore Library</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: #f5f5ef;
-      color: #222;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 18px;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    header h1 {
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4em;
-      margin: 0;
-    }
-    header .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    button, .badge {
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-    button:hover { opacity: 0.9; }
-    .badge {
-      background: #eee;
-      font-weight: bold;
-    }
-    .badge.viewer { background: #f2e1b9; }
-    .badge.admin { background: #c6f6c6; }
-    main {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      gap: 16px;
-      padding: 16px;
-    }
-    main.single {
-      grid-template-columns: 1fr;
-    }
-    .toc {
-      background: #fff;
-      padding: 12px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .content {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    article.scroll {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      padding: 16px;
-    }
-    .twocol {
-      display: grid;
-      grid-template-columns: 42% 58%;
-      gap: 14px;
-    }
-    .panel {
-      background: #fafafa;
-      padding: 12px;
-      border-radius: 6px;
-    }
-    .panel h3 { margin-top: 0; }
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-    .tag {
-      background: #e0e0e0;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-    }
-    footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9rem;
-      color: #666;
-    }
-    footer strong { color: #355e3b; }
-    /* desktop layout */
-    @media (min-width: 1100px) {
-      main.single .content,
-      main.single .toc {
-        max-width: 980px;
-        margin: 0 auto;
-      }
-      .twocol { gap: 22px; }
-    }
-    @media (min-width: 1400px) {
-      main.single .content,
-      main.single .toc {
-        max-width: 1040px;
-      }
-      .twocol {
-        grid-template-columns: 40% 60%;
-        gap: 24px;
-      }
-    }
-    /* form modal */
-    #entryForm {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: #fff;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      max-width: 400px;
-      width: 90%;
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 100;
-    }
-    #entryForm label { font-size: 0.85rem; font-weight: bold; }
-    #entryForm input, #entryForm textarea {
-      width: 100%;
-      padding: 6px;
-      font-family: monospace;
-    }
-    #entryForm textarea { height: 80px; }
-    #markdownHelp {
-      font-size: 0.8rem;
-      background: #fafafa;
-      border: 1px solid #ccc;
-      padding: 8px;
-      border-radius: 6px;
-      display: none;
-      white-space: pre-wrap;
-    }
-    .help-toggle {
-      cursor: pointer;
-      font-size: 0.85rem;
-      color: #b22;
-      border: none;
-      background: none;
-      text-align: left;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Toadgod Lore Library</title>
+<meta name="theme-color" content="#2f6e4f" />
+<style>
+  :root{ --bg:#f7f5ef; --paper:#fffdfa; --ink:#2e2e2e; --muted:#666; --accent:#2f6e4f; --ring:rgba(0,0,0,.1); --shadow:0 6px 20px rgba(0,0,0,.08); }
+  *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  header{position:sticky;top:0;z-index:20;background:#ffffffcc;backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid var(--ring)}
+  .wrap{max-width:1180px;margin:0 auto;padding:14px 18px}
+  .title{display:flex;gap:12px;align-items:center;justify-content:space-between}
+  .title h1{margin:0;font-size:1.35rem}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn,.pill{background:var(--paper);border:1px solid var(--ring);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow);font-size:.95rem}
+  .btn:active{transform:translateY(1px)}
+  .badge{padding:6px 10px;border-radius:999px;border:1px solid var(--ring);background:var(--paper);font-size:.85rem}
+  .badge.mode{cursor:pointer;user-select:none}
+  .badge.viewer{background:#fff;border-color:var(--ring)}
+  .badge.admin{background:#e8fff0;border-color:#b3ffd3}
+  .hidden{display:none!important}
+  main{display:grid;grid-template-columns:360px 1fr;gap:20px;max-width:1180px;margin:16px auto;padding:0 18px}
+  aside{align-self:start;background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:sticky;top:76px}
+  aside h3{margin:4px 0 10px;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  form .row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+  form label{display:block;font-size:.85rem;color:var(--muted);flex:1}
+  input[type=text],input[type=date],textarea{width:100%;padding:8px 10px;border:1px solid var(--ring);border-radius:10px;background:#fff;color:#222}
+  textarea{min-height:110px;resize:vertical}
+  .hint{font-size:.8rem;color:var(--muted);margin-top:2px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .danger{background:#ffe8e8;border-color:#ffb3b3}
+  .success{background:#e8fff0;border-color:#b3ffd3}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .content{min-width:0}
+  .toc{background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:14px;box-shadow:var(--shadow);margin-bottom:10px}
+  .search{display:flex;gap:8px;margin-bottom:10px}
+  .search input{flex:1;padding:8px 10px;border:1px solid var(--ring);border-radius:10px;background:#fff}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px}
+  .tag{font-size:.85rem;padding:4px 8px;border:1px solid var(--ring);border-radius:999px;background:#fff;cursor:pointer}
+  .tag.active{background:var(--accent);color:#fff;border-color:transparent}
+  .status{background:var(--paper);border:1px dashed var(--ring);border-radius:12px;padding:10px;margin:0 0 10px;color:var(--muted);font-size:.9rem}
+  article.scroll{background:var(--paper);border:1px solid var(--ring);border-radius:18px;box-shadow:var(--shadow);padding:18px;margin:0 0 18px}
+  .head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+  .head h2{margin:0;font-size:1.2rem}
+  .meta{color:var(--muted);font-size:.95rem}
+  .art{margin:10px 0 14px}
+  .art img{width:100%;height:auto;border-radius:12px;border:1px solid var(--ring)}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .panel{background:#fff;border:1px solid var(--ring);border-radius:14px;padding:14px}
+  .panel h3{margin:0 0 6px;font-size:1.02rem;color:var(--accent)}
+  .orig{font-family:ui-serif,Georgia,"Times New Roman",serif}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .chip{font-size:.8rem;border:1px solid var(--ring);border-radius:999px;padding:2px 8px;background:#fff}
+  .footerbar{display:flex;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .footerbar a,.footerbar button{padding:8px 12px;border:1px solid var(--ring);border-radius:10px;background:#fff;text-decoration:none;cursor:pointer}
+  .tweet-btn{background:#1d9bf0;color:#fff;border-color:#1d9bf0}
+  .tweet-btn:hover{filter:brightness(.95)}
+  .muted{color:#999}
+  .commentary h1,.commentary h2,.commentary h3{margin:0.2rem 0 0.4rem}
+  .commentary p{margin:0.3rem 0}
+  .commentary ul{margin:0.3rem 0 0.3rem 1.2rem}
+  .commentary li{margin:0.15rem 0}
+  .full{flex:1 1 100%}
+  details.md-help{min-width:220px;max-width:100%}
+  details.md-help>summary{list-style:none;cursor:pointer;user-select:none}
+  details.md-help>summary::marker{display:none}
+  details.md-help>summary .icon{display:inline-block;padding:6px 9px;border:1px solid var(--ring);border-radius:10px;background:var(--paper);box-shadow:var(--shadow);font-weight:600}
+  details.md-help[open] .icon{background:#eef8f1;border-color:#cfe8db}
+  .md-card{margin-top:8px;background:#fff;border:1px solid var(--ring);border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;font-size:.9rem}
+  .md-card code{background:#f4f4f4;border:1px solid #e8e8e8;border-radius:6px;padding:1px 5px}
+  pre{background:#f5f5f5;border:1px solid #e8e8e8;border-radius:10px;padding:10px;overflow:auto}
+  .empty{color:var(--muted);text-align:center;margin:30px 0}
+  @media(max-width:1060px){main{grid-template-columns:1fr}.twocol{grid-template-columns:1fr}aside{position:relative;top:0}}
+</style>
+<!-- try to load marked; we also guard in JS below -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-
 <header>
-  <h1>🐸 Toadgod Lore Library</h1>
-  <div class="controls">
-    <span id="modeBadge" class="badge viewer">🔒 Viewer Mode</span>
-    <button onclick="toggleComments()">Toggle Commentary</button>
-    <button onclick="changeFont(1)">A+</button>
-    <button onclick="changeFont(-1)">A-</button>
-    <button onclick="exportJSON()">Export JSON</button>
-    <button id="adminBtn" onclick="toggleAdmin()">Enter Admin</button>
+  <div class="wrap title">
+    <h1>🐸 Toadgod Lore Library</h1>
+    <div class="controls">
+      <span class="badge mode viewer" id="modeBadge" title="Click to unlock Admin">🔒 Viewer Mode</span>
+      <button class="btn" id="toggleComm">Toggle Commentary</button>
+      <button class="btn" id="fontPlus">A+</button>
+      <button class="btn" id="fontReset">A</button>
+      <button class="btn" id="exportJson">Export JSON</button>
+      <label class="btn hidden" id="importWrap" style="cursor:pointer">
+        Import JSON<input type="file" id="importJson" accept="application/json" style="display:none">
+      </label>
+      <button class="btn danger hidden" id="clearAll">Clear All (local)</button>
+      <button class="btn" id="enterAdmin">Enter Admin</button>
+      <button class="btn hidden" id="exitAdmin">Lock</button>
+    </div>
   </div>
 </header>
 
 <main>
-  <div class="toc">
-    <input id="search" placeholder="Search text, tags, dates…" style="width:100%;padding:6px;">
-    <div id="chapters"></div>
+  <aside id="editor" class="hidden">
+    <h3>Editor</h3>
+    <div class="bar" style="margin-bottom:10px;">
+      <button class="btn success" id="showForm">➕ New Lore Entry</button>
+      <button class="btn danger hidden" id="hideForm">✖ Close</button>
+      <button class="btn" id="saveAsData">⬇ Export as data.json</button>
+    </div>
+
+    <form id="entryForm" class="hidden">
+      <div class="row grid2">
+        <div><label>ID<input type="text" id="fid" placeholder="TOBY_T002 or TOBY_L002" required></label></div>
+        <div><label>Date<input type="date" id="fdate" required></label></div>
+      </div>
+
+      <div class="row"><label>Title<input type="text" id="ftitle" placeholder="People’s Script" required></label></div>
+
+      <div class="row">
+        <label>Original Lore (Markdown)
+          <textarea id="ftweet" placeholder="### The First Ripple&#10;I am making a new account, sir Elon.&#10;&#10;- frustration with shadow bans&#10;- new account = new start"></textarea>
+        </label>
+      </div>
+
+      <div class="row">
+        <label>Commentary (Markdown)
+          <textarea id="fcomment" placeholder="### ✨ Literal Explanation&#10;...&#10;&#10;### 🌱 Spiritual Interpretation&#10;...&#10;&#10;### 🔮 Symbolic Meaning&#10;- **Point**&#10;- **Point**&#10;&#10;_Final note…_"></textarea>
+        </label>
+      </div>
+
+      <div class="row">
+        <div class="full">
+          <details class="md-help">
+            <summary><span class="icon">❓ Markdown help</span></summary>
+            <div class="md-card">
+              <strong>Basics</strong><br/>
+              <code>#</code> Heading, <code>**bold**</code>, <code>*italic*</code>, <code>-</code> list, <code>[link](https://x.com/)</code>
+              <hr/>
+              <strong>Original Lore example</strong>
+<pre>### The First Ripple
+I am making a new account, sir Elon.
+
+- frustration with shadow bans
+- new account = new start</pre>
+              <strong>Commentary template</strong>
+<pre>### ✨ Literal Explanation (EN)
+...
+
+### 🌱 Spiritual Interpretation (EN)
+...
+
+### 🔮 Symbolic Meaning (EN)
+- **A = B**
+- **C = D**
+
+_Final note…_</pre>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="row grid2">
+        <div><label>Tags (comma)<input type="text" id="ftags" placeholder="Identity, People, Decentralization"></label></div>
+        <div><label>Tweet URL<input type="text" id="furl" placeholder="https://x.com/..."></label></div>
+      </div>
+
+      <div class="row">
+        <label>Image URL
+          <input type="text" id="fimg" placeholder="lore-images/L001.jpg">
+        </label>
+        <div class="hint">If provided, an image shows above the text.</div>
+      </div>
+
+      <div class="bar">
+        <button class="btn success" id="addEntry">Add Entry</button>
+        <button class="btn" id="resetForm" type="reset">Reset</button>
+      </div>
+      <div id="saveNote" class="hint muted"></div>
+    </form>
+  </aside>
+
+  <div class="content">
+    <div class="toc">
+      <div class="status" id="statusBox" title="Data source / errors">Loading…</div>
+      <div class="search">
+        <input id="q" type="search" placeholder="Search text, tags, dates…">
+        <button class="pill" id="clear">Clear</button>
+      </div>
+      <div class="tags" id="tags"></div>
+    </div>
+    <div id="content"></div>
   </div>
-  <div class="content" id="content"></div>
 </main>
 
-<!-- Entry Form Modal -->
-<div id="entryForm">
-  <button onclick="closeForm()" style="align-self:flex-end">✖ Close</button>
-  <button onclick="exportJSON()">⬇ Export as data.json</button>
-  <label>ID <input id="fid" placeholder="TOBY_T002 or TOBY_L001"></label>
-  <label>Date <input id="fdate" type="date"></label>
-  <label>Title <input id="ftitle"></label>
-  <label>Original Lore (Markdown) <textarea id="foriginal"></textarea></label>
-  <label>Commentary (Markdown) <textarea id="fcomment"></textarea></label>
-  <label>Tags (comma) <input id="ftags"></label>
-  <label>Tweet URL <input id="furl"></label>
-  <label>Image URL <input id="fimg"></label>
-  <div>
-    <button class="help-toggle" onclick="toggleHelp()">❓ Markdown help</button>
-    <div id="markdownHelp">
-# Heading  
-**bold** / *italic*  
-- list item  
-[Link](https://x.com/)  
-
-### ✨ Literal Explanation  
-### 🌱 Spiritual Interpretation  
-### 🔮 Symbolic Meaning
-    </div>
-  </div>
-  <button onclick="addEntry()">Add Entry</button>
-  <button onclick="resetForm()">Reset</button>
-</div>
-
-<footer>
-  © Toadgod Lore · Preserved by <strong>ToadAid</strong> 🐸<br>
-  Original tweets preserved for study; commentary provided for learning and reflection.
+<footer class="wrap">
+  <p class="muted">
+    © Toadgod Lore · Preserved by <strong>ToadAid</strong> 🐸<br/>
+    Original tweets preserved for study; commentary provided for learning and reflection.
+  </p>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-let data=[]; let isAdmin=false; let showComments=true; let fontSize=1;
+const PASSPHRASE = "TOADLOCK";
+const ADMIN_KEY  = "toadgod:lore:admin";
+let isAdmin = localStorage.getItem(ADMIN_KEY) === "1";
 
-function $(q){return document.querySelector(q)}
-function $$(q){return document.querySelectorAll(q)}
+const PUBLIC_JSON = "/lore/data.json";
+const LOCAL_KEY   = "toadgod:lore:data";
+
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+let LORE_DATA = [];
+let ALL_TAGS = [];
+let activeTag=null, searchText="";
+let sourceLoaded = ""; // public | local | empty | error
+
+function setStatus(msg){ $("#statusBox").textContent = msg; }
+
+function escapeHtml(s){
+  return (s||"").replace(/[&<>\"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[m]));
+}
+function slugify(s){return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");}
+function normalizeId(raw){const m=(raw||"").match(/^TOBY_T(\d+)$/i);return m?("TOBY_L"+m[1]):(raw||"");}
+function saveLocal(){ localStorage.setItem(LOCAL_KEY, JSON.stringify(LORE_DATA)); $("#saveNote").textContent="Saved ✓"; setTimeout(()=>$("#saveNote").textContent="",1500); }
 
 async function loadData(){
-  try {
-    const r=await fetch('data.json');
-    data=await r.json();
-  } catch(e){
-    console.warn("No data.json yet, starting empty");
-    data=[];
+  try{
+    const res = await fetch(PUBLIC_JSON, {cache:"no-store"});
+    if(!res.ok){
+      throw new Error("HTTP "+res.status+" for "+PUBLIC_JSON);
+    }
+    const text = await res.text();
+    try{
+      LORE_DATA = JSON.parse(text);
+      sourceLoaded = "public";
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(LORE_DATA));
+      setStatus("Loaded from /lore/data.json ("+LORE_DATA.length+" entries)");
+    }catch(parseErr){
+      throw new Error("JSON parse error: "+parseErr.message);
+    }
+  }catch(err){
+    // fallback to localStorage
+    const local = localStorage.getItem(LOCAL_KEY);
+    if(local){
+      try{
+        LORE_DATA = JSON.parse(local);
+        sourceLoaded="local";
+        setStatus("Loaded from local storage ("+LORE_DATA.length+" entries). Note: not yet published.");
+      }catch(e2){
+        sourceLoaded="error";
+        setStatus("Error: "+err.message+"; also failed to parse local storage.");
+      }
+    }else{
+      sourceLoaded="error";
+      setStatus("Error: "+err.message+"; no local copy available.");
+      LORE_DATA=[];
+    }
+  }
+  updateModeBadge();
+}
+
+function updateModeBadge(){
+  const badge = $("#modeBadge");
+  if(isAdmin){
+    badge.textContent = "🔑 Admin Mode";
+    badge.classList.remove("viewer"); badge.classList.add("admin");
+    badge.title = "Click to lock";
+  }else{
+    badge.textContent = "🔒 Viewer Mode";
+    badge.classList.remove("admin"); badge.classList.add("viewer");
+    badge.title = "Click to unlock Admin";
   }
 }
-function paint(){
-  const q=$("#search").value.toLowerCase();
-  const c=$("#content"); c.innerHTML="";
-  data.forEach((e,i)=>{
-    if(q && !JSON.stringify(e).toLowerCase().includes(q)) return;
-    const art=document.createElement("article"); art.className="scroll";
-    const grid=document.createElement("div"); grid.className="twocol";
-    const left=document.createElement("div"); left.className="panel";
-    const right=document.createElement("div"); right.className="panel commentary";
-    left.innerHTML=`<h3>Original Lore</h3><div>${marked.parse(e.original||"")}</div>`;
-    if(showComments){
-      right.innerHTML=`<h3>Commentary</h3><div>${marked.parse(e.comment||"")}</div>`;
+
+function applyAdminUI(){
+  $("#editor").classList.toggle("hidden", !isAdmin);
+  $("#importWrap").classList.toggle("hidden", !isAdmin);
+  $("#clearAll").classList.toggle("hidden", !isAdmin);
+  $("#exitAdmin").classList.toggle("hidden",  !isAdmin);
+  $("#enterAdmin").classList.toggle("hidden",  isAdmin);
+  updateModeBadge();
+  $$("[data-edit], [data-del]").forEach(b=> b.classList.toggle("hidden", !isAdmin));
+}
+
+$("#modeBadge").addEventListener("click", ()=>{
+  if(isAdmin){
+    if(confirm("Lock and exit Admin mode?")){
+      isAdmin=false; localStorage.removeItem(ADMIN_KEY); applyAdminUI();
     }
-    grid.append(left,right); art.append(grid);
-    const meta=document.createElement("div");
-    meta.className="tags";
-    if(e.tags) e.tags.split(",").forEach(t=> meta.innerHTML+=`<span class=tag>${t.trim()}</span>`);
-    if(e.url) meta.innerHTML+=`<a href="${e.url}" target="_blank">🔗 Original Tweet</a>`;
-    art.append(meta);
-    if(isAdmin){
-      const btns=document.createElement("div");
-      btns.innerHTML=`<button onclick="editEntry(${i})">Edit</button>
-                      <button onclick="delEntry(${i})">Delete</button>`;
-      art.append(btns);
-    }
-    c.append(art);
+  }else{
+    const pw = prompt("Enter admin passphrase:");
+    if(!pw) return;
+    if(pw.trim() === PASSPHRASE){ isAdmin = true; localStorage.setItem(ADMIN_KEY,"1"); applyAdminUI(); alert("Admin mode enabled."); }
+    else alert("Incorrect passphrase.");
+  }
+});
+$("#enterAdmin").addEventListener("click", ()=>{
+  const pw = prompt("Enter admin passphrase:"); if(!pw) return;
+  if(pw.trim() === PASSPHRASE){ isAdmin = true; localStorage.setItem(ADMIN_KEY,"1"); applyAdminUI(); alert("Admin mode enabled."); }
+  else alert("Incorrect passphrase.");
+});
+$("#exitAdmin").addEventListener("click", ()=>{ isAdmin=false; localStorage.removeItem(ADMIN_KEY); applyAdminUI(); });
+
+function renderTags(){
+  ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
+  const box=$("#tags"); box.innerHTML="";
+  if(!ALL_TAGS.length) return;
+  const reset=document.createElement("button"); reset.className="tag"; reset.textContent="All";
+  reset.onclick=()=>{activeTag=null;paint();}; box.appendChild(reset);
+  ALL_TAGS.forEach(t=>{
+    const b=document.createElement("button"); b.className="tag"+(activeTag===t?" active":""); b.textContent=t;
+    b.onclick=()=>{activeTag=(activeTag===t?null:t);paint();}; box.appendChild(b);
   });
 }
-function toggleComments(){ showComments=!showComments; paint(); }
-function changeFont(d){ fontSize+=d; document.body.style.fontSize=fontSize+"em"; }
-function exportJSON(){
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob); a.download="data.json"; a.click();
-}
-function toggleAdmin(){
-  if(!isAdmin){
-    const pass=prompt("Enter passphrase:");
-    if(pass==="TOADLOCK"){isAdmin=true;}
-    else {alert("Incorrect passphrase."); return;}
-  } else {isAdmin=false;}
-  applyAdminUI();
-}
-function applyAdminUI(){
-  $("#adminBtn").innerText=isAdmin?"Exit Admin":"Enter Admin";
-  updateModeBadge(); setLayoutMode();
-  paint();
-}
-function updateModeBadge(){
-  const b=$("#modeBadge");
-  b.className="badge "+(isAdmin?"admin":"viewer");
-  b.textContent=isAdmin?"🔑 Admin Mode":"🔒 Viewer Mode";
-}
-function setLayoutMode(){
-  document.querySelector("main").classList.toggle("single",!isAdmin);
-}
-function openForm(){ $("#entryForm").style.display="flex"; }
-function closeForm(){ $("#entryForm").style.display="none"; }
-function resetForm(){ $("#fid").value=$("#fdate").value=$("#ftitle").value=$("#foriginal").value=$("#fcomment").value=$("#ftags").value=$("#furl").value=$("#fimg").value=""; }
-function toggleHelp(){ $("#markdownHelp").style.display= $("#markdownHelp").style.display==="block"?"none":"block"; }
-function addEntry(){
-  const e={
-    id:$("#fid").value, date:$("#fdate").value, title:$("#ftitle").value,
-    original:$("#foriginal").value, comment:$("#fcomment").value,
-    tags:$("#ftags").value, url:$("#furl").value, img:$("#fimg").value
-  };
-  data.push(e); closeForm(); paint();
-}
-function editEntry(i){
-  const e=data[i];
-  $("#fid").value=e.id; $("#fdate").value=e.date; $("#ftitle").value=e.title;
-  $("#foriginal").value=e.original; $("#fcomment").value=e.comment;
-  $("#ftags").value=e.tags; $("#furl").value=e.url; $("#fimg").value=e.img;
-  $("#entryForm").style.display="flex";
-}
-function delEntry(i){ if(confirm("Delete?")){data.splice(i,1); paint();} }
 
-$("#search").oninput=paint;
-(async()=>{ await loadData(); paint(); setLayoutMode(); })();
+function matches(it){
+  const tagOK = activeTag ? (it.tags||[]).includes(activeTag) : true;
+  if(!tagOK) return false;
+  if(!searchText) return true;
+  const hay=(it.title+" "+it.date+" "+(it.tweet_md||"")+" "+(it.commentary_md||"")+" "+(it.tags||[]).join(" ")).toLowerCase();
+  return hay.includes(searchText.toLowerCase());
+}
+
+// Safe Markdown fallback if CDN fails
+function mdToHtml(md){
+  try{
+    if (typeof marked !== "undefined" && marked?.parse) {
+      const html = marked.parse(md || "");
+      const tmp = document.createElement("div");
+      tmp.innerHTML = html;
+      tmp.querySelectorAll("a").forEach(a=>{ a.target="_blank"; a.rel="noopener"; });
+      return tmp.innerHTML || "<p class='muted'>—</p>";
+    }
+  }catch(e){}
+  // Fallback: escape + <br>
+  return (md && md.length)
+    ? "<pre>"+escapeHtml(md)+"</pre>"
+    : "<p class='muted'>—</p>";
+}
+
+function renderScroll(item){
+  const el=document.createElement("article"); el.className="scroll"; el.id=item.id;
+  const head=document.createElement("div"); head.className="head";
+  head.innerHTML=`<h2>${escapeHtml(item.title||"(untitled)")}</h2>
+  <div class="meta">${escapeHtml(item.date||"")}${item.tweet_url?" · <a href='"+item.tweet_url+"' target='_blank' rel='noopener'>Original Tweet ↗</a>":""}</div>`;
+  el.appendChild(head);
+
+  if(item.media?.type==="image" && item.media?.src){
+    const art=document.createElement("div"); art.className="art";
+    art.innerHTML=`<img src="${item.media.src}" alt="${escapeHtml(item.title||"artwork")}">`;
+    el.appendChild(art);
+  }
+  const twocol=document.createElement("div"); twocol.className="twocol";
+  const left=document.createElement("div"); left.className="panel";
+  left.innerHTML = `<h3>Original Lore</h3><div class="orig">${mdToHtml(item.tweet_md)}</div>`;
+  const right=document.createElement("div"); right.className="panel commentary";
+  right.innerHTML = `<h3>Commentary</h3><div class="comm">${mdToHtml(item.commentary_md)}</div>`;
+  twocol.append(left,right); el.appendChild(twocol);
+
+  if(item.tags?.length){
+    const chips=document.createElement("div"); chips.className="chips";
+    item.tags.forEach(t=>{const s=document.createElement("span"); s.className="chip"; s.textContent=t; chips.appendChild(s);});
+    el.appendChild(chips);
+  }
+  const foot=document.createElement("div"); foot.className="footerbar";
+  foot.innerHTML=`
+    <div class="bar">
+      ${item.tweet_url?`<a class="tweet-btn" href="${item.tweet_url}" target="_blank" rel="noopener">Open Original Tweet</a>`:`<a class="tweet-btn" style="opacity:.5;pointer-events:none">Open Original Tweet</a>`}
+    </div>
+    <div class="bar">
+      <button class="btn hidden" data-edit="${item.id}">Edit</button>
+      <button class="btn danger hidden" data-del="${item.id}">Delete</button>
+      <button class="btn" onclick="copyLink('${item.id}')">Copy link</button>
+    </div>`;
+  el.appendChild(foot);
+  return el;
+}
+
+function bindRowButtons(){
+  $$("button[data-edit]").forEach(b=>{
+    b.onclick=()=>{
+      const id=b.getAttribute("data-edit");
+      const it=LORE_DATA.find(x=>x.id===id); if(!it) return;
+      $("#fid").value=it._raw_id||it.id;
+      $("#fdate").value=it.date||"";
+      $("#ftitle").value=it.title||"";
+      $("#ftweet").value=it.tweet_md || it.tweet_text || "";
+      $("#fcomment").value=it.commentary_md || it.commentary_html || "";
+      $("#ftags").value=(it.tags||[]).join(", ");
+      $("#furl").value=it.tweet_url||"";
+      $("#fimg").value=it.media?.src||"";
+      $("#saveNote").textContent="Editing: "+it.id;
+      $("#entryForm").classList.remove("hidden");
+      $("#showForm").classList.add("hidden");
+      $("#hideForm").classList.remove("hidden");
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+  });
+  $$("button[data-del]").forEach(b=>{
+    b.onclick=()=>{
+      const id=b.getAttribute("data-del");
+      if(!confirm("Delete "+id+"?")) return;
+      LORE_DATA=LORE_DATA.filter(x=>x.id!==id); saveLocal(); paint();
+    };
+  });
+}
+
+function paint(){
+  const mount = $("#content");
+  mount.innerHTML = "";
+  const list=LORE_DATA.filter(matches).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.title.localeCompare(b.title));
+  if(!list.length){
+    mount.innerHTML = `<div class="empty">No lore entries found.</div>`;
+  }else{
+    list.forEach(it=>mount.appendChild(renderScroll(it)));
+  }
+  renderTags(); bindRowButtons(); applyAdminUI();
+}
+
+function copyLink(id){
+  const url=location.origin+location.pathname+"#"+id;
+  navigator.clipboard.writeText(url).then(()=>alert("Link copied: "+url));
+}
+$("#q").addEventListener("input",()=>{searchText=$("#q").value.trim();paint();});
+$("#clear").addEventListener("click",()=>{$("#q").value="";searchText="";activeTag=null;paint();});
+$("#toggleComm").addEventListener("click",()=>{document.body.classList.toggle("hide-comm"); $$(".commentary").forEach(el=>el.style.display=document.body.classList.contains("hide-comm")?"none":"");});
+(function(){const KEYFS="lore:fontScale";let s=parseFloat(localStorage.getItem(KEYFS)||"1");const apply=()=>$$(".panel").forEach(el=>el.style.fontSize=(1.0*s)+"rem");apply();
+  $("#fontPlus").addEventListener("click",()=>{s=Math.min(1.4,+(s+0.05).toFixed(2));localStorage.setItem(KEYFS,s);apply();});
+  $("#fontReset").addEventListener("click",()=>{s=1;localStorage.setItem(KEYFS,s);apply();});
+})();
+
+$("#showForm").addEventListener("click",()=>{ $("#entryForm").classList.remove("hidden"); $("#showForm").classList.add("hidden"); $("#hideForm").classList.remove("hidden"); });
+$("#hideForm").addEventListener("click",()=>{ $("#entryForm").classList.add("hidden"); $("#showForm").classList.remove("hidden"); $("#hideForm").classList.add("hidden"); });
+
+$("#addEntry").addEventListener("click",(e)=>{
+  e.preventDefault();
+  const rawId=$("#fid").value.trim();
+  const id=normalizeId(rawId)||slugify($("#ftitle").value.trim());
+  const idx=LORE_DATA.findIndex(x=>x.id===id);
+  const entry={
+    id,_raw_id:rawId,
+    date:$("#fdate").value.trim(),
+    title:$("#ftitle").value.trim(),
+    tweet_md:$("#ftweet").value,
+    commentary_md:$("#fcomment").value,
+    tweet_url:$("#furl").value.trim(),
+    tags:$("#ftags").value.split(",").map(s=>s.trim()).filter(Boolean),
+    media:$("#fimg").value.trim()?{type:"image",src:$("#fimg").value.trim()}:null
+  };
+  if(idx>=0) LORE_DATA[idx]=entry; else LORE_DATA.push(entry);
+  saveLocal(); paint(); $("#entryForm").reset();
+});
+$("#resetForm").addEventListener("click",()=>{$("#saveNote").textContent="";});
+
+$("#exportJson").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(LORE_DATA,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="toadgod_lore.json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+});
+$("#saveAsData").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(LORE_DATA,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="data.json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+});
+$("#importJson").addEventListener("change",async(ev)=>{
+  const f=ev.target.files[0]; if(!f) return;
+  const t=await f.text();
+  try{
+    const arr=JSON.parse(t);
+    if(!Array.isArray(arr)) throw new Error("JSON must be an array");
+    LORE_DATA=arr.map(x=>{
+      if(!x.commentary_md && x.commentary_html){ x.commentary_md = x.commentary_html; delete x.commentary_html; }
+      if(!x.tweet_md && x.tweet_text){ x.tweet_md = x.tweet_text; }
+      return {...x, id: normalizeId(x._raw_id || x.id || slugify(x.title||""))};
+    });
+    saveLocal(); paint();
+  }catch(e){ alert("Import error: "+e.message); }
+});
+$("#clearAll").addEventListener("click",()=>{
+  if(confirm("Clear local working copy?")){
+    LORE_DATA=[]; localStorage.removeItem(LOCAL_KEY); paint();
+  }
+});
+
+(async()=>{ await loadData(); paint(); })();
 </script>
 </body>
 </html>
