@@ -54,8 +54,15 @@
   .tweet-btn{background:#1d9bf0;color:#fff;border-color:#1d9bf0}
   .tweet-btn:hover{filter:brightness(.95)}
   .muted{color:#999}
+  /* markdown defaults inside commentary */
+  .commentary h1,.commentary h2,.commentary h3{margin:0.2rem 0 0.4rem}
+  .commentary p{margin:0.3rem 0}
+  .commentary ul{margin:0.3rem 0 0.3rem 1.2rem}
+  .commentary li{margin:0.15rem 0}
   @media(max-width:1060px){main{grid-template-columns:1fr}.twocol{grid-template-columns:1fr}aside{position:relative;top:0}}
 </style>
+<!-- Markdown renderer -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="admin-off">
 <header>
@@ -93,7 +100,7 @@
       </div>
       <div class="row"><label>Title<input type="text" id="ftitle" placeholder="People’s Script" required></label></div>
       <div class="row"><label>Original Lore (tweet text)<textarea id="ftweet" placeholder="Paste exact original tweet…"></textarea></label></div>
-      <div class="row"><label>Commentary (HTML or plain)<textarea id="fcomment" placeholder="<p>Literal…</p><p>Spiritual…</p>"></textarea></label></div>
+      <div class="row"><label>Commentary (Markdown)<textarea id="fcomment" placeholder="### ✨ Literal Explanation\n...\n\n### 🌱 Spiritual Interpretation\n...\n\n### 🔮 Symbolic Meaning\n- **Point**\n- **Point**\n\n_Final note…_"></textarea></label></div>
       <div class="row grid2">
         <div><label>Tags (comma)<input type="text" id="ftags" placeholder="Identity, People, Decentralization"></label></div>
         <div><label>Tweet URL<input type="text" id="furl" placeholder="https://x.com/..."></label></div>
@@ -125,36 +132,33 @@
 </footer>
 
 <script>
-/* ---------- Admin Lock (simple) ---------- */
-const PASSPHRASE = "TOADLOCK";      // change if you like
+/* ---------- Simple Admin Lock (plain-text) ---------- */
+const PASSPHRASE = "TOADLOCK";
 const ADMIN_KEY  = "toadgod:lore:admin";
 let isAdmin = localStorage.getItem(ADMIN_KEY) === "1";
 
 /* ---------- Data source ---------- */
-const PUBLIC_JSON = "/lore/data.json";   // repo-backed, read-only
-const LOCAL_KEY   = "toadgod:lore:data"; // working copy in this browser
+const PUBLIC_JSON = "/lore/data.json"; // repo file served to visitors
+const LOCAL_KEY   = "toadgod:lore:data"; // working copy stored locally
 
 /* ---------- DOM helpers ---------- */
 const $ = (s,r=document)=>r.querySelector(s);
 const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
 
 /* ---------- State ---------- */
-let LORE_DATA = [];       // working set (loaded from /lore/data.json or localStorage)
+let LORE_DATA = [];
 let ALL_TAGS = [];
 let activeTag=null, searchText="";
-let sourceLoaded = "";    // "public" | "local" | "empty"
+let sourceLoaded = ""; // "public" | "local" | "empty"
 
 /* ---------- Utils ---------- */
 function escapeHtml(s){return (s||"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
-function escapeWithBr(s){return escapeHtml(s).replace(/(?:\r?\n){1,}/g,"<br>");}
+function escapeWithBr(s){return escapeHtml(s).replace(/(?:\\r?\\n){1,}/g,"<br>");}
 function slugify(s){return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");}
-function normalizeId(raw){const m=(raw||"").match(/^TOBY_T(\d+)$/i);return m?("TOBY_L"+m[1]):(raw||"");}
+function normalizeId(raw){const m=(raw||"").match(/^TOBY_T(\\d+)$/i);return m?("TOBY_L"+m[1]):(raw||"");}
 function saveLocal(){ localStorage.setItem(LOCAL_KEY, JSON.stringify(LORE_DATA)); $("#saveNote").textContent="Saved ✓"; setTimeout(()=>$("#saveNote").textContent="",1500); }
 
-/* ---------- Load order ----------
-   1) Try /lore/data.json (public)
-   2) If fail, try localStorage (local)
------------------------------------------------------- */
+/* ---------- Load order: data.json → local fallback ---------- */
 async function loadData(){
   try{
     const res = await fetch(PUBLIC_JSON, {cache:"no-store"});
@@ -175,7 +179,6 @@ async function loadData(){
   updateSourceBadge();
 }
 
-/* ---------- Badges ---------- */
 function updateSourceBadge(){
   const b = $("#sourceBadge");
   b.classList.remove("hidden");
@@ -194,7 +197,6 @@ function applyAdminUI(){
   $("#modeBadge").textContent = isAdmin ? "Admin" : "Read-only";
   $$("[data-edit], [data-del]").forEach(b=> b.classList.toggle("hidden", !isAdmin));
 }
-
 $("#enterAdmin").addEventListener("click", ()=>{
   const pw = prompt("Enter admin passphrase:");
   if(!pw) return;
@@ -219,12 +221,12 @@ function matches(it){
   const tagOK = activeTag ? (it.tags||[]).includes(activeTag) : true;
   if(!tagOK) return false;
   if(!searchText) return true;
-  const hay=(it.title+" "+it.date+" "+(it.tweet_text||"")+" "+(it.commentary_html||"")+" "+(it.tags||[]).join(" ")).toLowerCase();
+  const hay=(it.title+" "+it.date+" "+(it.tweet_text||"")+" "+(it.commentary_md||"")+" "+(it.tags||[]).join(" ")).toLowerCase();
   return hay.includes(searchText.toLowerCase());
 }
 
 /* ---------- Render ---------- */
-function renderScroll(item,idx,list){
+function renderScroll(item){
   const el=document.createElement("article"); el.className="scroll"; el.id=item.id;
   const head=document.createElement("div"); head.className="head";
   head.innerHTML=`<h2>${escapeHtml(item.title)}</h2>
@@ -240,7 +242,12 @@ function renderScroll(item,idx,list){
   const left=document.createElement("div"); left.className="panel";
   left.innerHTML=`<h3>Original Lore</h3><div class="orig">${escapeWithBr(item.tweet_text||"")}</div>`;
   const right=document.createElement("div"); right.className="panel commentary";
-  right.innerHTML=`<h3>Commentary</h3><div class="comm">${item.commentary_html||"<p class='muted'>—</p>"}</div>`;
+  // Markdown → HTML (safe-ish; trusted admin input)
+  const html = marked.parse(item.commentary_md || "");
+  // ensure links open safely
+  const tmp = document.createElement("div"); tmp.innerHTML = html;
+  tmp.querySelectorAll("a").forEach(a=>{ a.setAttribute("target","_blank"); a.setAttribute("rel","noopener"); });
+  right.innerHTML=`<h3>Commentary</h3><div class="comm">${tmp.innerHTML || "<p class='muted'>—</p>"}</div>`;
   twocol.append(left,right); el.appendChild(twocol);
 
   if(item.tags?.length){
@@ -261,7 +268,6 @@ function renderScroll(item,idx,list){
   el.appendChild(foot);
   return el;
 }
-
 function bindRowButtons(){
   $$("button[data-edit]").forEach(b=>{
     b.onclick=()=>{
@@ -271,7 +277,7 @@ function bindRowButtons(){
       $("#fdate").value=it.date||"";
       $("#ftitle").value=it.title||"";
       $("#ftweet").value=it.tweet_text||"";
-      $("#fcomment").value=it.commentary_html||"";
+      $("#fcomment").value=it.commentary_md||""; // markdown
       $("#ftags").value=(it.tags||[]).join(", ");
       $("#furl").value=it.tweet_url||"";
       $("#fimg").value=it.media?.src||"";
@@ -290,10 +296,10 @@ function bindRowButtons(){
     };
   });
 }
-
 function paint(){
   const list=LORE_DATA.filter(matches).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.title.localeCompare(b.title));
-  $("#content").innerHTML=""; list.forEach((it,i)=>$("#content").appendChild(renderScroll(it,i,list)));
+  $("#content").innerHTML="";
+  list.forEach(it=>$("#content").appendChild(renderScroll(it)));
   renderTags(); bindRowButtons(); applyAdminUI();
 }
 
@@ -324,7 +330,7 @@ $("#addEntry").addEventListener("click",(e)=>{
     date:$("#fdate").value.trim(),
     title:$("#ftitle").value.trim(),
     tweet_text:$("#ftweet").value,
-    commentary_html:$("#fcomment").value,
+    commentary_md:$("#fcomment").value,         // store markdown!
     tweet_url:$("#furl").value.trim(),
     tags:$("#ftags").value.split(",").map(s=>s.trim()).filter(Boolean),
     media:$("#fimg").value.trim()?{type:"image",src:$("#fimg").value.trim()}:null
@@ -332,7 +338,6 @@ $("#addEntry").addEventListener("click",(e)=>{
   if(idx>=0) LORE_DATA[idx]=entry; else LORE_DATA.push(entry);
   saveLocal(); paint(); $("#entryForm").reset();
 });
-
 $("#resetForm").addEventListener("click",()=>{$("#saveNote").textContent="";});
 
 /* ---------- Export / Import ---------- */
@@ -352,11 +357,14 @@ $("#importJson").addEventListener("change",async(ev)=>{
   try{
     const arr=JSON.parse(t);
     if(!Array.isArray(arr)) throw new Error("JSON must be an array");
-    LORE_DATA=arr.map(x=>({...x,id:normalizeId(x._raw_id||x.id||slugify(x.title||""))}));
+    // migrate old commentary_html → commentary_md if present
+    LORE_DATA=arr.map(x=>{
+      if(!x.commentary_md && x.commentary_html){ x.commentary_md = x.commentary_html; delete x.commentary_html; }
+      return {...x, id: normalizeId(x._raw_id || x.id || slugify(x.title||""))};
+    });
     saveLocal(); paint();
   }catch(e){ alert("Import error: "+e.message); }
 });
-
 $("#clearAll").addEventListener("click",()=>{
   if(confirm("Clear local working copy? This does not touch data.json on the server.")){
     LORE_DATA=[]; localStorage.removeItem(LOCAL_KEY); paint();
@@ -364,10 +372,7 @@ $("#clearAll").addEventListener("click",()=>{
 });
 
 /* ---------- Boot ---------- */
-(async()=>{
-  await loadData();
-  paint();
-})();
+(async()=>{ await loadData(); paint(); })();
 </script>
 </body>
 </html>
