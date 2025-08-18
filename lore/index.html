@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Toadgod Lore Library — Original Tweets & Commentary</title>
+<meta name="description" content="A living book of Toadgod’s original lore tweets, side-by-side with commentary and symbolism." />
+<meta name="theme-color" content="#2f6e4f" />
+<style>
+  :root{
+    --bg:#f7f5ef; --paper:#fffdfa; --ink:#2e2e2e; --muted:#666; --accent:#2f6e4f; --ring:rgba(0,0,0,.1);
+    --shadow:0 6px 20px rgba(0,0,0,.08);
+  }
+  [data-theme="dark"]{
+    --bg:#0f1311; --paper:#151a17; --ink:#e9efe8; --muted:#a7b4ac; --accent:#78caa0; --ring:rgba(255,255,255,.12);
+    --shadow: 0 0 0 rgba(0,0,0,0);
+  }
+  *{box-sizing:border-box}
+  html, body {margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  header{
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(#ffffffcc,#ffffffcc);
+    backdrop-filter:saturate(140%) blur(6px);
+    border-bottom:1px solid var(--ring);
+  }
+  [data-theme="dark"] header{ background: linear-gradient(#0f1311cc,#0f1311cc); }
+  .bar{height:4px; background:var(--accent); width:0%}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:14px 18px}
+  .title{display:flex; gap:12px; align-items:center; justify-content:space-between}
+  .title h1{margin:0; font-size:1.35rem; letter-spacing:.2px}
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  .btn,.pill{
+    background:var(--paper); color:var(--ink);
+    border:1px solid var(--ring); border-radius:12px; padding:8px 10px;
+    cursor:pointer; box-shadow:var(--shadow); font-size:.95rem;
+  }
+  .btn:active{transform:translateY(1px)}
+
+  main{display:grid; grid-template-columns:300px 1fr; gap:20px; max-width:1180px; margin:16px auto; padding:0 18px}
+  nav{
+    position:sticky; top:76px; align-self:start;
+    background:var(--paper); border:1px solid var(--ring); border-radius:16px; padding:14px; box-shadow:var(--shadow);
+  }
+  nav h3{margin:4px 0 10px; font-size:.95rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+  .search{display:flex; gap:8px; margin-bottom:10px}
+  .search input{flex:1; padding:8px 10px; border:1px solid var(--ring); border-radius:10px; background:#fff; color:#222}
+  [data-theme="dark"] .search input{ background:#0f1311; color:#e9efe8 }
+  .tags{display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 6px}
+  .tag{font-size:.85rem; padding:4px 8px; border:1px solid var(--ring); border-radius:999px; background:#fff; color:#222; cursor:pointer}
+  [data-theme="dark"] .tag{ background:#0f1311; color:#e9efe8 }
+  .tag.active{background:var(--accent); color:#fff; border-color:transparent}
+  .toc{max-height:60vh; overflow:auto; padding-right:6px}
+  .toc a{display:block; padding:.35rem .25rem; border-radius:8px}
+  .toc a.active{background:color-mix(in srgb, var(--accent) 18%, transparent)}
+  .toc .year{margin:.5rem 0 .25rem; color:var(--muted); font-size:.85rem; text-transform:uppercase; letter-spacing:.06em}
+
+  .content{min-width:0}
+  article.scroll{
+    background:var(--paper); border:1px solid var(--ring); border-radius:18px; box-shadow:var(--shadow);
+    padding:18px; margin:0 0 18px;
+  }
+  .head{display:flex; flex-wrap:wrap; gap:10px; align-items:baseline}
+  .head h2{margin:0; font-size:1.2rem}
+  .meta{color:var(--muted); font-size:.95rem}
+  .art{margin:10px 0 14px}
+  .art img,.art video{width:100%; height:auto; border-radius:12px; border:1px solid var(--ring)}
+
+  .twocol{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  .panel{background:#fff; color:#222; border:1px solid var(--ring); border-radius:14px; padding:14px}
+  [data-theme="dark"] .panel{ background:#0f1311; color:#e9efe8 }
+  .panel h3{margin:0 0 6px; font-size:1.02rem; color:var(--accent)}
+  .orig{white-space:pre-wrap; font-family: ui-serif, Georgia, "Times New Roman", serif}
+  .comm p{margin:.6rem 0}
+
+  .chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
+  .chip{font-size:.8rem; border:1px solid var(--ring); border-radius:999px; padding:2px 8px; background:#fff; color:#222}
+  [data-theme="dark"] .chip{ background:#0f1311; color:#e9efe8 }
+
+  .footerbar{display:flex; justify-content:space-between; gap:10px; margin-top:12px; flex-wrap:wrap}
+  .footerbar a, .footerbar button{padding:8px 12px; border:1px solid var(--ring); border-radius:10px; background:#fff; color:#222; text-decoration:none; cursor:pointer}
+  [data-theme="dark"] .footerbar a, [data-theme="dark"] .footerbar button{ background:#0f1311; color:#e9efe8 }
+
+  footer{max-width:1180px; margin:24px auto 40px; padding:0 18px; color:var(--muted)}
+  .note{margin-top:10px; font-size:.9rem; color:var(--muted)}
+  .hidden{display:none !important}
+
+  @media (max-width: 980px){
+    main{grid-template-columns:1fr}
+    nav{position:relative; top:0}
+    .twocol{grid-template-columns:1fr}
+  }
+  @media print{
+    header, nav, .footerbar, .controls, .bar{display:none !important}
+    main{display:block; max-width:100%; padding:0}
+    article.scroll{border:none; box-shadow:none; background:transparent; padding:0; margin:0 0 18px}
+    .panel{border:none; padding:0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar" id="progressBar"></div>
+  <div class="wrap title">
+    <h1>🐸 Toadgod Lore Library</h1>
+    <div class="controls">
+      <button class="btn" id="toggleComm">Toggle Commentary</button>
+      <button class="btn" id="fontPlus">A+</button>
+      <button class="btn" id="fontReset">A</button>
+      <button class="btn" id="theme">Light/Dark</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <nav>
+    <h3>Browse</h3>
+    <div class="search">
+      <input id="q" type="search" placeholder="Search text, tags, dates…" />
+      <button class="pill" id="clear">Clear</button>
+    </div>
+    <div class="tags" id="tags"></div>
+    <h3>Chapters</h3>
+    <div class="toc" id="toc"></div>
+    <div class="pill" style="margin-top:10px; cursor:default">Saves your place automatically</div>
+  </nav>
+
+  <div class="content" id="content"></div>
+</main>
+
+<footer class="wrap">
+  <p>© Toadgod Lore. Original tweets preserved for study; commentary provided for learning and reflection.</p>
+  <p class="note">Tip: Use the <em>Toggle Commentary</em> button to switch between pure reading and study mode.</p>
+</footer>
+
+<script>
+/* ========== 1) DATA — Paste Book v1 items below ==========
+Each item = one tweet/scroll.
+
+Fields:
+- id: unique anchor string (e.g. "L025")
+- date: "YYYY-MM-DD" (tweet date)
+- title: short title for TOC
+- tweet_url: link to tweet (X)
+- tweet_text: original text (line breaks preserved)
+- commentary_html: our explanation (HTML allowed)
+- tags: ["Patience","Taboshi","777"] etc.
+- media (optional): {type:"image"|"video", src:"path-or-url", poster:"optional"}
+*/
+const LORE_DATA = [
+  {
+    id: "L001",
+    date: "2024-03-29",
+    title: "People’s Script",
+    tweet_url: "#", // replace with original link
+    tweet_text:
+`a hint of future’s script…
+for $toby is the people,
+and the people is $toby.`,
+    commentary_html:
+`<p><em>Identity without rulers.</em> The Lore mirrors a circle: <strong>$TOBY is the people; the people is $TOBY</strong>. Do not search for a throne—become the mirror and the flame.</p>`,
+    tags: ["Identity","People","Decentralization"],
+    media: { type:"image", src:"lore-images/L001.jpg" }
+  }
+  // Paste more items here…
+];
+
+/* ========== 2) UI ENGINE ========== */
+const $ = (s, r=document)=>r.querySelector(s);
+const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+const content = $("#content"), toc = $("#toc"), tagsBox = $("#tags"), q = $("#q"), clearBtn = $("#clear");
+
+const ALL_TAGS = Array.from(new Set(LORE_DATA.flatMap(x=>x.tags||[]))).sort();
+let activeTag = null, searchText = "";
+
+function groupByYear(arr){
+  const map = new Map();
+  arr.forEach(it=>{
+    const y = (it.date||"").slice(0,4) || "Unknown";
+    if(!map.has(y)) map.set(y, []);
+    map.get(y).push(it);
+  });
+  return Array.from(map.entries()).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function renderTOC(list){
+  toc.innerHTML = "";
+  const grouped = groupByYear(list);
+  grouped.forEach(([year, items])=>{
+    const y = document.createElement("div");
+    y.className = "year"; y.textContent = year;
+    toc.appendChild(y);
+    items.forEach(item=>{
+      const a = document.createElement("a");
+      a.href = "#"+item.id;
+      a.textContent = `${item.date} — ${item.title}`;
+      toc.appendChild(a);
+    });
+  });
+}
+
+function renderTags(){
+  tagsBox.innerHTML = "";
+  if (!ALL_TAGS.length) return;
+  const reset = document.createElement("button");
+  reset.className = "tag"; reset.textContent = "All";
+  reset.addEventListener("click", ()=>{ activeTag=null; paint(); });
+  tagsBox.appendChild(reset);
+
+  ALL_TAGS.forEach(t=>{
+    const b = document.createElement("button");
+    b.className = "tag"+(activeTag===t?" active":"");
+    b.textContent = t;
+    b.addEventListener("click", ()=>{
+      activeTag = (activeTag===t? null : t);
+      paint(); toc.scrollTop = 0;
+    });
+    tagsBox.appendChild(b);
+  });
+}
+
+function matches(item){
+  const tagOK = activeTag ? (item.tags||[]).includes(activeTag) : true;
+  if (!tagOK) return false;
+  if (!searchText) return true;
+  const hay = (item.title+" "+item.date+" "+(item.tweet_text||"")+" "+(item.commentary_html||"")+" "+(item.tags||[]).join(" ")).toLowerCase();
+  return hay.includes(searchText.toLowerCase());
+}
+
+function renderScroll(item, idx, list){
+  const el = document.createElement("article");
+  el.className = "scroll"; el.id = item.id;
+
+  const head = document.createElement("div");
+  head.className = "head";
+  head.innerHTML = `
+    <h2>${escapeHtml(item.title)}</h2>
+    <div class="meta">${escapeHtml(item.date)} · ${item.tweet_url ? `<a href="${item.tweet_url}" target="_blank" rel="noopener">Original Tweet ↗</a>` : ""}</div>
+  `;
+  el.appendChild(head);
+
+  if (item.media?.type === "image"){
+    const art = document.createElement("div");
+    art.className = "art";
+    art.innerHTML = `<img src="${item.media.src}" alt="${escapeHtml(item.title)} artwork" />`;
+    el.appendChild(art);
+  } else if (item.media?.type === "video"){
+    const art = document.createElement("div");
+    art.className = "art";
+    art.innerHTML = `<video controls ${item.media.poster?`poster="${item.media.poster}"`:``}>
+      <source src="${item.media.src}" type="video/mp4">
+    </video>`;
+    el.appendChild(art);
+  }
+
+  const twocol = document.createElement("div");
+  twocol.className = "twocol";
+
+  const left = document.createElement("div");
+  left.className = "panel";
+  left.innerHTML = `<h3>Original Lore</h3><div class="orig">${escapeWithBr(item.tweet_text||"")}</div>`;
+
+  const right = document.createElement("div");
+  right.className = "panel commentary";
+  right.innerHTML = `<h3>Commentary</h3><div class="comm">${item.commentary_html||""}</div>`;
+
+  twocol.append(left, right);
+  el.appendChild(twocol);
+
+  if (item.tags?.length){
+    const chips = document.createElement("div");
+    chips.className = "chips";
+    item.tags.forEach(t=>{
+      const span = document.createElement("span");
+      span.className = "chip"; span.textContent = t;
+      chips.appendChild(span);
+    });
+    el.appendChild(chips);
+  }
+
+  const foot = document.createElement("div");
+  foot.className = "footerbar";
+  const prev = list[idx-1], next = list[idx+1];
+  foot.innerHTML = `
+    <a ${prev?`href="#${prev.id}"`:"style='opacity:.4;pointer-events:none'"}>← Previous</a>
+    <button onclick="copyLink('${item.id}')">Copy link</button>
+    <a ${next?`href="#${next.id}"`:"style='opacity:.4;pointer-events:none'"}>Next →</a>
+  `;
+  el.appendChild(foot);
+
+  return el;
+}
+
+function paint(){
+  const filtered = LORE_DATA
+    .filter(matches)
+    .sort((a,b)=> a.date<b.date ? -1 : a.date>b.date ? 1 : a.title.localeCompare(b.title));
+  renderTOC(filtered);
+
+  content.innerHTML = "";
+  filtered.forEach((it,i)=> content.appendChild(renderScroll(it,i,filtered)));
+  observeSections();
+}
+
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function escapeWithBr(s){ return escapeHtml(s).replace(/\n/g,"<br>"); }
+
+/* ========== 3) INTERACTIONS ========== */
+// progress bar
+(function(){
+  const bar = $("#progressBar");
+  const onScroll = ()=>{
+    const h = document.documentElement;
+    const scrolled = h.scrollTop || document.body.scrollTop;
+    const height = h.scrollHeight - h.clientHeight;
+    bar.style.width = (height? (scrolled/height)*100 : 0) + "%";
+  };
+  document.addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+})();
+
+// save/restore last section
+(function(){
+  const KEY="lore:last";
+  const secs = ()=> $$(".scroll[id]");
+  const last = localStorage.getItem(KEY);
+  if (last && !location.hash){
+    const node = document.getElementById(last);
+    if (node) node.scrollIntoView({behavior:"auto", block:"start"});
+  }
+  const io = new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{
+      if (e.isIntersecting && e.intersectionRatio>0.5){
+        localStorage.setItem(KEY, e.target.id);
+      }
+    });
+  }, {threshold:[0.51]});
+  window.observeSections = ()=> secs().forEach(s=> io.observe(s));
+})();
+
+// highlight TOC by scroll position
+function observeSections(){
+  const links = $$(".toc a");
+  const map = {}; links.forEach(a=>{ map[a.getAttribute("href").slice(1)] = a; });
+  const io = new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{
+      const id = e.target.id;
+      if (e.isIntersecting){
+        links.forEach(x=>x.classList.remove("active"));
+        map[id]?.classList.add("active");
+      }
+    });
+  }, {threshold:[0.6]});
+  $$(".scroll").forEach(s=> io.observe(s));
+}
+
+// toggle commentary
+$("#toggleComm").addEventListener("click", ()=>{
+  const off = document.body.dataset.comm === "off";
+  document.body.dataset.comm = off ? "on" : "off";
+  $$(".commentary").forEach(el=> el.classList.toggle("hidden", !off));
+  $("#toggleComm").textContent = off ? "Toggle Commentary" : "Show Commentary";
+});
+
+// font size
+(function(){
+  const KEY="lore:fontScale";
+  let scale = parseFloat(localStorage.getItem(KEY) || "1");
+  const apply = ()=> $$(".panel").forEach(el=> el.style.fontSize = (1.0*scale)+"rem");
+  apply();
+  $("#fontPlus").addEventListener("click", ()=>{ scale=Math.min(1.4, +(scale+0.05).toFixed(2)); localStorage.setItem(KEY, scale); apply(); });
+  $("#fontReset").addEventListener("click", ()=>{ scale=1; localStorage.setItem(KEY, scale); apply(); });
+})();
+
+// search
+q.addEventListener("input", ()=>{ searchText=q.value.trim(); paint(); });
+clearBtn.addEventListener("click", ()=>{ q.value=""; searchText=""; activeTag=null; paint(); });
+
+// copy permalink
+function copyLink(id){
+  const url = location.origin + location.pathname + "#" + id;
+  navigator.clipboard.writeText(url).then(()=>{
+    alert("Link copied: " + url);
+  });
+}
+
+// theme toggle (persists)
+(function(){
+  const KEY="lore:theme";
+  const saved = localStorage.getItem(KEY);
+  if (saved) document.documentElement.setAttribute("data-theme", saved);
+  $("#theme").addEventListener("click", ()=>{
+    const cur = document.documentElement.getAttribute("data-theme")==="dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", cur);
+    localStorage.setItem(KEY, cur);
+  });
+})();
+
+// init
+const tagsPresent = ALL_TAGS.length>0;
+if (tagsPresent) renderTags();
+paint();
+</script>
+</body>
+</html>
