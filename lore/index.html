@@ -60,6 +60,12 @@
   .help-toggle{background:none;border:none;color:#b24;font-weight:600;text-align:left;cursor:pointer}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+  [data-admin-only]{ display:none; }
+  body.admin-mode [data-admin-only]{ display:inline-flex !important; }
+</style>
+
 </head>
 <body>
 
@@ -71,8 +77,8 @@
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
       <button class="btn" id="fontMinus">A-</button>
-      <button class="btn" id="exportBtn">Export JSON</button>
-      <button class="btn" id="enterAdmin">Enter Admin</button>
+      <button class="btn" id="exportBtn" data-admin-only="true">Export JSON</button data-admin-only="true">
+      <button class="btn" id="enterAdmin" data-admin-toggle="true" data-alt="Exit Admin">Enter Admin</button data-admin-toggle="true" data-alt="Exit Admin">
       <button class="btn" id="exitAdmin" style="display:none">Lock</button>
     </div>
   </div>
@@ -296,5 +302,25 @@ $("#exitAdmin").addEventListener("click",exitAdmin);
 /* ====== Boot ====== */
 (async()=>{ await loadData(); updateBadge(); setLayoutMode(); paint(); })();
 </script>
+
+<script>
+  (function(){
+    const btn = document.querySelector('[data-admin-toggle]') || document.querySelector('#enter-admin, .enter-admin');
+    if(btn){
+      btn.setAttribute('data-admin-toggle','true');
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        document.body.classList.toggle('admin-mode');
+        // Optional: flip label
+        if(btn.dataset.alt){
+          const t = btn.textContent.trim();
+          btn.textContent = btn.dataset.alt;
+          btn.dataset.alt = t;
+        }
+      }, false);
+    }
+  })();
+</script>
+
 </body>
 </html>
