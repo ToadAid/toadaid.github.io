@@ -1,183 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Toadgod Lore Library</title>
-<style>
-  :root{
-    --bg:#f5f5ef; --paper:#ffffff; --ink:#222; --muted:#666;
-    --ring:rgba(0,0,0,.12);
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  a{color:#2f6e4f;text-decoration:none} a:hover{text-decoration:underline}
+<meta charset="UTF-8">
+<title>🐸 Toadgod Lore Library</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  /* Header */
-  header{position:sticky;top:0;z-index:20;background:#ffffffcc;backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid var(--ring)}
-  .wrap{max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  h1{margin:0;font-size:1.15rem}
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-  .btn,.pill,.badge{border:1px solid var(--ring);background:var(--paper);border-radius:10px;padding:8px 10px;cursor:pointer}
-  .badge{font-size:.85rem}
-  .badge.viewer{background:#ffeec0}
-  .badge.admin{background:#e8ffe8}
+<style>
+  body{
+    font-family: system-ui, sans-serif;
+    margin:0; padding:0;
+    background:#f7f7f2;
+    color:#222;
+  }
+  header{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 16px;
+    background:#fff;border-bottom:1px solid #ddd;
+    position:sticky;top:0;z-index:40;
+  }
+  header h1{font-size:1.2rem;margin:0;display:flex;align-items:center;gap:6px}
+  .btn{padding:6px 10px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}
+  .pill{padding:4px 10px;border-radius:999px;border:1px solid #ccc;background:#fff;cursor:pointer}
   .hidden{display:none !important}
 
-  /* Main grid */
-  main{display:grid;grid-template-columns:320px 1fr;gap:18px;margin:16px auto;max-width:1200px;padding:0 16px}
-  /* Centered single-column for viewer mode */
-  main.single{grid-template-columns:1fr;max-width:1040px}
-  main.single .toc{grid-column:1/-1;max-width:840px;margin:0 auto}
-  main.single .content{grid-column:1/-1;max-width:840px;margin:0 auto}
+  /* Layout */
+  #main{display:flex;justify-content:center;padding:12px}
+  #content{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    padding:12px;
+    width:100%;
+  }
+  article.scroll{
+    width:100%;
+    max-width:820px;
+    margin:0 auto;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+  }
+  .entry-head{margin-bottom:8px}
+  .entry-meta{font-size:.85rem;color:#666}
+  .twocol{display:flex;gap:14px;flex-wrap:wrap}
+  .panel{flex:1;min-width:260px}
+  .chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:.75rem;padding:2px 8px;border:1px solid #ccc;border-radius:999px}
 
-  /* TOC + Content */
-  .toc{background:var(--paper);border:1px solid var(--ring);border-radius:14px;padding:12px}
-  .search{display:flex;gap:8px}
-  .search input{flex:1;padding:8px;border:1px solid var(--ring);border-radius:8px}
-  .content{display:flex;flex-direction:column;gap:18px}
+  footer{margin:40px 0;text-align:center;font-size:.8rem;color:#777}
 
-  /* Scroll entry */
-  article.scroll{background:var(--paper);border:1px solid var(--ring);border-radius:16px;padding:16px}
-  .entry-head{margin-bottom:10px}
-  .entry-head h2{margin:.2rem 0;font-size:1.15rem}
-  .entry-meta{color:var(--muted);font-size:.9rem}
-  .twocol{display:grid;grid-template-columns:1fr;gap:14px}
-  @media(min-width:900px){ .twocol{grid-template-columns:42% 58%} }
-  .panel{background:#fafafa;border:1px solid var(--ring);border-radius:12px;padding:12px}
-  .panel h3{margin:0 0 6px}
+  /* Mobile */
+  @media(max-width:768px){
+    article.scroll{width:94%;max-width:100%}
+  }
 
-  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-  .chip{font-size:.8rem;border:1px solid var(--ring);border-radius:999px;padding:2px 8px;background:#fff}
-
-  footer{padding:20px;text-align:center;color:#666}
-  footer b{color:#355e3b}
+  /* Viewer/admin visibility */
+  body.viewer #adminInfo,
+  body.viewer #exportBtn {display:none !important;}
+  body.admin #adminInfo,
+  body.admin #exportBtn {display:block !important;}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body>
+
+<body class="viewer">
 
 <header>
-  <div class="wrap">
-    <h1>🐸 Toadgod Lore Library</h1>
-    <div class="controls">
-      <span id="modeBadge" class="badge viewer" title="Click to unlock Admin">🔒 Viewer Mode</span>
-      <button class="btn" id="toggleComm">Toggle Commentary</button>
-      <button class="btn" id="fontPlus">A+</button>
-      <button class="btn" id="fontMinus">A-</button>
-      <!-- Admin-only: starts hidden -->
-      <button class="btn hidden" id="exportBtn">Export JSON</button>
-      <button class="btn" id="enterAdmin">Enter Admin</button>
-      <button class="btn hidden" id="exitAdmin">Lock</button>
-    </div>
+  <h1>🐸 Toadgod Lore Library</h1>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn" id="toggleComm">Toggle Commentary</button>
+    <button class="btn" id="fontPlus">A+</button>
+    <button class="btn" id="fontMinus">A-</button>
+    <button class="btn" id="enterAdmin">Enter Admin</button>
+    <button class="btn hidden" id="exitAdmin">Exit Admin</button>
+    <button class="btn hidden" id="exportBtn">Export JSON</button>
   </div>
 </header>
 
 <main id="main">
-  <aside class="toc">
+  <aside id="adminInfo" class="hidden" style="max-width:240px;margin-right:14px">
     <div class="search">
-      <input id="q" placeholder="Search text, tags, dates…">
+      <input id="q" placeholder="Search text, tags, dates…" style="width:100%;margin-bottom:6px">
       <button class="pill" id="clear">Clear</button>
     </div>
-
-    <!-- Admin-only: load status + tags wrapper (entire block hidden for viewers) -->
-    <div id="adminInfo" class="hidden" style="margin-top:6px">
-      <div id="loadStatus" style="margin:4px 0 8px; font-size:.85rem; color:#666;"></div>
-      <div id="tagControls">
-        <div id="tags" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
-      </div>
-    </div>
+    <div id="tags" style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"></div>
   </aside>
 
   <section class="content" id="content"></section>
 </main>
 
 <footer>
-  © Toadgod Lore · Preserved by <b>ToadAid</b> 🐸<br/>
+  © Toadgod Lore · Preserved by <b>ToadAid 🐸</b><br>
   Original tweets preserved for study; commentary provided for learning and reflection.
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-/* ====== State ====== */
 const PASSPHRASE="TOADLOCK";
-let isAdmin=false, showComm=true, fontScale=1;
-let DATA=[]; let editIdx=null;
+let DATA=[]; let isAdmin=false; let editIdx=null; let showComm=true; let fontScale=1;
 
 /* ====== Helpers ====== */
-const $=s=>document.querySelector(s);
-const $$=s=>Array.from(document.querySelectorAll(s));
-const md = s => {
-  const html = marked.parse(s||"");
-  const div = document.createElement("div"); div.innerHTML=html;
-  div.querySelectorAll("a").forEach(a=>{a.target="_blank";a.rel="noopener"}); 
-  return div.innerHTML || "<p style='color:#999'>—</p>";
-};
-const matches = (it,q)=> JSON.stringify(it).toLowerCase().includes(q);
-
-/* ====== Layout & badge ====== */
-function setLayoutMode(){
-  $("#main").classList.toggle("single", !isAdmin); // centered single column for viewers
-}
-function updateBadge(){
-  const b=$("#modeBadge");
-  b.className="badge "+(isAdmin?"admin":"viewer");
-  b.textContent=isAdmin?"🔑 Admin Mode":"🔒 Viewer Mode";
-  b.title=isAdmin?"Click to lock":"Click to unlock Admin";
+const $=sel=>document.querySelector(sel);
+function md(txt){return marked.parse(txt||"");}
+function matches(it,q){
+  q=q.toLowerCase();
+  return (it.title||"").toLowerCase().includes(q)||
+         (it.original||"").toLowerCase().includes(q)||
+         (it.comment||"").toLowerCase().includes(q)||
+         (it.tags||"").toLowerCase().includes(q);
 }
 
-/* ====== Data load (robust) ====== */
+/* ====== Load data.json ====== */
 async function loadData(){
-  const urls = ["data.json", "/lore/data.json"];
-  let loaded = null, src = "";
-  for (const u of urls) {
-    try {
-      const r = await fetch(u, { cache: "no-store" });
-      if (r.ok) { loaded = await r.json(); src = u; break; }
-    } catch(e){ /* try next */ }
-  }
-  if (!Array.isArray(loaded)) { loaded = []; src="(none)"; }
-  DATA = loaded.map(normalizeEntry);
-  // fill status; may still be hidden if viewer
-  const ls = $("#loadStatus"); if (ls) ls.textContent = `Loaded from ${src} (${DATA.length} entr${DATA.length===1?"y":"ies"})`;
-}
-function normalizeEntry(x){
-  const original = x.original ?? x.tweet_md ?? "";
-  const comment  = x.comment  ?? x.commentary_md ?? "";
-  const url      = x.url ?? x.tweet_url ?? "";
-  const img      = (x.media && x.media.src) ?? x.img ?? "";
-  const tagsStr  = Array.isArray(x.tags) ? x.tags.join(", ") : (x.tags || "");
-  return {
-    id: x.id || x._raw_id || "",
-    date: x.date || "",
-    title: x.title || "",
-    original, comment, url, img, tags: tagsStr
-  };
+  try{
+    const res=await fetch("data.json");
+    if(res.ok) DATA=await res.json();
+  }catch(e){ console.log("No data.json found"); }
 }
 
 /* ====== Render ====== */
 function renderTags(){
-  const wrapper = $("#adminInfo");
-  const box = $("#tags");
-  box.innerHTML = "";
-
-  if (!isAdmin) { wrapper.classList.add("hidden"); return; }
-
-  // Unique tags for admin
-  const ALL_TAGS = Array.from(new Set(
-    DATA.flatMap(x => (x.tags || "").split(",").map(s => s.trim()).filter(Boolean))
+  const wrapper=$("#adminInfo");
+  const box=$("#tags");
+  box.innerHTML="";
+  if(!isAdmin){wrapper.classList.add("hidden");return;}
+  const ALL_TAGS=Array.from(new Set(
+    DATA.flatMap(x=>(x.tags||"").split(",").map(s=>s.trim()).filter(Boolean))
   )).sort();
-
-  // Show admin block; if no tags, keep empty
   wrapper.classList.remove("hidden");
-
-  if (!ALL_TAGS.length) return;
-
-  // Optional "All" button
-  const any = document.createElement("button");
+  if(!ALL_TAGS.length) return;
+  const any=document.createElement("button");
   any.className="pill"; any.textContent="All";
   any.onclick=()=>{ $("#q").value=""; paint(); };
   box.appendChild(any);
-
   ALL_TAGS.forEach(t=>{
     const b=document.createElement("button");
     b.className="pill"; b.textContent=t;
@@ -185,10 +142,11 @@ function renderTags(){
     box.appendChild(b);
   });
 }
-function card(it, i){
+
+function card(it,i){
   const art=document.createElement("article"); art.className="scroll";
   const head=document.createElement("div"); head.className="entry-head";
-  head.innerHTML=`<div class="entry-meta">${it.date||""} ${it.url?` · <a href="${it.url}" target="_blank" rel="noopener">Original Tweet ↗</a>`:""}</div>
+  head.innerHTML=`<div class="entry-meta">${it.date||""} ${it.url?` · <a href="${it.url}" target="_blank">Original Tweet ↗</a>`:""}</div>
                   <h2>${it.title||""}</h2>`;
   const grid=document.createElement("div"); grid.className="twocol";
   const left=document.createElement("div"); left.className="panel"; left.innerHTML=`<h3>Original Lore</h3>${md(it.original)}`;
@@ -211,93 +169,79 @@ function card(it, i){
   }
   return art;
 }
+
 function paint(){
-  const q=$("#q").value.trim().toLowerCase();
-  const list = q ? DATA.filter(it=>matches(it,q)) : DATA.slice();
+  const q=$("#q")?$("#q").value.trim().toLowerCase():"";
+  const list=q?DATA.filter(it=>matches(it,q)):DATA.slice();
   $("#content").innerHTML="";
   list.forEach((it,i)=> $("#content").appendChild(card(it,i)));
 }
 
 /* ====== Admin UI ====== */
 function enterAdmin(){
-  const pw = prompt("Enter passphrase:");
-  if(pw && pw.trim()===PASSPHRASE){ isAdmin=true; applyAdmin(); }
+  const pw=prompt("Enter passphrase:");
+  if(pw && pw.trim()===PASSPHRASE){isAdmin=true;applyAdmin();}
   else alert("Incorrect passphrase.");
 }
-function exitAdmin(){ isAdmin=false; applyAdmin(); }
+function exitAdmin(){isAdmin=false;applyAdmin();}
 function applyAdmin(){
-  // Toggle admin-only controls
-  $("#enterAdmin").classList.toggle("hidden", isAdmin);
-  $("#exitAdmin").classList.toggle("hidden", !isAdmin);
-  $("#exportBtn").classList.toggle("hidden", !isAdmin);
-
-  // Badge, layout
-  updateBadge();
-  setLayoutMode();
-
-  // Render admin-only pieces (status + tags)
-  renderTags();
-
-  // Repaint entries to show/hide edit controls
-  paint();
+  document.body.classList.toggle("admin",isAdmin);
+  document.body.classList.toggle("viewer",!isAdmin);
+  $("#enterAdmin").classList.toggle("hidden",isAdmin);
+  $("#exitAdmin").classList.toggle("hidden",!isAdmin);
+  $("#exportBtn").classList.toggle("hidden",!isAdmin);
+  renderTags(); paint();
 }
 
-/* ====== Form (simple modal) ====== */
-function openForm(){ resetForm(); document.getElementById("entryForm").style.display="flex"; }
-function closeForm(){ document.getElementById("entryForm").style.display="none"; editIdx=null; }
-function resetForm(){ ["fid","fdate","ftitle","foriginal","fcomment","ftags","furl","fimg"].forEach(id=>document.getElementById(id).value=""); }
+/* ====== Form ====== */
+function openForm(){resetForm();document.getElementById("entryForm").style.display="flex";}
+function closeForm(){document.getElementById("entryForm").style.display="none";editIdx=null;}
+function resetForm(){["fid","fdate","ftitle","foriginal","fcomment","ftags","furl","fimg"].forEach(id=>document.getElementById(id).value="");}
 function saveEntry(){
-  const e={
-    id:fid.value, date:fdate.value, title:ftitle.value,
-    original:foriginal.value, comment:fcomment.value,
-    tags:ftags.value, url:furl.value, img:fimg.value
-  };
-  if(editIdx!=null) DATA[editIdx]=e; else DATA.push(e);
-  closeForm(); paint();
+  const e={id:fid.value,date:fdate.value,title:ftitle.value,
+    original:foriginal.value,comment:fcomment.value,tags:ftags.value,
+    url:furl.value,img:fimg.value};
+  if(editIdx!=null)DATA[editIdx]=e;else DATA.push(e);
+  closeForm();paint();
 }
 function editEntry(i){
-  const e=DATA[i]; editIdx=i; document.getElementById("entryForm").style.display="flex";
-  fid.value=e.id||""; fdate.value=e.date||""; ftitle.value=e.title||"";
-  foriginal.value=e.original||""; fcomment.value=e.comment||"";
-  ftags.value=e.tags||""; furl.value=e.url||""; fimg.value=e.img||"";
+  const e=DATA[i];editIdx=i;document.getElementById("entryForm").style.display="flex";
+  fid.value=e.id||"";fdate.value=e.date||"";ftitle.value=e.title||"";
+  foriginal.value=e.original||"";fcomment.value=e.comment||"";
+  ftags.value=e.tags||"";furl.value=e.url||"";fimg.value=e.img||"";
 }
-function delEntry(i){ if(confirm("Delete this entry?")){ DATA.splice(i,1); paint(); } }
+function delEntry(i){if(confirm("Delete this entry?")){DATA.splice(i,1);paint();}}
 function exportJSON(){
   const blob=new Blob([JSON.stringify(DATA,null,2)],{type:"application/json"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="data.json"; a.click();
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="data.json";a.click();
 }
 
 /* ====== Events ====== */
-$("#q").addEventListener("input",paint);
-$("#clear").addEventListener("click",()=>{ $("#q").value=""; paint(); });
-$("#toggleComm").addEventListener("click",()=>{ showComm=!showComm; paint(); });
-$("#fontPlus").addEventListener("click",()=>{ fontScale=Math.min(1.4,fontScale+0.05); document.body.style.fontSize=fontScale+"rem"; });
-$("#fontMinus").addEventListener("click",()=>{ fontScale=Math.max(0.9,fontScale-0.05); document.body.style.fontSize=fontScale+"rem"; });
-$("#modeBadge").addEventListener("click",()=> isAdmin?exitAdmin():enterAdmin());
+$("#clear").addEventListener("click",()=>{$("#q").value="";paint();});
+$("#toggleComm").addEventListener("click",()=>{showComm=!showComm;paint();});
+$("#fontPlus").addEventListener("click",()=>{fontScale=Math.min(1.4,fontScale+0.05);document.body.style.fontSize=fontScale+"rem";});
+$("#fontMinus").addEventListener("click",()=>{fontScale=Math.max(0.9,fontScale-0.05);document.body.style.fontSize=fontScale+"rem";});
 $("#enterAdmin").addEventListener("click",enterAdmin);
 $("#exitAdmin").addEventListener("click",exitAdmin);
 
 /* ====== Boot ====== */
-(async()=>{ 
-  await loadData();
-  applyAdmin();   // ensures viewer starts clean (no adminInfo, no export)
-})();
+(async()=>{ await loadData(); applyAdmin(); })();
 </script>
 
-<!-- Editor Modal (appears only when opened in Admin) -->
+<!-- Editor Modal -->
 <div id="entryForm" class="hidden" style="position:fixed;inset:50% auto auto 50%;transform:translate(-50%,-50%);z-index:50;width:min(92vw,540px);display:none;flex-direction:column;gap:10px;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)">
   <div style="display:flex;gap:8px;justify-content:flex-end">
     <button class="btn" onclick="exportJSON()">⬇ Export as data.json</button>
     <button class="btn" onclick="closeForm()">✖ Close</button>
   </div>
-  <label>ID <input id="fid" placeholder="TOBY_T001 or TOBY_L001" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
-  <label>Date <input id="fdate" type="date" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
-  <label>Title <input id="ftitle" placeholder="The First Ripple" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
-  <label>Original Lore (Markdown) <textarea id="foriginal" placeholder="### Original Tweet (EN)…" style="width:100%;height:100px;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></textarea></label>
-  <label>Commentary (Markdown) <textarea id="fcomment" placeholder="### ✨ Literal Explanation…" style="width:100%;height:100px;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></textarea></label>
-  <label>Tags (comma) <input id="ftags" placeholder="Identity, People" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
-  <label>Tweet URL <input id="furl" placeholder="https://x.com/..." style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
-  <label>Image URL <input id="fimg" placeholder="lore-images/L001.jpg" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
+  <label>ID <input id="fid" placeholder="TOBY_T001 or TOBY_L001"></label>
+  <label>Date <input id="fdate" type="date"></label>
+  <label>Title <input id="ftitle" placeholder="The First Ripple"></label>
+  <label>Original Lore (Markdown) <textarea id="foriginal"></textarea></label>
+  <label>Commentary (Markdown) <textarea id="fcomment"></textarea></label>
+  <label>Tags (comma) <input id="ftags" placeholder="Identity, People"></label>
+  <label>Tweet URL <input id="furl" placeholder="https://x.com/..."></label>
+  <label>Image URL <input id="fimg" placeholder="lore-images/L001.jpg"></label>
   <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
     <button class="btn" onclick="saveEntry()">Save</button>
     <button class="btn" onclick="resetForm()">Reset</button>
