@@ -84,7 +84,10 @@
       <input id="q" placeholder="Search text, tags, dates…">
       <button class="pill" id="clear">Clear</button>
     </div>
-    <div id="tags" style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"></div>
+    <!-- NEW: tiny banner shows where data came from -->
+    <div id="loadStatus" style="margin:8px 0 4px; font-size:.85rem; color:#666;"></div>
+
+    <div id="tags" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
   </aside>
 
   <section class="content" id="content"></section>
@@ -157,11 +160,44 @@ function updateBadge(){
 
 /* ====== Data load ====== */
 async function loadData(){
-  try{
-    const r=await fetch("/lore/data.json",{cache:"no-store"});
-    if(r.ok) DATA=await r.json(); else DATA=[];
-  }catch(e){ DATA=[]; }
+  // Try relative first (works at /lore/), then absolute fallback
+  const urls = ["data.json", "/lore/data.json"];
+  let loaded = null, src = "";
+  for (const u of urls) {
+    try {
+      const r = await fetch(u, { cache: "no-store" });
+      if (r.ok) { loaded = await r.json(); src = u; break; }
+    } catch (e) { /* keep trying next */ }
+  }
+  if (!Array.isArray(loaded)) { loaded = []; src = "(none)"; }
+
+  // Normalize old/new schemas
+  DATA = loaded.map(normalizeEntry);
+
+  // Show banner
+  const ls = document.getElementById("loadStatus");
+  if (ls) ls.textContent = `Loaded from ${src} (${DATA.length} entr${DATA.length===1?"y":"ies"})`;
 }
+
+// Accept both: old (tweet_md/commentary_md) and new (original/comment)
+function normalizeEntry(x){
+  const original = x.original ?? x.tweet_md ?? "";
+  const comment  = x.comment  ?? x.commentary_md ?? "";
+  const url      = x.url ?? x.tweet_url ?? "";
+  const img      = (x.media && x.media.src) ?? x.img ?? "";
+  const tagsStr  = Array.isArray(x.tags) ? x.tags.join(", ") : (x.tags || "");
+  return {
+    id: x.id || x._raw_id || "",
+    date: x.date || "",
+    title: x.title || "",
+    original,
+    comment,
+    url,
+    img,
+    tags: tagsStr
+  };
+}
+
 
 /* ====== Render ====== */
 function renderTags(){
