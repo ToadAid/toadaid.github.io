@@ -79,10 +79,14 @@
       <input id="q" placeholder="Search text, tags, dates…">
       <button class="pill" id="clear">Clear</button>
     </div>
-    <!-- Admin-only status banner -->
-    <div id="loadStatus" class="hidden" style="margin:8px 0 4px; font-size:.85rem; color:#666;"></div>
 
-    <div id="tags" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
+    <!-- Admin-only: load status + tags wrapper (entire block hidden for viewers) -->
+    <div id="adminInfo" class="hidden" style="margin-top:6px">
+      <div id="loadStatus" style="margin:4px 0 8px; font-size:.85rem; color:#666;"></div>
+      <div id="tagControls">
+        <div id="tags" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+    </div>
   </aside>
 
   <section class="content" id="content"></section>
@@ -133,7 +137,8 @@ async function loadData(){
   }
   if (!Array.isArray(loaded)) { loaded = []; src="(none)"; }
   DATA = loaded.map(normalizeEntry);
-  $("#loadStatus").textContent = `Loaded from ${src} (${DATA.length} entr${DATA.length===1?"y":"ies"})`;
+  // fill status; may still be hidden if viewer
+  const ls = $("#loadStatus"); if (ls) ls.textContent = `Loaded from ${src} (${DATA.length} entr${DATA.length===1?"y":"ies"})`;
 }
 function normalizeEntry(x){
   const original = x.original ?? x.tweet_md ?? "";
@@ -151,15 +156,31 @@ function normalizeEntry(x){
 
 /* ====== Render ====== */
 function renderTags(){
-  const all = Array.from(new Set(
-    DATA.flatMap(x=> (x.tags||"").split(",").map(s=>s.trim()).filter(Boolean))
+  const wrapper = $("#adminInfo");
+  const box = $("#tags");
+  box.innerHTML = "";
+
+  if (!isAdmin) { wrapper.classList.add("hidden"); return; }
+
+  // Unique tags for admin
+  const ALL_TAGS = Array.from(new Set(
+    DATA.flatMap(x => (x.tags || "").split(",").map(s => s.trim()).filter(Boolean))
   )).sort();
-  const box=$("#tags"); box.innerHTML="";
-  if(!all.length) return;
-  const any=document.createElement("button"); any.className="pill"; any.textContent="All";
-  any.onclick=()=>{ $("#q").value=""; paint(); }; box.appendChild(any);
-  all.forEach(t=>{
-    const b=document.createElement("button"); b.className="pill"; b.textContent=t;
+
+  // Show admin block; if no tags, keep empty
+  wrapper.classList.remove("hidden");
+
+  if (!ALL_TAGS.length) return;
+
+  // Optional "All" button
+  const any = document.createElement("button");
+  any.className="pill"; any.textContent="All";
+  any.onclick=()=>{ $("#q").value=""; paint(); };
+  box.appendChild(any);
+
+  ALL_TAGS.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="pill"; b.textContent=t;
     b.onclick=()=>{ $("#q").value=t; paint(); };
     box.appendChild(b);
   });
@@ -195,7 +216,6 @@ function paint(){
   const list = q ? DATA.filter(it=>matches(it,q)) : DATA.slice();
   $("#content").innerHTML="";
   list.forEach((it,i)=> $("#content").appendChild(card(it,i)));
-  renderTags();
 }
 
 /* ====== Admin UI ====== */
@@ -210,18 +230,20 @@ function applyAdmin(){
   $("#enterAdmin").classList.toggle("hidden", isAdmin);
   $("#exitAdmin").classList.toggle("hidden", !isAdmin);
   $("#exportBtn").classList.toggle("hidden", !isAdmin);
-  $("#loadStatus").classList.toggle("hidden", !isAdmin);
 
+  // Badge, layout
   updateBadge();
   setLayoutMode();
+
+  // Render admin-only pieces (status + tags)
+  renderTags();
+
+  // Repaint entries to show/hide edit controls
   paint();
 }
 
 /* ====== Form (simple modal) ====== */
-function openForm(){ 
-  resetForm(); 
-  document.getElementById("entryForm").style.display="flex"; 
-}
+function openForm(){ resetForm(); document.getElementById("entryForm").style.display="flex"; }
 function closeForm(){ document.getElementById("entryForm").style.display="none"; editIdx=null; }
 function resetForm(){ ["fid","fdate","ftitle","foriginal","fcomment","ftags","furl","fimg"].forEach(id=>document.getElementById(id).value=""); }
 function saveEntry(){
@@ -244,7 +266,6 @@ function exportJSON(){
   const blob=new Blob([JSON.stringify(DATA,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="data.json"; a.click();
 }
-function toggleHelp(){ const el=document.getElementById("markdownHelp"); el.style.display=(el.style.display==="block"?"none":"block"); }
 
 /* ====== Events ====== */
 $("#q").addEventListener("input",paint);
@@ -259,34 +280,24 @@ $("#exitAdmin").addEventListener("click",exitAdmin);
 /* ====== Boot ====== */
 (async()=>{ 
   await loadData();
-  applyAdmin();   // ensures viewer starts clean (no export, no loadStatus)
+  applyAdmin();   // ensures viewer starts clean (no adminInfo, no export)
 })();
 </script>
 
 <!-- Editor Modal (appears only when opened in Admin) -->
-<div id="entryForm" class="hidden">
+<div id="entryForm" class="hidden" style="position:fixed;inset:50% auto auto 50%;transform:translate(-50%,-50%);z-index:50;width:min(92vw,540px);display:none;flex-direction:column;gap:10px;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)">
   <div style="display:flex;gap:8px;justify-content:flex-end">
     <button class="btn" onclick="exportJSON()">⬇ Export as data.json</button>
     <button class="btn" onclick="closeForm()">✖ Close</button>
   </div>
-  <label>ID <input id="fid" placeholder="TOBY_T001 or TOBY_L001"></label>
-  <label>Date <input id="fdate" type="date"></label>
-  <label>Title <input id="ftitle" placeholder="The First Ripple"></label>
-  <label>Original Lore (Markdown) <textarea id="foriginal" placeholder="### Original Tweet (EN)…"></textarea></label>
-  <label>Commentary (Markdown) <textarea id="fcomment" placeholder="### ✨ Literal Explanation…"></textarea></label>
-  <label>Tags (comma) <input id="ftags" placeholder="Identity, People"></label>
-  <label>Tweet URL <input id="furl" placeholder="https://x.com/..."></label>
-  <label>Image URL <input id="fimg" placeholder="lore-images/L001.jpg"></label>
-  <button class="btn" onclick="toggleHelp()">❓ Markdown help</button>
-  <div id="markdownHelp" class="hidden" style="background:#f9faf9;border:1px solid #dfe7df;border-radius:8px;padding:8px;font-size:.86rem;white-space:pre-wrap">
-# Heading  ·  **bold**  ·  *italic*
-- list item
-[Link](https://x.com/)
-
-### ✨ Literal Explanation
-### 🌱 Spiritual Interpretation
-### 🔮 Symbolic Meaning
-  </div>
+  <label>ID <input id="fid" placeholder="TOBY_T001 or TOBY_L001" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
+  <label>Date <input id="fdate" type="date" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
+  <label>Title <input id="ftitle" placeholder="The First Ripple" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
+  <label>Original Lore (Markdown) <textarea id="foriginal" placeholder="### Original Tweet (EN)…" style="width:100%;height:100px;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></textarea></label>
+  <label>Commentary (Markdown) <textarea id="fcomment" placeholder="### ✨ Literal Explanation…" style="width:100%;height:100px;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></textarea></label>
+  <label>Tags (comma) <input id="ftags" placeholder="Identity, People" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
+  <label>Tweet URL <input id="furl" placeholder="https://x.com/..." style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
+  <label>Image URL <input id="fimg" placeholder="lore-images/L001.jpg" style="width:100%;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:8px"></label>
   <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
     <button class="btn" onclick="saveEntry()">Save</button>
     <button class="btn" onclick="resetForm()">Reset</button>
