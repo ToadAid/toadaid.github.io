@@ -11,6 +11,7 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  a{color:#2f6e4f;text-decoration:none} a:hover{text-decoration:underline}
 
   /* Header */
   header{position:sticky;top:0;z-index:20;background:#ffffffcc;backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid var(--ring)}
@@ -21,7 +22,7 @@
   .badge{font-size:.85rem}
   .badge.viewer{background:#ffeec0}
   .badge.admin{background:#e8ffe8}
-  .hidden{display:none!important}
+  .hidden{display:none !important}
 
   /* Main grid */
   main{display:grid;grid-template-columns:320px 1fr;gap:18px;margin:16px auto;max-width:1200px;padding:0 16px}
@@ -51,14 +52,6 @@
 
   footer{padding:20px;text-align:center;color:#666}
   footer b{color:#355e3b}
-
-  /* Editor modal */
-  #entryForm{position:fixed;inset:50% auto auto 50%;transform:translate(-50%,-50%);z-index:50;width:min(92vw,540px);display:none;flex-direction:column;gap:10px;background:#fff;border:1px solid var(--ring);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-  #entryForm label{font-size:.85rem;color:#555}
-  #entryForm input,#entryForm textarea{width:100%;padding:8px;border:1px solid var(--ring);border-radius:8px}
-  #entryForm textarea{height:100px}
-  #markdownHelp{display:none;background:#f9faf9;border:1px solid #dfe7df;border-radius:8px;padding:8px;font-size:.86rem;white-space:pre-wrap}
-  .help-toggle{background:none;border:none;color:#b24;font-weight:600;text-align:left;cursor:pointer}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -72,7 +65,8 @@
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
       <button class="btn" id="fontMinus">A-</button>
-      <button class="btn" id="exportBtn">Export JSON</button>
+      <!-- Admin-only: starts hidden -->
+      <button class="btn hidden" id="exportBtn">Export JSON</button>
       <button class="btn" id="enterAdmin">Enter Admin</button>
       <button class="btn hidden" id="exitAdmin">Lock</button>
     </div>
@@ -85,7 +79,7 @@
       <input id="q" placeholder="Search text, tags, dates…">
       <button class="pill" id="clear">Clear</button>
     </div>
-    <!-- Load status: now hidden for viewers, shown for Admin -->
+    <!-- Admin-only status banner -->
     <div id="loadStatus" class="hidden" style="margin:8px 0 4px; font-size:.85rem; color:#666;"></div>
 
     <div id="tags" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
@@ -93,36 +87,6 @@
 
   <section class="content" id="content"></section>
 </main>
-
-<!-- Editor Modal -->
-<div id="entryForm">
-  <div style="display:flex;gap:8px;justify-content:flex-end">
-    <button class="btn" onclick="exportJSON()">⬇ Export as data.json</button>
-    <button class="btn" onclick="closeForm()">✖ Close</button>
-  </div>
-  <label>ID <input id="fid" placeholder="TOBY_T001 or TOBY_L001"></label>
-  <label>Date <input id="fdate" type="date"></label>
-  <label>Title <input id="ftitle" placeholder="The First Ripple"></label>
-  <label>Original Lore (Markdown) <textarea id="foriginal" placeholder="### Original Tweet (EN)…"></textarea></label>
-  <label>Commentary (Markdown) <textarea id="fcomment" placeholder="### ✨ Literal Explanation…"></textarea></label>
-  <label>Tags (comma) <input id="ftags" placeholder="Identity, People"></label>
-  <label>Tweet URL <input id="furl" placeholder="https://x.com/..."></label>
-  <label>Image URL <input id="fimg" placeholder="lore-images/L001.jpg"></label>
-  <button class="help-toggle" onclick="toggleHelp()">❓ Markdown help</button>
-  <div id="markdownHelp">
-# Heading  ·  **bold**  ·  *italic*
-- list item
-[Link](https://x.com/)
-
-### ✨ Literal Explanation
-### 🌱 Spiritual Interpretation
-### 🔮 Symbolic Meaning
-  </div>
-  <div style="display:flex;gap:8px;justify-content:flex-end">
-    <button class="btn" onclick="saveEntry()">Save</button>
-    <button class="btn" onclick="resetForm()">Reset</button>
-  </div>
-</div>
 
 <footer>
   © Toadgod Lore · Preserved by <b>ToadAid</b> 🐸<br/>
@@ -146,21 +110,18 @@ const md = s => {
 };
 const matches = (it,q)=> JSON.stringify(it).toLowerCase().includes(q);
 
-/* ====== Layout toggles ====== */
+/* ====== Layout & badge ====== */
 function setLayoutMode(){
-  const m=$("#main");
-  m.classList.toggle("single", !isAdmin); // centered single column for viewer
+  $("#main").classList.toggle("single", !isAdmin); // centered single column for viewers
 }
 function updateBadge(){
   const b=$("#modeBadge");
   b.className="badge "+(isAdmin?"admin":"viewer");
   b.textContent=isAdmin?"🔑 Admin Mode":"🔒 Viewer Mode";
   b.title=isAdmin?"Click to lock":"Click to unlock Admin";
-  // load-status only in Admin
-  $("#loadStatus").classList.toggle("hidden", !isAdmin);
 }
 
-/* ====== Data load (robust paths + schema normalize) ====== */
+/* ====== Data load (robust) ====== */
 async function loadData(){
   const urls = ["data.json", "/lore/data.json"];
   let loaded = null, src = "";
@@ -168,12 +129,11 @@ async function loadData(){
     try {
       const r = await fetch(u, { cache: "no-store" });
       if (r.ok) { loaded = await r.json(); src = u; break; }
-    } catch(e){ /* continue */ }
+    } catch(e){ /* try next */ }
   }
   if (!Array.isArray(loaded)) { loaded = []; src="(none)"; }
   DATA = loaded.map(normalizeEntry);
-  const ls = $("#loadStatus");
-  ls.textContent = `Loaded from ${src} (${DATA.length} entr${DATA.length===1?"y":"ies"})`;
+  $("#loadStatus").textContent = `Loaded from ${src} (${DATA.length} entr${DATA.length===1?"y":"ies"})`;
 }
 function normalizeEntry(x){
   const original = x.original ?? x.tweet_md ?? "";
@@ -224,7 +184,8 @@ function card(it, i){
   if(isAdmin){
     const bar=document.createElement("div"); bar.style.marginTop="10px";
     bar.innerHTML=`<button class="btn" onclick="editEntry(${i})">Edit</button>
-                   <button class="btn" onclick="delEntry(${i})">Delete</button>`;
+                   <button class="btn" onclick="delEntry(${i})">Delete</button>
+                   <button class="btn" onclick="openForm()">+ New</button>`;
     art.append(bar);
   }
   return art;
@@ -245,14 +206,23 @@ function enterAdmin(){
 }
 function exitAdmin(){ isAdmin=false; applyAdmin(); }
 function applyAdmin(){
+  // Toggle admin-only controls
   $("#enterAdmin").classList.toggle("hidden", isAdmin);
   $("#exitAdmin").classList.toggle("hidden", !isAdmin);
-  updateBadge(); setLayoutMode(); paint();
+  $("#exportBtn").classList.toggle("hidden", !isAdmin);
+  $("#loadStatus").classList.toggle("hidden", !isAdmin);
+
+  updateBadge();
+  setLayoutMode();
+  paint();
 }
 
-/* ====== Form ====== */
-function openForm(){ $("#entryForm").style.display="flex"; }
-function closeForm(){ $("#entryForm").style.display="none"; editIdx=null; }
+/* ====== Form (simple modal) ====== */
+function openForm(){ 
+  resetForm(); 
+  document.getElementById("entryForm").style.display="flex"; 
+}
+function closeForm(){ document.getElementById("entryForm").style.display="none"; editIdx=null; }
 function resetForm(){ ["fid","fdate","ftitle","foriginal","fcomment","ftags","furl","fimg"].forEach(id=>document.getElementById(id).value=""); }
 function saveEntry(){
   const e={
@@ -264,7 +234,7 @@ function saveEntry(){
   closeForm(); paint();
 }
 function editEntry(i){
-  const e=DATA[i]; editIdx=i; openForm();
+  const e=DATA[i]; editIdx=i; document.getElementById("entryForm").style.display="flex";
   fid.value=e.id||""; fdate.value=e.date||""; ftitle.value=e.title||"";
   foriginal.value=e.original||""; fcomment.value=e.comment||"";
   ftags.value=e.tags||""; furl.value=e.url||""; fimg.value=e.img||"";
@@ -274,7 +244,7 @@ function exportJSON(){
   const blob=new Blob([JSON.stringify(DATA,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="data.json"; a.click();
 }
-function toggleHelp(){ const el=$("#markdownHelp"); el.style.display=(el.style.display==="block"?"none":"block"); }
+function toggleHelp(){ const el=document.getElementById("markdownHelp"); el.style.display=(el.style.display==="block"?"none":"block"); }
 
 /* ====== Events ====== */
 $("#q").addEventListener("input",paint);
@@ -287,7 +257,41 @@ $("#enterAdmin").addEventListener("click",enterAdmin);
 $("#exitAdmin").addEventListener("click",exitAdmin);
 
 /* ====== Boot ====== */
-(async()=>{ await loadData(); updateBadge(); setLayoutMode(); paint(); })();
+(async()=>{ 
+  await loadData();
+  applyAdmin();   // ensures viewer starts clean (no export, no loadStatus)
+})();
 </script>
+
+<!-- Editor Modal (appears only when opened in Admin) -->
+<div id="entryForm" class="hidden">
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn" onclick="exportJSON()">⬇ Export as data.json</button>
+    <button class="btn" onclick="closeForm()">✖ Close</button>
+  </div>
+  <label>ID <input id="fid" placeholder="TOBY_T001 or TOBY_L001"></label>
+  <label>Date <input id="fdate" type="date"></label>
+  <label>Title <input id="ftitle" placeholder="The First Ripple"></label>
+  <label>Original Lore (Markdown) <textarea id="foriginal" placeholder="### Original Tweet (EN)…"></textarea></label>
+  <label>Commentary (Markdown) <textarea id="fcomment" placeholder="### ✨ Literal Explanation…"></textarea></label>
+  <label>Tags (comma) <input id="ftags" placeholder="Identity, People"></label>
+  <label>Tweet URL <input id="furl" placeholder="https://x.com/..."></label>
+  <label>Image URL <input id="fimg" placeholder="lore-images/L001.jpg"></label>
+  <button class="btn" onclick="toggleHelp()">❓ Markdown help</button>
+  <div id="markdownHelp" class="hidden" style="background:#f9faf9;border:1px solid #dfe7df;border-radius:8px;padding:8px;font-size:.86rem;white-space:pre-wrap">
+# Heading  ·  **bold**  ·  *italic*
+- list item
+[Link](https://x.com/)
+
+### ✨ Literal Explanation
+### 🌱 Spiritual Interpretation
+### 🔮 Symbolic Meaning
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+    <button class="btn" onclick="saveEntry()">Save</button>
+    <button class="btn" onclick="resetForm()">Reset</button>
+  </div>
+</div>
+
 </body>
 </html>
