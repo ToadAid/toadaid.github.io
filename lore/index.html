@@ -38,14 +38,15 @@
   }
   .provenance b{color:#2e6d4e}
 
+  /* Resume bar */
+  #resumeBar{
+    display:none; text-align:center; font-size:.9rem; color:#444; padding:8px 10px;
+    background:#f3f7f3; border-bottom:1px solid #dcdcdc;
+  }
+
   /* Layout */
-  #main{
-    display:flex; justify-content:center; gap:16px; padding:12px;
-  }
-  /* Admin sidebar (search + tags) */
-  #adminInfo{
-    max-width:240px; width:100%;
-  }
+  #main{ display:flex; justify-content:center; gap:16px; padding:12px; }
+  #adminInfo{ max-width:240px; width:100%; }
   .search input{width:100%; padding:8px; border:1px solid var(--ring); border-radius:8px}
   #tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
 
@@ -53,6 +54,7 @@
   #content{
     display:flex; flex-direction:column; align-items:center; gap:14px; width:100%; padding:4px;
   }
+
   /* Each entry card */
   article.scroll{
     width:100%; max-width:820px; margin:0 auto; background:var(--paper);
@@ -81,12 +83,6 @@
 
   .chips{margin-top:8px; display:flex; flex-wrap:wrap; gap:6px}
   .chip{font-size:.75rem; padding:2px 8px; border:1px solid #ccc; border-radius:999px; background:#fff}
-
-  /* Resume bar */
-  #resumeBar{
-    display:none; text-align:center; font-size:.9rem; color:#444; padding:8px 10px;
-    background:#f3f7f3; border-bottom:1px solid #dcdcdc;
-  }
 
   /* Bookmark button */
   .bm-btn{border:1px solid #ccc; background:#fff; border-radius:8px; padding:6px 10px; cursor:pointer}
@@ -178,6 +174,11 @@ function normalizeEntry(x){
   return { id: x.id || x._raw_id || "", date: x.date || "", title: x.title || "", original, comment, url, img, tags: tagsStr };
 }
 
+/* Slugify for safe DOM ids */
+function toSafeId(v){
+  return (v || "").toString().trim().toLowerCase().replace(/[^a-z0-9_-]+/g,"-") || "entry-" + Math.random().toString(36).slice(2,8);
+}
+
 /* ====== Storage ====== */
 function loadBookmarks(){ try{ BOOKMARKS=new Set(JSON.parse(localStorage.getItem(LS_BOOKMARKS)||"[]")); }catch{ BOOKMARKS=new Set(); } }
 function saveBookmarks(){ localStorage.setItem(LS_BOOKMARKS, JSON.stringify([...BOOKMARKS])); }
@@ -187,11 +188,19 @@ function setLastRead(id){ if(id) localStorage.setItem(LS_LAST_ID,id); }
 function updateResumeBar(){
   const rb=$("#resumeBar"); const lastId=localStorage.getItem(LS_LAST_ID);
   if(!lastId){ rb.style.display="none"; return; }
-  const item=DATA.find(x=>(x.id||"")===lastId);
+  // find by slug-id among rendered DATA
+  const item = DATA.find(x => toSafeId(x.id || x.title) === lastId);
   if(!item){ rb.style.display="none"; return; }
   $("#resumeText").textContent = `Continue from: ${item.title || lastId}`;
   rb.style.display="block";
-  $("#resumeBtn").onclick=()=>{ const el=document.getElementById(lastId) || document.querySelector(`[data-entry-id="${lastId}"]`); if(el) el.scrollIntoView({behavior:"smooth", block:"start"}); };
+  $("#resumeBtn").onclick=()=>{
+    const el = document.getElementById(lastId) || document.querySelector(`[data-entry-id="${lastId}"]`);
+    if(el){
+      const body = el.querySelector(".acc-body");
+      if(body && !body.classList.contains("open")) body.classList.add("open");
+      el.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  };
   $("#dismissResume").onclick=()=>{ localStorage.removeItem(LS_LAST_ID); rb.style.display="none"; };
 }
 
@@ -219,7 +228,12 @@ function renderTags(){
 
 /* ====== Accordion Card ====== */
 function card(it,i){
-  const art=document.createElement("article"); art.className="scroll"; art.id=it.id || ("entry-"+i); art.setAttribute("data-entry-id", art.id);
+  const safeId = toSafeId(it.id || it.title || ("entry-"+i));
+
+  const art=document.createElement("article"); 
+  art.className="scroll"; 
+  art.id = safeId; 
+  art.setAttribute("data-entry-id", safeId);
 
   // Header (click to toggle)
   const head=document.createElement("button"); head.type="button"; head.className="acc-header";
@@ -230,8 +244,8 @@ function card(it,i){
 
   // Bookmark button
   const bm=document.createElement("button"); bm.className="bm-btn"; 
-  const setBm=()=>{ const on=isBookmarked(it.id); bm.textContent= on?"★ Bookmarked":"☆ Bookmark"; bm.classList.toggle("active", on); };
-  setBm(); bm.onclick=(e)=>{ e.stopPropagation(); toggleBookmark(it.id); setBm(); };
+  const setBm=()=>{ const on=isBookmarked(safeId); bm.textContent= on?"★ Bookmarked":"☆ Bookmark"; bm.classList.toggle("active", on); };
+  setBm(); bm.onclick=(e)=>{ e.stopPropagation(); toggleBookmark(safeId); setBm(); };
 
   actions.appendChild(bm);
 
@@ -239,7 +253,7 @@ function card(it,i){
   if(isAdmin){
     const ebtn=document.createElement("button"); ebtn.className="btn"; ebtn.textContent="Edit"; ebtn.onclick=(e)=>{e.stopPropagation(); editEntry(i);};
     const dbtn=document.createElement("button"); dbtn.className="btn"; dbtn.textContent="Delete"; dbtn.onclick=(e)=>{e.stopPropagation(); delEntry(i);};
-    const nbtn=document.createElement("button"); nbtn.className="btn"; nbtn.textContent="+ New"; nbtn.onclick=(e)=>{e.stopPropagation(); openForm();};
+    const nbtn=document.createElement("button"); nbtn.className="btn";  nbtn.textContent="+ New"; nbtn.onclick=(e)=>{e.stopPropagation(); openForm();};
     actions.append(ebtn,dbtn,nbtn);
   }
 
@@ -256,14 +270,14 @@ function card(it,i){
   (it.tags||"").split(",").map(s=>s.trim()).filter(Boolean).forEach(t=>{ const s=document.createElement("span"); s.className="chip"; s.textContent=t; chips.appendChild(s); });
   body.append(grid, chips);
 
-  // Toggle open/close
+  // Toggle open/close + save last read
   head.addEventListener("click", ()=>{
     body.classList.toggle("open");
-    setLastRead(it.id);
+    setLastRead(safeId);
   });
 
-  // Mark as last read when body first appears in viewport (optional)
-  const io=new IntersectionObserver((ents)=>{ ents.forEach(en=>{ if(en.isIntersecting){ setLastRead(it.id); io.disconnect(); } }); }, {threshold:0.4});
+  // Save last read when entry comes into view (first time)
+  const io=new IntersectionObserver((ents)=>{ ents.forEach(en=>{ if(en.isIntersecting){ setLastRead(safeId); io.disconnect(); } }); }, {threshold:0.4});
   io.observe(art);
 
   art.append(head, body);
@@ -275,7 +289,7 @@ function paint(){
   const q = $("#q") ? $("#q").value.trim().toLowerCase() : "";
   let list = DATA.slice();
   if (q) list = list.filter(it => matches(it,q));
-  if (showingBookmarks) list = list.filter(it => isBookmarked(it.id));
+  if (showingBookmarks) list = list.filter(it => BOOKMARKS.has(toSafeId(it.id || it.title)));
 
   const box=$("#content"); box.innerHTML="";
   list.forEach((it,i)=> box.appendChild(card(it,i)));
@@ -296,7 +310,7 @@ function applyAdmin(){
   paint(); // will also renderTags + updateResumeBar
 }
 
-/* ====== Editor placeholders (same as before) ====== */
+/* ====== Editor placeholders (hooks are there) ====== */
 function openForm(){ alert("Admin: implement form if needed."); }
 function editEntry(i){ alert("Admin: edit entry "+(DATA[i]?.id||i)); }
 function delEntry(i){ if(confirm("Delete this entry?")){ DATA.splice(i,1); paint(); } }
