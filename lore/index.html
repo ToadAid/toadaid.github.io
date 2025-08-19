@@ -71,8 +71,8 @@
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
       <button class="btn" id="fontMinus">A-</button>
-      <button class="btn" id="exportBtn">Export JSON</button>
-      <button class="btn" id="addEntry" style="display:none">+ Add Entry</button>
+      <button class="btn" id="exportBtn" style="display:none">Export JSON</button>
+      <button class="btn" id="addEntry" style="display:none" style="display:none">+ Add Entry</button>
       <button class="btn" id="enterAdmin">Enter Admin</button>
       <button class="btn" id="exitAdmin" style="display:none">Lock</button>
     </div>
@@ -254,9 +254,10 @@ function enterAdmin(){
 function exitAdmin(){ isAdmin=false; applyAdmin(); }
 function applyAdmin(){
   $("#enterAdmin").style.display = isAdmin?"none":"inline-block";
+  $("#exportBtn").style.display = isAdmin?"inline-block":"none";
+  $("#addEntry").style.display = isAdmin?"inline-block":"none";
   $("#exitAdmin").style.display  = isAdmin?"inline-block":"none";
-  updateBadge(); setLayoutMode(); paint();
-}
+  updateBadge(); setLayoutMode(); paint();}
 
 /* ====== Form ====== */
 function openForm(){ $("#entryForm").style.display="flex"; }
