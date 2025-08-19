@@ -6,7 +6,7 @@
 <title>Toadgod Lore Library</title>
 <style>
   :root{
-    --bg:#f5f5ef; --paper:#fff; --ink:#222; --muted:#666;
+    --bg:#f5f5ef; --paper:#ffffff; --ink:#222; --muted:#666;
     --ring:rgba(0,0,0,.12);
   }
   *{box-sizing:border-box}
@@ -21,6 +21,7 @@
   .badge{font-size:.85rem}
   .badge.viewer{background:#ffeec0}
   .badge.admin{background:#e8ffe8}
+  .hidden{display:none!important}
 
   /* Main grid */
   main{display:grid;grid-template-columns:320px 1fr;gap:18px;margin:16px auto;max-width:1200px;padding:0 16px}
@@ -51,7 +52,7 @@
   footer{padding:20px;text-align:center;color:#666}
   footer b{color:#355e3b}
 
-  /* Editor modal (simple) */
+  /* Editor modal */
   #entryForm{position:fixed;inset:50% auto auto 50%;transform:translate(-50%,-50%);z-index:50;width:min(92vw,540px);display:none;flex-direction:column;gap:10px;background:#fff;border:1px solid var(--ring);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
   #entryForm label{font-size:.85rem;color:#555}
   #entryForm input,#entryForm textarea{width:100%;padding:8px;border:1px solid var(--ring);border-radius:8px}
@@ -71,10 +72,9 @@
       <button class="btn" id="toggleComm">Toggle Commentary</button>
       <button class="btn" id="fontPlus">A+</button>
       <button class="btn" id="fontMinus">A-</button>
-      <button class="btn" id="exportBtn" style="display:none">Export JSON</button>
-      <button class="btn" id="addEntry" style="display:none" style="display:none">+ Add Entry</button>
+      <button class="btn" id="exportBtn">Export JSON</button>
       <button class="btn" id="enterAdmin">Enter Admin</button>
-      <button class="btn" id="exitAdmin" style="display:none">Lock</button>
+      <button class="btn hidden" id="exitAdmin">Lock</button>
     </div>
   </div>
 </header>
@@ -85,8 +85,8 @@
       <input id="q" placeholder="Search text, tags, dates…">
       <button class="pill" id="clear">Clear</button>
     </div>
-    <!-- NEW: tiny banner shows where data came from -->
-    <div id="loadStatus" style="margin:8px 0 4px; font-size:.85rem; color:#666;"></div>
+    <!-- Load status: now hidden for viewers, shown for Admin -->
+    <div id="loadStatus" class="hidden" style="margin:8px 0 4px; font-size:.85rem; color:#666;"></div>
 
     <div id="tags" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
   </aside>
@@ -95,7 +95,7 @@
 </main>
 
 <!-- Editor Modal -->
-<div id="entryForm" style="display:none">
+<div id="entryForm">
   <div style="display:flex;gap:8px;justify-content:flex-end">
     <button class="btn" onclick="exportJSON()">⬇ Export as data.json</button>
     <button class="btn" onclick="closeForm()">✖ Close</button>
@@ -138,7 +138,6 @@ let DATA=[]; let editIdx=null;
 /* ====== Helpers ====== */
 const $=s=>document.querySelector(s);
 const $$=s=>Array.from(document.querySelectorAll(s));
-const byId=id=>document.getElementById(id);
 const md = s => {
   const html = marked.parse(s||"");
   const div = document.createElement("div"); div.innerHTML=html;
@@ -157,30 +156,25 @@ function updateBadge(){
   b.className="badge "+(isAdmin?"admin":"viewer");
   b.textContent=isAdmin?"🔑 Admin Mode":"🔒 Viewer Mode";
   b.title=isAdmin?"Click to lock":"Click to unlock Admin";
+  // load-status only in Admin
+  $("#loadStatus").classList.toggle("hidden", !isAdmin);
 }
 
-/* ====== Data load ====== */
+/* ====== Data load (robust paths + schema normalize) ====== */
 async function loadData(){
-  // Try relative first (works at /lore/), then absolute fallback
   const urls = ["data.json", "/lore/data.json"];
   let loaded = null, src = "";
   for (const u of urls) {
     try {
       const r = await fetch(u, { cache: "no-store" });
       if (r.ok) { loaded = await r.json(); src = u; break; }
-    } catch (e) { /* keep trying next */ }
+    } catch(e){ /* continue */ }
   }
-  if (!Array.isArray(loaded)) { loaded = []; src = "(none)"; }
-
-  // Normalize old/new schemas
+  if (!Array.isArray(loaded)) { loaded = []; src="(none)"; }
   DATA = loaded.map(normalizeEntry);
-
-  // Show banner
-  const ls = document.getElementById("loadStatus");
-  if (ls) ls.textContent = `Loaded from ${src} (${DATA.length} entr${DATA.length===1?"y":"ies"})`;
+  const ls = $("#loadStatus");
+  ls.textContent = `Loaded from ${src} (${DATA.length} entr${DATA.length===1?"y":"ies"})`;
 }
-
-// Accept both: old (tweet_md/commentary_md) and new (original/comment)
 function normalizeEntry(x){
   const original = x.original ?? x.tweet_md ?? "";
   const comment  = x.comment  ?? x.commentary_md ?? "";
@@ -191,24 +185,22 @@ function normalizeEntry(x){
     id: x.id || x._raw_id || "",
     date: x.date || "",
     title: x.title || "",
-    original,
-    comment,
-    url,
-    img,
-    tags: tagsStr
+    original, comment, url, img, tags: tagsStr
   };
 }
 
-
 /* ====== Render ====== */
 function renderTags(){
-  const all = Array.from(new Set(DATA.flatMap(x=> (x.tags||"").split(",").map(s=>s.trim()).filter(Boolean)))).sort();
+  const all = Array.from(new Set(
+    DATA.flatMap(x=> (x.tags||"").split(",").map(s=>s.trim()).filter(Boolean))
+  )).sort();
   const box=$("#tags"); box.innerHTML="";
   if(!all.length) return;
-  const any=document.createElement("button"); any.className="pill"; any.textContent="All"; any.onclick=()=>{byId("q").value=""; paint();}; box.appendChild(any);
+  const any=document.createElement("button"); any.className="pill"; any.textContent="All";
+  any.onclick=()=>{ $("#q").value=""; paint(); }; box.appendChild(any);
   all.forEach(t=>{
     const b=document.createElement("button"); b.className="pill"; b.textContent=t;
-    b.onclick=()=>{byId("q").value=t; paint();};
+    b.onclick=()=>{ $("#q").value=t; paint(); };
     box.appendChild(b);
   });
 }
@@ -238,7 +230,7 @@ function card(it, i){
   return art;
 }
 function paint(){
-  const q=byId("q").value.trim().toLowerCase();
+  const q=$("#q").value.trim().toLowerCase();
   const list = q ? DATA.filter(it=>matches(it,q)) : DATA.slice();
   $("#content").innerHTML="";
   list.forEach((it,i)=> $("#content").appendChild(card(it,i)));
@@ -253,47 +245,45 @@ function enterAdmin(){
 }
 function exitAdmin(){ isAdmin=false; applyAdmin(); }
 function applyAdmin(){
-  $("#enterAdmin").style.display = isAdmin?"none":"inline-block";
-  $("#exportBtn").style.display = isAdmin?"inline-block":"none";
-  $("#addEntry").style.display = isAdmin?"inline-block":"none";
-  $("#exitAdmin").style.display  = isAdmin?"inline-block":"none";
-  updateBadge(); setLayoutMode(); paint();}
+  $("#enterAdmin").classList.toggle("hidden", isAdmin);
+  $("#exitAdmin").classList.toggle("hidden", !isAdmin);
+  updateBadge(); setLayoutMode(); paint();
+}
 
 /* ====== Form ====== */
 function openForm(){ $("#entryForm").style.display="flex"; }
 function closeForm(){ $("#entryForm").style.display="none"; editIdx=null; }
-function resetForm(){ ["fid","fdate","ftitle","foriginal","fcomment","ftags","furl","fimg"].forEach(id=>byId(id).value=""); }
+function resetForm(){ ["fid","fdate","ftitle","foriginal","fcomment","ftags","furl","fimg"].forEach(id=>document.getElementById(id).value=""); }
 function saveEntry(){
   const e={
-    id:byId("fid").value, date:byId("fdate").value, title:byId("ftitle").value,
-    original:byId("foriginal").value, comment:byId("fcomment").value,
-    tags:byId("ftags").value, url:byId("furl").value, img:byId("fimg").value
+    id:fid.value, date:fdate.value, title:ftitle.value,
+    original:foriginal.value, comment:fcomment.value,
+    tags:ftags.value, url:furl.value, img:fimg.value
   };
   if(editIdx!=null) DATA[editIdx]=e; else DATA.push(e);
   closeForm(); paint();
 }
 function editEntry(i){
   const e=DATA[i]; editIdx=i; openForm();
-  byId("fid").value=e.id||""; byId("fdate").value=e.date||""; byId("ftitle").value=e.title||"";
-  byId("foriginal").value=e.original||""; byId("fcomment").value=e.comment||"";
-  byId("ftags").value=e.tags||""; byId("furl").value=e.url||""; byId("fimg").value=e.img||"";
+  fid.value=e.id||""; fdate.value=e.date||""; ftitle.value=e.title||"";
+  foriginal.value=e.original||""; fcomment.value=e.comment||"";
+  ftags.value=e.tags||""; furl.value=e.url||""; fimg.value=e.img||"";
 }
 function delEntry(i){ if(confirm("Delete this entry?")){ DATA.splice(i,1); paint(); } }
 function exportJSON(){
   const blob=new Blob([JSON.stringify(DATA,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="data.json"; a.click();
 }
-function toggleHelp(){ const el=byId("markdownHelp"); el.style.display=(el.style.display==="block"?"none":"block"); }
+function toggleHelp(){ const el=$("#markdownHelp"); el.style.display=(el.style.display==="block"?"none":"block"); }
 
 /* ====== Events ====== */
 $("#q").addEventListener("input",paint);
-$("#clear").addEventListener("click",()=>{byId("q").value="";paint();});
-$("#toggleComm").addEventListener("click",()=>{showComm=!showComm; paint();});
-$("#fontPlus").addEventListener("click",()=>{fontScale=Math.min(1.4,fontScale+0.05); document.body.style.fontSize=fontScale+"rem";});
-$("#fontMinus").addEventListener("click",()=>{fontScale=Math.max(0.9,fontScale-0.05); document.body.style.fontSize=fontScale+"rem";});
+$("#clear").addEventListener("click",()=>{ $("#q").value=""; paint(); });
+$("#toggleComm").addEventListener("click",()=>{ showComm=!showComm; paint(); });
+$("#fontPlus").addEventListener("click",()=>{ fontScale=Math.min(1.4,fontScale+0.05); document.body.style.fontSize=fontScale+"rem"; });
+$("#fontMinus").addEventListener("click",()=>{ fontScale=Math.max(0.9,fontScale-0.05); document.body.style.fontSize=fontScale+"rem"; });
 $("#modeBadge").addEventListener("click",()=> isAdmin?exitAdmin():enterAdmin());
 $("#enterAdmin").addEventListener("click",enterAdmin);
-$("#addEntry").addEventListener("click",()=>{ editIdx=null; resetForm(); openForm(); });
 $("#exitAdmin").addEventListener("click",exitAdmin);
 
 /* ====== Boot ====== */
