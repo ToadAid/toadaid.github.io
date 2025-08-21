@@ -23,13 +23,13 @@
     a:hover{opacity:.9}
     .container{max-width:var(--max);margin:0 auto;padding:0 16px}
 
-    /* Compact card styling */
+    /* Compact cards */
     .card{background:var(--paper);border:1px solid #e7dcc0;border-radius:var(--radius);padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
     .card.compact{padding:10px;border-radius:14px}
     .card.compact h3{font-size:16px;margin:6px 0}
     .card.compact p{font-size:14px;color:var(--muted);margin:4px 0 0}
 
-    /* Hero / layout */
+    /* Hero */
     .hero{padding:22px 0 18px;position:relative}
     .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:center}
     .kicker{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid #e7dcc0;border-radius:999px;padding:6px 10px;background:#fffdf9}
@@ -46,8 +46,12 @@
     .art-hero .slide.active{opacity:1}
     .art-hero .caption{
       position:absolute; left:10px; bottom:10px;
-      background:rgba(0,0,0,.5); color:#fff; padding:6px 8px; border-radius:10px; font-size:12px
+      background:rgba(0,0,0,.52); color:#fff; padding:6px 8px; border-radius:10px; font-size:12px
     }
+    /* Credit emphasis */
+    .art-hero .caption strong{color:#ffd54f;font-weight:600}
+    .art-hero .caption a{color:#9fdcff;text-decoration:none}
+    .art-hero .caption a:hover{text-decoration:underline}
     @media (prefers-reduced-motion: reduce){ .art-hero .slide{ transition:none } }
 
     /* Grid helpers */
@@ -94,17 +98,17 @@
   </header>
 
   <main>
-    <!-- HERO with Rotating Artwork -->
+    <!-- HERO with Rotating Artwork (credits-enabled) -->
     <section class="hero">
       <div class="container wrap">
         <div>
           <span class="kicker">Guard the Lore</span>
           <h1>Preserve the scrolls. Teach clearly. Build for the people.</h1>
-          <p>Smaller, cleaner cards + a lightweight art gallery bring the homepage to life — without slowing it down.</p>
+          <p>Smaller, cleaner cards + a rotating hero that credits contributors and links to their X handles.</p>
           <div class="cta">
             <a class="btn" href="/lore/">📜 Read Lore</a>
-            <a class="btn" href="https://warpcast.com/~/channel/toadgang" target="_blank">🌿 Farcaster</a>
-            <a class="btn" href="https://zora.co/collect" target="_blank">🪪 Mint</a>
+            <a class="btn" href="https://warpcast.com/~/channel/toadgang" target="_blank" rel="noreferrer">🌿 Farcaster</a>
+            <a class="btn" href="https://zora.co/collect" target="_blank" rel="noreferrer">🪪 Mint</a>
           </div>
         </div>
 
@@ -112,18 +116,18 @@
         <div class="art-hero shadow" id="artHero"
              data-interval="5000"
              data-images='[
-               {"src":"/assets/art/hero_leaf-of-yield.jpg","label":"Leaf of Yield — Taboshi"},
-               {"src":"/assets/art/forest_guardians.jpg","label":"Forest Guardians"},
-               {"src":"/assets/art/still_water_garden.jpg","label":"Still-Water Garden"},
-               {"src":"/assets/art/lilypad_base.jpg","label":"Lily Pad & Base"},
-               {"src":"/assets/art/night_after_bloom.jpg","label":"The Night After Bloom"},
-               {"src":"/assets/art/777_covenant.jpg","label":"777 Covenant"},
-               {"src":"/assets/art/lore_scribe.jpg","label":"Lore Scribe"}
+               {"src":"/assets/art/hero_leaf-of-yield.jpg","label":"Leaf of Yield — art by <strong>ToadAid</strong>"},
+               {"src":"/assets/art/forest_guardians_by_alex.jpg","label":"Forest Guardians — art by <strong>Alex</strong> (<a href=&quot;https://x.com/alex_art_x&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@alex_art_x</a>)"},
+               {"src":"/assets/art/lilypad_by_bella.jpg","label":"Lily Pad Temple — art by <strong>Bella</strong> (<a href=&quot;https://x.com/bellatoons&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@bellatoons</a>)"},
+               {"src":"/assets/art/still_water_garden.jpg","label":"Still-Water Garden — art by <strong>Chen</strong> (<a href=&quot;https://x.com/chen_draws&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@chen_draws</a>)"},
+               {"src":"/assets/art/night_after_bloom.jpg","label":"The Night After Bloom — art by <strong>Dae</strong> (<a href=&quot;https://x.com/dae_works&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@dae_works</a>)"},
+               {"src":"/assets/art/777_covenant.jpg","label":"777 Covenant — art by <strong>FrogLabs</strong> (<a href=&quot;https://x.com/froglabs&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@froglabs</a>)"},
+               {"src":"/assets/art/lore_scribe.jpg","label":"Lore Scribe — art by <strong>Mei</strong> (<a href=&quot;https://x.com/mei_sketch&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@mei_sketch</a>)"}
              ]'>
           <!-- Two layers for crossfade -->
-          <img class="slide active" src="/assets/art/hero_leaf-of-yield.jpg" alt="Leaf of Yield — Taboshi" />
+          <img class="slide active" src="/assets/art/hero_leaf-of-yield.jpg" alt="Leaf of Yield — art by ToadAid" />
           <img class="slide" alt="" aria-hidden="true" />
-          <div class="caption" id="artCaption" aria-live="polite">Leaf of Yield — Taboshi</div>
+          <div class="caption" id="artCaption" aria-live="polite">Leaf of Yield — art by <strong>ToadAid</strong></div>
         </div>
       </div>
     </section>
@@ -145,30 +149,29 @@
           <span class="pill">new</span>
         </div>
         <div class="art-grid">
-          <!-- Replace or keep these; layout spans are optional -->
           <a class="art-card span-2" href="/lore/" aria-label="Forest Guardians">
-            <img src="/assets/art/forest_guardians.jpg" alt="Forest Guardians" loading="lazy" width="800" height="600" />
-            <span class="label">Forest Guardians</span>
+            <img src="/assets/art/forest_guardians_by_alex.jpg" alt="Forest Guardians — art by Alex" loading="lazy" width="800" height="600" />
+            <span class="label">Forest Guardians — Alex</span>
           </a>
           <a class="art-card tall" href="/lore/" aria-label="Still-Water Garden">
-            <img src="/assets/art/still_water_garden.jpg" alt="Still-Water Garden" loading="lazy" width="600" height="900" />
-            <span class="label">Still-Water Garden</span>
+            <img src="/assets/art/still_water_garden.jpg" alt="Still-Water Garden — art by Chen" loading="lazy" width="600" height="900" />
+            <span class="label">Still-Water Garden — Chen</span>
           </a>
-          <a class="art-card" href="/lore/" aria-label="Lily Pad & Base">
-            <img src="/assets/art/lilypad_base.jpg" alt="Lily Pad & Base" loading="lazy" width="600" height="600" />
-            <span class="label">Lily Pad & Base</span>
+          <a class="art-card" href="/lore/" aria-label="Lily Pad Temple">
+            <img src="/assets/art/lilypad_by_bella.jpg" alt="Lily Pad Temple — art by Bella" loading="lazy" width="600" height="600" />
+            <span class="label">Lily Pad Temple — Bella</span>
           </a>
           <a class="art-card span-3" href="/lore/" aria-label="The Night After Bloom">
-            <img src="/assets/art/night_after_bloom.jpg" alt="The Night After Bloom" loading="lazy" width="1200" height="600" />
-            <span class="label">The Night After Bloom</span>
+            <img src="/assets/art/night_after_bloom.jpg" alt="The Night After Bloom — art by Dae" loading="lazy" width="1200" height="600" />
+            <span class="label">The Night After Bloom — Dae</span>
           </a>
           <a class="art-card" href="/lore/" aria-label="777 Covenant">
-            <img src="/assets/art/777_covenant.jpg" alt="777 Covenant" loading="lazy" width="600" height="600" />
-            <span class="label">777 Covenant</span>
+            <img src="/assets/art/777_covenant.jpg" alt="777 Covenant — art by FrogLabs" loading="lazy" width="600" height="600" />
+            <span class="label">777 Covenant — FrogLabs</span>
           </a>
           <a class="art-card" href="/lore/" aria-label="Lore Scribe">
-            <img src="/assets/art/lore_scribe.jpg" alt="Lore Scribe" loading="lazy" width="600" height="600" />
-            <span class="label">Lore Scribe</span>
+            <img src="/assets/art/lore_scribe.jpg" alt="Lore Scribe — art by Mei" loading="lazy" width="600" height="600" />
+            <span class="label">Lore Scribe — Mei</span>
           </a>
         </div>
       </div>
@@ -206,7 +209,7 @@
     // Mobile menu
     function toggleNav(){ document.getElementById('nav').classList.toggle('open'); }
 
-    // Rotating hero art
+    // Rotating hero art (credits-enabled)
     (() => {
       const hero = document.getElementById('artHero');
       if (!hero) return;
@@ -218,6 +221,7 @@
 
       if (items.length < 2) return;
 
+      // Shuffle
       const shuffle = arr => {
         const a = arr.slice();
         for (let i = a.length - 1; i > 0; i--) {
@@ -255,7 +259,7 @@
         const next = active ^ 1; // toggle 0/1
 
         slides[next].src = item.src;
-        slides[next].alt = item.label;
+        slides[next].alt = item.label.replace(/<[^>]*>?/gm,''); // strip tags for alt
         slides[next].setAttribute('aria-hidden', 'false');
 
         slides[next].classList.add('active');
@@ -263,7 +267,7 @@
         slides[active].setAttribute('aria-hidden', 'true');
 
         active = next;
-        if (caption) caption.textContent = item.label;
+        if (caption) caption.innerHTML = item.label; // allow HTML for credits/links
       }
 
       setInterval(rotate, intervalMs);
