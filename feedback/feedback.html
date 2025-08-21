@@ -26,9 +26,11 @@
   .btn:hover{filter:brightness(.97)}
   /* Tabs */
   .tabs{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; padding:8px}
-  .tab{cursor:pointer; border:1px solid var(--ring); background:var(--paper); color:var(--ink); padding:.5rem .8rem; border-radius:999px; font-weight:600}
+  .tab{cursor:pointer; border:1px solid var(--ring); background:var(--paper); color:var(--ink); padding:.5rem .85rem; border-radius:999px; font-weight:600; transition:box-shadow .12s ease, transform .06s ease}
+  .tab:hover{box-shadow:0 4px 16px var(--ring)}
+  .tab:active{transform:translateY(1px)}
   .tab.active{background:var(--accent); color:#fff; border-color:transparent}
-  .hint{color:var(--muted); text-align:center; margin:6px 0 14px}
+  .hint{color:var(--muted); text-align:center; margin:8px 0 14px}
   #giscus-container{min-height:260px}
   footer{color:var(--muted); text-align:center; padding:36px 16px}
 </style>
@@ -41,37 +43,38 @@
 
   <div class="wrap">
     <div class="top-actions">
-      <!-- note the ../ since this file is in /feedback/ -->
       <a href="../index.html" class="btn">🏠 Back to Home</a>
     </div>
 
-<div class="card">
-  <div class="tabs" id="tabs">
-    <button class="tab active" data-type="general">💬 General</button>
-    <button class="tab" data-type="ideas">💡 Ideas</button>
-    <button class="tab" data-type="qa">❓ Q&amp;A</button>
-    <button class="tab" data-type="announcements">📢 Announcements</button>
+    <div class="card" role="region" aria-label="Feedback tabs and comments">
+      <div class="tabs" id="tabs" role="tablist" aria-label="Feedback categories">
+        <button class="tab active" role="tab" aria-selected="true" data-type="general">💬 General</button>
+        <button class="tab" role="tab" aria-selected="false" data-type="ideas">💡 Ideas</button>
+        <button class="tab" role="tab" aria-selected="false" data-type="qa">❓ Q&amp;A</button>
+        <button class="tab" role="tab" aria-selected="false" data-type="announcements">📢 Announcements</button>
+      </div>
+
+      <!-- Friendlier tip with signup/authorization info -->
+      <div class="hint">
+        📝 Tip: You’ll need a free GitHub account to join the conversation.
+        <a href="https://github.com/signup" target="_blank">Sign up</a>,
+        then authorize <strong>Giscus</strong> to post in our Discussions.
+        🔒 You can revoke access anytime in
+        <a href="https://github.com/settings/applications" target="_blank">GitHub Settings → Applications</a>.
+      </div>
+
+      <div id="giscus-container" aria-live="polite"></div>
+    </div>
+
+    <div class="top-actions" style="margin-top:14px;">
+      <a href="../index.html" class="btn">🏠 Back to Home</a>
+    </div>
   </div>
-
-  <div class="hint">
-    Tip: You’ll need a free GitHub account to join the conversation.
-    <a href="https://github.com/signup" target="_blank">Sign up</a>,
-    then authorize <strong>Giscus</strong> to post on your behalf in our Discussions.
-    You can revoke access anytime in
-    <a href="https://github.com/settings/applications" target="_blank">GitHub Settings → Applications</a>.
-  </div>
-
-  <div id="giscus-container"></div>
-</div>
-
-<div class="top-actions" style="margin-top:14px;">
-  <a href="../index.html" class="btn">🏠 Back to Home</a>
-</div>
 
   <footer>© 2025 ToadAid · Built with conviction on Base.</footer>
 
   <script>
-    // Your repo & IDs (these are yours from giscus)
+    // Repo & category IDs (yours)
     const REPO   = "toadaid/toadaid.github.io";
     const REPO_ID = "R_kgDOOq7UQw";
     const CONFIGS = {
@@ -103,11 +106,16 @@
       mount.appendChild(s);
     }
 
-    // Tab switching
-    document.getElementById("tabs").addEventListener("click", (e)=>{
+    // Tabs
+    const tabsEl = document.getElementById("tabs");
+    tabsEl.addEventListener("click", (e)=>{
       if(!e.target.classList.contains("tab")) return;
-      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(t=>{
+        t.classList.remove("active");
+        t.setAttribute("aria-selected","false");
+      });
       e.target.classList.add("active");
+      e.target.setAttribute("aria-selected","true");
       loadGiscus(e.target.dataset.type);
       history.replaceState(null, "", "#"+e.target.dataset.type);
     });
@@ -117,6 +125,7 @@
     loadGiscus( initial && CONFIGS[initial] ? initial : "general" );
     if(initial && CONFIGS[initial]) {
       document.querySelector(`.tab[data-type="${initial}"]`)?.classList.add("active");
+      document.querySelector(`.tab[data-type="${initial}"]`)?.setAttribute("aria-selected","true");
       document.querySelectorAll(".tab").forEach(t=>{
         if(t.dataset.type!==initial) t.classList.remove("active");
       });
