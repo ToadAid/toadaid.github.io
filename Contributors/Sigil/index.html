@@ -1,67 +1,139 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Honor — Toadaid Builder of @SigilOfConcord</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <!-- Reuse your sitewide CSS so the look matches exactly -->
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <style>
-    /* Minimal layout helpers only (won't change your theme) */
-    .container{max-width:960px;margin:0 auto;padding:0 16px}
-    .breadcrumbs{margin:1rem 0}
-    .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin:1rem 0 2.5rem}
-    .item{display:flex;gap:12px;align-items:center;border:1px solid var(--border, #ddd);border-radius:12px;padding:12px;background:var(--card, #fff)}
-    .thumb{width:80px;height:100px;object-fit:cover;border-radius:8px}
-    .meta{font-size:.9rem;opacity:.8;margin-top:.25rem}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ToadAid — Sigil Catalog</title>
+<meta name="description" content="All honor posts by Toadaid Builder of @SigilOfConcord.">
+
+<!-- OG -->
+<meta property="og:title" content="Sigil — Contributor Catalog" />
+<meta property="og:description" content="All honor posts by Toadaid Builder of @SigilOfConcord." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://toadaid.github.io/Contributors/Sigil/" />
+<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
+
+<link rel="canonical" href="https://toadaid.github.io/Contributors/Sigil/" />
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+
+<style>
+  /* same palette + card system as /Contributors/ */
+  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --gold:#d9b200; --card:#fff; }
+  *{ box-sizing:border-box }
+  body{ margin:0; background:var(--bg); color:var(--ink);
+        font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif; padding:20px; }
+  a{ color:var(--leaf); text-decoration:none } a:hover{ text-decoration:underline }
+
+  .breadcrumbs{ max-width:1200px; margin:0 auto 10px; padding:0 6px; color:#5a715f; font-size:.95rem }
+  h1{
+    color:var(--leaf); font-size:2rem; position:relative; display:inline-block; padding-bottom:6px; margin:4px 0 0;
+  }
+  h1::after{ content:""; position:absolute; left:0; bottom:0; height:4px; width:100%; background:var(--gold); border-radius:2px }
+  .sub{ margin:.4rem 0 1rem; color:#5a715f }
+
+  .head{
+    max-width:1200px; margin:0 auto; padding:0 6px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .avatar{ width:64px; height:64px; border-radius:50%; object-fit:cover; background:#ddd }
+
+  .grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap:16px; margin:18px auto 0; max-width:1200px; padding:0 6px;
+  }
+  .card{
+    background:var(--card); border-radius:16px; padding:12px; text-align:left;
+    box-shadow:0 8px 24px rgba(0,0,0,.08);
+    border-left:6px solid var(--gold);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{ transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.12) }
+
+  .media{ width:100%; background:#eee; border-radius:12px; overflow:hidden; border:1px solid #eee; }
+  .media img{ display:block; width:100%; height:auto; transition:opacity .35s ease; opacity:0 }
+  .reveal{ opacity:1 !important }
+
+  .title{ margin:10px 0 4px; font-weight:700; font-size:1.05rem }
+  .meta{ margin:0 0 8px; color:#425a47; font-size:.92rem }
+  .tags span{ background:#f0ead4; border:1px solid #e2d9b3; border-radius:999px; padding:2px 8px; margin-right:6px; font-size:.8rem }
+  .footer{ max-width:1200px; margin:26px auto 12px; padding:0 6px; color:#5a715f; font-size:.95rem }
+</style>
 </head>
 <body>
 
-<header class="container">
-  <nav class="breadcrumbs">
-    <a href="/">Home</a> / <a href="/honors/">Honors</a> / <a href="/Contributors/">Contributors</a> / Sigil
-  </nav>
+<nav class="breadcrumbs">
+  <a href="/">Home</a> / <a href="/honors/">Honors</a> / <a href="/Contributors/">Contributors</a> / Sigil
+</nav>
 
-  <div style="display:flex;align-items:center;gap:12px">
-    <img src="/assets/avatars/sigil.png" alt="Sigil avatar" width="72" height="72" style="border-radius:50%;object-fit:cover">
-    <div>
-      <h1 style="margin:0">Toadaid Builder of @SigilOfConcord</h1>
-      <p style="margin:.25rem 0 0"><em>Lore Scribe · Keeper of Concord</em></p>
-    </div>
+<section class="head">
+  <img class="avatar" src="/assets/avatars/sigil.png" alt="Sigil avatar">
+  <div>
+    <h1>Toadaid Builder of @SigilOfConcord</h1>
+    <div class="sub"><em>Lore Scribe · Keeper of Concord</em></div>
   </div>
-</header>
+</section>
 
-<main class="container">
-  <h2>All Honors</h2>
+<section style="max-width:1200px;margin:8px auto 0;padding:0 6px;">
+  <h2 style="margin:12px 0 6px;">All Honors</h2>
+</section>
 
-  <div id="list" class="list"><!-- items inject here --></div>
+<section id="grid" class="grid" aria-live="polite"></section>
 
-  <p>← <a href="/honors/">Back to Honors</a> · <a href="/Contributors/">All Contributors</a></p>
-</main>
+<p class="footer">← <a href="/honors/">Back to Honors</a> · <a href="/Contributors/">All Contributors</a></p>
 
 <script>
-(async () => {
-  // JSON sits next to this file
-  const res = await fetch('./sigil.json');
-  const data = await res.json();
+const grid = document.getElementById('grid');
 
-  const honors = (data.honors || []).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
-  const wrap = document.getElementById('list');
+let io;
+function initObserver(){
+  io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('reveal'); io.unobserve(e.target); }
+    });
+  }, { threshold: .2 });
+}
 
-  wrap.innerHTML = honors.map(h => `
-    <article class="item" id="${h.id}">
-      <a href="${h.page}" style="display:flex;gap:12px;align-items:center;text-decoration:none">
-        <img class="thumb" src="${h.image}" alt="${h.title}">
-        <div>
-          <h3 style="margin:.1rem 0 .25rem">${h.title}</h3>
-          <div class="meta">
-            ${h.date ? h.date : ''}${h.tags && h.tags.length ? ' · ' + h.tags.map(t=>'#'+t).join(' ') : ''}
-          </div>
-        </div>
-      </a>
-    </article>
-  `).join('');
+function renderCard(h){
+  const article = document.createElement('article');
+  article.className = 'card';
+  article.id = h.id;
+
+  const media = document.createElement('div');
+  media.className = 'media';
+  const img = document.createElement('img');
+  img.loading = 'lazy';
+  img.alt = h.title;
+  img.src = h.image;
+  img.onerror = ()=>{ img.src = 'https://via.placeholder.com/1200x800?text=ToadAid'; };
+  media.appendChild(img);
+
+  const title = `<a class="title" href="${h.page}">${h.title}</a>`;
+  const meta  = `<div class="meta">${h.date || ''}${h.tags?.length ? ' · ' + h.tags.map(t=>'#'+t).join(' ') : ''}</div>`;
+  const tags  = h.tags?.length ? `<p class="tags">${h.tags.map(t=>`<span>${t}</span>`).join(' ')}</p>` : '';
+
+  article.innerHTML = `${media.outerHTML}${title}${meta}${tags}`;
+
+  // rebind observer to the element we just inserted
+  const img2 = article.querySelector('img');
+  io.observe(img2);
+
+  return article;
+}
+
+(async function(){
+  try{
+    initObserver();
+    // JSON is next to this file
+    const data = await (await fetch('./sigil.json?v='+Date.now())).json();
+    const honors = (data.honors||[]).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    honors.forEach(h => grid.appendChild(renderCard(h)));
+  }catch(e){
+    console.error(e);
+    grid.innerHTML = "<p>Failed to load catalog.</p>";
+  }
 })();
 </script>
 
