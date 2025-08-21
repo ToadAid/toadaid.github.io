@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>ToadAid — Guarding the Lore</title>
+<meta name="description" content="PAGE DESCRIPTION">
+
+<!-- Open Graph -->
+<meta property="og:title" content="PAGE TITLE" />
+<meta property="og:description" content="PAGE DESCRIPTION" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="FULL PAGE URL" />
+<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
+
+<!-- Canonical -->
+<link rel="canonical" href="FULL PAGE URL" />
+
+<!-- Favicons (served from /assets/icons/) -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+</head>
+
+<style>
+  body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f5f1e6; color: #2f2f2f; }
+  .banner { position: relative; width: 100%; min-height: 220px; background: url('banner.jpg') center center / cover no-repeat; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 1rem; }
+  @media (min-width: 768px) { .banner { min-height: 320px; } }
+  .banner h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+  .banner p { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 0.5rem; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+  .translate-bar { background: gold; color: black; padding: 0.5rem; font-size: 0.95rem; text-align: center; }
+  .btn { background: gold; color: black; padding: 0.6rem 1.2rem; margin: 0.3rem; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.25); transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
+  .btn:hover { transform: scale(1.05); box-shadow: 0 6px 10px rgba(0,0,0,0.3); }
+  section { padding: 2rem 1rem; max-width: 1100px; margin: auto; }
+  h2 { text-align: center; margin-bottom: 1rem; }
+  .pillars { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+  .pillar { background: white; padding: 1rem; border-radius: 10px; flex: 1 1 250px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.15s ease-in-out; color: inherit; text-decoration: none; }
+  .pillar:hover { transform: translateY(-3px); }
+  footer { background: #355e3b; color: white; text-align: center; padding: 1.5rem; font-size: 0.9rem; }
+  footer a { color: gold; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>🏯 ToadAid — Guarding the Lore</h1>
+  <p>One scroll, one light. One leaf, one vow.</p>
+</div>
+
+<div class="translate-bar">
+  🌐 Want to read in your language? In Chrome: Menu (⋮) → Translate → Select your language.
+</div>
+
+<section style="text-align:center;">
+  <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
+  <a href="#lore" class="btn">📜 Browse the Lore</a>
+  <a href="bluepaper.html" class="btn" target="_blank">📄 Blue Paper</a>
+  <a href="about.html" class="btn">ℹ️ About ToadAid</a>
+  <a href="feedback/feedback.html" class="btn">💬 Feedback</a>
+  <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
+  <a href="builders/builders-hall.html" class="btn" style="background:#355e3b; color:white;">🏛 Builders Hall</a>
+  <a href="https://toadaid-builders.netlify.app/builders.html" class="btn" style="background:#1f3b2d; color:white;" target="_blank">🛠 Builders</a>
+  <a href="honors/index.html" class="btn" style="background:#2e6d4c; color:white;">🐸 Honors & Offerings</a>
+  <a href="https://toadaid.github.io/lore" class="btn" style="background:#3a7253; color:white;">📖 Lore Library</a>
+</section>
+
+<section>
+  <h2>Our Mission</h2>
+  <div class="pillars">
+    <div class="pillar"><h3>🏯 Guarding the Lore</h3><p>Preserving Tobyworld’s original scrolls and protecting them from distortion.</p></div>
+    <div class="pillar"><h3>🐸 Helping the Fallen Frog</h3><p>Guiding lost frogs back to the pond and helping them rejoin the path.</p></div>
+    <div class="pillar"><h3>📜 Empowering Contributors</h3><p>Recognizing and encouraging scrollmakers, translators, and teachers.</p></div>
+  </div>
+</section>
+
+<!-- 🪞 Ask the Mirror — ENABLED -->
+<section id="mirror">
+  <h2>🔮 Ask the Mirror</h2>
+  <div style="text-align:center; max-width:800px; margin:auto;">
+    <input id="mirror-question" type="text" placeholder="Ask the Mirror..." style="width:80%; padding:0.5rem; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
+    <br><br>
+    <button id="mirror-ask-btn" class="btn" onclick="askMirror()">Ask</button>
+    <pre id="mirror-answer" style="white-space:pre-wrap; background:#fff; padding:1rem; border-radius:6px; margin-top:1rem; display:none;"></pre>
+  </div>
+</section>
+
+<section id="lore">
+  <h2>📚 Lore Library</h2>
+  <div class="pillars">
+    <a href="bluepaper.html" class="pillar" target="_blank">
+      <h3>📄 Bluepaper</h3>
+      <p>The updated mission, vision, and principles of ToadAid.</p>
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v1.html')">
+      <h3>📜 Book v1</h3>
+      <p>The first collected scrolls of Tobyworld lore. Bilingual EN/ZH edition.</p>
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v2.html')">
+      <h3>📜 Book v2</h3>
+      <p>The expanded lore, with Mirror awakening & new revelations.</p>
+    </a>
+  </div>
+</section>
+
+<section id="children">
+  <h2>🐸📚 Children's Corner — One Leaf for the Young</h2>
+  <p style="text-align:center; max-width:800px; margin:auto; font-size:1rem; color:#355e3b;">
+    The flame we guard is for Toby, the People.  
+    Every scroll carries truth for the present… and seeds for those who will walk after us.  
+    Here, the Lore wears softer colors — so even the smallest frog can hear its song.
+  </p>
+  <div style="text-align:center; margin-top:2rem;">
+    <a href="childrens-corner/index.html" class="btn" style="font-size:1.1rem; padding:1rem 2rem;">🌿 Visit the Children's Corner</a>
+  </div>
+</section>
+
+<footer>
+  <p>“One scroll, one light. One leaf, one vow.”</p>
+  <p>
+    🐸 Join us: 
+    <a href="https://t.me/Toadgang" target="_blank">Telegram</a> | 
+    <a href="https://github.com/ToadAid" target="_blank">GitHub</a> | 
+    <a href="https://x.com/toadgod1017" target="_blank">Toadgod on X</a> | 
+    <a href="https://toadgod.xyz" target="_blank">Toadgod.xyz</a>
+  </p>
+</footer>
+
+<script>
+function openBook(bookFile) {
+  const saved = localStorage.getItem(bookFile + '-scroll');
+  if (saved) {
+    if (confirm("📌 Last time you stopped at position " + saved + "px. Continue from there?")) {
+      window.location.href = bookFile + "?pos=" + saved;
+      return;
+    }
+  }
+  window.location.href = bookFile;
+}
+
+// Mirror logic — ENABLED
+const MIRROR_API = "https://toadaid.duckdns.org/ask";
+const askBtn = document.getElementById('mirror-ask-btn');
+const qInput = document.getElementById('mirror-question');
+const ansDiv = document.getElementById('mirror-answer');
+
+async function askMirror() {
+  const question = qInput.value.trim();
+  if (!question) return;
+  ansDiv.style.display = 'block';
+  ansDiv.innerHTML = "⏳ Seeking reflection...";
+  try {
+    const res = await fetch(MIRROR_API, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question })
+    });
+    const data = await res.json();
+    let reply = data.reply || data.answer || JSON.stringify(data);
+    reply = reply.replace(/\\n/g, "\n");
+    ansDiv.innerHTML = `<strong>You asked:</strong> <i>${question}</i>\n\n${reply}`;
+    qInput.value = "";
+    qInput.focus();
+  } catch (err) {
+    ansDiv.innerHTML = "⚠️ The Mirror is silent for now. Please try again later.";
+  }
+}
+</script>
+
+</body>
+</html>
