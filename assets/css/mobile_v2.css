@@ -1,0 +1,31 @@
+/* ToadAid — mobile_v2.css (test-only)
+   Link this AFTER mobile.css on index2.html only. If it feels right, merge into mobile.css.
+*/
+
+/* Refined touch targets: CTAs comfy, utilities compact */
+a.btn, button { min-height: 44px; padding: 10px 14px; }
+.tab, .pill, .chip { min-height: 34px; padding: 6px 10px; }
+.btn.small { min-height: 36px; padding: 8px 12px; }
+@media (max-width: 360px){
+  a.btn, button { padding: 8px 12px; }
+  .tab, .pill, .chip { padding: 5px 8px; }
+}
+
+/* Ensure grids collapse pleasantly */
+@media (max-width: 880px){
+  .grid.cols-2, .grid.cols-3 { grid-template-columns: 1fr !important; }
+}
+
+/* Prevent overflow on long strings (hashes, URLs) */
+.break-all{ word-break: break-word; overflow-wrap: anywhere; }
+
+/* Keep hero actions tidy on tiny phones */
+@media (max-width: 420px){
+  .hero .actions .btn, .cta .btn { flex: 1 1 auto; }
+}
+
+/* Subtle reduction of card radius/shadow for clarity on mobile */
+@media (max-width: 880px){
+  .card { border-radius: 14px; }
+  .shadow{ box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+}
