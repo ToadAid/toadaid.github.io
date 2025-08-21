@@ -15,7 +15,7 @@
            --btn:#d8ac2a; --btnfg:#0f0f0f; }
   }
   *{box-sizing:border-box}
-  body{margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+  body{margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
   header{background:var(--accent); color:#fff; text-align:center; padding:48px 16px;}
   header h1{margin:0 0 6px; font-size:2rem}
   header p{margin:0; opacity:.95}
@@ -41,7 +41,8 @@
 
   <div class="wrap">
     <div class="top-actions">
-      <a href="index.html" class="btn">🏠 Back to Home</a>
+      <!-- note the ../ since this file is in /feedback/ -->
+      <a href="../index.html" class="btn">🏠 Back to Home</a>
     </div>
 
     <div class="card">
@@ -56,7 +57,7 @@
     </div>
 
     <div class="top-actions" style="margin-top:14px;">
-      <a href="index.html" class="btn">🏠 Back to Home</a>
+      <a href="../index.html" class="btn">🏠 Back to Home</a>
     </div>
   </div>
 
@@ -101,7 +102,6 @@
       document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
       e.target.classList.add("active");
       loadGiscus(e.target.dataset.type);
-      // Optional: update hash for bookmarking
       history.replaceState(null, "", "#"+e.target.dataset.type);
     });
 
