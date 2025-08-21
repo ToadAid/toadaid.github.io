@@ -26,14 +26,22 @@
     a:hover{opacity:.9}
     .container{max-width:var(--max);margin:0 auto;padding:0 16px}
 
+    /* Global spacing */
+    section{padding:18px 0 22px}
+    .divider{height:1px;background:#e7dcc0;opacity:.9;margin:10px 0 20px}
+
     /* Compact cards */
     .card{background:var(--paper);border:1px solid #e7dcc0;border-radius:var(--radius);padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
     .card.compact{padding:10px;border-radius:14px}
     .card.compact h3{font-size:16px;margin:6px 0}
     .card.compact p{font-size:14px;color:var(--muted);margin:4px 0 0}
 
+    /* Subtle hover lift on cards & art */
+    .card,.art-card{transition:transform .18s ease, box-shadow .18s ease}
+    .card:hover,.art-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+
     /* Hero */
-    .hero{padding:22px 0 18px;position:relative}
+    .hero{padding:26px 0 14px;position:relative}
     .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:center}
     .kicker{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid #e7dcc0;border-radius:999px;padding:6px 10px;background:#fffdf9}
     .hero h1{font-size:34px;line-height:1.1;margin:10px 0 6px}
@@ -41,7 +49,7 @@
     .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 
     /* Rotating art hero */
-    .art-hero{position:relative;border-radius:18px;overflow:hidden;border:1px solid #e7dcc0;aspect-ratio:16/9}
+    .art-hero{position:relative;border-radius:18px;overflow:hidden;border:1px solid #e7dcc0;aspect-ratio:16/9;background:#f8f5ec}
     .art-hero .slide{
       position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
       opacity:0; transition:opacity 600ms ease; will-change:opacity;
@@ -67,7 +75,7 @@
     }
 
     /* Art gallery */
-    .art-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+    .art-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:stretch}
     .art-card{position:relative;border-radius:14px;overflow:hidden;border:1px solid #e7dcc0;background:#fff}
     .art-card img{width:100%;height:100%;object-fit:cover;display:block}
     .art-card .label{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;padding:4px 8px;border-radius:10px;font-size:12px}
@@ -136,6 +144,8 @@
         </div>
       </div>
     </section>
+
+    <div class="divider" aria-hidden="true"></div>
 
     <!-- Feature strip: compact mini-cards -->
     <section>
