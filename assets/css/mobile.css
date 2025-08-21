@@ -1,0 +1,109 @@
+/*
+  ToadAid — mobile.css (drop‑in)
+  Purpose: Improve small‑screen usability WITHOUT changing the existing look & colors.
+  How to use:
+    1) Link AFTER your current /assets/css/style.css in every page <head>:
+       <link rel="stylesheet" href="/assets/css/style.css">
+       <link rel="stylesheet" href="/assets/css/mobile.css">
+    2) Add the tiny JS at bottom (see notes) to toggle the mobile menu.
+*/
+
+/* 1) Base: ensure images & embeds scale */
+img, video, iframe { max-width: 100%; height: auto; }
+
+/* 2) Container side padding on narrow screens */
+@media (max-width: 880px){
+  .container{ padding-left: 14px; padding-right: 14px; }
+}
+
+/* 3) Typography: use fluid sizes to avoid giant headers on phones */
+h1{ font-size: clamp(1.6rem, 4.5vw, 2.4rem); line-height: 1.15; }
+h2{ font-size: clamp(1.3rem, 4vw, 1.8rem); line-height: 1.2; }
+h3{ font-size: clamp(1.1rem, 3.2vw, 1.25rem); }
+p, li{ font-size: clamp(0.98rem, 2.6vw, 1.05rem); }
+
+/* 4) Touch targets: bigger tappable areas */
+a.btn, button, .tab, .pill, .chip{
+  min-height: 44px; /* Apple/Google guideline */
+  padding: 10px 14px;
+}
+
+/* 5) Cards & spacing tighten on mobile */
+@media (max-width: 880px){
+  .card{ padding: 14px; border-radius: 14px; }
+  .stack-sm > * + *{ margin-top: 10px; }
+}
+
+/* 6) Grids → single column when narrow (keeps visual style) */
+.grid{ display: grid; gap: 14px; }
+@media (min-width: 881px){
+  .grid.cols-2{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .grid.cols-3{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 880px){
+  .grid.cols-2, .grid.cols-3{ grid-template-columns: 1fr; }
+}
+
+/* 7) Tables & code blocks: make horizontally scrollable without breaking layout */
+.table-wrap{ overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
+.table-wrap table{ min-width: 640px; }
+pre, code{ max-width: 100%; }
+pre{ overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 12px; border-radius: 10px; }
+
+/* 8) Hero sections: stack and center on mobile */
+.hero .wrap{ display: grid; gap: 16px; grid-template-columns: 1.2fr .8fr; }
+@media (max-width: 900px){
+  .hero .wrap{ grid-template-columns: 1fr; }
+  .hero .actions, .cta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .hero .actions .btn, .cta .btn{ flex: 1 1 auto; }
+}
+
+/* 9) Top nav: hide big link row on mobile; show burger */
+.site-header{ position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(120%) blur(6px); }
+.nav{ display:flex; align-items:center; gap:16px; }
+.menu{ display:flex; gap:14px; list-style:none; margin:0; padding:0; }
+.nav-toggle{ display:none; }
+@media (max-width: 880px){
+  .menu, .cta{ display: none; }
+  .nav-toggle{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid rgba(0,0,0,.08); border-radius:10px; background:#fff; }
+  .nav.open .menu, .nav.open .cta{
+    display:flex; flex-direction:column; gap:10px;
+    position:absolute; left:0; right:0; top:64px;
+    background: var(--paper, #fffdf6);
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    padding: 12px 16px;
+  }
+  .menu a{ padding: 10px 8px; border-radius: 10px; }
+}
+
+/* 10) Buttons: allow full‑width on tiny screens (keeps design) */
+@media (max-width: 560px){
+  .btn{ width: 100%; text-align: center; }
+}
+
+/* 11) Utility helpers you can add in HTML without changing design */
+.hidden-mobile{ display: initial; }
+@media (max-width: 880px){ .hidden-mobile{ display:none!important; } }
+.only-mobile{ display:none; }
+@media (max-width: 880px){ .only-mobile{ display:block!important; } }
+
+/* 12) Fix long unbreakable strings (wallets, hashes) */
+.break-all{ word-break: break-word; overflow-wrap: anywhere; }
+
+/* 13) Optional: bigger footer links on mobile */
+@media (max-width: 880px){ footer a{ padding: 8px 0; display: inline-block; } }
+
+/* 14) Reduce shadow blur on mobile (performance & clarity) */
+@media (max-width: 880px){ .shadow{ box-shadow: 0 6px 18px rgba(0,0,0,.08); } }
+
+/* 15) Respect prefers-reduced-motion for users who need it */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* === Tiny JS to toggle menu (place before </body>) ===
+<script>
+  const nav = document.getElementById('nav');
+  function toggleNav(){ nav.classList.toggle('open'); }
+</script>
+*/
