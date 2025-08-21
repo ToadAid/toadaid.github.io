@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Feedback · ToadAid</title>
+<meta name="description" content="Share ideas and feedback with the ToadAid community. Every voice is Ichigo Ichie." />
+<style>
+  :root{
+    --bg:#f5f1e6; --paper:#fffdf6; --ink:#2b2b2b; --muted:#6f6f6f; --accent:#355e3b; --ring:rgba(0,0,0,.06);
+    --btn:#f6c343; --btnfg:#222;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f0f0f; --paper:#151515; --ink:#e9e6dc; --muted:#9aa3a7; --accent:#7ad08f; --ring:rgba(255,255,255,.08);
+           --btn:#d8ac2a; --btnfg:#0f0f0f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+  header{background:var(--accent); color:#fff; text-align:center; padding:48px 16px;}
+  header h1{margin:0 0 6px; font-size:2rem}
+  header p{margin:0; opacity:.95}
+  .wrap{max-width:980px; margin:24px auto; padding:0 16px}
+  .card{background:var(--paper); border:1px solid var(--ring); border-radius:14px; box-shadow:0 8px 30px var(--ring); padding:16px;}
+  .top-actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px}
+  .btn{background:var(--btn); color:var(--btnfg); padding:.6rem 1rem; font-weight:700; border-radius:12px; text-decoration:none; box-shadow:0 3px 10px var(--ring); border:1px solid rgba(0,0,0,.05)}
+  .btn:hover{filter:brightness(.97)}
+  /* Tabs */
+  .tabs{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; padding:8px}
+  .tab{cursor:pointer; border:1px solid var(--ring); background:var(--paper); color:var(--ink); padding:.5rem .8rem; border-radius:999px; font-weight:600}
+  .tab.active{background:var(--accent); color:#fff; border-color:transparent}
+  .hint{color:var(--muted); text-align:center; margin:6px 0 14px}
+  #giscus-container{min-height:260px}
+  footer{color:var(--muted); text-align:center; padding:36px 16px}
+</style>
+</head>
+<body>
+  <header>
+    <h1>🐸 ToadAid Feedback Hub</h1>
+    <p>Every voice is <em>Ichigo Ichie</em> — sacred and unrepeatable.</p>
+  </header>
+
+  <div class="wrap">
+    <div class="top-actions">
+      <a href="index.html" class="btn">🏠 Back to Home</a>
+    </div>
+
+    <div class="card">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-type="general">💬 General</button>
+        <button class="tab" data-type="ideas">💡 Ideas</button>
+        <button class="tab" data-type="qa">❓ Q&amp;A</button>
+        <button class="tab" data-type="announcements">📢 Announcements</button>
+      </div>
+      <div class="hint">Tip: Sign in with GitHub to join the conversation.</div>
+      <div id="giscus-container"></div>
+    </div>
+
+    <div class="top-actions" style="margin-top:14px;">
+      <a href="index.html" class="btn">🏠 Back to Home</a>
+    </div>
+  </div>
+
+  <footer>© 2025 ToadAid · Built with conviction on Base.</footer>
+
+  <script>
+    // Your repo & IDs (these are yours from giscus)
+    const REPO   = "toadaid/toadaid.github.io";
+    const REPO_ID = "R_kgDOOq7UQw";
+    const CONFIGS = {
+      general:       { category: "General",       id: "DIC_kwDOOq7UQ84CuaBq" },
+      ideas:         { category: "Ideas",         id: "DIC_kwDOOq7UQ84CuaBs" },
+      qa:            { category: "Q&A",           id: "DIC_kwDOOq7UQ84CuaBr" },
+      announcements: { category: "Announcements", id: "DIC_kwDOOq7UQ84CuaBp" }
+    };
+
+    function loadGiscus(type){
+      const cfg = CONFIGS[type] || CONFIGS.general;
+      const mount = document.getElementById("giscus-container");
+      mount.innerHTML = ""; // reset
+      const s = document.createElement("script");
+      s.src = "https://giscus.app/client.js";
+      s.setAttribute("data-repo", REPO);
+      s.setAttribute("data-repo-id", REPO_ID);
+      s.setAttribute("data-category", cfg.category);
+      s.setAttribute("data-category-id", cfg.id);
+      s.setAttribute("data-mapping", "pathname");
+      s.setAttribute("data-strict", "0");
+      s.setAttribute("data-reactions-enabled", "1");
+      s.setAttribute("data-emit-metadata", "0");
+      s.setAttribute("data-input-position", "bottom");
+      s.setAttribute("data-theme", "preferred_color_scheme");
+      s.setAttribute("data-lang", "en");
+      s.setAttribute("crossorigin", "anonymous");
+      s.async = true;
+      mount.appendChild(s);
+    }
+
+    // Tab switching
+    document.getElementById("tabs").addEventListener("click", (e)=>{
+      if(!e.target.classList.contains("tab")) return;
+      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+      e.target.classList.add("active");
+      loadGiscus(e.target.dataset.type);
+      // Optional: update hash for bookmarking
+      history.replaceState(null, "", "#"+e.target.dataset.type);
+    });
+
+    // Load default (or hash)
+    const initial = (location.hash||"").replace("#","");
+    loadGiscus( initial && CONFIGS[initial] ? initial : "general" );
+    if(initial && CONFIGS[initial]) {
+      document.querySelector(`.tab[data-type="${initial}"]`)?.classList.add("active");
+      document.querySelectorAll(".tab").forEach(t=>{
+        if(t.dataset.type!==initial) t.classList.remove("active");
+      });
+    }
+  </script>
+</body>
+</html>
