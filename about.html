@@ -5,34 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>About · ToadAid</title>
   <meta name="description" content="ToadAid — a community-born initiative from Tobyworld. Not hype. Not VC. Only conviction." />
-  <meta property="og:title" content="About · ToadAid" />
-  <meta property="og:description" content="Born of the pond. Guided by Ichigo Ichie — every act of kindness is sacred and unrepeatable." />
-  <meta property="og:type" content="website" />
   <link rel="canonical" href="https://toadaid.github.io/about.html" />
   <style>
     :root{
       --bg:#f5f1e6; --paper:#fffdf6; --ink:#2f2f2f; --muted:#6b6b6b; --accent:#355e3b; --ring:rgba(0,0,0,.06);
+      --btn-bg:#f6c343; 
+      --btn-fg:#222;
     }
     @media (prefers-color-scheme: dark){
-      :root{ --bg:#111; --paper:#141414; --ink:#e8e6de; --muted:#9aa3a7; --accent:#7ad08f; --ring:rgba(255,255,255,.08); }
+      :root{ --bg:#111; --paper:#141414; --ink:#e8e6de; --muted:#9aa3a7; --accent:#7ad08f; --ring:rgba(255,255,255,.08);
+             --btn-bg:#d8ac2a; --btn-fg:#111; }
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 Georgia, "Times New Roman", serif}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 Georgia,"Times New Roman",serif}
     a{color:var(--accent);text-decoration:none}
     a:hover{text-decoration:underline}
     header{padding:56px 20px;text-align:center;background:var(--accent);color:#fff}
-    header h1{margin:0 0 8px;font-size:2.2rem;letter-spacing:.3px}
+    header h1{margin:0 0 8px;font-size:2.2rem}
     header p{margin:0;opacity:.95}
     main{max-width:900px;margin:32px auto;padding:0 16px}
     .card{background:var(--paper);border:1px solid var(--ring);border-radius:14px;padding:22px;margin:18px 0;box-shadow:0 8px 30px var(--ring)}
     h2{margin:0 0 10px;color:var(--accent);font-size:1.25rem}
     .lead{font-style:italic;color:var(--muted);border-left:3px solid var(--accent);padding-left:12px;margin:0}
-    ul{margin:10px 0 0 1.2rem}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:.95rem}
     .grid{display:grid;grid-template-columns:1fr;gap:14px}
     @media (min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
-    footer{padding:40px 16px;text-align:center;color:var(--muted)}
+    .btn{
+      display:inline-block; padding:.6rem 1rem; border-radius:12px;
+      background:var(--btn-bg); color:var(--btn-fg); text-decoration:none; font-weight:700;
+      box-shadow:0 3px 10px var(--ring); border:1px solid rgba(0,0,0,.05)
+    }
+    .btn:hover{filter:brightness(.97)}
+    .btn-row{ text-align:center; margin:18px 0 8px }
+    footer{padding:36px 16px;text-align:center;color:var(--muted)}
     .pill{display:inline-block;padding:.35rem .7rem;border:1px solid var(--ring);border-radius:999px;background:var(--paper);margin:.25rem .15rem}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:.95rem}
   </style>
 </head>
 <body>
@@ -40,6 +46,11 @@
     <h1>About ToadAid</h1>
     <p>Ichigo Ichie — 一期一会 · Only the sacred now.</p>
   </header>
+
+  <!-- Top Back to Home -->
+  <div class="btn-row">
+    <a href="index.html" class="btn">🏠 Back to Home</a>
+  </div>
 
   <main>
     <!-- Lore intro -->
@@ -64,7 +75,6 @@
           <li>🐸 Preserve and share the Lore of Tobyworld.</li>
         </ul>
       </div>
-
       <div class="card">
         <h2>Principles</h2>
         <ul>
@@ -76,7 +86,7 @@
       </div>
     </section>
 
-    <!-- What we do (high-level, no ops details) -->
+    <!-- What we do -->
     <section class="card">
       <h2>What We Do</h2>
       <p>
@@ -102,6 +112,11 @@
       </p>
     </section>
   </main>
+
+  <!-- Bottom Back to Home -->
+  <div class="btn-row">
+    <a href="index.html" class="btn">🏠 Back to Home</a>
+  </div>
 
   <footer>
     <div>© 2025 ToadAid · Built with conviction on Base.</div>
