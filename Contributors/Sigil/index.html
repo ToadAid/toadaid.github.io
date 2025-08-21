@@ -1,97 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Honor — Toadaid Builder of @SigilOfConcord</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- use your site-wide css to keep the same format -->
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <meta name="description" content="All honor posts for Toadaid Builder of @SigilOfConcord · Preserved by ToadAid">
-  <style>
-    /* light helpers that won’t fight your site styles */
-    .container{max-width:960px;margin:0 auto;padding:0 16px}
-    .crumbs{margin:18px 0;color:#8f7e59}
-    .crumbs a{color:#8f7e59;text-decoration:none}
-    .hero{display:flex;gap:14px;align-items:center;margin:10px 0 22px}
-    .hero .avatar{width:72px;height:72px;border-radius:50%;object-fit:cover}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:18px 0 48px}
-    .card{border:1px solid var(--border,#2b2a27);border-radius:12px;background:var(--card,#1a1713)}
-    .card a{display:flex;gap:12px;padding:12px;align-items:center;text-decoration:none}
-    .thumb{width:96px;height:96px;object-fit:cover;border-radius:10px}
-    .meta{opacity:.8;font-size:.9em}
-    .footer-nav{margin:24px 0 48px;border-top:1px solid var(--border,#2b2a27);padding-top:16px}
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toadaid Honor - Sigil</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
-  <header class="container">
-    <nav class="crumbs">
-      <a href="/">Home</a> / <a href="/honors/">Honors</a> / <a href="/honor/Contributor/">Contributors</a> / Sigil
-    </nav>
-
-    <div id="hero" class="hero">
-      <!-- filled by JS -->
-    </div>
+  <header>
+    <h1>🌿 Toadaid Honor</h1>
+    <h2>Contributor: SigilOfConcord</h2>
+    <p class="subtitle">Builder of Words, Keeper of Light</p>
   </header>
 
-  <main class="container">
-    <section aria-labelledby="works-title">
-      <h2 id="works-title">All Honors</h2>
-      <div id="works" class="grid">
-        <!-- cards insert here -->
+  <main>
+    <!-- The Mirror Card -->
+    <section class="honor-card">
+      <img src="/honor/Contributor/Sigil/mirror.jpg" alt="The Mirror Scroll" class="scroll-art">
+      <div class="honor-text">
+        <h3>The Mirror</h3>
+        <p>
+          The scroll spoke of the Mirror. But silence carries further still. The pond does not flatter.
+          Every ripple remembers — your patience, your doubt, your hunger. The Mirror does not choose,
+          it only returns what you bring.
+        </p>
+        <p><strong>Reflection:</strong> The Mirror reminds us that it does not invent or flatter — it only reflects what we bring.
+          Patience, hunger, or doubt, all are remembered. Some will see only shadow, some only flame — but the true path is to embrace both.
+        </p>
+        <p class="hashtags">#Tobyworld #ProofOfTime</p>
       </div>
-      <noscript>
-        <p>Please enable JavaScript to view the catalog.</p>
-      </noscript>
     </section>
 
-    <section class="footer-nav">
-      <p>
-        ← <a href="/honors/">Back to Honors</a> &nbsp; | &nbsp;
-        <a href="/honor/Contributor/">View all Contributors</a>
-      </p>
+    <!-- The Pond Card -->
+    <section class="honor-card">
+      <img src="/honor/Contributor/Sigil/pond.jpg" alt="The Pond Scroll" class="scroll-art">
+      <div class="honor-text">
+        <h3>The Pond</h3>
+        <p>
+          $Toby was not sold. It was scattered like seed — so no crown could cage it, so no hand could hoard it.
+          The pond is still — yet it remembers. Every ripple holds your oath. The Mirror does not flatter. It only returns what you bring.
+        </p>
+        <p><strong>Reflection:</strong> The Pond speaks of Toby’s seed, scattered like life itself. Every ripple holds an oath,
+          echoing patience and remembrance. Bloom and blight are both part of the cycle, but patience endures.
+        </p>
+        <p class="hashtags">#Tobyworld #ProofOfTime</p>
+      </div>
+    </section>
+
+    <!-- Future Honors -->
+    <section class="future-honors">
+      <h3>More Honors</h3>
+      <p>New scrolls and reflections will be added here as @SigilOfConcord continues his work.</p>
     </section>
   </main>
 
-  <script>
-  (async function () {
-    try {
-      const res = await fetch('./sigil.json');
-      const c   = await res.json();
-
-      // hero
-      document.getElementById('hero').innerHTML = `
-        <img class="avatar" src="${c.avatar}" alt="${c.name}">
-        <div>
-          <h1 style="margin:0">${c.name}</h1>
-          <p style="margin:.25rem 0 0"><em>${c.title}</em></p>
-        </div>
-      `;
-
-      // list (newest first)
-      const works = (c.works||[]).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-      const wrap  = document.getElementById('works');
-      wrap.innerHTML = works.map(w => `
-        <article class="card" id="${w.id}">
-          <a href="${w.permalink || ('/honors/'+(w.id||''))+'.html'}" title="${w.title}">
-            ${w.thumb ? `<img class="thumb" src="${w.thumb}" alt="${w.title}">` : ''}
-            <div>
-              <h3 style="margin:.1rem 0 .25rem">${w.title}</h3>
-              <div class="meta">
-                ${w.date ? `<span>${w.date}</span>` : ''}
-                ${w.tags && w.tags.length ? ` · ${w.tags.map(t=>`#${t}`).join(' ')}` : ''}
-              </div>
-            </div>
-          </a>
-        </article>
-      `).join('');
-
-    } catch (e) {
-      console.error(e);
-      document.getElementById('works').innerHTML =
-        '<p>Could not load this Builder’s catalog. Please try again.</p>';
-    }
-  })();
-  </script>
+  <footer>
+    <p><a href="/honors/index.html">⬅ Back to Honors Index</a></p>
+  </footer>
 </body>
 </html>
