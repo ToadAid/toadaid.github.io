@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>ToadAid — Guard the Lore</title>
   <meta name="description" content="ToadAid guards the Lore of Tobyworld — collecting, preserving, and teaching the scrolls for the people, forever." />
 
@@ -17,30 +16,20 @@
   <link rel="preload" as="image" href="/Contributors/assets/images/Tg31.jpg">
 
   <style>
-    :root{
-      --bg:#f5f1e6; --paper:#fffdf6; --ink:#2f2f2f; --muted:#5a715f; --accent:#355e3b; --ring:rgba(0,0,0,.08);
-      --radius:16px; --max:1100px;
-    }
+    :root{ --bg:#f5f1e6; --paper:#fffdf6; --ink:#2f2f2f; --muted:#5a715f; --accent:#355e3b; --radius:16px; --max:1100px; }
     html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial}
-    a{color:var(--accent);text-decoration:none}
-    a:hover{opacity:.9}
+    a{color:var(--accent);text-decoration:none} a:hover{opacity:.9}
     .container{max-width:var(--max);margin:0 auto;padding:0 16px}
-
-    /* Global spacing */
     section{padding:18px 0 22px}
     .divider{height:1px;background:#e7dcc0;opacity:.9;margin:10px 0 20px}
 
-    /* Compact cards */
     .card{background:var(--paper);border:1px solid #e7dcc0;border-radius:var(--radius);padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
     .card.compact{padding:10px;border-radius:14px}
     .card.compact h3{font-size:16px;margin:6px 0}
     .card.compact p{font-size:14px;color:var(--muted);margin:4px 0 0}
-
-    /* Subtle hover lift on cards & art */
     .card,.art-card{transition:transform .18s ease, box-shadow .18s ease}
     .card:hover,.art-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
 
-    /* Hero */
     .hero{padding:26px 0 14px;position:relative}
     .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:center}
     .kicker{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid #e7dcc0;border-radius:999px;padding:6px 10px;background:#fffdf9}
@@ -48,45 +37,29 @@
     .hero p{margin:0;color:#3a3a3a}
     .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 
-    /* Rotating art hero */
     .art-hero{position:relative;border-radius:18px;overflow:hidden;border:1px solid #e7dcc0;aspect-ratio:16/9;background:#f8f5ec}
-    .art-hero .slide{
-      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-      opacity:0; transition:opacity 600ms ease; will-change:opacity;
-    }
+    .art-hero .slide{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 600ms ease; will-change:opacity}
     .art-hero .slide.active{opacity:1}
-    .art-hero .caption{
-      position:absolute; left:10px; bottom:10px;
-      background:rgba(0,0,0,.52); color:#fff; padding:6px 8px; border-radius:10px; font-size:12px
-    }
-    /* Credit emphasis */
+    .art-hero .caption{position:absolute; left:10px; bottom:10px; background:rgba(0,0,0,.52); color:#fff; padding:6px 8px; border-radius:10px; font-size:12px}
     .art-hero .caption strong{color:#ffd54f;font-weight:600}
     .art-hero .caption a{color:#9fdcff;text-decoration:none}
     .art-hero .caption a:hover{text-decoration:underline}
     @media (prefers-reduced-motion: reduce){ .art-hero .slide{ transition:none } }
 
-    /* Grid helpers */
     .grid{display:grid;gap:12px}
     .grid.cols-3{grid-template-columns:repeat(3,1fr)}
     .grid.cols-4{grid-template-columns:repeat(4,1fr)}
-    @media (max-width: 900px){
-      .hero .wrap{grid-template-columns:1fr}
-      .grid.cols-3,.grid.cols-4{grid-template-columns:1fr}
-    }
+    @media (max-width: 900px){ .hero .wrap{grid-template-columns:1fr} .grid.cols-3,.grid.cols-4{grid-template-columns:1fr} }
 
-    /* Art gallery */
     .art-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:stretch}
     .art-card{position:relative;border-radius:14px;overflow:hidden;border:1px solid #e7dcc0;background:#fff}
     .art-card img{width:100%;height:100%;object-fit:cover;display:block}
     .art-card .label{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;padding:4px 8px;border-radius:10px;font-size:12px}
-    .span-2{grid-column:span 2}
-    .span-3{grid-column:span 3}
-    .tall{grid-row:span 2}
+    .span-2{grid-column:span 2} .span-3{grid-column:span 3} .tall{grid-row:span 2}
     @media (max-width: 900px){ .art-grid{grid-template-columns:repeat(2,1fr)} .span-2,.span-3{grid-column:span 1} .tall{grid-row:span 1} }
 
     .muted{color:var(--muted)}
     .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:#eef4ef;color:#2c5035;border:1px solid #d8e7db;font-size:12px}
-
     footer{border-top:1px solid #e7dcc0;margin-top:26px;padding:16px 0;color:#536556}
   </style>
 </head>
@@ -127,19 +100,19 @@
         <div class="art-hero shadow" id="artHero"
              data-interval="5000"
              data-images='[
-               {"src":"/Contributors/assets/images/Tg31.jpg","label":"Tg31 — art by <strong>?</strong> (<a href=&quot;https://x.com/handle&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@handle</a>)"},
-               {"src":"/Contributors/assets/images/cristian_lotus.jpg","label":"Cristian Lotus — art by <strong>Cristian</strong> (<a href=&quot;https://x.com/handle&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@handle</a>)"},
-               {"src":"/Contributors/assets/images/lore_guardian_001.jpg","label":"Lore Guardian 001 — art by <strong>?</strong> (<a href=&quot;https://x.com/handle&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@handle</a>)"},
-               {"src":"/Contributors/assets/images/mirror_first_art.jpg","label":"Mirror First — art by <strong>?</strong> (<a href=&quot;https://x.com/handle&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@handle</a>)"},
-               {"src":"/Contributors/assets/images/princessnatts_art.jpg","label":"Princessnatts — art by <strong>Princessnatts</strong> (<a href=&quot;https://x.com/princessnatts&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@princessnatts</a>)"},
-               {"src":"/Contributors/assets/images/the_watcher_scroll.jpg","label":"The Watcher Scroll — art by <strong>?</strong> (<a href=&quot;https://x.com/handle&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@handle</a>)"},
-               {"src":"/Contributors/assets/images/zen.jpg","label":"Zen — art by <strong>?</strong> (<a href=&quot;https://x.com/handle&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@handle</a>)"}
+               {"src":"/Contributors/assets/images/Tg31.jpg","label":"Tg31 — art by <strong>aqio885</strong> (<a href=&quot;https://x.com/aqio885&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@aqio885</a>)"},
+               {"src":"/Contributors/assets/images/the_watcher_scroll.jpg","label":"The Watcher of the Scroll — art by <strong>TommyN9</strong> (<a href=&quot;https://x.com/TNG1301&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@TNG1301</a>)"},
+               {"src":"/Contributors/assets/images/zen.jpg","label":"Zen — art by <strong>Toby</strong> (<a href=&quot;https://x.com/Toby777777777&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@Toby777777777</a>)"},
+               {"src":"/Contributors/assets/images/cristian_lotus.jpg","label":"Cristian Lotus — art by <strong>Cristian</strong> (<a href=&quot;https://x.com/CristianL099636&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@CristianL099636</a>)"},
+               {"src":"/Contributors/assets/images/princessnatts_art.jpg","label":"Seven Months for Six Weeks — art by <strong>princessnatts</strong> (<a href=&quot;https://x.com/princessnatts&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>@princessnatts</a>)"},
+               {"src":"/Contributors/assets/images/lore_guardian_001.jpg","label":"Lore Guardian 001 — art by <strong>Lore Guardian</strong>"},
+               {"src":"/Contributors/assets/images/mirror_first_art.jpg","label":"Mirror First — art by <strong>Mirror (Agentic RAG)</strong>"}
              ]'>
           <!-- Two layers for crossfade -->
-          <img class="slide active" src="/Contributors/assets/images/Tg31.jpg" alt="Tg31 — contributor art" />
+          <img class="slide active" src="/Contributors/assets/images/Tg31.jpg" alt="Tg31 — contributor art by aqio885" />
           <img class="slide" alt="" aria-hidden="true" />
           <div class="caption" id="artCaption" aria-live="polite">
-            Tg31 — art by <strong>?</strong>
+            Tg31 — art by <strong>aqio885</strong> (<a href="https://x.com/aqio885" target="_blank" rel="noopener noreferrer">@aqio885</a>)
           </div>
         </div>
       </div>
@@ -165,32 +138,32 @@
         </div>
         <div class="art-grid">
           <a class="art-card span-2" href="/lore/" aria-label="Tg31">
-            <img src="/Contributors/assets/images/Tg31.jpg" alt="Tg31 — contributor art" loading="lazy" width="800" height="600" />
-            <span class="label">Tg31</span>
+            <img src="/Contributors/assets/images/Tg31.jpg" alt="Tg31 — contributor art by aqio885" loading="lazy" width="800" height="600" />
+            <span class="label">Tg31 — aqio885</span>
           </a>
-          <a class="art-card tall" href="/lore/" aria-label="Cristian Lotus">
-            <img src="/Contributors/assets/images/cristian_lotus.jpg" alt="Cristian Lotus — contributor art" loading="lazy" width="600" height="900" />
-            <span class="label">Cristian Lotus</span>
-          </a>
-          <a class="art-card" href="/lore/" aria-label="Lore Guardian 001">
-            <img src="/Contributors/assets/images/lore_guardian_001.jpg" alt="Lore Guardian 001 — contributor art" loading="lazy" width="600" height="600" />
-            <span class="label">Lore Guardian 001</span>
-          </a>
-          <a class="art-card span-3" href="/lore/" aria-label="Mirror First">
-            <img src="/Contributors/assets/images/mirror_first_art.jpg" alt="Mirror First — contributor art" loading="lazy" width="1200" height="600" />
-            <span class="label">Mirror First</span>
-          </a>
-          <a class="art-card" href="/lore/" aria-label="Princessnatts">
-            <img src="/Contributors/assets/images/princessnatts_art.jpg" alt="Princessnatts — contributor art" loading="lazy" width="600" height="600" />
-            <span class="label">Princessnatts</span>
-          </a>
-          <a class="art-card" href="/lore/" aria-label="The Watcher Scroll">
-            <img src="/Contributors/assets/images/the_watcher_scroll.jpg" alt="The Watcher Scroll — contributor art" loading="lazy" width="600" height="600" />
-            <span class="label">The Watcher Scroll</span>
+          <a class="art-card tall" href="/lore/" aria-label="The Watcher of the Scroll">
+            <img src="/Contributors/assets/images/the_watcher_scroll.jpg" alt="The Watcher of the Scroll — art by TommyN9" loading="lazy" width="600" height="900" />
+            <span class="label">Watcher of the Scroll — TommyN9</span>
           </a>
           <a class="art-card" href="/lore/" aria-label="Zen">
-            <img src="/Contributors/assets/images/zen.jpg" alt="Zen — contributor art" loading="lazy" width="600" height="600" />
-            <span class="label">Zen</span>
+            <img src="/Contributors/assets/images/zen.jpg" alt="Zen — art by Toby" loading="lazy" width="600" height="600" />
+            <span class="label">Zen — Toby</span>
+          </a>
+          <a class="art-card span-3" href="/lore/" aria-label="Cristian Lotus">
+            <img src="/Contributors/assets/images/cristian_lotus.jpg" alt="Cristian Lotus — art by Cristian" loading="lazy" width="1200" height="600" />
+            <span class="label">Cristian Lotus — Cristian</span>
+          </a>
+          <a class="art-card" href="/lore/" aria-label="Princessnatts">
+            <img src="/Contributors/assets/images/princessnatts_art.jpg" alt="Seven Months for Six Weeks — art by princessnatts" loading="lazy" width="600" height="600" />
+            <span class="label">Seven Months — princessnatts</span>
+          </a>
+          <a class="art-card" href="/lore/" aria-label="Lore Guardian 001">
+            <img src="/Contributors/assets/images/lore_guardian_001.jpg" alt="Lore Guardian 001 — art by Lore Guardian" loading="lazy" width="600" height="600" />
+            <span class="label">Lore Guardian 001</span>
+          </a>
+          <a class="art-card" href="/lore/" aria-label="Mirror First">
+            <img src="/Contributors/assets/images/mirror_first_art.jpg" alt="Mirror First — art by Mirror (Agentic RAG)" loading="lazy" width="600" height="600" />
+            <span class="label">Mirror First — Mirror</span>
           </a>
         </div>
       </div>
@@ -222,44 +195,26 @@
   </footer>
 
   <script>
-    // Footer year
     document.getElementById('yr').textContent = new Date().getFullYear();
-
-    // Mobile menu
     function toggleNav(){ document.getElementById('nav').classList.toggle('open'); }
 
     // Rotating hero art (credits-enabled)
     (() => {
       const hero = document.getElementById('artHero');
       if (!hero) return;
-
       const slides = hero.querySelectorAll('img.slide');
       const caption = document.getElementById('artCaption');
       const intervalMs = parseInt(hero.dataset.interval || '5000', 10);
       const items = JSON.parse(hero.dataset.images || '[]');
-
       if (items.length < 2) return;
 
-      // Shuffle
-      const shuffle = arr => {
-        const a = arr.slice();
-        for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-      };
+      const shuffle = arr => { const a = arr.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
 
       const startSrc = slides[0].getAttribute('src');
       let queue = shuffle(items).filter(it => it.src !== startSrc);
-      let qIndex = 0;
-      let active = 0;
-      let paused = false;
+      let qIndex = 0, active = 0, paused = false;
 
-      // Preload images
       items.forEach(it => { const img = new Image(); img.src = it.src; });
-
-      // Pause on hover/touch
       hero.addEventListener('mouseenter', () => paused = true);
       hero.addEventListener('mouseleave', () => paused = false);
       hero.addEventListener('touchstart', () => paused = true, {passive:true});
@@ -267,26 +222,20 @@
 
       const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      function nextItem() {
-        if (qIndex >= queue.length) { queue = shuffle(items); qIndex = 0; }
-        return queue[qIndex++];
-      }
+      function nextItem(){ if (qIndex >= queue.length){ queue = shuffle(items); qIndex = 0; } return queue[qIndex++]; }
 
-      function rotate() {
+      function rotate(){
         if (paused || reduceMotion) return;
         const item = nextItem();
-        const next = active ^ 1; // toggle 0/1
-
+        const next = active ^ 1;
         slides[next].src = item.src;
-        slides[next].alt = item.label.replace(/<[^>]*>?/gm,''); // strip tags for alt
-        slides[next].setAttribute('aria-hidden', 'false');
-
+        slides[next].alt = item.label.replace(/<[^>]*>?/gm,'');
+        slides[next].setAttribute('aria-hidden','false');
         slides[next].classList.add('active');
         slides[active].classList.remove('active');
-        slides[active].setAttribute('aria-hidden', 'true');
-
+        slides[active].setAttribute('aria-hidden','true');
         active = next;
-        if (caption) caption.innerHTML = item.label; // allow HTML for credits/links
+        if (caption) caption.innerHTML = item.label;
       }
 
       setInterval(rotate, intervalMs);
