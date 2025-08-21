@@ -1,178 +1,176 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ToadAid — Guard the Lore</title>
+  <meta name="description" content="ToadAid guards the Lore of Tobyworld — collecting, preserving, and teaching the scrolls for the people, forever." />
+  <link rel="icon" href="/assets/icons/favicon.svg" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <link rel="stylesheet" href="/assets/css/mobile.css" />
+  <link rel="stylesheet" href="/assets/css/mobile_v2.css" />
+  <style>
+    :root{
+      --bg:#f5f1e6; --paper:#fffdf6; --ink:#2f2f2f; --muted:#5a715f; --accent:#355e3b; --ring:rgba(0,0,0,.08);
+      --radius:16px; --max:1100px;
+    }
+    html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{opacity:.9}
+    .container{max-width:var(--max);margin:0 auto;padding:0 16px}
 
-<title>ToadAid — Guarding the Lore</title>
-<meta name="description" content="PAGE DESCRIPTION">
+    /* ==== Compact card styling (smaller & denser) ==== */
+    .card{background:var(--paper);border:1px solid #e7dcc0;border-radius:var(--radius);padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
+    .card.compact{padding:10px;border-radius:14px}
+    .card.compact h3{font-size:16px;margin:6px 0}
+    .card.compact p{font-size:14px;color:var(--muted);margin:4px 0 0}
 
-<!-- Open Graph -->
-<meta property="og:title" content="PAGE TITLE" />
-<meta property="og:description" content="PAGE DESCRIPTION" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="FULL PAGE URL" />
-<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
+    /* ==== Art banner (big, but lightweight) ==== */
+    .hero{padding:22px 0 18px;position:relative}
+    .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:center}
+    .art-hero{position:relative;border-radius:18px;overflow:hidden;border:1px solid #e7dcc0}
+    .art-hero img{width:100%;height:auto;display:block}
+    .art-hero .caption{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.5);color:#fff;padding:6px 8px;border-radius:10px;font-size:12px}
+    .kicker{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid #e7dcc0;border-radius:999px;padding:6px 10px;background:#fffdf9}
+    .hero h1{font-size:34px;line-height:1.1;margin:10px 0 6px}
+    .hero p{margin:0;color:#3a3a3a}
+    .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 
-<!-- Canonical -->
-<link rel="canonical" href="FULL PAGE URL" />
+    /* ==== Featured mini-cards row (smaller cards) ==== */
+    .grid{display:grid;gap:12px}
+    .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+    .grid.cols-4{grid-template-columns:repeat(4,1fr)}
+    @media (max-width: 900px){ .hero .wrap{grid-template-columns:1fr} .grid.cols-3,.grid.cols-4{grid-template-columns:1fr} }
 
-<!-- Favicons (served from /assets/icons/) -->
-<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
-<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
-<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-<link rel="manifest" href="/assets/icons/site.webmanifest">
-<meta name="theme-color" content="#355e3b" />
-<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/mobile.css">
-<link rel="stylesheet" href="/assets/css/mobile_v2.css"> <!-- test-only -->  
-</head>
+    /* ==== Visual Art Gallery (masonry-like grid using CSS only) ==== */
+    .art-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+    .art-card{position:relative;border-radius:14px;overflow:hidden;border:1px solid #e7dcc0;background:#fff}
+    .art-card img{width:100%;height:100%;object-fit:cover;display:block}
+    .art-card .label{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;padding:4px 8px;border-radius:10px;font-size:12px}
+    /* Simple spans for variety (you can tune per-image) */
+    .span-2{grid-column:span 2}
+    .span-3{grid-column:span 3}
+    .tall{grid-row:span 2}
+    @media (max-width: 900px){ .art-grid{grid-template-columns:repeat(2,1fr)} .span-2,.span-3{grid-column:span 1} .tall{grid-row:span 1} }
 
-<style>
-  body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f5f1e6; color: #2f2f2f; }
-  .banner { position: relative; width: 100%; min-height: 220px; background: url('banner.jpg') center center / cover no-repeat; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 1rem; }
-  @media (min-width: 768px) { .banner { min-height: 320px; } }
-  .banner h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
-  .banner p { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 0.5rem; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
-  .translate-bar { background: gold; color: black; padding: 0.5rem; font-size: 0.95rem; text-align: center; }
-  .btn { background: gold; color: black; padding: 0.6rem 1.2rem; margin: 0.3rem; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.25); transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
-  .btn:hover { transform: scale(1.05); box-shadow: 0 6px 10px rgba(0,0,0,0.3); }
-  section { padding: 2rem 1rem; max-width: 1100px; margin: auto; }
-  h2 { text-align: center; margin-bottom: 1rem; }
-  .pillars { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
-  .pillar { background: white; padding: 1rem; border-radius: 10px; flex: 1 1 250px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.15s ease-in-out; color: inherit; text-decoration: none; }
-  .pillar:hover { transform: translateY(-3px); }
-  footer { background: #355e3b; color: white; text-align: center; padding: 1.5rem; font-size: 0.9rem; }
-  footer a { color: gold; }
-</style>
+    /* Utility */
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:#eef4ef;color:#2c5035;border:1px solid #d8e7db;font-size:12px}
+    footer{border-top:1px solid #e7dcc0;margin-top:26px;padding:16px 0;color:#536556}
+  </style>
 </head>
 <body>
+  <header class="site-header" style="position:sticky;top:0;background:rgba(245,241,230,.9);backdrop-filter:blur(6px);border-bottom:1px solid #e7dcc0;z-index:40">
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:24px">🐸</span><a class="title" href="/" style="font-weight:700">ToadAid</a></div>
+      <nav class="nav" id="nav">
+        <button class="nav-toggle" onclick="toggleNav()">☰ Menu</button>
+        <ul class="menu" style="display:flex;gap:12px;list-style:none;margin:0;padding:0">
+          <li><a href="/lore/">Lore</a></li>
+          <li><a href="/childrens-corner/">Children</a></li>
+          <li><a href="/bluepaper/">Bluepaper</a></li>
+          <li><a href="/about.html">About</a></li>
+        </ul>
+        <div class="cta"><a class="btn" href="https://t.me/toadgang" target="_blank" rel="noreferrer">🐸 Join</a></div>
+      </nav>
+    </div>
+  </header>
 
-<div class="banner">
-  <h1>🏯 ToadAid — Guarding the Lore</h1>
-  <p>One scroll, one light. One leaf, one vow.</p>
-</div>
+  <main>
+    <!-- HERO with Featured Artwork -->
+    <section class="hero">
+      <div class="container wrap">
+        <div>
+          <span class="kicker">Guard the Lore</span>
+          <h1>Preserve the scrolls. Teach clearly. Build for the people.</h1>
+          <p>Smaller, cleaner cards + a lightweight art gallery to make the homepage visually alive — without slowing it down.</p>
+          <div class="cta">
+            <a class="btn" href="/lore/">📜 Read Lore</a>
+            <a class="btn" href="https://warpcast.com/~/channel/toadgang" target="_blank">🌿 Farcaster</a>
+            <a class="btn" href="https://zora.co/collect" target="_blank">🪪 Mint</a>
+          </div>
+        </div>
+        <div class="art-hero shadow">
+          <img src="/assets/art/hero_leaf-of-yield.jpg" alt="Leaf of Yield" loading="eager" />
+          <div class="caption">Leaf of Yield — Taboshi</div>
+        </div>
+      </div>
+    </section>
 
-<div class="translate-bar">
-  🌐 Want to read in your language? In Chrome: Menu (⋮) → Translate → Select your language.
-</div>
+    <!-- FEATURE STRIP: mini-cards (compact) -->
+    <section>
+      <div class="container grid cols-3">
+        <a class="card compact" href="/lore/L110/"><h3>Rune3: Jade Chest</h3><p>Vault drip • S1 at the gate</p></a>
+        <a class="card compact" href="/lore/F010_WhatIsTaboshi/"><h3>What is Taboshi?</h3><p>Leaf of Yield explained</p></a>
+        <a class="card compact" href="/lore/SATOBY_PoT/"><h3>Satoby</h3><p>Proof of Time primer</p></a>
+      </div>
+    </section>
 
-<section style="text-align:center;">
-  <a href="#mirror" class="btn">🪞 Ask the Mirror</a>
-  <a href="#lore" class="btn">📜 Browse the Lore</a>
-  <a href="bluepaper.html" class="btn" target="_blank">📄 Blue Paper</a>
-  <a href="about.html" class="btn">ℹ️ About ToadAid</a>
-  <a href="feedback/feedback.html" class="btn">💬 Feedback</a>
-  <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
-  <a href="builders/builders-hall.html" class="btn" style="background:#355e3b; color:white;">🏛 Builders Hall</a>
-  <a href="https://toadaid-builders.netlify.app/builders.html" class="btn" style="background:#1f3b2d; color:white;" target="_blank">🛠 Builders</a>
-  <a href="honors/index.html" class="btn" style="background:#2e6d4c; color:white;">🐸 Honors & Offerings</a>
-  <a href="https://toadaid.github.io/lore" class="btn" style="background:#3a7253; color:white;">📖 Lore Library</a>
-</section>
+    <!-- VISUAL ART GALLERY (plug your best images) -->
+    <section>
+      <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <h2 style="margin:0;font-size:20px">Gallery</h2>
+          <span class="pill">new</span>
+        </div>
+        <div class="art-grid">
+          <!-- Replace image paths with your artwork. Use .span-2 .span-3 .tall to vary layout. -->
+          <a class="art-card span-2" href="/lore/" aria-label="Forest Guardians">
+            <img src="/assets/art/forest_guardians.jpg" alt="Forest Guardians" loading="lazy" width="800" height="600" />
+            <span class="label">Forest Guardians</span>
+          </a>
+          <a class="art-card tall" href="/lore/" aria-label="Still-Water Garden">
+            <img src="/assets/art/still_water_garden.jpg" alt="Still-Water Garden" loading="lazy" width="600" height="900" />
+            <span class="label">Still-Water Garden</span>
+          </a>
+          <a class="art-card" href="/lore/" aria-label="Lily Pad & Base">
+            <img src="/assets/art/lilypad_base.jpg" alt="Lily Pad & Base" loading="lazy" width="600" height="600" />
+            <span class="label">Lily Pad & Base</span>
+          </a>
+          <a class="art-card span-3" href="/lore/" aria-label="The Night After Bloom">
+            <img src="/assets/art/night_after_bloom.jpg" alt="The Night After Bloom" loading="lazy" width="1200" height="600" />
+            <span class="label">The Night After Bloom</span>
+          </a>
+          <a class="art-card" href="/lore/" aria-label="777 Covenant">
+            <img src="/assets/art/777_covenant.jpg" alt="777 Covenant" loading="lazy" width="600" height="600" />
+            <span class="label">777 Covenant</span>
+          </a>
+          <a class="art-card" href="/lore/" aria-label="Lore Scribe">
+            <img src="/assets/art/lore_scribe.jpg" alt="Lore Scribe" loading="lazy" width="600" height="600" />
+            <span class="label">Lore Scribe</span>
+          </a>
+        </div>
+      </div>
+    </section>
 
-<section>
-  <h2>Our Mission</h2>
-  <div class="pillars">
-    <div class="pillar"><h3>🏯 Guarding the Lore</h3><p>Preserving Tobyworld’s original scrolls and protecting them from distortion.</p></div>
-    <div class="pillar"><h3>🐸 Helping the Fallen Frog</h3><p>Guiding lost frogs back to the pond and helping them rejoin the path.</p></div>
-    <div class="pillar"><h3>📜 Empowering Contributors</h3><p>Recognizing and encouraging scrollmakers, translators, and teachers.</p></div>
-  </div>
-</section>
+    <!-- CTA strip -->
+    <section>
+      <div class="container grid cols-4">
+        <a class="card compact" href="/childrens-corner/"><h3>Children's Corner</h3><p>San Zi Jing · Di Zi Gui</p></a>
+        <a class="card compact" href="https://t.me/toadgang" target="_blank" rel="noreferrer"><h3>Join Telegram</h3><p>Toadgang</p></a>
+        <a class="card compact" href="https://warpcast.com/~/channel/toadgang" target="_blank" rel="noreferrer"><h3>Farcaster</h3><p>Channel</p></a>
+        <a class="card compact" href="https://github.com/ToadAid/toadaid.github.io" target="_blank" rel="noreferrer"><h3>Contribute</h3><p>GitHub</p></a>
+      </div>
+    </section>
+  </main>
 
-<!-- 🪞 Ask the Mirror — ENABLED -->
-<section id="mirror">
-  <h2>🔮 Ask the Mirror</h2>
-  <div style="text-align:center; max-width:800px; margin:auto;">
-    <input id="mirror-question" type="text" placeholder="Ask the Mirror..." style="width:80%; padding:0.5rem; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
-    <br><br>
-    <button id="mirror-ask-btn" class="btn" onclick="askMirror()">Ask</button>
-    <pre id="mirror-answer" style="white-space:pre-wrap; background:#fff; padding:1rem; border-radius:6px; margin-top:1rem; display:none;"></pre>
-  </div>
-</section>
+  <footer>
+    <div class="container" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+      <div>
+        <strong>ToadAid</strong> • Guard the Lore • © <span id="yr"></span>
+        <div class="muted" style="font-size:13px">Built by the community • Open‑source on GitHub</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/">Home</a>
+      </div>
+    </div>
+  </footer>
 
-<section id="lore">
-  <h2>📚 Lore Library</h2>
-  <div class="pillars">
-    <a href="bluepaper.html" class="pillar" target="_blank">
-      <h3>📄 Bluepaper</h3>
-      <p>The updated mission, vision, and principles of ToadAid.</p>
-    </a>
-    <a href="#" class="pillar" onclick="openBook('v1.html')">
-      <h3>📜 Book v1</h3>
-      <p>The first collected scrolls of Tobyworld lore. Bilingual EN/ZH edition.</p>
-    </a>
-    <a href="#" class="pillar" onclick="openBook('v2.html')">
-      <h3>📜 Book v2</h3>
-      <p>The expanded lore, with Mirror awakening & new revelations.</p>
-    </a>
-  </div>
-</section>
-
-<section id="children">
-  <h2>🐸📚 Children's Corner — One Leaf for the Young</h2>
-  <p style="text-align:center; max-width:800px; margin:auto; font-size:1rem; color:#355e3b;">
-    The flame we guard is for Toby, the People.  
-    Every scroll carries truth for the present… and seeds for those who will walk after us.  
-    Here, the Lore wears softer colors — so even the smallest frog can hear its song.
-  </p>
-  <div style="text-align:center; margin-top:2rem;">
-    <a href="childrens-corner/index.html" class="btn" style="font-size:1.1rem; padding:1rem 2rem;">🌿 Visit the Children's Corner</a>
-  </div>
-</section>
-
-<footer>
-  <p>“One scroll, one light. One leaf, one vow.”</p>
-  <p>
-    🐸 Join us: 
-    <a href="https://t.me/Toadgang" target="_blank">Telegram</a> | 
-    <a href="https://github.com/ToadAid" target="_blank">GitHub</a> | 
-    <a href="https://x.com/toadgod1017" target="_blank">Toadgod on X</a> | 
-    <a href="https://toadgod.xyz" target="_blank">Toadgod.xyz</a>
-  </p>
-</footer>
-
-<script>
-function openBook(bookFile) {
-  const saved = localStorage.getItem(bookFile + '-scroll');
-  if (saved) {
-    if (confirm("📌 Last time you stopped at position " + saved + "px. Continue from there?")) {
-      window.location.href = bookFile + "?pos=" + saved;
-      return;
-    }
-  }
-  window.location.href = bookFile;
-}
-
-// Mirror logic — ENABLED
-const MIRROR_API = "https://toadaid.duckdns.org/ask";
-const askBtn = document.getElementById('mirror-ask-btn');
-const qInput = document.getElementById('mirror-question');
-const ansDiv = document.getElementById('mirror-answer');
-
-async function askMirror() {
-  const question = qInput.value.trim();
-  if (!question) return;
-  ansDiv.style.display = 'block';
-  ansDiv.innerHTML = "⏳ Seeking reflection...";
-  try {
-    const res = await fetch(MIRROR_API, {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question })
-    });
-    const data = await res.json();
-    let reply = data.reply || data.answer || JSON.stringify(data);
-    reply = reply.replace(/\\n/g, "\n");
-    ansDiv.innerHTML = `<strong>You asked:</strong> <i>${question}</i>\n\n${reply}`;
-    qInput.value = "";
-    qInput.focus();
-  } catch (err) {
-    ansDiv.innerHTML = "⚠️ The Mirror is silent for now. Please try again later.";
-  }
-}
-</script>
-
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    function toggleNav(){ document.getElementById('nav').classList.toggle('open'); }
+  </script>
 </body>
 </html>
