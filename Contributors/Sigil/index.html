@@ -4,55 +4,66 @@
   <meta charset="utf-8">
   <title>Honor — Toadaid Builder of @SigilOfConcord</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- Reuse your sitewide CSS so the look matches exactly -->
   <link rel="stylesheet" href="/assets/css/style.css">
   <style>
+    /* Minimal layout helpers only (won't change your theme) */
     .container{max-width:960px;margin:0 auto;padding:0 16px}
-    .crumbs{margin:18px 0;color:#8f7e59}.crumbs a{color:#8f7e59;text-decoration:none}
-    .hero{display:flex;gap:12px;align-items:center}
-    .hero img{width:72px;height:72px;border-radius:50%;object-fit:cover}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:20px 0 48px}
-    .card{border:1px solid #2b2a27;border-radius:12px;background:#1a1713}
-    .card a{display:flex;gap:12px;padding:12px;align-items:center;text-decoration:none}
-    .thumb{width:100px;height:100px;object-fit:cover;border-radius:10px}
-    .meta{opacity:.8;font-size:.9em}
+    .breadcrumbs{margin:1rem 0}
+    .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin:1rem 0 2.5rem}
+    .item{display:flex;gap:12px;align-items:center;border:1px solid var(--border, #ddd);border-radius:12px;padding:12px;background:var(--card, #fff)}
+    .thumb{width:80px;height:100px;object-fit:cover;border-radius:8px}
+    .meta{font-size:.9rem;opacity:.8;margin-top:.25rem}
   </style>
 </head>
 <body>
+
 <header class="container">
-  <nav class="crumbs"><a href="/">Home</a> / <a href="/honors/">Honors</a> / Contributors / Sigil</nav>
-  <div id="hero" class="hero"></div>
+  <nav class="breadcrumbs">
+    <a href="/">Home</a> / <a href="/honors/">Honors</a> / <a href="/Contributors/">Contributors</a> / Sigil
+  </nav>
+
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="/assets/avatars/sigil.png" alt="Sigil avatar" width="72" height="72" style="border-radius:50%;object-fit:cover">
+    <div>
+      <h1 style="margin:0">Toadaid Builder of @SigilOfConcord</h1>
+      <p style="margin:.25rem 0 0"><em>Lore Scribe · Keeper of Concord</em></p>
+    </div>
+  </div>
 </header>
 
 <main class="container">
   <h2>All Honors</h2>
-  <div id="list" class="grid"></div>
-  <p>← <a href="/honors/">Back to Honors</a> · <a href="/honor/Contributor/">All Contributors</a></p>
+
+  <div id="list" class="list"><!-- items inject here --></div>
+
+  <p>← <a href="/honors/">Back to Honors</a> · <a href="/Contributors/">All Contributors</a></p>
 </main>
 
 <script>
 (async () => {
-  const data = await (await fetch('./sigil.json')).json();
-  // hero
-  document.getElementById('hero').innerHTML =
-    `<img src="${data.avatar}" alt="${data.name}">
-     <div><h1 style="margin:0">${data.name}</h1>
-     <p style="margin:.25rem 0 0"><em>${data.title}</em></p></div>`;
+  // JSON sits next to this file
+  const res = await fetch('./sigil.json');
+  const data = await res.json();
 
-  // list honors (newest first)
-  const honors = data.honors.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const honors = (data.honors || []).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
   const wrap = document.getElementById('list');
+
   wrap.innerHTML = honors.map(h => `
-    <article class="card" id="${h.id}">
-      <a href="${h.page}">
+    <article class="item" id="${h.id}">
+      <a href="${h.page}" style="display:flex;gap:12px;align-items:center;text-decoration:none">
         <img class="thumb" src="${h.image}" alt="${h.title}">
         <div>
-          <h3 style="margin:.1rem 0 .2rem">${h.title}</h3>
-          <div class="meta">${h.date}${h.tags && h.tags.length ? ' · ' + h.tags.map(t=>'#'+t).join(' ') : ''}</div>
+          <h3 style="margin:.1rem 0 .25rem">${h.title}</h3>
+          <div class="meta">
+            ${h.date ? h.date : ''}${h.tags && h.tags.length ? ' · ' + h.tags.map(t=>'#'+t).join(' ') : ''}
+          </div>
         </div>
       </a>
     </article>
   `).join('');
 })();
 </script>
+
 </body>
 </html>
