@@ -1,0 +1,25 @@
+{
+  "slug": "Sigil",
+  "name": "Toadaid Builder of @SigilOfConcord",
+  "title": "Lore Scribe · Keeper of Concord",
+  "avatar": "/assets/avatars/sigil.png",
+  "works": [
+    {
+      "id": "the-mirror",
+      "title": "The Mirror",
+      "type": "scroll",
+      "date": "2025-08-19",
+      "thumb": "/assets/scrolls/sigil/the-mirror.jpg",
+      "permalink": "/honors/honor-sigil.html#the-mirror",
+      "tags": ["Mirror","ProofOfTime"]
+    },
+    {
+      "id": "vow-of-builders",
+      "title": "The Vow of Builders",
+      "type": "video",
+      "date": "2025-08-18",
+      "thumb": "/honors/assets/thumbs/sigil_vow.jpg",
+      "permalink": "/honors/honor-sigil.html"
+    }
+  ]
+}
