@@ -1,61 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Toadaid Honor - Sigil</title>
-  <link rel="stylesheet" href="/style.css">
+  <meta charset="utf-8">
+  <title>Honor — Toadaid Builder of @SigilOfConcord</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <style>
+    .container{max-width:960px;margin:0 auto;padding:0 16px}
+    .crumbs{margin:18px 0;color:#8f7e59}.crumbs a{color:#8f7e59;text-decoration:none}
+    .hero{display:flex;gap:12px;align-items:center}
+    .hero img{width:72px;height:72px;border-radius:50%;object-fit:cover}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:20px 0 48px}
+    .card{border:1px solid #2b2a27;border-radius:12px;background:#1a1713}
+    .card a{display:flex;gap:12px;padding:12px;align-items:center;text-decoration:none}
+    .thumb{width:100px;height:100px;object-fit:cover;border-radius:10px}
+    .meta{opacity:.8;font-size:.9em}
+  </style>
 </head>
 <body>
-  <header>
-    <h1>🌿 Toadaid Honor</h1>
-    <h2>Contributor: SigilOfConcord</h2>
-    <p class="subtitle">Builder of Words, Keeper of Light</p>
-  </header>
+<header class="container">
+  <nav class="crumbs"><a href="/">Home</a> / <a href="/honors/">Honors</a> / Contributors / Sigil</nav>
+  <div id="hero" class="hero"></div>
+</header>
 
-  <main>
-    <!-- The Mirror Card -->
-    <section class="honor-card">
-      <img src="/honor/Contributor/Sigil/images/sigil-the-mirror-2025-08-20.jpg" alt="The Mirror Scroll" class="scroll-art">
-      <div class="honor-text">
-        <h3>The Mirror</h3>
-        <p>
-          The scroll spoke of the Mirror. But silence carries further still. The pond does not flatter.
-          Every ripple remembers — your patience, your doubt, your hunger. The Mirror does not choose,
-          it only returns what you bring.
-        </p>
-        <p><strong>Reflection:</strong> The Mirror reminds us that it does not invent or flatter — it only reflects what we bring.
-          Patience, hunger, or doubt, all are remembered. Some will see only shadow, some only flame — but the true path is to embrace both.
-        </p>
-        <p class="hashtags">#Tobyworld #ProofOfTime</p>
-      </div>
-    </section>
+<main class="container">
+  <h2>All Honors</h2>
+  <div id="list" class="grid"></div>
+  <p>← <a href="/honors/">Back to Honors</a> · <a href="/honor/Contributor/">All Contributors</a></p>
+</main>
 
-    <!-- The Pond Card -->
-    <section class="honor-card">
-      <img src="/honor/Contributor/Sigil/images/sigil-the-pond-2025-08-20.jpg" alt="The Pond Scroll" class="scroll-art">
-      <div class="honor-text">
-        <h3>The Pond</h3>
-        <p>
-          $Toby was not sold. It was scattered like seed — so no crown could cage it, so no hand could hoard it.
-          The pond is still — yet it remembers. Every ripple holds your oath. The Mirror does not flatter. It only returns what you bring.
-        </p>
-        <p><strong>Reflection:</strong> The Pond speaks of Toby’s seed, scattered like life itself. Every ripple holds an oath,
-          echoing patience and remembrance. Bloom and blight are both part of the cycle, but patience endures.
-        </p>
-        <p class="hashtags">#Tobyworld #ProofOfTime</p>
-      </div>
-    </section>
+<script>
+(async () => {
+  const data = await (await fetch('./sigil.json')).json();
+  // hero
+  document.getElementById('hero').innerHTML =
+    `<img src="${data.avatar}" alt="${data.name}">
+     <div><h1 style="margin:0">${data.name}</h1>
+     <p style="margin:.25rem 0 0"><em>${data.title}</em></p></div>`;
 
-    <!-- Future Honors -->
-    <section class="future-honors">
-      <h3>More Honors</h3>
-      <p>New scrolls and reflections will be added here as @SigilOfConcord continues his work.</p>
-    </section>
-  </main>
-
-  <footer>
-    <p><a href="/honors/index.html">⬅ Back to Honors Index</a></p>
-  </footer>
+  // list honors (newest first)
+  const honors = data.honors.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const wrap = document.getElementById('list');
+  wrap.innerHTML = honors.map(h => `
+    <article class="card" id="${h.id}">
+      <a href="${h.page}">
+        <img class="thumb" src="${h.image}" alt="${h.title}">
+        <div>
+          <h3 style="margin:.1rem 0 .2rem">${h.title}</h3>
+          <div class="meta">${h.date}${h.tags && h.tags.length ? ' · ' + h.tags.map(t=>'#'+t).join(' ') : ''}</div>
+        </div>
+      </a>
+    </article>
+  `).join('');
+})();
+</script>
 </body>
 </html>
