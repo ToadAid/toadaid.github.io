@@ -3,12 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>ToadAid — Guard the Lore</title>
   <meta name="description" content="ToadAid guards the Lore of Tobyworld — collecting, preserving, and teaching the scrolls for the people, forever." />
+
+  <!-- Favicons / Styles -->
   <link rel="icon" href="/assets/icons/favicon.svg" />
   <link rel="stylesheet" href="/assets/css/style.css" />
   <link rel="stylesheet" href="/assets/css/mobile.css" />
   <link rel="stylesheet" href="/assets/css/mobile_v2.css" />
+
   <style>
     :root{
       --bg:#f5f1e6; --paper:#fffdf6; --ink:#2f2f2f; --muted:#5a715f; --accent:#355e3b; --ring:rgba(0,0,0,.08);
@@ -19,47 +23,60 @@
     a:hover{opacity:.9}
     .container{max-width:var(--max);margin:0 auto;padding:0 16px}
 
-    /* ==== Compact card styling (smaller & denser) ==== */
+    /* Compact card styling */
     .card{background:var(--paper);border:1px solid #e7dcc0;border-radius:var(--radius);padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
     .card.compact{padding:10px;border-radius:14px}
     .card.compact h3{font-size:16px;margin:6px 0}
     .card.compact p{font-size:14px;color:var(--muted);margin:4px 0 0}
 
-    /* ==== Art banner (big, but lightweight) ==== */
+    /* Hero / layout */
     .hero{padding:22px 0 18px;position:relative}
     .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:center}
-    .art-hero{position:relative;border-radius:18px;overflow:hidden;border:1px solid #e7dcc0}
-    .art-hero img{width:100%;height:auto;display:block}
-    .art-hero .caption{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.5);color:#fff;padding:6px 8px;border-radius:10px;font-size:12px}
     .kicker{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid #e7dcc0;border-radius:999px;padding:6px 10px;background:#fffdf9}
     .hero h1{font-size:34px;line-height:1.1;margin:10px 0 6px}
     .hero p{margin:0;color:#3a3a3a}
     .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 
-    /* ==== Featured mini-cards row (smaller cards) ==== */
+    /* Rotating art hero */
+    .art-hero{position:relative;border-radius:18px;overflow:hidden;border:1px solid #e7dcc0}
+    .art-hero .slide{
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+      opacity:0; transition:opacity 600ms ease; will-change:opacity;
+    }
+    .art-hero .slide.active{opacity:1}
+    .art-hero .caption{
+      position:absolute; left:10px; bottom:10px;
+      background:rgba(0,0,0,.5); color:#fff; padding:6px 8px; border-radius:10px; font-size:12px
+    }
+    @media (prefers-reduced-motion: reduce){ .art-hero .slide{ transition:none } }
+
+    /* Grid helpers */
     .grid{display:grid;gap:12px}
     .grid.cols-3{grid-template-columns:repeat(3,1fr)}
     .grid.cols-4{grid-template-columns:repeat(4,1fr)}
-    @media (max-width: 900px){ .hero .wrap{grid-template-columns:1fr} .grid.cols-3,.grid.cols-4{grid-template-columns:1fr} }
+    @media (max-width: 900px){
+      .hero .wrap{grid-template-columns:1fr}
+      .grid.cols-3,.grid.cols-4{grid-template-columns:1fr}
+    }
 
-    /* ==== Visual Art Gallery (masonry-like grid using CSS only) ==== */
+    /* Art gallery */
     .art-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
     .art-card{position:relative;border-radius:14px;overflow:hidden;border:1px solid #e7dcc0;background:#fff}
     .art-card img{width:100%;height:100%;object-fit:cover;display:block}
     .art-card .label{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;padding:4px 8px;border-radius:10px;font-size:12px}
-    /* Simple spans for variety (you can tune per-image) */
     .span-2{grid-column:span 2}
     .span-3{grid-column:span 3}
     .tall{grid-row:span 2}
     @media (max-width: 900px){ .art-grid{grid-template-columns:repeat(2,1fr)} .span-2,.span-3{grid-column:span 1} .tall{grid-row:span 1} }
 
-    /* Utility */
     .muted{color:var(--muted)}
     .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:#eef4ef;color:#2c5035;border:1px solid #d8e7db;font-size:12px}
+
     footer{border-top:1px solid #e7dcc0;margin-top:26px;padding:16px 0;color:#536556}
   </style>
 </head>
 <body>
+  <!-- Header -->
   <header class="site-header" style="position:sticky;top:0;background:rgba(245,241,230,.9);backdrop-filter:blur(6px);border-bottom:1px solid #e7dcc0;z-index:40">
     <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px">
       <div style="display:flex;align-items:center;gap:10px"><span style="font-size:24px">🐸</span><a class="title" href="/" style="font-weight:700">ToadAid</a></div>
@@ -77,27 +94,41 @@
   </header>
 
   <main>
-    <!-- HERO with Featured Artwork -->
+    <!-- HERO with Rotating Artwork -->
     <section class="hero">
       <div class="container wrap">
         <div>
           <span class="kicker">Guard the Lore</span>
           <h1>Preserve the scrolls. Teach clearly. Build for the people.</h1>
-          <p>Smaller, cleaner cards + a lightweight art gallery to make the homepage visually alive — without slowing it down.</p>
+          <p>Smaller, cleaner cards + a lightweight art gallery bring the homepage to life — without slowing it down.</p>
           <div class="cta">
             <a class="btn" href="/lore/">📜 Read Lore</a>
             <a class="btn" href="https://warpcast.com/~/channel/toadgang" target="_blank">🌿 Farcaster</a>
             <a class="btn" href="https://zora.co/collect" target="_blank">🪪 Mint</a>
           </div>
         </div>
-        <div class="art-hero shadow">
-          <img src="/assets/art/hero_leaf-of-yield.jpg" alt="Leaf of Yield" loading="eager" />
-          <div class="caption">Leaf of Yield — Taboshi</div>
+
+        <!-- Slideshow box -->
+        <div class="art-hero shadow" id="artHero"
+             data-interval="5000"
+             data-images='[
+               {"src":"/assets/art/hero_leaf-of-yield.jpg","label":"Leaf of Yield — Taboshi"},
+               {"src":"/assets/art/forest_guardians.jpg","label":"Forest Guardians"},
+               {"src":"/assets/art/still_water_garden.jpg","label":"Still-Water Garden"},
+               {"src":"/assets/art/lilypad_base.jpg","label":"Lily Pad & Base"},
+               {"src":"/assets/art/night_after_bloom.jpg","label":"The Night After Bloom"},
+               {"src":"/assets/art/777_covenant.jpg","label":"777 Covenant"},
+               {"src":"/assets/art/lore_scribe.jpg","label":"Lore Scribe"}
+             ]'>
+          <!-- Two layers for crossfade -->
+          <img class="slide active" src="/assets/art/hero_leaf-of-yield.jpg" alt="Leaf of Yield — Taboshi" />
+          <img class="slide" alt="" aria-hidden="true" />
+          <div class="caption" id="artCaption" aria-live="polite">Leaf of Yield — Taboshi</div>
         </div>
       </div>
     </section>
 
-    <!-- FEATURE STRIP: mini-cards (compact) -->
+    <!-- Feature strip: compact mini-cards -->
     <section>
       <div class="container grid cols-3">
         <a class="card compact" href="/lore/L110/"><h3>Rune3: Jade Chest</h3><p>Vault drip • S1 at the gate</p></a>
@@ -106,7 +137,7 @@
       </div>
     </section>
 
-    <!-- VISUAL ART GALLERY (plug your best images) -->
+    <!-- Visual Art Gallery -->
     <section>
       <div class="container">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
@@ -114,7 +145,7 @@
           <span class="pill">new</span>
         </div>
         <div class="art-grid">
-          <!-- Replace image paths with your artwork. Use .span-2 .span-3 .tall to vary layout. -->
+          <!-- Replace or keep these; layout spans are optional -->
           <a class="art-card span-2" href="/lore/" aria-label="Forest Guardians">
             <img src="/assets/art/forest_guardians.jpg" alt="Forest Guardians" loading="lazy" width="800" height="600" />
             <span class="label">Forest Guardians</span>
@@ -158,7 +189,7 @@
     <div class="container" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
       <div>
         <strong>ToadAid</strong> • Guard the Lore • © <span id="yr"></span>
-        <div class="muted" style="font-size:13px">Built by the community • Open‑source on GitHub</div>
+        <div class="muted" style="font-size:13px">Built by the community • Open-source on GitHub</div>
       </div>
       <div style="display:flex;gap:10px">
         <a href="/privacy.html">Privacy</a>
@@ -169,8 +200,74 @@
   </footer>
 
   <script>
+    // Footer year
     document.getElementById('yr').textContent = new Date().getFullYear();
+
+    // Mobile menu
     function toggleNav(){ document.getElementById('nav').classList.toggle('open'); }
+
+    // Rotating hero art
+    (() => {
+      const hero = document.getElementById('artHero');
+      if (!hero) return;
+
+      const slides = hero.querySelectorAll('img.slide');
+      const caption = document.getElementById('artCaption');
+      const intervalMs = parseInt(hero.dataset.interval || '5000', 10);
+      const items = JSON.parse(hero.dataset.images || '[]');
+
+      if (items.length < 2) return;
+
+      const shuffle = arr => {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      };
+
+      const startSrc = slides[0].getAttribute('src');
+      let queue = shuffle(items).filter(it => it.src !== startSrc);
+      let qIndex = 0;
+      let active = 0;
+      let paused = false;
+
+      // Preload images
+      items.forEach(it => { const img = new Image(); img.src = it.src; });
+
+      // Pause on hover/touch
+      hero.addEventListener('mouseenter', () => paused = true);
+      hero.addEventListener('mouseleave', () => paused = false);
+      hero.addEventListener('touchstart', () => paused = true, {passive:true});
+      hero.addEventListener('touchend', () => paused = false);
+
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function nextItem() {
+        if (qIndex >= queue.length) { queue = shuffle(items); qIndex = 0; }
+        return queue[qIndex++];
+      }
+
+      function rotate() {
+        if (paused || reduceMotion) return;
+        const item = nextItem();
+        const next = active ^ 1; // toggle 0/1
+
+        slides[next].src = item.src;
+        slides[next].alt = item.label;
+        slides[next].setAttribute('aria-hidden', 'false');
+
+        slides[next].classList.add('active');
+        slides[active].classList.remove('active');
+        slides[active].setAttribute('aria-hidden', 'true');
+
+        active = next;
+        if (caption) caption.textContent = item.label;
+      }
+
+      setInterval(rotate, intervalMs);
+    })();
   </script>
 </body>
 </html>
