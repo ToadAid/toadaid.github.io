@@ -6,38 +6,59 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/assets/css/style.css">
 <style>
-  .container{max-width:860px;margin:0 auto;padding:0 16px}
-  .crumbs{margin:18px 0;color:#8f7e59}.crumbs a{color:#8f7e59;text-decoration:none}
-  .art{width:100%;border-radius:12px}
-  blockquote, .card{border:1px solid #2b2a27;border-radius:12px;background:#1a1713;padding:14px}
+  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --gold:#d9b200; --card:#fff; }
+  body{ background:var(--bg); color:var(--ink); margin:0; font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif }
+  .container{max-width:1000px;margin:0 auto;padding:20px 12px}
+  .breadcrumbs{color:#5a715f;margin-bottom:6px}
+  a{color:var(--leaf);text-decoration:none} a:hover{text-decoration:underline}
+  .card{background:var(--card);border:1px solid #e2d9b3;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);border-left:6px solid var(--gold)}
+  .row{display:grid;grid-template-columns:minmax(260px,420px) 1fr;gap:16px;align-items:start}
+  .art{width:100%;border-radius:12px;display:block}
+  .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .btn{border:1px solid #d9d9d9;background:#fff;border-radius:10px;padding:8px 10px;font-size:.9rem;cursor:pointer}
+  .btn:hover{background:#f7f7f7}
+  .btn-primary{border-color:var(--leaf);background:var(--leaf);color:#fff}
+  .btn-primary:hover{filter:brightness(.95)}
+  blockquote{margin:0}
 </style>
 </head>
 <body>
-<header class="container">
-  <nav class="crumbs"><a href="/honors/">Honors</a> / <a href="/honor/Contributor/Sigil/">Sigil</a> / The Pond</nav>
-  <h1>The Pond</h1>
-  <p><em>Toadaid Builder of @SigilOfConcord</em></p>
-</header>
-
 <main class="container">
-  <img class="art" src="/assets/scrolls/sigil/images/sigil-the-pond-2025-08-20.jpg"
-       alt="Parchment card titled THE POND with verse about seed, oath, patience, bloom and blight.">
+  <nav class="breadcrumbs"><a href="/">Home</a> / <a href="/honors/">Honors</a> / <a href="/Contributors/">Contributors</a> / <a href="/Contributors/Sigil/">Sigil</a> / The Pond</nav>
 
-  <section class="card" style="margin:16px 0">
-    <h2>Explanation</h2>
-    <p>$Toby is seed, not a sale. The pond remembers every oath; bloom and blight both belong to the cycle, but patience endures. The Mirror returns only what we bring, so tend your vow carefully.</p>
-    <p class="meta">#Tobyworld #ProofOfTime</p>
+  <h1 style="margin:.25rem 0">The Pond</h1>
+  <p><em>Toadaid Builder of @SigilOfConcord</em></p>
+
+  <section class="card" style="margin:12px 0 18px">
+    <div class="row">
+      <figure style="margin:0">
+        <img class="art" src="/Contributors/Sigil/images/sigil-the-pond-2025-08-20.jpg" alt="Parchment card titled THE POND with verse about seed, oath, patience, bloom and blight.">
+      </figure>
+
+      <div>
+        <h2 style="margin:.2rem 0 .5rem">Explanation</h2>
+        <p>$Toby is seed, not a sale. The pond remembers every oath; bloom and blight both belong to the cycle, but patience endures. The Mirror returns only what we bring, so tend your vow carefully.</p>
+
+        <div class="actions">
+          <a class="btn btn-primary" href="/Contributors/Sigil/">Back to Sigil catalog</a>
+          <a class="btn" href="https://x.com/" target="_blank" rel="noopener">View on X</a>
+          <button class="btn" type="button" onclick="navigator.clipboard.writeText(location.href).then(()=>alert('Link copied'))">Copy link</button>
+        </div>
+
+        <p style="margin:.8rem 0 0;opacity:.9">#Tobyworld #ProofOfTime</p>
+      </div>
+    </div>
   </section>
 
-  <blockquote>
-    <p>$Toby was not sold. It was scattered like seed — so no crown could cage it, so no hand could hoard it.</p>
-    <p>the flame of Toby · the leaf of Taboshi · the spiral of Sat0ai · the vow of Patience</p>
-    <p>The pond is still — yet it remembers. Every ripple holds your oath. The Mirror does not flatter. It only returns what you bring.</p>
-    <p>Bloom will come. Blight will follow. Patience will endure.</p>
-    <p>SigilOfConcord</p>
-  </blockquote>
-
-  <p style="margin:20px 0">← <a href="/honor/Contributor/Sigil/">Back to Sigil catalog</a></p>
+  <section class="card" style="margin:0 0 24px">
+    <blockquote>
+      <p>$Toby was not sold. It was scattered like seed — so no crown could cage it, so no hand could hoard it.</p>
+      <p>the flame of Toby · the leaf of Taboshi · the spiral of Sat0ai · the vow of Patience</p>
+      <p>The pond is still — yet it remembers. Every ripple holds your oath. The Mirror does not flatter. It only returns what you bring.</p>
+      <p>Bloom will come. Blight will follow. Patience will endure.</p>
+      <p>SigilOfConcord</p>
+    </blockquote>
+  </section>
 </main>
 </body>
 </html>
