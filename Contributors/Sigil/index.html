@@ -19,15 +19,67 @@
   .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
   .grid{display:grid;gap:18px}
   @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
-  .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
-  .thumb{width:100%;height:auto;object-fit:contain;max-height:320px;background:var(--bg);display:block}
-  .body{padding:14px 14px 16px}
+
+  .card{
+    background:var(--paper);
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid rgba(0,0,0,.06);
+    box-shadow:0 8px 24px var(--ring);
+    display:flex;
+    flex-direction:column;
+    transform-style:preserve-3d;
+    will-change:transform, box-shadow;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .card:hover{ box-shadow:0 14px 30px rgba(0,0,0,.14) }
+  .card:focus-visible{ outline:3px solid #8ec69b; outline-offset:3px }
+
+  .thumb{
+    width:100%;
+    height:auto;
+    object-fit:contain;
+    max-height:320px;
+    background:var(--bg);
+    display:block;
+    transform:translateZ(20px);
+    transition:transform .25s ease;
+  }
+  .card:hover .thumb{ transform:translateZ(26px) scale(1.01) }
+
+  .body{padding:14px 14px 16px; transform:translateZ(12px) }
   .title{font-weight:700;margin:0 0 6px}
   .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
   .tag{display:inline-block;background:#eaf3ec;color:#244d30;border:1px solid #d4e7d8;padding:2px 8px;border-radius:999px;font-size:.78rem;margin-right:6px}
   nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
   nav.breadcrumb a{opacity:.9}
   footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
+
+  /* Subtle glow following the cursor (desktop) */
+  .card::after{
+    content:"";
+    position:absolute;
+    inset:-1px;
+    border-radius:16px;
+    pointer-events:none;
+    background: radial-gradient(180px 180px at var(--mx,50%) var(--my,50%), rgba(53,94,59,.18), transparent 60%);
+    opacity:.0;
+    transition:opacity .2s ease;
+  }
+  .card:hover::after{ opacity:1 }
+
+  /* Reduce/disable animation if user prefers */
+  @media (prefers-reduced-motion: reduce){
+    .card, .thumb, .card::after{ transition:none !important }
+    .card{ transform:none !important }
+    .thumb{ transform:none !important }
+  }
+  /* Disable tilt/parallax on touch devices */
+  @media (hover:none){
+    .card{ transform:none !important }
+    .thumb{ transform:none !important }
+    .card::after{ display:none }
+  }
 </style>
 </head>
 <body>
@@ -119,5 +171,43 @@
       ✍️ Words by <strong>@SigilOfConcord</strong> • Archived by <strong>ToadAid</strong> · 🐸📜 One path. One flame. Many hands.
     </footer>
   </main>
+
+  <script>
+    // Mouse tilt/parallax for cards (desktop, non-touch)
+    (function(){
+      const isTouch = matchMedia('(hover: none)').matches;
+      const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (isTouch || prefersReduced) return;
+
+      const MAX_ROT = 6;     // degrees
+      const MAX_TILT = 10;   // px translateZ is handled in CSS; this is only for shadow feel if needed
+
+      document.querySelectorAll('.card').forEach(card => {
+        card.style.position = 'relative';
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          const dx = (x - cx) / cx; // -1 .. 1
+          const dy = (y - cy) / cy; // -1 .. 1
+
+          const rotY = dx * MAX_ROT;     // rotateY: left/right
+          const rotX = -dy * MAX_ROT;    // rotateX: up/down (invert so top tilts back)
+
+          card.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(0)`;
+          // pass mouse % to CSS glow
+          card.style.setProperty('--mx', (x / rect.width) * 100 + '%');
+          card.style.setProperty('--my', (y / rect.height) * 100 + '%');
+        });
+
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'none';
+          // let the glow fade via CSS transition
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
