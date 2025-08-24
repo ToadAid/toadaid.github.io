@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1020"/>
+      <stop offset="100%" stop-color="#132a3a"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#101a28" />
+      <stop offset="100%" stop-color="#0e1623" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1040" cy="90" r="220" fill="#1a2f44" opacity="0.35"/>
+  <circle cx="1120" cy="130" r="120" fill="#254a65" opacity="0.25"/>
+
+  <g transform="translate(72,70)">
+    <rect width="1056" height="490" rx="24" fill="url(#panel)" filter="url(#shadow)" stroke="#1d3b51" stroke-width="1.25"/>
+    <g transform="translate(36,30)">
+      <text x="0" y="0" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" font-weight="700" font-size="44" fill="#e6f3ff">
+        🐸 ToadAid Honor Card · TOAD_T001
+      </text>
+      <text x="0" y="48" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" font-weight="400" font-size="22" fill="#b9d6ea">
+        “Humble Toad” — preserved in the ToadAid Scroll Vault · Epoch E4 (Endurance) · 2025‑08‑24
+      </text>
+    </g>
+
+    <g transform="translate(36,110)">
+      <rect width="984" height="250" rx="16" fill="#0b1420" stroke="#1b3950" stroke-width="1"/>
+      <text x="24" y="50" font-family="Georgia, 'Times New Roman', serif" font-size="30" fill="#d9ecff">
+        In a quiet bog where whispers roam,
+      </text>
+      <text x="24" y="90" font-family="Georgia, 'Times New Roman', serif" font-size="30" fill="#d9ecff">
+        lives a humble toad, truth his only tome.
+      </text>
+      <text x="24" y="130" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#cfe6fb">
+        No desire for glory, no need for acclaim,
+      </text>
+      <text x="24" y="166" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#cfe6fb">
+        honesty his path, humility his flame.
+      </text>
+      <text x="24" y="206" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#cfe6fb">
+        — @BicillinLA
+      </text>
+    </g>
+
+    <g transform="translate(36,390)">
+      <text x="0"  y="0" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" font-size="22" fill="#a9c7dd">Chain: @base</text>
+      <text x="240" y="0" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" font-size="22" fill="#a9c7dd">Epoch: E4 · Endurance</text>
+      <text x="560" y="0" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" font-size="22" fill="#a9c7dd">Sacred: 777</text>
+    </g>
+
+    <g transform="translate(36,430)">
+      <text x="0" y="0" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" font-size="18" fill="#86b2cb">
+        Stored on-chain by ToadAid · toadaid.github.io · Lore Guardian
+      </text>
+    </g>
+  </g>
+</svg>
