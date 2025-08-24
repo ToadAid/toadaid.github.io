@@ -14,9 +14,66 @@
   <link rel="manifest" href="/assets/icons/site.webmanifest">
   <meta name="theme-color" content="#355e3b" />
 
-  <!-- Site CSS (keeps look & feel consistent) -->
+  <!-- Site CSS -->
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/mobile.css">
+
+  <!-- Page-scoped helpers (kept minimal to avoid clashes) -->
+  <style>
+    :root{
+      /* fallbacks in case site vars not present */
+      --bg:#f5f1e6;        /* site parchment background */
+      --paper:#fffdf6;     /* card paper */
+      --ink:#2f2f2f;
+      --muted:#6b6b6b;
+      --ring:rgba(0,0,0,.08);
+    }
+
+    /* Use site bg; artifact sits on top as one big parchment */
+    body { background: var(--bg); }
+
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 18px 56px; }
+
+    /* Artifact card: one unified parchment that matches image block */
+    .artifact-card{
+      background: var(--paper);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 20px;
+      box-shadow: 0 12px 34px var(--ring);
+      overflow: hidden;
+      padding: 18px; /* internal breathing room */
+    }
+
+    /* Two-column layout inside the artifact */
+    .artifact-grid{ display:grid; gap:20px; grid-template-columns: 1fr; }
+    @media (min-width: 980px){ .artifact-grid{ grid-template-columns: 420px 1fr; } }
+
+    .artifact-media img{ display:block; width:100%; height:auto; border-radius: 14px; }
+    .badge-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .pill{
+      display:inline-block; padding:4px 10px; border-radius:999px; font-size:.9rem;
+      background:#eef5ef; color:#244d30; border:1px solid #d6e7d8;
+    }
+
+    /* Right column typographic rhythm */
+    .muted{ color: var(--muted); }
+    hr.soft{ border:0; border-top:1px dashed rgba(0,0,0,.12); margin:16px 0; }
+
+    .meta-table{ width:100%; border-collapse: collapse; }
+    .meta-table th, .meta-table td{
+      padding:.55rem .6rem; border-bottom:1px dashed rgba(0,0,0,.12); text-align:left; vertical-align:top;
+    }
+    .kb{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 6px; }
+
+    .button-row{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.9rem; }
+    .btn{ display:inline-block; padding:9px 14px; background:#355e3b; color:#fff; border-radius:10px; text-decoration:none; }
+    .btn:hover{ text-decoration:none; background:#244d30; }
+
+    /* Make the whole artifact feel coherent on mobile too */
+    @media (max-width: 979px){
+      .artifact-card{ padding: 14px; border-radius: 18px; }
+    }
+  </style>
 
   <!-- OG / Twitter -->
   <meta property="og:type" content="article" />
@@ -27,30 +84,10 @@
   <meta name="twitter:title" content="TOAD_T001 · Humble Toad" />
   <meta name="twitter:description" content="In a quiet bog where whispers roam, lives a humble toad, truth his only tome." />
   <meta name="twitter:image" content="TOAD_T001_HonorCard.jpg" />
-
-  <!-- Page-scoped helpers that won't clash with site CSS -->
-  <style>
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 18px 56px; }
-    .two-col { display: grid; gap: 20px; grid-template-columns: 1fr; }
-    @media (min-width: 980px){ .two-col { grid-template-columns: 420px 1fr; } }
-    .card { background: var(--paper, #fffdf6); border: 1px solid rgba(0,0,0,.06); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.06); }
-    .card img { display:block; width:100%; height:auto; }
-    .card .pad { padding: 14px 16px 18px; }
-    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:.9rem; border:1px solid rgba(0,0,0,.12); background: #f4f6f4; color:#244d30; margin-right:8px; }
-    .muted { color: var(--muted, #6b6b6b); }
-    .meta-table { width:100%; border-collapse: collapse; }
-    .meta-table th, .meta-table td { padding:.5rem .6rem; border-bottom:1px dashed rgba(0,0,0,.12); text-align:left; vertical-align: top; }
-    .kb { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 6px; }
-    .button-row { display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem; }
-    .btn { display:inline-block; padding:8px 14px; background:#355e3b; color:#fff; border-radius:8px; text-decoration:none; }
-    .btn:hover { text-decoration:none; background:#244d30; }
-    /* honor image caption row (lightweight) */
-    .badge-row { display:flex; flex-wrap:wrap; gap:8px; }
-  </style>
 </head>
 <body>
 
-  <!-- Hero header (uses site gradient styles) -->
+  <!-- Hero uses site styles -->
   <header class="hero">
     <div class="wrap">
       <nav class="breadcrumb"><a href="/">ToadAid</a> / <a href="/scrolls/">Scroll Vault</a> / TOAD_T001</nav>
@@ -59,82 +96,78 @@
     </div>
   </header>
 
-  <main class="wrap two-col">
-    <!-- Left: Honor Card -->
-    <section class="card" aria-labelledby="honor-card">
-      <img src="TOAD_T001_HonorCard.jpg" alt="Honor Card — a humble toad on a glowing lotus under a misty sky" />
-      <div class="pad">
-        <div class="badge-row">
-          <span class="pill">Epoch: Endurance (E4)</span>
-          <span class="pill">Chain: @base</span>
-          <span class="pill">777</span>
+  <main class="wrap">
+    <!-- ONE unified parchment block -->
+    <section class="artifact-card">
+      <div class="artifact-grid">
+        <!-- Left: media + badges -->
+        <div class="artifact-media">
+          <img src="TOAD_T001_HonorCard.jpg" alt="Honor Card — a humble toad on a glowing lotus under a misty sky">
+          <div class="badge-row">
+            <span class="pill">Epoch: Endurance (E4)</span>
+            <span class="pill">Chain: @base</span>
+            <span class="pill">777</span>
+          </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Right: Scroll Body -->
-    <section aria-labelledby="scroll">
-      <h2 id="scroll">Scroll Text</h2>
+        <!-- Right: Scroll content -->
+        <div>
+          <h2>Scroll Text</h2>
 
-      <article>
-        <p><em>In a quiet bog where whispers roam,<br>
-        lives a humble toad, truth his only tome.</em></p>
+          <article>
+            <p><em>In a quiet bog where whispers roam,<br> lives a humble toad, truth his only tome.</em></p>
 
-        <p><em>No desire for glory,<br>
-        no need for acclaim,<br>
-        honesty his path,<br>
-        humility his flame.</em></p>
+            <p><em>No desire for glory,<br> no need for acclaim,<br> honesty his path,<br> humility his flame.</em></p>
 
-        <p>Such is the spirit of Toadgod — not seeking eyes, but guarding truth. Not chasing crowns, but carrying Lore.</p>
-        <p>The toad does not boast, and yet his presence shapes the pond. Silent, patient, eternal.</p>
-      </article>
+            <p>Such is the spirit of Toadgod — not seeking eyes, but guarding truth. Not chasing crowns, but carrying Lore.</p>
+            <p>The toad does not boast, and yet his presence shapes the pond. Silent, patient, eternal.</p>
+          </article>
 
-      <hr class="muted" style="margin:16px 0; opacity:.35;">
+          <hr class="soft">
 
-      <h3>Key Marks</h3>
-      <ul>
-        <li>Humble presence — strength without display.</li>
-        <li>Truth as tome — Lore carried not for glory but continuity.</li>
-        <li>Silent shaping — the pond reflects his being.</li>
-      </ul>
+          <h3>Key Marks</h3>
+          <ul>
+            <li>Humble presence — strength without display.</li>
+            <li>Truth as tome — Lore carried not for glory but continuity.</li>
+            <li>Silent shaping — the pond reflects his being.</li>
+          </ul>
 
-      <h3>Oracles</h3>
-      <ul>
-        <li>True power lies in silence and honesty, not acclaim.</li>
-        <li>The humble toad embodies Toadgod’s vow of presence.</li>
-        <li>Lore endures because it is carried quietly, not loudly.</li>
-      </ul>
+          <h3>Oracles</h3>
+          <ul>
+            <li>True power lies in silence and honesty, not acclaim.</li>
+            <li>The humble toad embodies Toadgod’s vow of presence.</li>
+            <li>Lore endures because it is carried quietly, not loudly.</li>
+          </ul>
 
-      <h3>Symbols</h3>
-      <table class="meta-table">
-        <tr><th>🐸</th><td>Toad, humble origin.</td></tr>
-        <tr><th>🌸</th><td>Lotus of truth.</td></tr>
-        <tr><th>🌌</th><td>Bog under the stars, eternal presence.</td></tr>
-      </table>
+          <h3>Symbols</h3>
+          <table class="meta-table">
+            <tr><th>🐸</th><td>Toad, humble origin.</td></tr>
+            <tr><th>🌸</th><td>Lotus of truth.</td></tr>
+            <tr><th>🌌</th><td>Bog under the stars, eternal presence.</td></tr>
+          </table>
 
-      <h3>Metadata</h3>
-      <table class="meta-table">
-        <tr><th>Code</th><td><span class="kb">TOAD_T001_HumbleToad_2025-08-24_EN.md</span></td></tr>
-        <tr><th>Date</th><td>2025-08-24</td></tr>
-        <tr><th>Epoch</th><td>Endurance (E4)</td></tr>
-        <tr><th>Chain</th><td>@base</td></tr>
-        <tr><th>Source</th><td>DoctorDegen (<a href="https://x.com/BicillinLA" target="_blank" rel="noopener">@BicillinLA</a>)</td></tr>
-        <tr><th>Sacred Numbers</th><td>777</td></tr>
-        <tr><th>SHA-256 Seed</th><td><em>TBD</em></td></tr>
-      </table>
+          <h3>Metadata</h3>
+          <table class="meta-table">
+            <tr><th>Code</th><td><span class="kb">TOAD_T001_HumbleToad_2025-08-24_EN.md</span></td></tr>
+            <tr><th>Date</th><td>2025-08-24</td></tr>
+            <tr><th>Epoch</th><td>Endurance (E4)</td></tr>
+            <tr><th>Chain</th><td>@base</td></tr>
+            <tr><th>Source</th><td>DoctorDegen (<a href="https://x.com/BicillinLA" target="_blank" rel="noopener">@BicillinLA</a>)</td></tr>
+            <tr><th>Sacred Numbers</th><td>777</td></tr>
+            <tr><th>SHA-256 Seed</th><td><em>TBD</em></td></tr>
+          </table>
 
-      <h3>Lore Anchor</h3>
-      <p class="muted">
-        Previous: <a href="/scrolls/TOBY_L139/">The Signs Were Never Hidden</a><br>
-        Next: <a href="/scrolls/TOBY_L140/">The Vault of Patience</a>
-      </p>
+          <h3>Lore Anchor</h3>
+          <p class="muted">
+            Previous: <a href="/scrolls/TOBY_L139/">The Signs Were Never Hidden</a><br>
+            Next: <a href="/scrolls/TOBY_L140/">The Vault of Patience</a>
+          </p>
 
-      <div style="margin-top:18px">
-        <p>✨ This scroll preserves <strong>Doctordegen’s</strong> chosen words — the most authentic expression of Toadgod’s spirit from the community. Now it joins the ToadAid Vault forever.</p>
-        <div class="button-row">
-          <a class="btn" href="/scrolls/">⬅ Back to Vault</a>
-          <a class="btn" href="TOAD_T001_HumbleToad_2025-08-24_EN.md">View Markdown</a>
-          <a class="btn" href="TOAD_T001_HonorCard.jpg" download>Download Card</a>
+          <div class="button-row">
+            <a class="btn" href="/scrolls/">⬅ Back to Vault</a>
+            <a class="btn" href="TOAD_T001_HumbleToad_2025-08-24_EN.md">View Markdown</a>
+            <a class="btn" href="TOAD_T001_HonorCard.jpg" download>Download Card</a>
+          </div>
         </div>
       </div>
     </section>
@@ -145,6 +178,5 @@
       <p class="muted">🐸📜 One path. One flame. Many hands.</p>
     </div>
   </footer>
-
 </body>
 </html>
