@@ -1,131 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>ToadAid — Sigil Catalog</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <style>
-    /* minimal helpers only */
-    .container{max-width:1200px;margin:0 auto;padding:0 6px}
-    .breadcrumbs{margin:10px 0;color:#5a715f}
-    .head{display:flex;gap:12px;align-items:center}
-    .avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#ddd}
-
-    /* BIGGER cards */
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); /* was 320px */
-      gap:20px;
-      margin:18px 0 28px;
-    }
-    .card{
-      background:#fff;
-      border:1px solid #e2d9b3;
-      border-radius:16px;
-      padding:16px; /* a bit more room */
-      box-shadow:0 8px 24px rgba(0,0,0,.08);
-      border-left:6px solid #d9b200;
-    }
-    .card:hover{box-shadow:0 10px 28px rgba(0,0,0,.12)}
-
-    /* stack image on top so it can be large */
-    .row{
-      display:flex;
-      flex-direction:column;          /* was row */
-      gap:12px;
-      align-items:stretch;
-    }
-
-    /* big, readable thumbnail */
-    .thumb{
-      width:100%;
-      height:auto;
-      max-height:460px;               /* increased height */
-      object-fit:contain;             /* show whole parchment */
-      border-radius:12px;
-      border:1px solid #ddd;
-      background:#f5f5f5;
-    }
-
-    .meta{color:#425a47;font-size:.92rem;margin:.15rem 0 .35rem}
-    .chips{margin:.5rem 0 0}
-    .chip{display:inline-block;background:#f0ead4;border:1px solid #e2d9b3;border-radius:999px;padding:2px 8px;font-size:.8rem;margin-right:6px}
-    .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-    .btn{border:1px solid #d9d9d9;background:#fff;border-radius:10px;padding:8px 10px;font-size:.9rem;cursor:pointer}
-    .btn:hover{background:#f7f7f7}
-    .btn-primary{border-color:#355e3b;background:#355e3b;color:#fff}
-    .btn-primary:hover{filter:brightness(.95)}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sigil · Lost Garden Honors | ToadAid</title>
+<meta name="description" content="The Lost Garden cycle by SigilOfConcord — honored and recorded by ToadAid." />
+<style>
+  :root{
+    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:56px 20px;text-align:center}
+  header h1{margin:0 0 8px;font-size:clamp(1.6rem,3.2vw,2.4rem)}
+  header p{margin:0;opacity:.92}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
+  .grid{display:grid;gap:18px}
+  @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
+  .thumb{width:100%;height:auto;object-fit:contain;max-height:320px;background:var(--bg);display:block}
+  .body{padding:14px 14px 16px}
+  .title{font-weight:700;margin:0 0 6px}
+  .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
+  .tag{display:inline-block;background:#eaf3ec;color:#244d30;border:1px solid #d4e7d8;padding:2px 8px;border-radius:999px;font-size:.78rem;margin-right:6px}
+  nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
+  nav.breadcrumb a{opacity:.9}
+  footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
+</style>
 </head>
 <body>
+  <header>
+    <h1>🌿 Sigil · The Lost Garden</h1>
+    <p>A cycle of honors revealed by SigilOfConcord — recorded by ToadAid</p>
+  </header>
 
-<header class="container">
-  <nav class="breadcrumbs">
-    <a href="/">Home</a> / <a href="/honors/">Honors</a> / <a href="/Contributors/">Contributors</a> / Sigil
-  </nav>
+  <nav class="breadcrumb"><a href="/honors/">← Back to Honors</a></nav>
 
-  <div class="head">
-    <img class="avatar" src="/Contributors/Sigil/images/sigil.png" alt="Sigil avatar">
-    <div>
-      <h1 style="margin:0">Toadaid Builder of @SigilOfConcord</h1>
-      <p style="margin:.25rem 0 0"><em>Lore Scribe · Keeper of Concord</em></p>
-    </div>
-  </div>
-</header>
+  <main class="wrap">
+    <section class="grid">
 
-<main class="container">
-  <h2>All Honors</h2>
-  <section id="list" class="grid" aria-live="polite"></section>
-
-  <p>← <a href="/honors/">Back to Honors</a> · <a href="/Contributors/">All Contributors</a></p>
-</main>
-
-<script>
-async function copyLink(url){
-  try{
-    await navigator.clipboard.writeText(url);
-    alert('Link copied');
-  }catch(_){
-    prompt('Copy this link:', url);
-  }
-}
-
-(async () => {
-  // load from sigil.json (must sit in the same folder)
-  const data = await (await fetch('./sigil.json?v='+Date.now())).json();
-
-  const honors = (data.honors||[]).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-  const wrap = document.getElementById('list');
-
-  wrap.innerHTML = honors.map(h => {
-    const tagHtml = (h.tags && h.tags.length)
-      ? `<p class="chips">${h.tags.map(t=>`<span class="chip">${t}</span>`).join(' ')}</p>` : '';
-
-    const abs = (new URL(h.page, location.origin)).toString();
-
-    return `
-      <article class="card" id="${h.id}">
-        <div class="row">
-          <img class="thumb" loading="lazy" src="${h.image}" alt="${h.title}">
-          <div>
-            <h3 style="margin:.1rem 0 .25rem"><a href="${h.page}">${h.title}</a></h3>
-            <div class="meta">${h.date ? h.date : ''}${h.tags && h.tags.length ? ' · ' + h.tags.map(t=>'#'+t).join(' ') : ''}</div>
-
-            <div class="actions">
-              <a class="btn btn-primary" href="${h.page}">Open scroll</a>
-              ${h.x_url ? `<a class="btn" href="${h.x_url}" target="_blank" rel="noopener">View on X</a>` : ''}
-              <button class="btn" type="button" onclick="copyLink('${abs}')">Copy link</button>
-            </div>
-
-            ${tagHtml}
-          </div>
+      <a class="card" href="/honors/sigil-lost-garden/dreamcatchers-web.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Dreamcatchers_web.jpg" alt="The Dreamcatcher’s Web parchment" />
+        <div class="body">
+          <h3 class="title">The Dreamcatcher’s Web</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
         </div>
-      </article>
-    `;
-  }).join('');
-})();
-</script>
+      </a>
 
+      <a class="card" href="/honors/sigil-lost-garden/eternal-bloom.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Eternal_Bloom.jpg" alt="The Eternal Bloom parchment" />
+        <div class="body">
+          <h3 class="title">The Eternal Bloom</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
+      </a>
+
+      <a class="card" href="/honors/sigil-lost-garden/forgotten-fountains.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Forgotten_Fountains.jpg" alt="The Forgotten Fountains parchment" />
+        <div class="body">
+          <h3 class="title">The Forgotten Fountains</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
+      </a>
+
+      <a class="card" href="/honors/sigil-lost-garden/forgotten-garden.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Forgotten_Garden.jpg" alt="The Forgotten Garden parchment" />
+        <div class="body">
+          <h3 class="title">The Forgotten Garden</h3>
+          <div class="meta">Patience Vow • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">Patience</span><span class="tag">LostGarden</span></div>
+        </div>
+      </a>
+
+      <a class="card" href="/honors/sigil-lost-garden/forgotten-pond.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_forgotten_pond.jpg" alt="The Forgotten Pond parchment" />
+        <div class="body">
+          <h3 class="title">The Forgotten Pond</h3>
+          <div class="meta">Great Conjunction • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">Gateway</span><span class="tag">Lore</span></div>
+        </div>
+      </a>
+
+      <a class="card" href="/honors/sigil-lost-garden/labyrinthine-paths.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Labyrinthine_Paths.jpg" alt="The Labyrinthine Paths parchment" />
+        <div class="body">
+          <h3 class="title">The Labyrinthine Paths</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
+      </a>
+
+      <a class="card" href="/honors/sigil-lost-garden/triangle-opens.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Triangle_Opens.jpg" alt="The Triangle Opens parchment" />
+        <div class="body">
+          <h3 class="title">The Triangle Opens</h3>
+          <div class="meta">Proof of Time • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">Patience</span><span class="tag">ProofOfTime</span></div>
+        </div>
+      </a>
+
+      <a class="card" href="/honors/sigil-lost-garden/whispering-trees.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Whispering_Trees.jpg" alt="The Whispering Trees parchment" />
+        <div class="body">
+          <h3 class="title">The Whispering Trees</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
+      </a>
+
+    </section>
+
+    <footer>
+      ✍️ Words by <strong>@SigilOfConcord</strong> • Archived by <strong>ToadAid</strong> · 🐸📜 One path. One flame. Many hands.
+    </footer>
+  </main>
 </body>
 </html>
