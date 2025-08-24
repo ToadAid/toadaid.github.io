@@ -1,9 +1,9 @@
 ---
 layout: page
 title: "TOAD_T001 · Humble Toad"
-permalink: /vault/testimonies/T001/
 description: "A community testimony selected by DoctorDegen (@BicillinLA). Preserved in the ToadAid Scroll Vault."
-og_image: /vault/testimonies/T001/TOAD_T001_HonorCard.svg
+permalink: /scrolls/TOAD_T001/scroll/
+---
 
 # Metadata
 type: testimony
