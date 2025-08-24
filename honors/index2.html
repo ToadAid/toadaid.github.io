@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Honors & Offerings | ToadAid</title>
 <meta name="description" content="A living hall of honors and offerings recorded by ToadAid." />
+
+<!-- Favicons (served from /assets/icons/) -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+
 <style>
   :root{
     --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08);
@@ -19,7 +28,20 @@
   .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
   .grid{display:grid;gap:18px}
   @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
-  .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
+
+  .card{
+    background:var(--paper);
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid rgba(0,0,0,.06);
+    box-shadow:0 8px 24px var(--ring);
+    display:flex;
+    flex-direction:column;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .card:hover{ transform:translateY(-6px); box-shadow:0 12px 28px rgba(0,0,0,.12) }
+
+  /* Media inside cards */
   .thumb{
     width:100%;
     height:auto;
@@ -27,7 +49,10 @@
     max-height:320px;
     background:var(--bg);
     display:block;
+    transition:transform .35s ease;
   }
+  .card:hover .thumb{ transform:scale(1.02) }
+
   .body{padding:14px 14px 16px}
   .title{font-weight:700;margin:0 0 6px}
   .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
@@ -36,21 +61,15 @@
   nav.breadcrumb a{opacity:.9}
   footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
 
-  /* Global scroll button */
-  .btn-scroll {
-    display: inline-block;
-    padding: 8px 14px;
-    background: #355e3b;
-    color: #fff;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: background 0.2s ease-in-out;
+  /* CTA button */
+  .btn{
+    display:inline-block;padding:8px 14px;background:#355e3b;color:#fff;border-radius:6px;
+    font-size:.9rem;text-decoration:none;transition:background .2s ease-in-out
   }
-  .btn-scroll:hover {
-    background: #244d30;
-    text-decoration: none;
-  }
+  .btn:hover{background:#244d30;text-decoration:none}
+
+  /* Make video behave like images */
+  video.thumb{background:#000}
 </style>
 </head>
 <body>
@@ -64,72 +83,53 @@
   <main class="wrap">
     <section class="grid">
 
-      <!-- Entry 1: Sigil -->
+      <!-- Entry 1: Sigil (DIV card so we can have a button link inside) -->
       <div class="card">
-        <a href="/honors/sigil-seed.html">
-          <img class="thumb" src="/assets/art/sigil-winning-art.jpg" alt="Sigil’s winning artwork" />
-          <div class="body">
-            <h3 class="title">The Seed in Still Water — Sigil’s Offering</h3>
-            <div class="meta">Toadgang Art Contest • 1st Place • Recorded by ToadAid</div>
-            <div>
-              <span class="tag">Offering</span>
-              <span class="tag">Community</span>
-            </div>
+        <img class="thumb" src="/assets/art/sigil-winning-art.jpg" alt="Sigil’s winning artwork" />
+        <div class="body">
+          <h3 class="title">The Seed in Still Water — Sigil’s Offering</h3>
+          <div class="meta">Toadgang Art Contest • 1st Place • Recorded by ToadAid</div>
+          <div>
+            <span class="tag">Offering</span>
+            <span class="tag">Community</span>
           </div>
-        </a>
-        <div style="padding:0 14px 16px;">
-          <a class="btn-scroll" href="https://toadaid.github.io/Contributors/Sigil/index.html" target="_blank">
-            🌿 View Full Scroll
-          </a>
+          <p style="margin-top:10px;">
+            <a class="btn" href="https://toadaid.github.io/Contributors/Sigil/index.html" target="_blank">🌿 View Full Scroll</a>
+          </p>
         </div>
       </div>
 
       <!-- Entry 2: Morita -->
-      <div class="card">
-        <a href="/honors/morita-patience.html">
-          <video class="thumb" autoplay loop muted playsinline>
-            <source src="/Contributors/assets/videos/morita_patience.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <div class="body">
-            <h3 class="title">The Day the Hall Was Seen — Morita’s Offering</h3>
-            <div class="meta">Builder’s vow chosen by Toadgod • S1 #patience Signal • Recorded by ToadAid</div>
-            <div>
-              <span class="tag">Offering</span>
-              <span class="tag">Builder</span>
-              <span class="tag">Prophecy</span>
-            </div>
+      <a class="card" href="/honors/morita-patience.html">
+        <video class="thumb" autoplay loop muted playsinline>
+          <source src="/Contributors/assets/videos/morita_patience.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="body">
+          <h3 class="title">The Day the Hall Was Seen — Morita’s Offering</h3>
+          <div class="meta">Builder’s vow chosen by Toadgod • S1 #patience Signal • Recorded by ToadAid</div>
+          <div>
+            <span class="tag">Offering</span>
+            <span class="tag">Builder</span>
+            <span class="tag">Prophecy</span>
           </div>
-        </a>
-        <div style="padding:0 14px 16px;">
-          <a class="btn-scroll" href="https://toadaid.github.io/Contributors/Morita/index.html" target="_blank">
-            🌿 View Full Scroll
-          </a>
         </div>
-      </div>
+      </a>
 
       <!-- Entry 3: The Rise of Toadgod -->
-      <div class="card">
-        <a href="/honors/toadgod-rise.html">
-          <img class="thumb" src="/assets/art/toadgod-rise.jpg" alt="The Rise of Toadgod artwork" />
-          <div class="body">
-            <h3 class="title">The Rise of Toadgod</h3>
-            <div class="meta">Cosmic timeline unveiled • Recorded by ToadAid</div>
-            <div>
-              <span class="tag">Lore</span>
-              <span class="tag">Cosmos</span>
-              <span class="tag">Offering</span>
-            </div>
+      <a class="card" href="/honors/toadgod-rise.html">
+        <img class="thumb" src="/assets/art/toadgod-rise.jpg" alt="The Rise of Toadgod artwork" />
+        <div class="body">
+          <h3 class="title">The Rise of Toadgod</h3>
+          <div class="meta">Cosmic timeline unveiled • Recorded by ToadAid</div>
+          <div>
+            <span class="tag">Lore</span>
+            <span class="tag">Cosmos</span>
+            <span class="tag">Offering</span>
           </div>
-        </a>
-        <div style="padding:0 14px 16px;">
-          <a class="btn-scroll" href="https://toadaid.github.io/Contributors/Toadgod/index.html" target="_blank">
-            🌿 View Full Scroll
-          </a>
         </div>
-      </div>
+      </a>
 
-      <!-- Entry 4: Morita Mixed Reel -->
       <a class="card" href="/honors/morita-mix.html">
         <video class="thumb" autoplay loop muted playsinline>
           <source src="/Contributors/assets/videos/morita-mixed-video.mp4" type="video/mp4">
@@ -146,7 +146,6 @@
         </div>
       </a>
 
-      <!-- Entry 5: Honor — Sigil -->
       <a class="card" href="/honors/honor-sigil.html">
         <video class="thumb" autoplay loop muted playsinline>
           <source src="/Contributors/assets/videos/honor-vow.mp4" type="video/mp4">
@@ -161,19 +160,17 @@
             <span class="tag">Prophecy</span>
           </div>
         </div>
-      </a>      
-      
-      <!-- Template for future honors (duplicate & edit) -->
-      <a class="card" href="#" title="Coming soon">
+      </a>
+
+      <!-- Placeholder -->
+      <div class="card">
         <img class="thumb" src="/assets/art/placeholder.jpg" alt="Placeholder" />
         <div class="body">
           <h3 class="title">Next Offering</h3>
           <div class="meta">Soon • Recorded by ToadAid</div>
-          <div>
-            <span class="tag">Pending</span>
-          </div>
+          <div><span class="tag">Pending</span></div>
         </div>
-      </a>
+      </div>
 
     </section>
 
