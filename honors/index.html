@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Honors & Offerings | ToadAid</title>
 <meta name="description" content="A living hall of honors and offerings recorded by ToadAid." />
+
+<!-- Favicons (served from /assets/icons/) -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+
 <style>
   :root{
     --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08);
@@ -28,13 +37,11 @@
     box-shadow:0 8px 24px var(--ring);
     display:flex;
     flex-direction:column;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition:transform .25s ease, box-shadow .25s ease;
   }
-  .card:hover{
-    transform: translateY(-6px);
-    box-shadow:0 12px 28px rgba(0,0,0,0.12);
-  }
+  .card:hover{ transform:translateY(-6px); box-shadow:0 12px 28px rgba(0,0,0,.12) }
 
+  /* Media inside cards */
   .thumb{
     width:100%;
     height:auto;
@@ -42,11 +49,9 @@
     max-height:320px;
     background:var(--bg);
     display:block;
-    transition: transform 0.35s ease;
+    transition:transform .35s ease;
   }
-  .card:hover .thumb{
-    transform: scale(1.02);
-  }
+  .card:hover .thumb{ transform:scale(1.02) }
 
   .body{padding:14px 14px 16px}
   .title{font-weight:700;margin:0 0 6px}
@@ -55,6 +60,16 @@
   nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
   nav.breadcrumb a{opacity:.9}
   footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
+
+  /* CTA button */
+  .btn{
+    display:inline-block;padding:8px 14px;background:#355e3b;color:#fff;border-radius:6px;
+    font-size:.9rem;text-decoration:none;transition:background .2s ease-in-out
+  }
+  .btn:hover{background:#244d30;text-decoration:none}
+
+  /* Make video behave like images */
+  video.thumb{background:#000}
 </style>
 </head>
 <body>
@@ -68,7 +83,7 @@
   <main class="wrap">
     <section class="grid">
 
-      <!-- Entry 1: Sigil -->
+      <!-- Entry 1: Sigil (DIV card so we can have a button link inside) -->
       <a class="card" href="/honors/sigil-seed.html">
         <img class="thumb" src="/assets/art/sigil-winning-art.jpg" alt="Sigil’s winning artwork" />
         <div class="body">
@@ -78,16 +93,11 @@
             <span class="tag">Offering</span>
             <span class="tag">Community</span>
           </div>
-          <!-- Button link -->
           <p style="margin-top:10px;">
-            <a href="https://toadaid.github.io/Contributors/Sigil/index.html" target="_blank"
-               style="display:inline-block;padding:8px 14px;background:#355e3b;color:#fff;
-                      border-radius:6px;font-size:.9rem;text-decoration:none;">
-              🌿 View Full Scroll
-            </a>
+            <a class="btn" href="https://toadaid.github.io/Contributors/Sigil/index.html" target="_blank">🌿 View Full Scroll</a>
           </p>
         </div>
-      </a>
+      </div>
 
       <!-- Entry 2: Morita -->
       <a class="card" href="/honors/morita-patience.html">
@@ -120,7 +130,6 @@
         </div>
       </a>
 
-      <!-- Entry 4: Morita Mix -->
       <a class="card" href="/honors/morita-mix.html">
         <video class="thumb" autoplay loop muted playsinline>
           <source src="/Contributors/assets/videos/morita-mixed-video.mp4" type="video/mp4">
@@ -137,7 +146,6 @@
         </div>
       </a>
 
-      <!-- Entry 5: Honor — Sigil -->
       <a class="card" href="/honors/honor-sigil.html">
         <video class="thumb" autoplay loop muted playsinline>
           <source src="/Contributors/assets/videos/honor-vow.mp4" type="video/mp4">
@@ -154,17 +162,15 @@
         </div>
       </a>
 
-      <!-- Template for future honors (duplicate & edit) -->
-      <a class="card" href="#" title="Coming soon">
+      <!-- Placeholder -->
+      <div class="card">
         <img class="thumb" src="/assets/art/placeholder.jpg" alt="Placeholder" />
         <div class="body">
           <h3 class="title">Next Offering</h3>
           <div class="meta">Soon • Recorded by ToadAid</div>
-          <div>
-            <span class="tag">Pending</span>
-          </div>
+          <div><span class="tag">Pending</span></div>
         </div>
-      </a>
+      </div>
 
     </section>
 
