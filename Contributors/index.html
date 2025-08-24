@@ -3,121 +3,355 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sigil · Lost Garden Honors | ToadAid</title>
-<meta name="description" content="The Lost Garden cycle by SigilOfConcord — honored and recorded by ToadAid." />
+<title>ToadAid Contributors</title>
+<meta name="description" content="Explore unique art contributed by Toadgang members worldwide. Every piece is part of the ToadAid legacy.">
+
+<!-- Open Graph -->
+<meta property="og:title" content="ToadAid — Contributor Art Vault" />
+<meta property="og:description" content="Explore unique art contributed by Toadgang members worldwide. Every piece is part of the ToadAid legacy." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://toadaid.github.io/Contributors/" />
+<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
+
+<!-- Canonical -->
+<link rel="canonical" href="https://toadaid.github.io/Contributors/" />
+
+<!-- Favicons (served from /assets/icons/) -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+  
 <style>
-  :root{
-    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08);
+  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --gold:#d9b200; --card:#fff; }
+  *{ box-sizing:border-box }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+    text-align:center; padding:20px;
   }
-  *{box-sizing:border-box}
-  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
-  a{color:var(--accent);text-decoration:none}
-  a:hover{text-decoration:underline}
-  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:56px 20px;text-align:center}
-  header h1{margin:0 0 8px;font-size:clamp(1.6rem,3.2vw,2.4rem)}
-  header p{margin:0;opacity:.92}
-  .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
-  .grid{display:grid;gap:18px}
-  @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
-  .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
-  .thumb{width:100%;height:auto;object-fit:contain;max-height:320px;background:var(--bg);display:block}
-  .body{padding:14px 14px 16px}
-  .title{font-weight:700;margin:0 0 6px}
-  .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
-  .tag{display:inline-block;background:#eaf3ec;color:#244d30;border:1px solid #d4e7d8;padding:2px 8px;border-radius:999px;font-size:.78rem;margin-right:6px}
-  nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
-  nav.breadcrumb a{opacity:.9}
-  footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
+  h1{
+    color:var(--leaf); font-size:2rem; position:relative; display:inline-block; padding-bottom:6px; margin:0;
+  }
+  h1::after{
+    content:""; position:absolute; left:0; bottom:0; height:4px; width:100%;
+    background:var(--gold); border-radius:2px;
+  }
+
+  /* Grid & Card */
+  .grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap:16px; margin:20px auto 0; max-width:1200px; padding:0 6px;
+  }
+  .card{
+    background:var(--card); border-radius:16px; padding:12px; text-align:left;
+    box-shadow:0 8px 24px rgba(0,0,0,.08);
+    border-left:6px solid var(--gold);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{ transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.12) }
+
+  /* Media：保留原比例，不强裁切；加最大高度保护与淡入 */
+  .media{
+    width:100%; background:#eee; border-radius:12px; overflow:hidden; border:1px solid #eee;
+  }
+  .media img, .media video{
+    display:block; width:100%; height:auto;
+    max-height:80vh;
+    transition:opacity .35s ease;
+    opacity:0;
+  }
+  .reveal{ opacity:1 !important }
+
+  .meta{ margin:10px 0 4px; color:#425a47; font-size:.95rem }
+  .title{ margin:0 0 6px; font-weight:700 }
+  .desc{ margin:6px 0 10px; line-height:1.45 }
+  .row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+  .chip{ font-size:.8rem; background:#f0ead4; border:1px solid #e2d9b3; border-radius:999px; padding:4px 8px }
+  .spacer{ flex:1 }
+  .btn{ border:1px solid #d9d9d9; background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer; }
+  .btn:hover{ background:#f7f7f7 }
+  a{ color:var(--leaf); text-decoration:none }
+  a:hover{ text-decoration:underline }
+  footer{ margin-top:46px; color:var(--leaf); font-size:.9rem }
+
+  /* Lightbox */
+  .lightbox{
+    position:fixed; inset:0; background:rgba(0,0,0,.8);
+    display:none; align-items:center; justify-content:center; z-index:50; padding:16px;
+  }
+  .lightbox.open{ display:flex }
+  .lightbox .content > img, .lightbox .content > video{
+    max-width:min(96vw,1200px); max-height:90vh; object-fit:contain; border-radius:12px; background:#000;
+  }
+  .lightbox .close{
+    position:absolute; top:12px; right:12px; background:#000; color:#fff;
+    border:1px solid #333; border-radius:10px; padding:8px 10px; cursor:pointer;
+  }
 </style>
 </head>
 <body>
-  <header>
-    <h1>🌿 Sigil · The Lost Garden</h1>
-    <p>A cycle of honors revealed by SigilOfConcord — recorded by ToadAid</p>
-  </header>
 
-  <nav class="breadcrumb"><a href="/honors/">← Back to Honors</a></nav>
+<h1>ToadAid Contributor Art</h1>
 
-  <main class="wrap">
-    <section class="grid">
+<div id="contributors" class="grid" aria-live="polite"></div>
 
-      <a class="card" href="/honors/sigil-lost-garden/dreamcatchers-web.html">
-        <img class="thumb" src="/Contributors/Sigil/images/The_Dreamcatchers_web.jpg" alt="The Dreamcatcher’s Web parchment" />
-        <div class="body">
-          <h3 class="title">The Dreamcatcher’s Web</h3>
-          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
-          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
-        </div>
-      </a>
+<footer>© 2025 ToadAid — Built by the people, for the people.</footer>
 
-      <a class="card" href="/honors/sigil-lost-garden/eternal-bloom.html">
-        <img class="thumb" src="/Contributors/Sigil/images/The_Eternal_Bloom.jpg" alt="The Eternal Bloom parchment" />
-        <div class="body">
-          <h3 class="title">The Eternal Bloom</h3>
-          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
-          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
-        </div>
-      </a>
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Media preview">
+  <button class="close" aria-label="Close preview">✕</button>
+  <div class="content" id="lightboxContent"></div>
+</div>
 
-      <a class="card" href="/honors/sigil-lost-garden/forgotten-fountains.html">
-        <img class="thumb" src="/Contributors/Sigil/images/The_Forgotten_Fountains.jpg" alt="The Forgotten Fountains parchment" />
-        <div class="body">
-          <h3 class="title">The Forgotten Fountains</h3>
-          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
-          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
-        </div>
-      </a>
+<script>
+const PLACEHOLDER = 'https://via.placeholder.com/1200x800?text=ToadAid';
+const grid = document.getElementById('contributors');
 
-      <a class="card" href="/honors/sigil-lost-garden/forgotten-garden.html">
-        <img class="thumb" src="/Contributors/Sigil/images/The_Forgotten_Garden.jpg" alt="The Forgotten Garden parchment" />
-        <div class="body">
-          <h3 class="title">The Forgotten Garden</h3>
-          <div class="meta">Patience Vow • Recorded by ToadAid</div>
-          <div><span class="tag">Honor</span><span class="tag">Patience</span><span class="tag">LostGarden</span></div>
-        </div>
-      </a>
+/* ============ 深链工具（slug + URL 构造） ============ */
+function getSlug(c){
+  const base = (c.file||'').split('/').pop().replace(/\.[^/.]+$/, '');
+  const raw  = (c.title ? `${c.title}-${base}` : base) || 'item';
+  return raw.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+function buildItemUrl(slug){
+  const u = new URL(location.href);
+  u.searchParams.set('item', slug);
+  return u.toString();
+}
 
-      <a class="card" href="/honors/sigil-lost-garden/forgotten-pond.html">
-        <img class="thumb" src="/Contributors/Sigil/images/The_forgotten_pond.jpg" alt="The Forgotten Pond parchment" />
-        <div class="body">
-          <h3 class="title">The Forgotten Pond</h3>
-          <div class="meta">Great Conjunction • Recorded by ToadAid</div>
-          <div><span class="tag">Honor</span><span class="tag">Gateway</span><span class="tag">Lore</span></div>
-        </div>
-      </a>
+/* ============ 媒体淡入 & 自动播放观察器 ============ */
+let revealObserver, ioPlay;
+function initObservers(){
+  // 媒体淡入
+  revealObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('reveal');
+        revealObserver.unobserve(e.target);
+      }
+    });
+  }, {threshold:.2});
 
-      <a class="card" href="/honors/sigil-lost-garden/labyrinthine-paths.html">
-        <img class="thumb" src="/Contributors/Sigil/images/The_Labyrinthine_Paths.jpg" alt="The Labyrinthine Paths parchment" />
-        <div class="body">
-          <h3 class="title">The Labyrinthine Paths</h3>
-          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
-          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
-        </div>
-      </a>
+  // 进入视口播放/离开暂停（仅视频）
+  ioPlay = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const v = entry.target;
+      if(entry.isIntersecting){
+        ensureAutoplay(v);
+      }else{
+        try{ v.pause(); }catch(_){}
+      }
+    });
+  }, {threshold:.4});
+}
 
-      <a class="card" href="/honors/sigil-lost-garden/triangle-opens.html">
-        <img class="thumb" src="/Contributors/Sigil/images/The_Triangle_Opens.jpg" alt="The Triangle Opens parchment" />
-        <div class="body">
-          <h3 class="title">The Triangle Opens</h3>
-          <div class="meta">Proof of Time • Recorded by ToadAid</div>
-          <div><span class="tag">Honor</span><span class="tag">Patience</span><span class="tag">ProofOfTime</span></div>
-        </div>
-      </a>
+/* ============ 加载 & 渲染 ============ */
+async function loadContributors(){
+  try{
+    const res = await fetch('./contributors.json?v='+Date.now());
+    let contributors = await res.json();
+    contributors.sort((a,b)=> new Date(a.date) - new Date(b.date));
 
-      <a class="card" href="/honors/sigil-lost-garden/whispering-trees.html">
-        <img class="thumb" src="/Contributors/Sigil/images/The_Whispering_Trees.jpg" alt="The Whispering Trees parchment" />
-        <div class="body">
-          <h3 class="title">The Whispering Trees</h3>
-          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
-          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
-        </div>
-      </a>
+    initObservers();
+    contributors.forEach(c => grid.appendChild(renderCard(c)));
 
-    </section>
+    // 首次交互兜底（极少数机型需要手势）
+    window.addEventListener('pointerdown', kickAllVideosOnce, { once:true });
+    document.addEventListener('visibilitychange', ()=> {
+      if (document.visibilityState === 'visible') {
+        document.querySelectorAll('video.ta-auto').forEach(v => ensureAutoplay(v));
+      } else {
+        document.querySelectorAll('video.ta-auto').forEach(v => { try{ v.pause(); }catch(_){} });
+      }
+    });
 
-    <footer>
-      ✍️ Words by <strong>@SigilOfConcord</strong> • Archived by <strong>ToadAid</strong> · 🐸📜 One path. One flame. Many hands.
-    </footer>
-  </main>
+    // 渲染完成后处理 ?item=slug
+    openItemFromQuery();
+    // 前进/后退时也处理
+    window.addEventListener('popstate', openItemFromQuery);
+  }catch(err){
+    console.error('Error loading contributors:', err);
+    grid.innerHTML = "<p style='text-align:center;margin:24px 0;'>Failed to load contributor list.</p>";
+  }
+}
+
+function renderCard(c){
+  const slug = getSlug(c);
+
+  const card = document.createElement('article');
+  card.className = 'card';
+  card.id = 'art-' + slug;
+  card.setAttribute('aria-label', `${c.title} by ${c.artist}`);
+
+  // 媒体（保留原始比例）
+  const mediaWrap = document.createElement('div');
+  mediaWrap.className = 'media';
+
+  if(c.media_type === 'video'){
+    const v = document.createElement('video');
+    // 自动播放关键：muted + playsinline
+    v.autoplay = true; v.muted = true; v.playsInline = true; v.loop = true;
+    v.setAttribute('muted',''); v.setAttribute('playsinline','');
+    v.preload = 'auto';
+    if(c.poster) v.poster = c.poster;
+    v.src = c.file;
+    v.onerror = ()=>{ v.poster = PLACEHOLDER; };
+    v.addEventListener('click', ()=>{
+      history.pushState(null, '', buildItemUrl(slug));
+      openLightbox('video', c.file, c.poster || '');
+    });
+    mediaWrap.appendChild(v);
+
+    // 观察：淡入 + 视口内播放
+    v.classList.add('ta-auto');
+    revealObserver.observe(v);
+    ioPlay.observe(v);
+    v.addEventListener('loadedmetadata', ()=>ensureAutoplay(v), { once:true });
+    v.addEventListener('canplay', ()=>ensureAutoplay(v));
+  }else{
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.alt = `${c.title} by ${c.artist}`;
+    img.src = c.file;
+    img.onerror = ()=>{ img.src = PLACEHOLDER; };
+    img.addEventListener('click', ()=>{
+      history.pushState(null, '', buildItemUrl(slug));
+      openLightbox('image', c.file, '');
+    });
+    mediaWrap.appendChild(img);
+    revealObserver.observe(img);
+  }
+
+  // 文案
+  const metaArtist = (() => {
+    if((c.artist_type||'').toLowerCase()==='x handle'){
+      const clean = (c.artist||'').replace('@','');
+      return `<strong>Artist:</strong> <a href="https://x.com/${clean}" target="_blank" rel="noopener noreferrer">@${clean}</a> (${c.artist_type})`;
+    }
+    return `<strong>Artist:</strong> ${c.artist||'Unknown'}`;
+  })();
+
+  const rowHTML = `
+    <div class="row">
+      <span class="chip">${c.date || ''}</span>
+      <span class="spacer"></span>
+      <button class="btn" type="button"
+        onclick='shareItem(${JSON.stringify(JSON.stringify({slug}))})'>
+        Share
+      </button>
+    </div>
+  `;
+
+  // 组装（用 innerHTML 简洁，随后重新绑定媒体事件）
+  card.innerHTML = `
+    ${mediaWrap.outerHTML}
+    <p class="meta">${metaArtist}</p>
+    <p class="title">${c.title || 'Untitled'}</p>
+    ${c.description ? `<p class="desc">${c.description}</p>` : ''}
+    ${rowHTML}
+  `;
+
+  // 重新绑定媒体点击（因为用了 outerHTML）
+  const newMedia = card.querySelector('.media');
+  if(c.media_type === 'video'){
+    const v2 = newMedia.querySelector('video');
+    v2.addEventListener('click', ()=>{
+      history.pushState(null, '', buildItemUrl(slug));
+      openLightbox('video', c.file, c.poster || '');
+    });
+    v2.classList.add('ta-auto');
+    revealObserver.observe(v2);
+    ioPlay.observe(v2);
+    v2.addEventListener('loadedmetadata', ()=>ensureAutoplay(v2), { once:true });
+    v2.addEventListener('canplay', ()=>ensureAutoplay(v2));
+  }else{
+    const img2 = newMedia.querySelector('img');
+    img2.addEventListener('click', ()=>{
+      history.pushState(null, '', buildItemUrl(slug));
+      openLightbox('image', c.file, '');
+    });
+    revealObserver.observe(img2);
+  }
+
+  return card;
+}
+
+/* ============ 深链：从 ?item=slug 定位并开灯箱 ============ */
+function openItemFromQuery(){
+  const slug = new URLSearchParams(location.search).get('item');
+  if(!slug) return;
+  const el = document.getElementById('art-' + slug);
+  if(!el) return;
+  el.scrollIntoView({ behavior:'smooth', block:'center' });
+  const media = el.querySelector('img,video');
+  if(media){
+    setTimeout(()=> media.click(), 250); // 等滚动停一下
+  }
+}
+
+/* ============ 自动播放兜底 ============ */
+function ensureAutoplay(v){
+  if (!v) return;
+  v.muted = true; v.setAttribute('muted',''); v.playsInline = true; v.setAttribute('playsinline','');
+  const tryPlay = () => {
+    const p = v.play();
+    if (p && typeof p.catch === 'function') p.catch(()=>{});
+  };
+  tryPlay(); setTimeout(tryPlay, 150); setTimeout(tryPlay, 400);
+}
+function kickAllVideosOnce(){
+  document.querySelectorAll('video.ta-auto').forEach(v => ensureAutoplay(v));
+}
+
+/* ============ Share：带 item 深链（URL only） ============ */
+async function shareItem(payloadStr){
+  const p = JSON.parse(payloadStr);   // { slug }
+  const url = buildItemUrl(p.slug);   // pure deep link
+  try{
+    if (navigator.share) {
+      await navigator.share({ url }); // no title/text
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard.');
+    }
+  }catch(e){
+    try{
+      await navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard.');
+    }catch(_){}
+  }
+}
+
+/* ============ Lightbox ============ */
+const lb = document.getElementById('lightbox');
+const lbContent = document.getElementById('lightboxContent');
+document.querySelector('#lightbox .close').addEventListener('click', closeLightbox);
+lb.addEventListener('click', e => { if(e.target===lb) closeLightbox(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
+
+function openLightbox(kind, src, poster){
+  lbContent.innerHTML = '';
+  if(kind==='video'){
+    const v = document.createElement('video');
+    v.controls = true; v.autoplay = true; v.playsInline = true; v.muted = false;
+    if(poster) v.poster = poster;
+    v.src = src;
+    lbContent.appendChild(v);
+  }else{
+    const img = document.createElement('img');
+    img.src = src; img.alt = 'Preview';
+    img.onerror = ()=>{ img.src = PLACEHOLDER; };
+    lbContent.appendChild(img);
+  }
+  lb.classList.add('open');
+}
+function closeLightbox(){ lb.classList.remove('open'); lbContent.innerHTML = ''; }
+
+/* 启动 */
+loadContributors();
+</script>
 </body>
 </html>
