@@ -19,16 +19,35 @@
   .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
   .grid{display:grid;gap:18px}
   @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
-  .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
-  /* Updated thumbnail style for more vertical image & video */
+
+  .card{
+    background:var(--paper);
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid rgba(0,0,0,.06);
+    box-shadow:0 8px 24px var(--ring);
+    display:flex;
+    flex-direction:column;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .card:hover{
+    transform: translateY(-6px);
+    box-shadow:0 12px 28px rgba(0,0,0,0.12);
+  }
+
   .thumb{
     width:100%;
     height:auto;
     object-fit:contain;
-    max-height:320px; /* adjust height as needed */
+    max-height:320px;
     background:var(--bg);
     display:block;
+    transition: transform 0.35s ease;
   }
+  .card:hover .thumb{
+    transform: scale(1.02);
+  }
+
   .body{padding:14px 14px 16px}
   .title{font-weight:700;margin:0 0 6px}
   .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
@@ -61,7 +80,7 @@
           </div>
           <!-- Button link -->
           <p style="margin-top:10px;">
-            <a href="https://toadaid.github.io/Contributors/Sigil/index.html" target="_blank" 
+            <a href="https://toadaid.github.io/Contributors/Sigil/index.html" target="_blank"
                style="display:inline-block;padding:8px 14px;background:#355e3b;color:#fff;
                       border-radius:6px;font-size:.9rem;text-decoration:none;">
               🌿 View Full Scroll
@@ -101,6 +120,7 @@
         </div>
       </a>
 
+      <!-- Entry 4: Morita Mix -->
       <a class="card" href="/honors/morita-mix.html">
         <video class="thumb" autoplay loop muted playsinline>
           <source src="/Contributors/assets/videos/morita-mixed-video.mp4" type="video/mp4">
@@ -117,6 +137,7 @@
         </div>
       </a>
 
+      <!-- Entry 5: Honor — Sigil -->
       <a class="card" href="/honors/honor-sigil.html">
         <video class="thumb" autoplay loop muted playsinline>
           <source src="/Contributors/assets/videos/honor-vow.mp4" type="video/mp4">
@@ -131,8 +152,8 @@
             <span class="tag">Prophecy</span>
           </div>
         </div>
-      </a>      
-      
+      </a>
+
       <!-- Template for future honors (duplicate & edit) -->
       <a class="card" href="#" title="Coming soon">
         <img class="thumb" src="/assets/art/placeholder.jpg" alt="Placeholder" />
