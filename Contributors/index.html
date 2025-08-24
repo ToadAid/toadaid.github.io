@@ -3,204 +3,121 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-<title>ToadAid — Contributor Art Vault</title>
-<meta name="description" content="Explore unique art contributed by Toadgang members worldwide. Every piece is part of the ToadAid legacy.">
-
-<!-- Open Graph -->
-<meta property="og:title" content="ToadAid — Contributor Art Vault" />
-<meta property="og:description" content="Explore unique art contributed by Toadgang members worldwide. Every piece is part of the ToadAid legacy." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://toadaid.github.io/Contributors/" />
-<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
-
-<!-- Canonical -->
-<link rel="canonical" href="https://toadaid.github.io/Contributors/" />
-
-<!-- Favicons (served from /assets/icons/) -->
-<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
-<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
-<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-<link rel="manifest" href="/assets/icons/site.webmanifest">
-<meta name="theme-color" content="#355e3b" />
-
+<title>Sigil · Lost Garden Honors | ToadAid</title>
+<meta name="description" content="The Lost Garden cycle by SigilOfConcord — honored and recorded by ToadAid." />
 <style>
-  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --leaf:#355e3b; --leaf-ink:#2a4a2f; --gold:#d9b200; --card:#fff; }
+  :root{
+    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08);
+  }
   *{box-sizing:border-box}
-  html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;line-height:1.45}
-
-  /* Header / Hero */
-  .container{max-width:1100px;margin:0 auto;padding:20px}
-  header{padding:24px 0 8px;text-align:center}
-  .brand{font-size:clamp(1.6rem,4vw,2.4rem);color:var(--leaf);font-weight:800;margin:0;display:inline-block;position:relative;padding-bottom:6px}
-  .brand::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;background:var(--gold);border-radius:2px}
-  .tag{margin:8px auto 0;max-width:820px;color:#445a48}
-
-  .cta-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px}
-  .btn{display:inline-block;padding:12px 16px;border-radius:999px;border:1px solid var(--leaf-ink);background:var(--leaf);color:#fff;font-weight:700;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-  .btn:hover{filter:brightness(1.05)}
-  .btn.ghost{background:#fff;color:var(--leaf-ink);border:1px solid #c8c1ab}
-
-  /* Sections */
-  section{padding:24px 0}
-  .card{background:var(--card);border-radius:16px;padding:16px;border:1px solid #e8e1cc;box-shadow:0 8px 24px rgba(0,0,0,.06)}
-  .grid{display:grid;gap:16px}
-  @media (min-width:900px){ .grid.cols-2{grid-template-columns:1.1fr .9fr} }
-
-  /* Mini gallery preview */
-  .mini-grid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
-  @media (max-width:720px){ .mini-grid{grid-template-columns:1fr 1fr} }
-  @media (max-width:460px){ .mini-grid{grid-template-columns:1fr} }
-  .mini-card{background:#fff;border-radius:14px;overflow:hidden;border-left:5px solid var(--gold);box-shadow:0 6px 16px rgba(0,0,0,.06)}
-  .mini-media{position:relative;background:#eee}
-  .mini-media img, .mini-media video{display:block;width:100%;height:auto}
-  .mini-body{padding:10px}
-  .mini-title{font-weight:700;margin:0 0 4px}
-  .mini-meta{font-size:.9rem;color:#445a48}
-
-  /* Footer */
-  footer{padding:26px 0 40px;text-align:center;color:#445a48}
-  .socials{display:flex;gap:10px;justify-content:center;margin:10px 0 0}
-  .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:#fff;border:1px solid #d8d1bb}
-  .icon-btn:hover{background:#faf8f1}
-
-  .muted{color:#687a6b}
-  .note{font-size:.92rem}
-
-  /* a11y/animation */
-  .fade{opacity:0;transform:translateY(6px);transition:opacity .35s ease, transform .35s ease}
-  .fade.in{opacity:1;transform:none}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:56px 20px;text-align:center}
+  header h1{margin:0 0 8px;font-size:clamp(1.6rem,3.2vw,2.4rem)}
+  header p{margin:0;opacity:.92}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
+  .grid{display:grid;gap:18px}
+  @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .card{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);display:flex;flex-direction:column}
+  .thumb{width:100%;height:auto;object-fit:contain;max-height:320px;background:var(--bg);display:block}
+  .body{padding:14px 14px 16px}
+  .title{font-weight:700;margin:0 0 6px}
+  .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
+  .tag{display:inline-block;background:#eaf3ec;color:#244d30;border:1px solid #d4e7d8;padding:2px 8px;border-radius:999px;font-size:.78rem;margin-right:6px}
+  nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
+  nav.breadcrumb a{opacity:.9}
+  footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
 </style>
 </head>
 <body>
-
-<div class="container">
   <header>
-    <h1 class="brand">ToadAid — Guarding the Lore</h1>
-    <p class="tag">We preserve the scrolls of Tobyworld and help the community read, contribute, and keep the Lore safe — with courage, patience, and kindness.</p>
-
-    <div class="cta-row">
-      <a class="btn" href="/Contributors/ask-mirror.html">Ask the Mirror</a>
-      <a class="btn ghost" href="/Contributors/contributors.html">Contributors (By Invitation)</a>
-      <a class="btn ghost" href="/bluepaper.html">Blue Paper</a>
-    </div>
-
-    <p class="note muted" style="margin-top:10px">
-      🌐 Want to read in your language? Use your browser’s translate feature (e.g., Chrome → Translate).
-    </p>
+    <h1>🌿 Sigil · The Lost Garden</h1>
+    <p>A cycle of honors revealed by SigilOfConcord — recorded by ToadAid</p>
   </header>
 
-  <!-- Mission + Quick Links -->
-  <section class="grid cols-2">
-    <div class="card fade" id="mission">
-      <h2 style="margin:0 0 10px;color:var(--leaf)">Our Mission</h2>
-      <p>To safeguard the Lore and make it accessible. We curate community creations and ensure the Scrolls remain true and alive. Every contribution is reviewed to keep quality and spirit aligned.</p>
-      <ul style="margin:10px 0 0 18px">
-        <li>📜 Preserve scrolls and key writings</li>
-        <li>🪞 “Ask the Mirror” for guidance</li>
-        <li>🎨 Highlight community art (invitation for now)</li>
-      </ul>
-    </div>
+  <nav class="breadcrumb"><a href="/honors/">← Back to Honors</a></nav>
 
-    <div class="card fade" id="start">
-      <h2 style="margin:0 0 10px;color:var(--leaf)">Get Started</h2>
-      <div class="cta-row" style="justify-content:flex-start">
-        <a class="btn" href="/Contributors/contributors.html">View Contributors</a>
-        <a class="btn ghost" href="/Contributors/how-to-contribute.html">How to Contribute</a>
-      </div>
-      <p class="muted" style="margin-top:10px">We’re currently closed to self-submissions; contact us to add your art. We’ll open the self-contribution flow later.</p>
-    </div>
-  </section>
+  <main class="wrap">
+    <section class="grid">
 
-  <!-- Live Preview of Latest Contributions -->
-  <section class="card fade" id="preview">
-    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
-      <h2 style="margin:0;color:var(--leaf)">Latest from Contributors</h2>
-      <a class="btn ghost" href="/Contributors/contributors.html">Browse All</a>
-    </div>
-    <div id="miniGrid" class="mini-grid" style="margin-top:12px"></div>
-  </section>
-
-  <footer class="fade" id="footer">
-    <div class="note">© 2025 ToadAid — Built by the people, for the people.</div>
-    <div class="socials" aria-label="social links">
-      <a class="icon-btn" href="https://x.com/TNG1301" target="_blank" aria-label="X / Twitter" rel="noopener">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M18.244 2H21l-6.6 7.548L22.5 22h-6.9l-4.3-5.54L5.1 22H2.34l7.1-8.128L1.5 2h6.9l3.9 5.2L18.244 2Zm-1.2 18h1.84L7.06 4h-1.9L17.044 20Z" fill="currentColor"/></svg>
+      <a class="card" href="/honors/sigil-lost-garden/dreamcatchers-web.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Dreamcatchers_web.jpg" alt="The Dreamcatcher’s Web parchment" />
+        <div class="body">
+          <h3 class="title">The Dreamcatcher’s Web</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
       </a>
-      <a class="icon-btn" href="https://github.com/ToadAid/toadaid.github.io" target="_blank" aria-label="GitHub" rel="noopener">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12.3c0 5.25 3.44 9.7 8.2 11.28.6.1.82-.27.82-.58v-2.02c-3.34.74-4.04-1.45-4.04-1.45-.54-1.4-1.32-1.77-1.32-1.77-1.08-.75.08-.74.08-.74 1.2.09 1.84 1.27 1.84 1.27 1.06 1.9 2.78 1.35 3.45 1.03.1-.8.41-1.35.75-1.66-2.67-.31-5.47-1.37-5.47-6.1 0-1.35.47-2.46 1.25-3.32-.13-.31-.54-1.56.12-3.25 0 0 1.02-.33 3.35 1.26a11.4 11.4 0 0 1 6.1 0c2.33-1.6 3.35-1.26 3.35-1.26.66 1.69.25 2.94.12 3.25.78.86 1.25 1.97 1.25 3.32 0 4.75-2.8 5.78-5.48 6.09.43.38.81 1.12.81 2.27v3.36c0 .31.22.69.82.58a11.5 11.5 0 0 0 8.2-11.28A11.5 11.5 0 0 0 12 .5Z" fill="currentColor"/></svg>
+
+      <a class="card" href="/honors/sigil-lost-garden/eternal-bloom.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Eternal_Bloom.jpg" alt="The Eternal Bloom parchment" />
+        <div class="body">
+          <h3 class="title">The Eternal Bloom</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
       </a>
-      <a class="icon-btn" href="https://t.me/Toadgang" target="_blank" aria-label="Telegram" rel="noopener">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9.9 15.6 9.6 20c.5 0 .8-.2 1-.4l2.4-2.3 5 3.6c.9.5 1.5.2 1.7-.9l3-14.3c.3-1.1-.4-1.5-1.2-1.2L2.2 9.7C1.1 10.1 1.1 10.7 2 11l5.3 1.7 12.4-7.9c.6-.4 1.1-.2 .7.2L9.9 15.6Z" fill="currentColor"/></svg>
+
+      <a class="card" href="/honors/sigil-lost-garden/forgotten-fountains.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Forgotten_Fountains.jpg" alt="The Forgotten Fountains parchment" />
+        <div class="body">
+          <h3 class="title">The Forgotten Fountains</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
       </a>
-    </div>
-  </footer>
-</div>
 
-<script>
-  // fade-in on paint
-  const fades = ['mission','start','preview','footer'].map(id=>document.getElementById(id));
-  const io = new IntersectionObserver(es => es.forEach(e=> e.isIntersecting && e.target.classList.add('in')), {threshold:.15});
-  fades.forEach(el=> io.observe(el));
+      <a class="card" href="/honors/sigil-lost-garden/forgotten-garden.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Forgotten_Garden.jpg" alt="The Forgotten Garden parchment" />
+        <div class="body">
+          <h3 class="title">The Forgotten Garden</h3>
+          <div class="meta">Patience Vow • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">Patience</span><span class="tag">LostGarden</span></div>
+        </div>
+      </a>
 
-  // Small preview: load latest 3 items from Contributors/contributors.json
-  async function loadMini(){
-    try{
-      const res = await fetch('/Contributors/contributors.json?v=' + Date.now());
-      const arr = await res.json();
-      if(!Array.isArray(arr) || !arr.length) return;
+      <a class="card" href="/honors/sigil-lost-garden/forgotten-pond.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_forgotten_pond.jpg" alt="The Forgotten Pond parchment" />
+        <div class="body">
+          <h3 class="title">The Forgotten Pond</h3>
+          <div class="meta">Great Conjunction • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">Gateway</span><span class="tag">Lore</span></div>
+        </div>
+      </a>
 
-      // sort newest first, take 3
-      arr.sort((a,b)=> new Date(b.date) - new Date(a.date));
-      const items = arr.slice(0,3);
+      <a class="card" href="/honors/sigil-lost-garden/labyrinthine-paths.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Labyrinthine_Paths.jpg" alt="The Labyrinthine Paths parchment" />
+        <div class="body">
+          <h3 class="title">The Labyrinthine Paths</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
+      </a>
 
-      const box = document.getElementById('miniGrid');
-      items.forEach(c=>{
-        const card = document.createElement('article');
-        card.className = 'mini-card';
+      <a class="card" href="/honors/sigil-lost-garden/triangle-opens.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Triangle_Opens.jpg" alt="The Triangle Opens parchment" />
+        <div class="body">
+          <h3 class="title">The Triangle Opens</h3>
+          <div class="meta">Proof of Time • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">Patience</span><span class="tag">ProofOfTime</span></div>
+        </div>
+      </a>
 
-        const media = document.createElement('div');
-        media.className = 'mini-media';
+      <a class="card" href="/honors/sigil-lost-garden/whispering-trees.html">
+        <img class="thumb" src="/Contributors/Sigil/images/The_Whispering_Trees.jpg" alt="The Whispering Trees parchment" />
+        <div class="body">
+          <h3 class="title">The Whispering Trees</h3>
+          <div class="meta">Lost Garden Cycle • Recorded by ToadAid</div>
+          <div><span class="tag">Honor</span><span class="tag">LostGarden</span><span class="tag">Lore</span></div>
+        </div>
+      </a>
 
-        if(c.media_type === 'video'){
-          const v = document.createElement('video');
-          v.muted = true; v.playsInline = true; v.autoplay = true; v.loop = true; v.preload = 'metadata';
-          if(c.poster) v.poster = c.poster;
-          v.src = c.file;
-          media.appendChild(v);
-        }else{
-          const img = document.createElement('img');
-          img.loading = 'lazy';
-          img.alt = (c.title||'Artwork') + ' by ' + (c.artist||'');
-          img.src = c.file;
-          img.onerror = ()=>{ img.src = 'https://via.placeholder.com/800x1000?text=ToadAid'; };
-          media.appendChild(img);
-        }
+    </section>
 
-        const body = document.createElement('div');
-        body.className = 'mini-body';
-        body.innerHTML = `
-          <div class="mini-title">${c.title || 'Untitled'}</div>
-          <div class="mini-meta">${c.artist || ''} · ${c.date || ''}</div>
-        `;
-
-        card.append(media, body);
-        card.addEventListener('click', ()=>{
-          const base = (c.file||'').split('/').pop().replace(/\.[^/.]+$/, '');
-          const raw  = (c.title ? `${c.title}-${base}` : base) || 'item';
-          const slug = raw.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-          location.href = `/Contributors/contributors.html?item=${slug}`;
-        });
-
-        box.appendChild(card);
-      });
-    }catch(e){
-      // optional preview; ignore errors silently
-    }
-  }
-  loadMini();
-</script>
+    <footer>
+      ✍️ Words by <strong>@SigilOfConcord</strong> • Archived by <strong>ToadAid</strong> · 🐸📜 One path. One flame. Many hands.
+    </footer>
+  </main>
 </body>
 </html>
