@@ -29,8 +29,20 @@
   header h1{margin:0 0 8px;font-size:clamp(1.6rem,3.2vw,2.4rem)}
   header p{margin:0;opacity:.92}
   .wrap{max-width:900px;margin:0 auto;padding:28px 18px 56px}
-  .hero{width:100%;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px var(--ring);border:1px solid rgba(0,0,0,.06)}
+
+  /* Centered hero */
+  .hero{
+    display:flex;
+    justify-content:center;
+    margin:0 auto 12px;
+    max-width:720px;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 8px 24px var(--ring);
+    border:1px solid rgba(0,0,0,.06);
+  }
   .hero img{width:100%;height:auto;display:block}
+
   .scroll{background:var(--paper);border-radius:16px;padding:20px;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);margin-top:18px}
   .meta{color:var(--muted);font-size:.95rem;margin:10px 0 14px}
   .poem{white-space:pre-wrap;font-size:1.05rem}
