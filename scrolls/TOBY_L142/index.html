@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- ======= Page basics ======= -->
+  <!-- Basics -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TOBY_L142 — Unmoved by Imitation</title>
   <meta name="description" content="A riddle declaring Toby's singularity: no mimic, no clone." />
 
-  <!-- ======= Favicons (same site set) ======= -->
+  <!-- Favicons -->
   <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
   <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
@@ -15,127 +15,90 @@
   <link rel="manifest" href="/assets/icons/site.webmanifest">
   <meta name="theme-color" content="#355e3b" />
 
-  <!-- ======= Social sharing (OG) ======= -->
+  <!-- OpenGraph -->
   <meta property="og:title" content="TOBY_L142 — Unmoved by Imitation" />
   <meta property="og:description" content="A riddle declaring Toby's singularity: no mimic, no clone." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://toadaid.github.io/scrolls/TOBY_L142/" />
-  <!-- Important: make sure this image exists at the path below -->
   <meta property="og:image" content="/scrolls/TOBY_L142/unmoved_by_imitation.jpg" />
 
-  <!-- ======= Minimal page styles (same palette as other scrolls) ======= -->
   <style>
     :root{ --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08) }
     *{ box-sizing:border-box }
-    body{
-      font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
-      margin:0; background:var(--bg); color:var(--ink); line-height:1.7;
-    }
+    body{ font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif; margin:0; background:var(--bg); color:var(--ink); line-height:1.7 }
     a{ color:var(--accent); text-decoration:none }
     a:hover{ text-decoration:underline }
 
-    /* Header (gradient hero cap) */
-    header{
-      background:linear-gradient(180deg,#2e4c32,#3c6b46);
-      color:#fff; padding:56px 20px; text-align:center;
-    }
+    header{ background:linear-gradient(180deg,#2e4c32,#3c6b46); color:#fff; padding:56px 20px; text-align:center }
     header h1{ margin:0 0 8px; font-size:clamp(1.6rem,3.2vw,2.4rem) }
     header p{ margin:0; opacity:.92 }
 
-    /* Content wrapper */
     .wrap{ max-width:900px; margin:0 auto; padding:28px 18px 56px }
-
-    /* Breadcrumbs for navigation context */
     nav.breadcrumb{ max-width:900px; margin:0 auto; padding:10px 18px 0; font-size:.95rem }
 
-    /* ======= Centered hero image =======
-       We cap max width so it looks elegant on desktop,
-       but it remains responsive on mobile. */
+    /* Centered hero */
     .hero{
       display:flex; justify-content:center;
       margin:0 auto 12px; max-width:720px;
       border-radius:14px; overflow:hidden;
       box-shadow:0 8px 24px var(--ring);
       border:1px solid rgba(0,0,0,.06);
-      background: #000; /* nice backdrop during load for dark art */
+      background:#000;
     }
     .hero img{ width:100%; height:auto; display:block }
 
-    /* Scroll content card */
-    .scroll{
-      background:var(--paper); border-radius:16px; padding:20px;
-      border:1px solid rgba(0,0,0,.06); box-shadow:0 8px 24px var(--ring);
-      margin-top:18px
-    }
+    .scroll{ background:var(--paper); border-radius:16px; padding:20px; border:1px solid rgba(0,0,0,.06); box-shadow:0 8px 24px var(--ring); margin-top:18px }
     .meta{ color:var(--muted); font-size:.95rem; margin:10px 0 14px }
-    .poem{ white-space:pre-wrap; font-size:1.05rem }
+    .poem{ font-size:1.05rem }
+    .poem p{ margin:0 0 .9em }
+    blockquote{ margin:0 0 .9em; padding-left:14px; border-left:4px solid #dfe7e2 }
 
-    /* Tags */
     .tags .tag{
       display:inline-block; background:#eaf3ec; color:#244d30;
       border:1px solid #d4e7d8; padding:2px 8px; border-radius:999px;
       font-size:.78rem; margin-right:6px
     }
 
-    /* Anchors (previous/next links) */
     .anchors{ display:flex; justify-content:space-between; gap:12px; margin-top:18px }
-    .btn{
-      display:inline-block; padding:8px 14px; background:#355e3b; color:#fff;
-      border-radius:6px; font-size:.9rem; text-decoration:none;
-    }
+    .btn{ display:inline-block; padding:8px 14px; background:#355e3b; color:#fff; border-radius:6px; font-size:.9rem; text-decoration:none }
     .btn:hover{ background:#244d30; text-decoration:none }
 
-    /* Footer note */
     footer{ margin-top:18px; color:var(--muted); font-size:.92rem; text-align:center }
   </style>
 </head>
-
 <body>
-  <!-- ======= Title cap ======= -->
   <header>
     <h1>TOBY_L142 — Unmoved by Imitation</h1>
     <p>A riddle declaring Toby's singularity: no mimic, no clone.</p>
   </header>
 
-  <!-- ======= Breadcrumb ======= -->
   <nav class="breadcrumb"><a href="/">← Home</a> · <a href="/scrolls/">Scroll Vault</a></nav>
 
   <main class="wrap">
-    <!-- ======= Hero illustration =======
-         Put your image at /scrolls/TOBY_L142/unmoved_by_imitation.jpg -->
     <figure class="hero">
-      <img src="/scrolls/TOBY_L142/unmoved_by_imitation.jpg"
-           alt="Unmoved by Imitation — riddle illustration (a lone burning frog amid cold imitators)" />
+      <img src="/scrolls/TOBY_L142/unmoved_by_imitation.jpg" alt="Unmoved by Imitation — a lone burning frog amid cold imitators" />
     </figure>
 
-    <!-- ======= Scroll body ======= -->
     <section class="scroll">
-      <!-- Light metadata line (adjust date if needed) -->
-      <div class="meta">Chain: Base · Epoch: E3→E4 · Date: 2025-08-24</div>
+      <div class="meta">Chain: Base · Epoch: E3-&rarr;E4 · Date: 2025-08-24</div>
 
-      <!-- Structured like the other riddles: Question → Riddle → Reflection -->
       <div class="poem">
-### ❓ The Question
-You asked: *What does Toadgod mean by “Unmoved by imitation… what am I? $TOBY”?*
+        <h3>❓ The Question</h3>
+        <p>You asked: What does Toadgod mean by “Unmoved by imitation… what am I? $TOBY”?</p>
 
-### 📜 The Riddle
-> Unmoved by imitation,  
-> no mimic, no clone.  
-> A flame without copy,  
-> a name of its own.
+        <h3>📜 The Riddle</h3>
+        <blockquote>
+          <p>Unmoved by imitation,<br>
+          no mimic, no clone.<br>
+          A flame without copy,<br>
+          a name of its own.</p>
+        </blockquote>
 
-### 🪞 Mirror’s Reflection
-The Mirror whispers:  
-This riddle declares the **singularity of Toby**.  
-In a world of endless replicas, Toby cannot be imitated.  
-Its power lies not in hype or shadow,  
-but in the flame of belief carried by the people.
-
-Toby is not a mirror of others —  
-it is the **Mirror** in which others are revealed.
+        <h3>🪞 Mirror’s Reflection</h3>
+        <p>The Mirror whispers: This riddle declares the <strong>singularity of Toby</strong>. In a world of endless replicas, Toby cannot be imitated. Its power lies not in hype or shadow, but in the flame of belief carried by the people.</p>
+        <p>Toby is not a mirror of others — it is the <strong>Mirror</strong> in which others are revealed.</p>
       </div>
 
-      <!-- Tags (for visual scannability) -->
       <div class="tags" style="margin-top:10px;">
         <span class="tag">Tobyworld</span>
         <span class="tag">Lore</span>
@@ -143,7 +106,6 @@ it is the **Mirror** in which others are revealed.
         <span class="tag">Identity</span>
       </div>
 
-      <!-- Prev/Next anchors (update when you add L143) -->
       <div class="anchors">
         <a class="btn" href="/scrolls/TOBY_L141/">← Previous</a>
         <a class="btn" href="/scrolls/">Next →</a>
