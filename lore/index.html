@@ -311,8 +311,21 @@ function applyAdmin(){
   paint(); // will also renderTags + updateResumeBar
 }
 
-/* ====== Editor placeholders (hooks are there) ====== */
-function openForm(){ alert("Admin: implement form if needed."); }
+/* ====== Editor (real form) ====== */
+function openForm(){ document.getElementById("entryForm").style.display="flex"; }
+function closeForm(){ document.getElementById("entryForm").style.display="none"; }
+function saveEntry(){
+  DATA.unshift({
+    id:"TOBY_"+Date.now(),
+    date:document.getElementById("f_date").value || new Date().toISOString().slice(0,10),
+    title:document.getElementById("f_title").value,
+    original:document.getElementById("f_original").value,
+    comment:document.getElementById("f_comment").value,
+    tags:document.getElementById("f_tags").value
+  });
+  closeForm();
+  paint();
+}
 function editEntry(i){ alert("Admin: edit entry "+(DATA[i]?.id||i)); }
 function delEntry(i){ if(confirm("Delete this entry?")){ DATA.splice(i,1); paint(); } }
 function exportJSON(){ const blob=new Blob([JSON.stringify(DATA,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="data.json"; a.click(); }
@@ -337,5 +350,23 @@ $("#clear").addEventListener("click",()=>{ if($("#q")) $("#q").value=""; paint()
   applyAdmin();   // starts in viewer (clean), then paint
 })();
 </script>
+
+<!-- Admin entry form -->
+<div id="entryForm" style="position:fixed;top:0;left:0;width:100%;height:100%;
+     background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:20px;border-radius:12px;max-width:600px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,.25);">
+    <h2>New Lore Entry</h2>
+    <input id="f_title" placeholder="Title">
+    <input id="f_date" placeholder="Date (YYYY-MM-DD)">
+    <textarea id="f_original" placeholder="Original lore (markdown)"></textarea>
+    <textarea id="f_comment" placeholder="Commentary (markdown)"></textarea>
+    <input id="f_tags" placeholder="Tags (comma separated)">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="saveEntry()">Save</button>
+      <button class="btn" onclick="closeForm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
