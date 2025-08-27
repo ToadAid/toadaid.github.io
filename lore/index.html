@@ -319,6 +319,8 @@ function saveEntry(){
     id:"TOBY_"+Date.now(),
     date:document.getElementById("f_date").value || new Date().toISOString().slice(0,10),
     title:document.getElementById("f_title").value,
+    url:document.getElementById("f_url").value,
+    img:document.getElementById("f_img").value,
     original:document.getElementById("f_original").value,
     comment:document.getElementById("f_comment").value,
     tags:document.getElementById("f_tags").value
@@ -354,13 +356,17 @@ $("#clear").addEventListener("click",()=>{ if($("#q")) $("#q").value=""; paint()
 <!-- Admin entry form -->
 <div id="entryForm" style="position:fixed;top:0;left:0;width:100%;height:100%;
      background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;">
-  <div style="background:#fff;padding:20px;border-radius:12px;max-width:600px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,.25);">
+  <div style="background:#fff;padding:20px;border-radius:12px;max-width:700px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,.25);">
     <h2>New Lore Entry</h2>
-    <input id="f_title" placeholder="Title">
-    <input id="f_date" placeholder="Date (YYYY-MM-DD)">
-    <textarea id="f_original" placeholder="Original lore (markdown)"></textarea>
-    <textarea id="f_comment" placeholder="Commentary (markdown)"></textarea>
-    <input id="f_tags" placeholder="Tags (comma separated)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <input id="f_title" placeholder="Title">
+      <input id="f_date" placeholder="Date (YYYY-MM-DD)">
+      <input id="f_url" placeholder="Original link (URL)">
+      <input id="f_img" placeholder="Image URL">
+      <textarea id="f_original" placeholder="Original lore (markdown)" style="grid-column:span 2;height:100px"></textarea>
+      <textarea id="f_comment" placeholder="Commentary (markdown)" style="grid-column:span 2;height:80px"></textarea>
+      <input id="f_tags" placeholder="Tags (comma separated)" style="grid-column:span 2">
+    </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" onclick="saveEntry()">Save</button>
       <button class="btn" onclick="closeForm()">Cancel</button>
