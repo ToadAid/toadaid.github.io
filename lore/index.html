@@ -110,10 +110,10 @@
     <button class="btn" id="fontPlus">A+</button>
     <button class="btn" id="fontMinus">A-</button>
     <button class="btn" id="toggleBookmarks">Bookmarks</button>
+    <button class="btn" id="goLatest">Latest Lore</button>
     <button class="btn" id="enterAdmin">Enter Admin</button>
     <button class="btn hidden" id="exitAdmin">Exit Admin</button>
-    <button class="btn hidden" id="exportBtn">Export JSON</button>
-  </div>
+   </div>
 </header>
 
 <div class="provenance">
@@ -356,6 +356,19 @@ $("#enterAdmin").addEventListener("click",enterAdmin);
 $("#exitAdmin").addEventListener("click",exitAdmin);
 $("#clear").addEventListener("click",()=>{ if($("#q")) $("#q").value=""; paint(); });
 
+$("#goLatest").addEventListener("click",()=>{
+  if(DATA.length){
+    const latest = DATA[DATA.length-1];
+    const id = toSafeId(latest.id || latest.title || "last");
+    const el = document.getElementById(id) || document.querySelector(`[data-entry-id="${id}"]`);
+    if(el){
+      const body = el.querySelector(".acc-body");
+      if(body && !body.classList.contains("open")) body.classList.add("open");
+      el.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  }
+});
+  
 /* ====== Boot ====== */
 (async()=>{
   await loadData();
