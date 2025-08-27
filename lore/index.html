@@ -154,7 +154,7 @@ const LS_LAST_ID = "lore:lastId";
 const LS_BOOKMARKS = "lore:bookmarks";
 let isAdmin=false, showComm=true, fontScale=1;
 let showingBookmarks=false;
-let DATA=[], BOOKMARKS=new Set(), editIdx=null;
+let DATA=[], BOOKMARKS=new Set();
 
 /* ====== Helpers ====== */
 const $=s=>document.querySelector(s);
@@ -252,10 +252,17 @@ function card(it,i){
   setBm(); bm.onclick=(e)=>{ e.stopPropagation(); toggleBookmark(safeId); setBm(); };
   actions.appendChild(bm);
 
+  /* Admin buttons inline (now using safeId-based edit/delete) */
   if(isAdmin){
-    const ebtn=document.createElement("button"); ebtn.className="btn"; ebtn.textContent="Edit"; ebtn.onclick=(e)=>{e.stopPropagation(); editEntry(i);};
-    const dbtn=document.createElement("button"); dbtn.className="btn"; dbtn.textContent="Delete"; dbtn.onclick=(e)=>{e.stopPropagation(); delEntry(i);};
-    const nbtn=document.createElement("button"); nbtn.className="btn";  nbtn.textContent="+ New"; nbtn.onclick=(e)=>{e.stopPropagation(); openForm();};
+    const ebtn=document.createElement("button"); ebtn.className="btn"; ebtn.textContent="Edit";
+    ebtn.onclick=(e)=>{e.stopPropagation(); editEntryBySafeId(safeId);};
+
+    const dbtn=document.createElement("button"); dbtn.className="btn"; dbtn.textContent="Delete";
+    dbtn.onclick=(e)=>{e.stopPropagation(); delEntryBySafeId(safeId);};
+
+    const nbtn=document.createElement("button"); nbtn.className="btn";  nbtn.textContent="+ New";
+    nbtn.onclick=(e)=>{e.stopPropagation(); openFormNew();};
+
     actions.append(ebtn,dbtn,nbtn);
   }
 
@@ -316,25 +323,104 @@ function applyAdmin(){
   paint();
 }
 
-/* ====== Editor (real form) ====== */
-function openForm(){ document.getElementById("entryForm").style.display="flex"; }
-function closeForm(){ document.getElementById("entryForm").style.display="none"; }
-function saveEntry(){
-  DATA.unshift({
-    id:"TOBY_"+Date.now(),
-    date:document.getElementById("f_date").value || new Date().toISOString().slice(0,10),
-    title:document.getElementById("f_title").value,
-    url:document.getElementById("f_url").value,
-    img:document.getElementById("f_img").value,
-    original:document.getElementById("f_original").value,
-    comment:document.getElementById("f_comment").value,
-    tags:document.getElementById("f_tags").value
+/* ====== Editor (create + edit) ====== */
+let editIdx = null; // index in DATA when editing (null = creating)
+
+function openFormNew(){
+  editIdx = null;
+  fillForm({
+    title:"", date:new Date().toISOString().slice(0,10),
+    url:"", img:"", original:"", comment:"", tags:""
   });
+  document.getElementById("entryForm").style.display="flex";
+  setFormModeLabel("Save");
+}
+function openFormEdit(idx){
+  editIdx = idx;
+  const it = DATA[idx] || {};
+  fillForm({
+    title: it.title || "",
+    date: it.date || new Date().toISOString().slice(0,10),
+    url: it.url || "",
+    img: it.img || "",
+    original: it.original || "",
+    comment: it.comment || "",
+    tags: it.tags || ""
+  });
+  document.getElementById("entryForm").style.display="flex";
+  setFormModeLabel("Update");
+}
+function closeForm(){ document.getElementById("entryForm").style.display="none"; }
+
+function fillForm(v){
+  document.getElementById("f_title").value = v.title || "";
+  document.getElementById("f_date").value = v.date || "";
+  document.getElementById("f_url").value = v.url || "";
+  document.getElementById("f_img").value = v.img || "";
+  document.getElementById("f_original").value = v.original || "";
+  document.getElementById("f_comment").value = v.comment || "";
+  document.getElementById("f_tags").value = v.tags || "";
+}
+function readForm(){
+  return {
+    title: document.getElementById("f_title").value.trim(),
+    date:  document.getElementById("f_date").value.trim() || new Date().toISOString().slice(0,10),
+    url:   document.getElementById("f_url").value.trim(),
+    img:   document.getElementById("f_img").value.trim(),
+    original: document.getElementById("f_original").value,
+    comment:  document.getElementById("f_comment").value,
+    tags:  document.getElementById("f_tags").value
+  };
+}
+function setFormModeLabel(text){
+  const btn = document.getElementById("saveBtn");
+  if(btn) btn.textContent = text || "Save";
+}
+function saveEntry(){
+  const v = readForm();
+
+  if (editIdx === null) {
+    // CREATE
+    DATA.unshift({
+      id: "TOBY_" + Date.now(),
+      date: v.date, title: v.title, url: v.url, img: v.img,
+      original: v.original, comment: v.comment, tags: v.tags
+    });
+  } else {
+    // UPDATE
+    const cur = DATA[editIdx] || {};
+    DATA[editIdx] = {
+      ...cur,
+      date: v.date, title: v.title, url: v.url, img: v.img,
+      original: v.original, comment: v.comment, tags: v.tags
+    };
+  }
+
   closeForm();
   paint();
 }
-function editEntry(i){ alert("Admin: edit entry "+(DATA[i]?.id||i)); }
+
+/* ====== Edit/Delete by safeId (robust under filters) ====== */
+function indexBySafeId(safeId){
+  return DATA.findIndex(x => toSafeId(x.id || x.title) === safeId);
+}
+function editEntryBySafeId(safeId){
+  const idx = indexBySafeId(safeId);
+  if (idx < 0) return alert("Entry not found.");
+  openFormEdit(idx);
+}
+function delEntryBySafeId(safeId){
+  const idx = indexBySafeId(safeId);
+  if (idx < 0) return alert("Entry not found.");
+  if(confirm("Delete this entry?")){ DATA.splice(idx,1); paint(); }
+}
+
+/* Backward-compat shims (in case something calls old names) */
+function openForm(){ openFormNew(); }
+function editEntry(i){ openFormEdit(i); }
 function delEntry(i){ if(confirm("Delete this entry?")){ DATA.splice(i,1); paint(); } }
+
+/* ====== Export ====== */
 function exportJSON(){
   try {
     const blob = new Blob([JSON.stringify(DATA,null,2)], {type: "application/json"});
@@ -408,7 +494,7 @@ $("#goLatest").addEventListener("click",()=>{
       <input id="f_tags" placeholder="Tags (comma separated)" style="grid-column:span 2">
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" onclick="saveEntry()">Save</button>
+      <button class="btn" id="saveBtn" onclick="saveEntry()">Save</button>
       <button class="btn" onclick="exportJSON()">Export JSON</button>
       <button class="btn" onclick="closeForm()">Cancel</button>
     </div>
