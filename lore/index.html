@@ -110,6 +110,7 @@
     <button class="btn" id="fontPlus">A+</button>
     <button class="btn" id="fontMinus">A-</button>
     <button class="btn" id="toggleBookmarks">Bookmarks</button>
+    <button class="btn" id="goLatest">Latest Lore</button>
     <button class="btn" id="enterAdmin">Enter Admin</button>
     <button class="btn hidden" id="exitAdmin">Exit Admin</button>
     <button class="btn hidden" id="exportBtn">Export JSON</button>
@@ -157,7 +158,12 @@ let DATA=[], BOOKMARKS=new Set(), editIdx=null;
 
 /* ====== Helpers ====== */
 const $=s=>document.querySelector(s);
-function md(s){ const html = marked.parse(s||""); const d=document.createElement("div"); d.innerHTML=html; d.querySelectorAll("a").forEach(a=>{a.target="_blank";a.rel="noopener"}); return d.innerHTML || "<p style='color:#999'>—</p>"; }
+function md(s){
+  const html = marked.parse(s||"");
+  const d=document.createElement("div"); d.innerHTML=html;
+  d.querySelectorAll("a").forEach(a=>{a.target="_blank";a.rel="noopener"});
+  return d.innerHTML || "<p style='color:#999'>—</p>";
+}
 function matches(it,q){
   q=q.toLowerCase();
   return (it.title||"").toLowerCase().includes(q)||
@@ -173,8 +179,6 @@ function normalizeEntry(x){
   const tagsStr  = Array.isArray(x.tags) ? x.tags.join(", ") : (x.tags || "");
   return { id: x.id || x._raw_id || "", date: x.date || "", title: x.title || "", original, comment, url, img, tags: tagsStr };
 }
-
-/* Slugify for safe DOM ids */
 function toSafeId(v){
   return (v || "").toString().trim().toLowerCase().replace(/[^a-z0-9_-]+/g,"-") || "entry-" + Math.random().toString(36).slice(2,8);
 }
@@ -208,7 +212,10 @@ async function loadData(){
   const urls=["data.json","/lore/data.json"];
   let loaded=null;
   for(const u of urls){
-    try{ const r=await fetch(u,{cache:"no-store"}); if(r.ok){ loaded=await r.json(); break;} }catch{}
+    try{
+      const r=await fetch(u,{cache:"no-store"});
+      if(r.ok){ loaded=await r.json(); break; }
+    }catch{}
   }
   if(!Array.isArray(loaded)) loaded=[];
   DATA = loaded.map(normalizeEntry);
@@ -228,6 +235,7 @@ function renderTags(){
 /* ====== Accordion Card ====== */
 function card(it,i){
   const safeId = toSafeId(it.id || it.title || ("entry-"+i));
+
   const art=document.createElement("article"); 
   art.className="scroll"; 
   art.id = safeId; 
@@ -260,8 +268,8 @@ function card(it,i){
   grid.append(left,right);
 
   if(it.img){
-    const imgPanel=document.createElement("div"); 
-    imgPanel.className="panel"; 
+    const imgPanel=document.createElement("div");
+    imgPanel.className="panel";
     imgPanel.innerHTML=`<h3>Image</h3><img src="${it.img}" alt="" style="max-width:100%;border-radius:8px">`;
     grid.append(imgPanel);
   }
@@ -355,12 +363,33 @@ $("#toggleBookmarks").addEventListener("click",()=>{
 $("#enterAdmin").addEventListener("click",enterAdmin);
 $("#exitAdmin").addEventListener("click",exitAdmin);
 $("#clear").addEventListener("click",()=>{ if($("#q")) $("#q").value=""; paint(); });
+$("#goLatest").addEventListener("click",()=>{
+  // Clear filters so last item is visible
+  const qEl = document.getElementById("q");
+  if (qEl) qEl.value = "";
+  showingBookmarks = false;
+  const tb = document.getElementById("toggleBookmarks");
+  if (tb) tb.textContent = "Bookmarks";
+  paint();
+
+  if(DATA.length){
+    const latest = DATA[DATA.length-1];
+    const id = toSafeId(latest.id || latest.title || "last");
+    const el = document.getElementById(id) || document.querySelector(`[data-entry-id="${id}"]`);
+    if(el){
+      const body = el.querySelector(".acc-body");
+      if(body && !body.classList.contains("open")) body.classList.add("open");
+      el.scrollIntoView({behavior:"smooth", block:"start"});
+      setLastRead(id);
+    }
+  }
+});
 
 /* ====== Boot ====== */
 (async()=>{
   await loadData();
   loadBookmarks();
-  applyAdmin();
+  applyAdmin();   // starts in viewer (clean), then paint
 })();
 </script>
 
