@@ -183,6 +183,12 @@ function toSafeId(v){
   return (v || "").toString().trim().toLowerCase().replace(/[^a-z0-9_-]+/g,"-") || "entry-" + Math.random().toString(36).slice(2,8);
 }
 
+/* Strip the first H2 heading so cards align (handles "## 🌊 Original ..." etc.) */
+function stripFirstH2(mdText){
+  if(!mdText) return mdText;
+  return mdText.replace(/^\s*##\s*[^\n]+\n/, '');
+}
+
 /* ====== Storage ====== */
 function loadBookmarks(){ try{ BOOKMARKS=new Set(JSON.parse(localStorage.getItem(LS_BOOKMARKS)||"[]")); }catch{ BOOKMARKS=new Set(); } }
 function saveBookmarks(){ localStorage.setItem(LS_BOOKMARKS, JSON.stringify([...BOOKMARKS])); }
@@ -252,7 +258,7 @@ function card(it,i){
   setBm(); bm.onclick=(e)=>{ e.stopPropagation(); toggleBookmark(safeId); setBm(); };
   actions.appendChild(bm);
 
-  /* Admin buttons inline (now using safeId-based edit/delete) */
+  /* Admin buttons inline (safeId-based edit/delete) */
   if(isAdmin){
     const ebtn=document.createElement("button"); ebtn.className="btn"; ebtn.textContent="Edit";
     ebtn.onclick=(e)=>{e.stopPropagation(); editEntryBySafeId(safeId);};
@@ -270,8 +276,8 @@ function card(it,i){
 
   const body=document.createElement("div"); body.className="acc-body";
   const grid=document.createElement("div"); grid.className="twocol";
-  const left=document.createElement("div"); left.className="panel"; left.innerHTML=`<h3>Original Lore</h3>${md(it.original)}`;
-  const right=document.createElement("div"); right.className="panel"; right.style.display=showComm?"block":"none"; right.innerHTML=`<h3>Commentary</h3>${md(it.comment)}`;
+  const left=document.createElement("div"); left.className="panel"; left.innerHTML=`<h3>Original Lore</h3>${md(stripFirstH2(it.original))}`;
+  const right=document.createElement("div"); right.className="panel"; right.style.display=showComm?"block":"none"; right.innerHTML=`<h3>Commentary</h3>${md(stripFirstH2(it.comment))}`;
   grid.append(left,right);
 
   if(it.img){
@@ -415,15 +421,28 @@ function delEntryBySafeId(safeId){
   if(confirm("Delete this entry?")){ DATA.splice(idx,1); paint(); }
 }
 
-/* Backward-compat shims (in case something calls old names) */
+/* Backward-compat shims */
 function openForm(){ openFormNew(); }
 function editEntry(i){ openFormEdit(i); }
 function delEntry(i){ if(confirm("Delete this entry?")){ DATA.splice(i,1); paint(); } }
 
-/* ====== Export ====== */
+/* ====== Export (stable key order) ====== */
+function ordered(it){
+  return {
+    id: it.id || "",
+    date: it.date || "",
+    title: it.title || "",
+    url: it.url || "",
+    img: it.img || "",
+    original: it.original || "",
+    comment: it.comment || "",
+    tags: Array.isArray(it.tags) ? it.tags.join(", ") : (it.tags || "")
+  };
+}
 function exportJSON(){
   try {
-    const blob = new Blob([JSON.stringify(DATA,null,2)], {type: "application/json"});
+    const orderedData = DATA.map(ordered);
+    const blob = new Blob([JSON.stringify(orderedData, null, 2)], {type: "application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
