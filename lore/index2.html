@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,18 +99,6 @@
   body.viewer #exportBtn { display:none !important; }
   body.admin  #adminInfo,
   body.admin  #exportBtn { display:block !important; }
-
-  /* Admin form modal */
-  #entryForm{
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;
-  }
-  #entryForm .form-box{
-    background:#fff;padding:20px;border-radius:12px;max-width:600px;width:100%;
-    box-shadow:0 4px 12px rgba(0,0,0,.25);
-  }
-  #entryForm input,#entryForm textarea{width:100%;margin-bottom:10px;padding:8px;border:1px solid #ccc;border-radius:6px;}
-  #entryForm h2{margin-top:0}
 </style>
 </head>
 
@@ -153,22 +142,6 @@
   <section class="content" id="content"></section>
 </main>
 
-<!-- Admin entry form -->
-<div id="entryForm">
-  <div class="form-box">
-    <h2>New Lore Entry</h2>
-    <input id="f_title" placeholder="Title">
-    <input id="f_date" placeholder="Date (YYYY-MM-DD)">
-    <textarea id="f_original" placeholder="Original lore (markdown)"></textarea>
-    <textarea id="f_comment" placeholder="Commentary (markdown)"></textarea>
-    <input id="f_tags" placeholder="Tags (comma separated)">
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" onclick="saveEntry()">Save</button>
-      <button class="btn" onclick="closeForm()">Cancel</button>
-    </div>
-  </div>
-</div>
-
 <footer style="text-align:center;margin:32px 0 20px;color:#777;font-size:.85rem">
   © Toadgod Lore · Preserved by <b>ToadAid 🐸</b>
 </footer>
@@ -201,7 +174,11 @@ function normalizeEntry(x){
   const tagsStr  = Array.isArray(x.tags) ? x.tags.join(", ") : (x.tags || "");
   return { id: x.id || x._raw_id || "", date: x.date || "", title: x.title || "", original, comment, url, img, tags: tagsStr };
 }
-function toSafeId(v){ return (v || "").toString().trim().toLowerCase().replace(/[^a-z0-9_-]+/g,"-") || "entry-" + Math.random().toString(36).slice(2,8); }
+
+/* Slugify for safe DOM ids */
+function toSafeId(v){
+  return (v || "").toString().trim().toLowerCase().replace(/[^a-z0-9_-]+/g,"-") || "entry-" + Math.random().toString(36).slice(2,8);
+}
 
 /* ====== Storage ====== */
 function loadBookmarks(){ try{ BOOKMARKS=new Set(JSON.parse(localStorage.getItem(LS_BOOKMARKS)||"[]")); }catch{ BOOKMARKS=new Set(); } }
@@ -212,6 +189,7 @@ function setLastRead(id){ if(id) localStorage.setItem(LS_LAST_ID,id); }
 function updateResumeBar(){
   const rb=$("#resumeBar"); const lastId=localStorage.getItem(LS_LAST_ID);
   if(!lastId){ rb.style.display="none"; return; }
+  // find by slug-id among rendered DATA
   const item = DATA.find(x => toSafeId(x.id || x.title) === lastId);
   if(!item){ rb.style.display="none"; return; }
   $("#resumeText").textContent = `Continue from: ${item.title || lastId}`;
@@ -252,19 +230,27 @@ function renderTags(){
 /* ====== Accordion Card ====== */
 function card(it,i){
   const safeId = toSafeId(it.id || it.title || ("entry-"+i));
-  const art=document.createElement("article"); art.className="scroll"; art.id = safeId; art.setAttribute("data-entry-id", safeId);
 
+  const art=document.createElement("article"); 
+  art.className="scroll"; 
+  art.id = safeId; 
+  art.setAttribute("data-entry-id", safeId);
+
+  // Header (click to toggle)
   const head=document.createElement("button"); head.type="button"; head.className="acc-header";
   const hLeft=document.createElement("div"); hLeft.className="acc-title";
   hLeft.innerHTML=`<div class="entry-meta">${it.date||""} ${it.url?` · <a href="${it.url}" target="_blank" rel="noopener">Original Tweet ↗</a>`:""}</div>
                    <div class="entry-title">${it.title||""}</div>`;
   const actions=document.createElement("div"); actions.className="acc-actions";
 
-  const bm=document.createElement("button"); bm.className="bm-btn";
+  // Bookmark button
+  const bm=document.createElement("button"); bm.className="bm-btn"; 
   const setBm=()=>{ const on=isBookmarked(safeId); bm.textContent= on?"★ Bookmarked":"☆ Bookmark"; bm.classList.toggle("active", on); };
   setBm(); bm.onclick=(e)=>{ e.stopPropagation(); toggleBookmark(safeId); setBm(); };
+
   actions.appendChild(bm);
 
+  // Admin buttons inline (small)
   if(isAdmin){
     const ebtn=document.createElement("button"); ebtn.className="btn"; ebtn.textContent="Edit"; ebtn.onclick=(e)=>{e.stopPropagation(); editEntry(i);};
     const dbtn=document.createElement("button"); dbtn.className="btn"; dbtn.textContent="Delete"; dbtn.onclick=(e)=>{e.stopPropagation(); delEntry(i);};
@@ -274,6 +260,7 @@ function card(it,i){
 
   head.append(hLeft,actions);
 
+  // Body
   const body=document.createElement("div"); body.className="acc-body";
   const grid=document.createElement("div"); grid.className="twocol";
   const left=document.createElement("div"); left.className="panel"; left.innerHTML=`<h3>Original Lore</h3>${md(it.original)}`;
@@ -284,8 +271,13 @@ function card(it,i){
   (it.tags||"").split(",").map(s=>s.trim()).filter(Boolean).forEach(t=>{ const s=document.createElement("span"); s.className="chip"; s.textContent=t; chips.appendChild(s); });
   body.append(grid, chips);
 
-  head.addEventListener("click", ()=>{ body.classList.toggle("open"); setLastRead(safeId); });
+  // Toggle open/close + save last read
+  head.addEventListener("click", ()=>{
+    body.classList.toggle("open");
+    setLastRead(safeId);
+  });
 
+  // Save last read when entry comes into view (first time)
   const io=new IntersectionObserver((ents)=>{ ents.forEach(en=>{ if(en.isIntersecting){ setLastRead(safeId); io.disconnect(); } }); }, {threshold:0.4});
   io.observe(art);
 
@@ -303,8 +295,8 @@ function paint(){
   const box=$("#content"); box.innerHTML="";
   list.forEach((it,i)=> box.appendChild(card(it,i)));
 
-  renderTags();
-  updateResumeBar();
+  renderTags();     // admin only
+  updateResumeBar();// resume banner
 }
 
 /* ====== Admin UI ====== */
@@ -316,23 +308,34 @@ function applyAdmin(){
   $("#enterAdmin").classList.toggle("hidden",isAdmin);
   $("#exitAdmin").classList.toggle("hidden",!isAdmin);
   $("#exportBtn").classList.toggle("hidden",!isAdmin);
-  paint();
+  paint(); // will also renderTags + updateResumeBar
 }
 
-/* ====== Editor form ====== */
-function openForm(){ $("#entryForm").style.display="flex"; }
-function closeForm(){ $("#entryForm").style.display="none"; }
-function saveEntry(){
-  DATA.unshift({
-    id:"TOBY_"+Date.now(),
-    date:$("#f_date").value||new Date().toISOString().slice(0,10),
-    title:$("#f_title").value,
-    original:$("#f_original").value,
-    comment:$("#f_comment").value,
-    tags:$("#f_tags").value
-  });
-  closeForm(); paint();
-}
+/* ====== Editor placeholders (hooks are there) ====== */
+function openForm(){ alert("Admin: implement form if needed."); }
 function editEntry(i){ alert("Admin: edit entry "+(DATA[i]?.id||i)); }
 function delEntry(i){ if(confirm("Delete this entry?")){ DATA.splice(i,1); paint(); } }
-function exportJSON(){ const blob=new Blob([
+function exportJSON(){ const blob=new Blob([JSON.stringify(DATA,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="data.json"; a.click(); }
+
+/* ====== Events ====== */
+$("#toggleComm").addEventListener("click",()=>{ showComm=!showComm; paint(); });
+$("#fontPlus").addEventListener("click",()=>{ fontScale=Math.min(1.4,fontScale+0.05); document.body.style.fontSize=fontScale+"rem"; });
+$("#fontMinus").addEventListener("click",()=>{ fontScale=Math.max(0.9,fontScale-0.05); document.body.style.fontSize=fontScale+"rem"; });
+$("#toggleBookmarks").addEventListener("click",()=>{
+  showingBookmarks=!showingBookmarks;
+  $("#toggleBookmarks").textContent = showingBookmarks? "All Entries":"Bookmarks";
+  paint();
+});
+$("#enterAdmin").addEventListener("click",enterAdmin);
+$("#exitAdmin").addEventListener("click",exitAdmin);
+$("#clear").addEventListener("click",()=>{ if($("#q")) $("#q").value=""; paint(); });
+
+/* ====== Boot ====== */
+(async()=>{
+  await loadData();
+  loadBookmarks();
+  applyAdmin();   // starts in viewer (clean), then paint
+})();
+</script>
+</body>
+</html>
