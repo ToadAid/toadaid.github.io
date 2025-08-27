@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -189,7 +188,6 @@ function setLastRead(id){ if(id) localStorage.setItem(LS_LAST_ID,id); }
 function updateResumeBar(){
   const rb=$("#resumeBar"); const lastId=localStorage.getItem(LS_LAST_ID);
   if(!lastId){ rb.style.display="none"; return; }
-  // find by slug-id among rendered DATA
   const item = DATA.find(x => toSafeId(x.id || x.title) === lastId);
   if(!item){ rb.style.display="none"; return; }
   $("#resumeText").textContent = `Continue from: ${item.title || lastId}`;
@@ -230,27 +228,22 @@ function renderTags(){
 /* ====== Accordion Card ====== */
 function card(it,i){
   const safeId = toSafeId(it.id || it.title || ("entry-"+i));
-
   const art=document.createElement("article"); 
   art.className="scroll"; 
   art.id = safeId; 
   art.setAttribute("data-entry-id", safeId);
 
-  // Header (click to toggle)
   const head=document.createElement("button"); head.type="button"; head.className="acc-header";
   const hLeft=document.createElement("div"); hLeft.className="acc-title";
-  hLeft.innerHTML=`<div class="entry-meta">${it.date||""} ${it.url?` · <a href="${it.url}" target="_blank" rel="noopener">Original Tweet ↗</a>`:""}</div>
+  hLeft.innerHTML=`<div class="entry-meta">${it.date||""} ${it.url?` · <a href="${it.url}" target="_blank" rel="noopener">Original ↗</a>`:""}</div>
                    <div class="entry-title">${it.title||""}</div>`;
   const actions=document.createElement("div"); actions.className="acc-actions";
 
-  // Bookmark button
   const bm=document.createElement("button"); bm.className="bm-btn"; 
   const setBm=()=>{ const on=isBookmarked(safeId); bm.textContent= on?"★ Bookmarked":"☆ Bookmark"; bm.classList.toggle("active", on); };
   setBm(); bm.onclick=(e)=>{ e.stopPropagation(); toggleBookmark(safeId); setBm(); };
-
   actions.appendChild(bm);
 
-  // Admin buttons inline (small)
   if(isAdmin){
     const ebtn=document.createElement("button"); ebtn.className="btn"; ebtn.textContent="Edit"; ebtn.onclick=(e)=>{e.stopPropagation(); editEntry(i);};
     const dbtn=document.createElement("button"); dbtn.className="btn"; dbtn.textContent="Delete"; dbtn.onclick=(e)=>{e.stopPropagation(); delEntry(i);};
@@ -260,24 +253,28 @@ function card(it,i){
 
   head.append(hLeft,actions);
 
-  // Body
   const body=document.createElement("div"); body.className="acc-body";
   const grid=document.createElement("div"); grid.className="twocol";
   const left=document.createElement("div"); left.className="panel"; left.innerHTML=`<h3>Original Lore</h3>${md(it.original)}`;
   const right=document.createElement("div"); right.className="panel"; right.style.display=showComm?"block":"none"; right.innerHTML=`<h3>Commentary</h3>${md(it.comment)}`;
   grid.append(left,right);
 
+  if(it.img){
+    const imgPanel=document.createElement("div"); 
+    imgPanel.className="panel"; 
+    imgPanel.innerHTML=`<h3>Image</h3><img src="${it.img}" alt="" style="max-width:100%;border-radius:8px">`;
+    grid.append(imgPanel);
+  }
+
   const chips=document.createElement("div"); chips.className="chips";
   (it.tags||"").split(",").map(s=>s.trim()).filter(Boolean).forEach(t=>{ const s=document.createElement("span"); s.className="chip"; s.textContent=t; chips.appendChild(s); });
   body.append(grid, chips);
 
-  // Toggle open/close + save last read
   head.addEventListener("click", ()=>{
     body.classList.toggle("open");
     setLastRead(safeId);
   });
 
-  // Save last read when entry comes into view (first time)
   const io=new IntersectionObserver((ents)=>{ ents.forEach(en=>{ if(en.isIntersecting){ setLastRead(safeId); io.disconnect(); } }); }, {threshold:0.4});
   io.observe(art);
 
@@ -295,8 +292,8 @@ function paint(){
   const box=$("#content"); box.innerHTML="";
   list.forEach((it,i)=> box.appendChild(card(it,i)));
 
-  renderTags();     // admin only
-  updateResumeBar();// resume banner
+  renderTags();
+  updateResumeBar();
 }
 
 /* ====== Admin UI ====== */
@@ -308,7 +305,7 @@ function applyAdmin(){
   $("#enterAdmin").classList.toggle("hidden",isAdmin);
   $("#exitAdmin").classList.toggle("hidden",!isAdmin);
   $("#exportBtn").classList.toggle("hidden",!isAdmin);
-  paint(); // will also renderTags + updateResumeBar
+  paint();
 }
 
 /* ====== Editor (real form) ====== */
@@ -330,7 +327,21 @@ function saveEntry(){
 }
 function editEntry(i){ alert("Admin: edit entry "+(DATA[i]?.id||i)); }
 function delEntry(i){ if(confirm("Delete this entry?")){ DATA.splice(i,1); paint(); } }
-function exportJSON(){ const blob=new Blob([JSON.stringify(DATA,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="data.json"; a.click(); }
+function exportJSON(){
+  try {
+    const blob = new Blob([JSON.stringify(DATA,null,2)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "data.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert("Export failed: " + e);
+  }
+}
 
 /* ====== Events ====== */
 $("#toggleComm").addEventListener("click",()=>{ showComm=!showComm; paint(); });
@@ -349,7 +360,7 @@ $("#clear").addEventListener("click",()=>{ if($("#q")) $("#q").value=""; paint()
 (async()=>{
   await loadData();
   loadBookmarks();
-  applyAdmin();   // starts in viewer (clean), then paint
+  applyAdmin();
 })();
 </script>
 
@@ -369,6 +380,7 @@ $("#clear").addEventListener("click",()=>{ if($("#q")) $("#q").value=""; paint()
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" onclick="saveEntry()">Save</button>
+      <button class="btn" onclick="exportJSON()">Export JSON</button>
       <button class="btn" onclick="closeForm()">Cancel</button>
     </div>
   </div>
