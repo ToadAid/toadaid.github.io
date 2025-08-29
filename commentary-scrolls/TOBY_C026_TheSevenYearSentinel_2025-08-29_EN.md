@@ -2,7 +2,7 @@
 id: TOBY_C026
 title: The Seven-Year Sentinel
 date: 2025-08-29
-epoch: E4 (Expansion)
+epoch: E4 (Endurance)
 rune: Rune3
 tags: [Commentary, Rune3, Patience, Sacrifice]
 symbols: 7️⃣❄️🔥🐸🛡️
