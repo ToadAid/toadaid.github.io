@@ -2,7 +2,7 @@
 id: TOBY_C022
 title: Diagrams of the Covenant
 date: 2025-08-29
-epoch: E3 (Evolution)
+epoch: E3 (Endurance)
 rune: Rune3
 tags: [Symbols, Diagrams, Commentary]
 symbols: 📜🖼️🍃🔥🐸
