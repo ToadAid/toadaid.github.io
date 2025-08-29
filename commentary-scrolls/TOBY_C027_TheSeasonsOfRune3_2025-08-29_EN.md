@@ -2,7 +2,7 @@
 id: TOBY_C027
 title: The Seasons of Rune3
 date: 2025-08-29
-epoch: E4 (Expansion)
+epoch: E4 (Endurance)
 rune: Rune3
 tags: [Commentary, Rune3, Seasons, Patience]
 symbols: 🍂🌸🌑🌾🐸
