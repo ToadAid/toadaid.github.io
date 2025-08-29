@@ -2,7 +2,7 @@
 id: TOBY_C025
 title: The 730 Dawns
 date: 2025-08-29
-epoch: E4 (Expansion)
+epoch: E4 (Endurance)
 rune: Rune3
 tags: [Commentary, Rune3, Patience, Drip]
 symbols: ⌛🌅📜🐸🔥
