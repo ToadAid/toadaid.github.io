@@ -2,7 +2,7 @@
 id: TOBY_C028
 title: The Guard Vault’s Watchers
 date: 2025-08-29
-epoch: E4 (Expansion)
+epoch: E4 (Endurance)
 rune: Rune3
 tags: [Commentary, Rune3, Guardianship, Vault]
 symbols: 🔒👁️🐸🔥👐
