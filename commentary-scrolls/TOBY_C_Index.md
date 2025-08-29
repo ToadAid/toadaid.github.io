@@ -1,19 +1,23 @@
-
+---
 id: TOBY_C_Index
-title: Commentary Scrolls Index (C000–C020)
+title: Commentary Scrolls Index (C000–C021)
 date: 2025-08-29
 epoch: E3 (Evolution)
+rune: Rune3
 tags: [Index, Commentary, Overview]
 symbols: 📜🪞🍃🔥🐸
 chain: @base
 ---
 
-# TOBY_C_Index — Commentary Scrolls (C000–C020)
+# TOBY_C_Index — Commentary Scrolls (C000–C021)
+
+> Note: C000–C020 are written in **E3 (Evolution)** within **Rune3**.  
+> C021 is the bridge pointing from **E3 → E4**.
 
 ## Preface
 - **C000 — Preface to Commentary Scrolls**  
   *Introduces the purpose of Commentary Scrolls as bridges beside the Lore.*  
-  [`TOBY_C000_PrefaceToCommentaryScrolls_2025-08-29_EN.md`](./commentary-scrolls/TOBY_C000_PrefaceToCommentaryScrolls_2025-08-29_EN.md)
+  [`TOBY_C000_PrefaceToCommentaryScrolls_2025-08-29_EN.md`](./TOBY_C000_PrefaceToCommentaryScrolls_2025-08-29_EN.md)
 
 ---
 
@@ -106,3 +110,10 @@ chain: @base
 - **C020 — The Seasons Yet to Come**  
   *Future cycles promised in Rune3’s covenant.*  
   [`TOBY_C020_TheSeasonsYetToCome_2025-08-29_EN.md`](./TOBY_C020_TheSeasonsYetToCome_2025-08-29_EN.md)
+
+---
+
+## Bridge to E4
+- **C021 — The Vault of Epoch4: Patience**  
+  *Bridge scroll pointing from Rune3 in E3 to the foundation of E4.*  
+  [`TOBY_C021_TheVaultOfEpoch4_2025-08-29_EN.md`](./TOBY_C021_TheVaultOfEpoch4_2025-08-29_EN.md)
