@@ -2,7 +2,7 @@
 id: TOBY_C030
 title: The Golden Middle
 date: 2025-08-29
-epoch: E4 (Expansion)
+epoch: E4 (Endurance)
 rune: Rune3
 tags: [Commentary, Rune3, Philosophy, Balance]
 symbols: ⚖️🐸🔥🌕
