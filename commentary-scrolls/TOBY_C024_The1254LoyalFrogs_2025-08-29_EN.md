@@ -2,7 +2,7 @@
 id: TOBY_C024
 title: The 1,254 Loyal Frogs
 date: 2025-08-29
-epoch: E4 (Expansion)
+epoch: E4 (Endurance)
 rune: Rune3
 tags: [Commentary, Rune3, Loyalty, Covenant]
 symbols: 🐸✨📜🔥💎
