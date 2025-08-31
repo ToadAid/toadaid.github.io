@@ -1,4 +1,3 @@
-
 id: TOBY_C026
 title: The Seven-Year Sentinel
 date: 2025-08-29
