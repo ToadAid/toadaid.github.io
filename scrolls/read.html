@@ -53,7 +53,7 @@
     <input id="q" class="searchbox" placeholder="Search in scroll… (Enter)">
     <button id="aPlus" class="btn" title="Increase font">A+</button>
     <button id="aMinus" class="btn" title="Decrease font">A-</button>
-    <button id="toggleTheme" class="btn" title="Theme">☀️/🌙</button>
+    <button id="toggleTheme" class="btn" title="Theme">🌙 Night</button>
     <div class="spacer"></div>
     <button id="bookmarkBtn" class="btn" title="Bookmark">🔖 Bookmark</button>
     <button id="shareBtn" class="btn" title="Copy link">🔗 Share</button>
@@ -70,34 +70,42 @@
 
 <div class="toast" id="toast">Copied!</div>
 
-<!-- marked.js for Markdown -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 (function(){
   const $ = sel => document.querySelector(sel);
   const params = new URLSearchParams(location.search);
-  const path = params.get('path');   // e.g. scrolls/commentary-scrolls/TOBY_xxx.md
-  const from = params.get('from');   // optional source json path for metadata
+  const pathParam = params.get('path');   // e.g. scrolls/commentary-scrolls/TOBY_xxx.md
+  const from = params.get('from') || '/scrolls/commentary-scrolls/data.json';
   const themeBtn = $('#toggleTheme');
   const toast = $('#toast');
 
-  // Theme
+  // -------- Theme (fix: set initial + correct label) --------
   const savedTheme = localStorage.getItem('scrollTheme');
-  if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  const initialTheme = savedTheme || (prefersLight ? 'light' : 'dark');
+  document.documentElement.setAttribute('data-theme', initialTheme);
+  updateThemeButton(initialTheme);
+
   themeBtn.addEventListener('click', ()=>{
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = cur==='light' ? 'dark' : 'light';
+    const next = (cur === 'light') ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('scrollTheme', next);
+    updateThemeButton(next);
   });
 
-  // Font size controls
+  function updateThemeButton(theme){
+    themeBtn.textContent = (theme === 'light') ? '🌙 Night' : '☀️ Day';
+  }
+
+  // -------- Font size --------
   let fs = parseFloat(localStorage.getItem('scrollFS') || '16');
   document.body.style.fontSize = fs + 'px';
   $('#aPlus').onclick = ()=>{ fs=Math.min(fs+1,22); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
   $('#aMinus').onclick = ()=>{ fs=Math.max(fs-1,12); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
 
-  // Share
+  // -------- Share --------
   $('#shareBtn').onclick = async()=>{
     try{
       await navigator.clipboard.writeText(location.href);
@@ -105,58 +113,117 @@
     }catch(e){ showToast('Copy failed'); }
   };
 
-  // Bookmark (local only)
+  // -------- Bookmark (local) --------
   $('#bookmarkBtn').onclick = ()=>{
-    if(!path) return;
+    if(!pathParam) return;
     const key='scrollBookmarks';
     const list = JSON.parse(localStorage.getItem(key) || '[]');
-    if(!list.includes(path)){ list.push(path); localStorage.setItem(key, JSON.stringify(list)); showToast('Bookmarked'); }
+    if(!list.includes(pathParam)){ list.push(pathParam); localStorage.setItem(key, JSON.stringify(list)); showToast('Bookmarked'); }
     else { showToast('Already bookmarked'); }
   };
 
-  // Mini toast
   function showToast(txt){
     toast.textContent = txt; toast.style.display='block';
     setTimeout(()=>toast.style.display='none', 1200);
   }
 
-  // Load metadata (from data.json if provided)
+  // -------- Fetch metadata from data.json (optional) --------
   async function loadMeta(){
-    if(!from) return null;
     try{
       const res = await fetch(from, {cache:'no-store'});
       if(!res.ok) return null;
       const arr = await res.json();
-      const item = arr.find(x => (x.url && location.pathname.replace(/^\//,'')+location.search).includes(x.url)) ||
-                   arr.find(x => x.url === path) ||
-                   null;
-      return item;
+      return arr.find(x => x.url === normalizePath(pathParam)) || null;
     }catch{ return null; }
   }
 
-  // Fetch markdown file
+  // -------- Fetch markdown + render (fix: complete marked.parse) --------
   async function loadMD(){
-    if(!path){ $('#title').textContent='Missing ?path='; $('#content').textContent='Provide ?path=... to a .md file.'; return; }
-    const res = await fetch('/'+path, {cache:'no-store'});
-    if(!res.ok){ $('#title').textContent='Not found'; $('#content').textContent='Could not fetch '+path; return; }
+    if(!pathParam){
+      $('#title').textContent='Missing ?path=';
+      $('#content').textContent='Provide ?path=... to a .md file.';
+      return;
+    }
+    const mdPath = '/'+normalizePath(pathParam);
+    const res = await fetch(mdPath, {cache:'no-store'});
+    if(!res.ok){
+      $('#title').textContent='Not found';
+      $('#content').textContent='Could not fetch '+mdPath;
+      return;
+    }
     const raw = await res.text();
 
-    // Try to parse front-matter
+    // parse front-matter
     let meta = {}, body = raw;
     const m = raw.match(/^---\s*?\n([\s\S]*?)\n---\s*?\n?/);
-    if(m){
-      try{
-        meta = parseYAML(m[1]);
-        body = raw.slice(m[0].length);
-      }catch{ body = raw; }
+    if(m){ try{ meta = parseYAML(m[1]); body = raw.slice(m[0].length); }catch{} }
+
+    // optional: merge with data.json metadata
+    const j = await loadMeta();
+    if(j){
+      meta.title = meta.title || j.title;
+      meta.date  = meta.date  || j.date;
+      meta.cover = meta.cover || j.img;
+      meta.tags  = meta.tags  || j.tags;
+      meta.id    = meta.id    || j.id;
     }
 
-    // Render
-    $('#title').textContent = meta.title || guessTitle(body) || path.split('/').pop().replace(/\.md$/,'');
+    // Render header/meta
+    $('#title').textContent = meta.title || guessTitle(body) || fileBase(mdPath);
     const lead = $('#lead');
     if(meta.cover){ lead.src = meta.cover; lead.classList.remove('hidden'); lead.alt = meta.title || 'Cover'; }
     $('#meta').innerHTML = [
       meta.id ? `<span>🆔 ${escapeHtml(meta.id)}</span>` : '',
       meta.date ? `<span>📅 ${escapeHtml(meta.date)}</span>` : ''
     ].filter(Boolean).join('<span>•</span>');
-    $('#content').innerHTML = marked.pars
+
+    // Render markdown
+    try{
+      $('#content').innerHTML = marked.parse(body);
+    }catch(e){
+      $('#content').textContent = body; // plain fallback
+    }
+
+    // tags
+    const tags = (meta.tags && Array.isArray(meta.tags)) ? meta.tags : [];
+    $('#tags').innerHTML = tags.map(t=>`<span class="pill">#${escapeHtml(String(t))}</span>`).join('');
+
+    // search
+    const q = document.getElementById('q');
+    q.addEventListener('keydown', e=>{
+      if(e.key !== 'Enter') return;
+      highlight(q.value);
+    });
+  }
+
+  // -------- Helpers --------
+  function escapeHtml(s){ return (s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function guessTitle(md){ const m = md.match(/^\s*#\s+(.+)$/m); return m ? m[1].trim() : ''; }
+  function parseYAML(y){
+    const o={}; y.split(/\r?\n/).forEach(line=>{
+      const m = line.match(/^(\w+):\s*(.*)$/); if(!m) return;
+      const k=m[1]; let v=m[2].trim();
+      if(v.startsWith('[') && v.endsWith(']')){
+        o[k]=v.slice(1,-1).split(',').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
+      }else{ o[k]=v.replace(/^["']|["']$/g,''); }
+    }); return o;
+  }
+  function fileBase(p){ return (p.split('/').pop()||'').replace(/\.md$/,''); }
+  function normalizePath(p){ return String(p||'').replace(/^\/+/, ''); }
+
+  // very light highlighter
+  function highlight(term){
+    const art = $('#content'); const t = (term||'').trim();
+    if(!t){ art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,''); return; }
+    const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,''); // clear
+    art.innerHTML = art.innerHTML.replace(new RegExp(`(${esc})`, 'gi'), '<mark>$1</mark>');
+    const first = art.querySelector('mark'); if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  // go!
+  loadMD();
+})();
+</script>
+</body>
+</html>
