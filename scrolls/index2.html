@@ -73,11 +73,10 @@
   <nav class="breadcrumb"><a href="/">← Back to Home</a></nav>
 
   <main class="wrap">
-    <!-- Static / curated section you already had -->
+    <!-- Featured Section -->
     <h2 class="section-title">Featured Scrolls</h2>
     <section class="grid">
-      <!-- T001 -->
-      <a class="card" href="/scrolls/TOAD_T001/">
+      <a class="card" href="/scrolls/read.html?path=scrolls/TOAD_T001/TOAD_T001_HonorCard.md&from=/scrolls/commentary-scrolls/data.json">
         <img class="thumb" src="/scrolls/TOAD_T001/TOAD_T001_HonorCard.jpg" alt="TOAD_T001 Honor Card" />
         <div class="body">
           <h3 class="title">TOAD_T001 · Humble Toad</h3>
@@ -89,8 +88,7 @@
         </div>
       </a>
 
-      <!-- L139 -->
-      <a class="card" href="/scrolls/TOBY_L139/">
+      <a class="card" href="/scrolls/read.html?path=scrolls/TOBY_L139/l139.md&from=/scrolls/commentary-scrolls/data.json">
         <img class="thumb" src="/scrolls/TOBY_L139/l139-signs.jpg" alt="TOBY_L139 artwork" />
         <div class="body">
           <h3 class="title">TOBY_L139 · The Signs Were Never Hidden</h3>
@@ -102,8 +100,7 @@
         </div>
       </a>
 
-      <!-- L140 -->
-      <a class="card" href="/scrolls/TOBY_L140/">
+      <a class="card" href="/scrolls/read.html?path=scrolls/TOBY_L140/l140.md&from=/scrolls/commentary-scrolls/data.json">
         <img class="thumb" src="/scrolls/TOBY_L140/l140-patience-vault.jpg" alt="TOBY_L140 artwork" />
         <div class="body">
           <h3 class="title">TOBY_L140 · The Vault of Patience</h3>
@@ -115,8 +112,7 @@
         </div>
       </a>
 
-      <!-- L141 -->
-      <a class="card" href="/scrolls/TOBY_L141/">
+      <a class="card" href="/scrolls/read.html?path=scrolls/TOBY_L141/l141.md&from=/scrolls/commentary-scrolls/data.json">
         <img class="thumb" src="/scrolls/TOBY_L141/nolight_without_darkness.jpg" alt="TOBY_L141 artwork" />
         <div class="body">
           <h3 class="title">TOBY_L141 · No Light Without Darkness</h3>
@@ -129,8 +125,7 @@
         </div>
       </a>
 
-      <!-- L142 -->
-      <a class="card" href="/scrolls/TOBY_L142/">
+      <a class="card" href="/scrolls/read.html?path=scrolls/TOBY_L142/l142.md&from=/scrolls/commentary-scrolls/data.json">
         <img class="thumb" src="/scrolls/TOBY_L142/unmoved_by_imitation.jpg" alt="TOBY_L142 artwork" />
         <div class="body">
           <h3 class="title">TOBY_L142 · Unmoved by Imitation</h3>
@@ -142,16 +137,6 @@
           </div>
         </div>
       </a>
-
-      <!-- Placeholder -->
-      <div class="card" aria-hidden="true">
-        <img class="thumb" src="/assets/art/placeholder.jpg" alt="More coming soon" />
-        <div class="body">
-          <h3 class="title">More Scrolls Coming</h3>
-          <div class="meta">Recorded by ToadAid</div>
-          <div><span class="tag">Soon</span></div>
-        </div>
-      </div>
     </section>
 
     <!-- Dynamic commentary section -->
@@ -167,56 +152,37 @@
   </footer>
 
   <script>
-    // Load /scrolls/commentary-scrolls/data.json and render as cards
-    (async function loadCommentary(){
+    // Load /scrolls/commentary-scrolls/data.json and render as cards pointing to reader
+    (async function(){
       const grid = document.getElementById('commentary-grid');
       const empty = document.getElementById('commentary-empty');
       const title = document.getElementById('commentary-title');
 
       try{
-        // Because this file is /scrolls/index.html, use a relative path:
         const res = await fetch('./commentary-scrolls/data.json', { cache: 'no-store' });
         if(!res.ok) throw new Error(res.status + ' ' + res.statusText);
         const items = await res.json();
+        if(!items.length){ empty.style.display='block'; return; }
+        title.style.display='block';
 
-        // Normalize potential schemas
-        const norm = (items || []).map(x => ({
-          id: x.id || x.slug || '',
-          date: x.date || '',
-          title: x.title || (x.meta && x.meta.title) || 'Untitled Scroll',
-          url: x.url || `scrolls/commentary-scrolls/${x.file || (x.id + '.md')}`,
-          img: x.img || x.cover || '/assets/art/placeholder.jpg',
-          tags: Array.isArray(x.tags) ? x.tags : [],
-        }));
-
-        if(norm.length === 0){
-          empty.style.display = 'block';
-          return;
-        }
-
-        title.style.display = 'block';
-        grid.innerHTML = norm.map(toCard).join('');
-      }catch(err){
-        // On missing/invalid JSON, just keep the page usable
-        console.error('Commentary load failed:', err);
-        empty.style.display = 'block';
+        grid.innerHTML = items.map(it=>{
+          const href = `/scrolls/read.html?path=${encodeURIComponent(it.url)}&from=/scrolls/commentary-scrolls/data.json`;
+          const tags = (it.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+          return `
+            <a class="card" href="${href}">
+              ${it.img ? `<img class="thumb" src="${it.img}" alt="${it.title}">` : ''}
+              <div class="body">
+                <h3 class="title">${it.title}</h3>
+                <div class="meta">${it.date||'Commentary Scroll'}</div>
+                <div>${tags}</div>
+              </div>
+            </a>
+          `;
+        }).join('');
+      }catch(e){
+        console.error(e);
+        empty.style.display='block';
       }
-
-      function toCard(it){
-        const tags = it.tags.map(t => `<span class="tag">${escapeHtml(String(t))}</span>`).join('');
-        return `
-          <a class="card" href="/${escapeAttr(it.url)}">
-            <img class="thumb" src="${escapeAttr(it.img)}" alt="${escapeAttr(it.title)}" />
-            <div class="body">
-              <h3 class="title">${escapeHtml(it.title)}</h3>
-              <div class="meta">${it.date ? 'Date: '+escapeHtml(it.date) : 'Commentary Scroll'}</div>
-              <div>${tags}</div>
-            </div>
-          </a>
-        `;
-      }
-      function escapeHtml(s){ return (s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-      function escapeAttr(s){ return escapeHtml(s); }
     })();
   </script>
 </body>
