@@ -19,17 +19,11 @@
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
   a{color:var(--link);text-decoration:none}
   a:hover{text-decoration:underline}
-  header{
-    position:sticky;top:0;z-index:10;
-    background:linear-gradient(180deg,rgba(53,94,59,.98),rgba(53,94,59,.92));
-    color:#fff;border-bottom:1px solid #00000020;
-  }
+  header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,rgba(53,94,59,.98),rgba(53,94,59,.92));color:#fff;border-bottom:1px solid #00000020;}
   .bar{max-width:1100px;margin:0 auto;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .bar a.home{color:#fff;opacity:.95}
   .spacer{flex:1}
-  .btn{
-    background:#ffffff18;border:1px solid #ffffff35;color:#fff;padding:6px 10px;border-radius:10px;cursor:pointer
-  }
+  .btn{background:#ffffff18;border:1px solid #ffffff35;color:#fff;padding:6px 10px;border-radius:10px;cursor:pointer}
   .wrap{max-width:900px;margin:0 auto;padding:22px 16px 60px}
   .meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.9rem;margin-bottom:16px}
   .title{font-weight:800;font-size:clamp(1.4rem,2.8vw,2rem);margin:6px 0 10px}
@@ -43,7 +37,6 @@
   .hidden{display:none}
   .searchbox{min-width:200px;padding:6px 8px;border-radius:10px;border:1px solid #ffffff40;background:#ffffff18;color:#fff;outline:none}
   .searchbox::placeholder{color:#ffffffcc}
-  .note{margin:10px 0 0;color:#9a6; font-size:.9rem}
   mark{background:#fff59d;color:#000;padding:0 2px;border-radius:4px}
 </style>
 </head>
@@ -67,7 +60,6 @@
   <img id="lead" class="leadimg hidden" alt="">
   <article id="content">Fetching scroll…</article>
   <div class="foot" id="tags"></div>
-  <div id="note" class="note"></div>
 </main>
 
 <div class="toast" id="toast">Copied!</div>
@@ -75,142 +67,99 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 (function(){
-  const $ = s=>document.querySelector(s);
-  const note = $('#note');
-  function say(msg){ note.textContent = msg; }
+  const $ = sel => document.querySelector(sel);
+  const params = new URLSearchParams(location.search);
+  const rawPath = params.get('path');
+  const fromParam = params.get('from');
+  const toast = $('#toast');
 
-  // ---- theme ----
-  const themeBtn = $('#toggleTheme');
+  // --- Theme ---
   const savedTheme = localStorage.getItem('scrollTheme');
   const prefersLight = matchMedia('(prefers-color-scheme: light)').matches;
   const initialTheme = savedTheme || (prefersLight ? 'light' : 'dark');
   document.documentElement.setAttribute('data-theme', initialTheme);
-  themeBtn.textContent = initialTheme==='light' ? '🌙 Night' : '☀️ Day';
-  themeBtn.onclick = ()=>{
+  $('#toggleTheme').textContent = initialTheme === 'light' ? '🌙 Night' : '☀️ Day';
+  $('#toggleTheme').onclick = ()=>{
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = cur==='light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('scrollTheme', next);
-    themeBtn.textContent = next==='light' ? '🌙 Night' : '☀️ Day';
+    const next = cur==='light'?'dark':'light';
+    document.documentElement.setAttribute('data-theme',next);
+    localStorage.setItem('scrollTheme',next);
+    $('#toggleTheme').textContent = next==='light'?'🌙 Night':'☀️ Day';
   };
 
-  // ---- font ----
+  // --- Font size ---
   let fs = parseFloat(localStorage.getItem('scrollFS') || '16');
-  document.body.style.fontSize = fs + 'px';
+  document.body.style.fontSize = fs+'px';
   $('#aPlus').onclick = ()=>{ fs=Math.min(fs+1,22); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
   $('#aMinus').onclick = ()=>{ fs=Math.max(fs-1,12); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
 
-  // ---- share / bookmark ----
-  const toast = $('#toast');
-  function toastMsg(t){ toast.textContent=t; toast.style.display='block'; setTimeout(()=>toast.style.display='none',1200); }
-  $('#shareBtn').onclick = async()=>{ try{ await navigator.clipboard.writeText(location.href); toastMsg('Link copied'); }catch{ toastMsg('Copy failed'); } };
-  $('#bookmarkBtn').onclick = ()=>{ const p = new URLSearchParams(location.search).get('path'); if(!p) return; const k='scrollBookmarks'; const list=JSON.parse(localStorage.getItem(k)||'[]'); if(!list.includes(p)){ list.push(p); localStorage.setItem(k,JSON.stringify(list)); toastMsg('Bookmarked'); } else toastMsg('Already bookmarked'); };
+  // --- Share / Bookmark ---
+  $('#shareBtn').onclick = async()=>{ try{ await navigator.clipboard.writeText(location.href); msg('Link copied'); }catch{ msg('Copy failed'); } };
+  $('#bookmarkBtn').onclick = ()=>{ if(!rawPath) return; const k='scrollBookmarks'; const list=JSON.parse(localStorage.getItem(k)||'[]'); if(!list.includes(rawPath)){ list.push(rawPath); localStorage.setItem(k,JSON.stringify(list)); msg('Bookmarked'); } else msg('Already bookmarked'); };
+  function msg(t){ toast.textContent=t; toast.style.display='block'; setTimeout(()=>toast.style.display='none',1200); }
 
-  // ---- helpers ----
-  function resolvePath(p){
-    if(!p) return '';
-    try{ p = decodeURIComponent(p); }catch{}
-    const mBlob = p.match(/^https?:\/\/github\.com\/[^\/]+\/[^\/]+\/blob\/[^\/]+\/(.+)$/);
-    if(mBlob) return mBlob[1];
-    const mRaw  = p.match(/^https?:\/\/raw\.githubusercontent\.com\/[^\/]+\/[^\/]+\/[^\/]+\/(.+)$/);
-    if(mRaw) return mRaw[1];
-    return p.replace(/^\/+/, '');
-  }
-  function escapeHtml(s){ return (s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function guessTitle(md){ const m = md.match(/^\s*#\s+(.+)$/m); return m ? m[1].trim() : ''; }
-  function parseYAML(y){
-    const o={}; y.split(/\r?\n/).forEach(line=>{
-      const m = line.match(/^(\w+):\s*(.*)$/); if(!m) return;
-      const k=m[1]; let v=m[2].trim();
-      if(v.startsWith('[') && v.endsWith(']')) o[k]=v.slice(1,-1).split(',').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
-      else o[k]=v.replace(/^["']|["']$/g,'');
-    }); return o;
-  }
-  function highlight(term){
-    const art = $('#content'); const t = (term||'').trim();
-    if(!t){ art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,''); return; }
-    const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,'');
-    art.innerHTML = art.innerHTML.replace(new RegExp(`(${esc})`, 'gi'), '<mark>$1</mark>');
-    const first = art.querySelector('mark'); if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
+  // --- Path helper ---
+  function norm(p){ try{ return decodeURIComponent(String(p||'').replace(/^\/+/,'')); }catch{return p;} }
+  const pathParam = norm(rawPath);
+
+  // --- JSON fetch ---
+  const jsonCandidates = [
+    ...(fromParam?[fromParam]:[]),
+    './commentary-scrolls/data.json',
+    '/scrolls/commentary-scrolls/data.json'
+  ];
+  async function loadJson(){
+    for(const u of jsonCandidates){
+      try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return await r.json(); }catch{}
+    }
+    return null;
   }
 
-  // ---- main ----
-  const params = new URLSearchParams(location.search);
-  const rawPath = params.get('path');
-  const path = resolvePath(rawPath);
-
-  if(!path){
-    $('#title').textContent = 'Missing ?path=';
-    $('#content').innerHTML = '<p>Use <code>?path=scrolls/commentary-scrolls/FILE.md</code></p>';
-    say('Example: /scrolls/read.html?path=scrolls/commentary-scrolls/TOBY_C004_TheFrogAsThePeople_2025-08-29_EN.md');
-    return;
-  }
-
-  (async function(){
-    // 1) Render markdown first (so page always shows)
-    const mdUrl = '/'+path.replace(/^\/+/, '');
-    let raw = '';
-    try{
-      const res = await fetch(mdUrl, {cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      raw = await res.text();
-    }catch(e){
-      $('#title').textContent='Not found';
-      $('#content').textContent='Could not fetch '+mdUrl;
-      say('Check that FILE.md exists at '+mdUrl);
-      return;
+  // --- Main loader ---
+  async function loadMD(){
+    // auto-load first scroll if none given
+    if(!pathParam){
+      const arr=await loadJson();
+      if(arr && arr.length && arr[0].url){
+        location.replace(`/scrolls/read.html?path=${encodeURIComponent(arr[0].url)}&from=/scrolls/commentary-scrolls/data.json`);
+        return;
+      }
+      $('#title').textContent='Missing ?path='; $('#content').textContent='No path and no data.json'; return;
     }
 
-    let meta = {}, body = raw;
-    const fm = raw.match(/^---\s*?\n([\s\S]*?)\n---\s*?\n?/);
-    if(fm){ try{ meta = parseYAML(fm[1]); body = raw.slice(fm[0].length); }catch{} }
+    const mdPath='/'+pathParam;
+    const res=await fetch(mdPath,{cache:'no-store'});
+    if(!res.ok){ $('#title').textContent='Not found'; $('#content').textContent='Could not fetch '+mdPath; return; }
+    const raw=await res.text();
 
-    $('#title').textContent = meta.title || guessTitle(body) || path.split('/').pop().replace(/\.md$/,'');
-    try{ $('#content').innerHTML = marked.parse(body); }catch{ $('#content').textContent = body; }
+    // front matter
+    let meta={},body=raw;
+    const m=raw.match(/^---\s*?\n([\s\S]*?)\n---\s*?\n?/);
+    if(m){ try{ meta=parseYAML(m[1]); body=raw.slice(m[0].length); }catch{} }
 
-    // 2) Then try to load metadata from data.json (optional)
-    const jsonPaths = [
-      params.get('from'),
-      './commentary-scrolls/data.json',
-      '/scrolls/commentary-scrolls/data.json'
-    ].filter(Boolean);
+    // merge with data.json
+    const arr=await loadJson();
+    if(arr){ const j=arr.find(x=>norm(x.url)===pathParam); if(j) Object.assign(meta,{title:meta.title||j.title,date:meta.date||j.date,cover:meta.cover||j.img,tags:meta.tags||j.tags,id:meta.id||j.id}); }
 
-    try{
-      let arr=null;
-      for(const jp of jsonPaths){
-        const r = await fetch(jp, {cache:'no-store'});
-        if(r.ok){ arr = await r.json(); break; }
-      }
-      if(arr){
-        const norm = s => String(s||'').replace(/^\/+/, '');
-        const it = arr.find(x => norm(x.url) === norm(path));
-        if(it){
-          // enrich header
-          meta.title = meta.title || it.title;
-          $('#title').textContent = meta.title;
-          if(it.img){
-            const lead = $('#lead'); lead.src = it.img; lead.classList.remove('hidden'); lead.alt = meta.title || 'Cover';
-          }
-          const dateBits = meta.date || it.date ? `<span>📅 ${escapeHtml(meta.date || it.date)}</span>` : '';
-          const idBits   = meta.id ? `<span>🆔 ${escapeHtml(meta.id)}</span>` : '';
-          $('#meta').innerHTML = [idBits, dateBits].filter(Boolean).join('<span>•</span>');
-          const tags = Array.isArray(meta.tags) ? meta.tags : (Array.isArray(it.tags) ? it.tags : []);
-          $('#tags').innerHTML = tags.map(t=>`<span class="pill">#${escapeHtml(String(t))}</span>`).join('');
-          say(''); // clear note
-        }else{
-          say('Note: file rendered. No matching item in data.json for '+path);
-        }
-      }else{
-        say('Note: file rendered. Could not load data.json (path mismatch).');
-      }
-    }catch{
-      say('Note: file rendered. data.json fetch error.');
-    }
+    // render
+    $('#title').textContent=meta.title||guessTitle(body)||fileBase(mdPath);
+    if(meta.cover){ $('#lead').src=meta.cover; $('#lead').classList.remove('hidden'); }
+    $('#meta').innerHTML=[meta.id?`<span>🆔 ${escapeHtml(meta.id)}</span>`:'',meta.date?`<span>📅 ${escapeHtml(meta.date)}</span>`:''].filter(Boolean).join('<span>•</span>');
+    try{ $('#content').innerHTML=marked.parse(body);}catch{ $('#content').textContent=body; }
+    $('#tags').innerHTML=(Array.isArray(meta.tags)?meta.tags:[]).map(t=>`<span class="pill">#${escapeHtml(t)}</span>`).join('');
 
-    // search hook
-    $('#q').addEventListener('keydown', e=>{ if(e.key==='Enter') highlight(e.target.value); });
-  })();
+    // search highlight
+    $('#q').addEventListener('keydown',e=>{if(e.key==='Enter') highlight($('#q').value);});
+  }
+
+  // --- Helpers ---
+  function escapeHtml(s){return (s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function guessTitle(md){const m=md.match(/^\s*#\s+(.+)$/m);return m?m[1].trim():'';}
+  function parseYAML(y){const o={};y.split(/\r?\n/).forEach(line=>{const m=line.match(/^(\w+):\s*(.*)$/);if(!m)return;const k=m[1];let v=m[2].trim();if(v.startsWith('[')&&v.endsWith(']')){o[k]=v.slice(1,-1).split(',').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);}else{o[k]=v.replace(/^["']|["']$/g,'');}});return o;}
+  function fileBase(p){return (p.split('/').pop()||'').replace(/\.md$/,'');}
+  function highlight(term){const art=$('#content');const t=(term||'').trim();if(!t){art.innerHTML=art.innerHTML.replace(/<\/?mark>/g,'');return;}const esc=t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');art.innerHTML=art.innerHTML.replace(/<\/?mark>/g,'');art.innerHTML=art.innerHTML.replace(new RegExp(`(${esc})`,'gi'),'<mark>$1</mark>');const first=art.querySelector('mark');if(first)first.scrollIntoView({behavior:'smooth',block:'center'});}
+  
+  loadMD();
 })();
 </script>
 </body>
