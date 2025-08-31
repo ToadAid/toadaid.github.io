@@ -1,82 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scroll Reader — ToadAid</title>
-<meta name="description" content="Reader for ToadAid Scrolls">
-<link rel="icon" href="/assets/icons/favicon.ico">
-<style>
-  :root{
-    --bg:#f5f1e6; --ink:#2f2f2f; --muted:#6b6b6b; --paper:#fffdf6; --ring:rgba(0,0,0,.08);
-    --accent:#355e3b; --link:#2f6b3a;
-  }
-  [data-theme="dark"]{
-    --bg:#0f1210; --ink:#e8f0e8; --muted:#a6b2a8; --paper:#0b0d0b; --ring:rgba(255,255,255,.06);
-    --accent:#7ed6a0; --link:#9bd4a8;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
-  a{color:var(--link);text-decoration:none}
-  a:hover{text-decoration:underline}
-  header{
-    position:sticky;top:0;z-index:10;
-    background:linear-gradient(180deg,rgba(53,94,59,.98),rgba(53,94,59,.92));
-    color:#fff;border-bottom:1px solid #00000020;
-  }
-  .bar{max-width:1100px;margin:0 auto;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .bar a.home{color:#fff;opacity:.95}
-  .spacer{flex:1}
-  .btn{
-    background:#ffffff18;border:1px solid #ffffff35;color:#fff;padding:6px 10px;border-radius:10px;cursor:pointer
-  }
-  .wrap{max-width:900px;margin:0 auto;padding:22px 16px 60px}
-  .meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.9rem;margin-bottom:16px}
-  .title{font-weight:800;font-size:clamp(1.4rem,2.8vw,2rem);margin:6px 0 10px}
-  .leadimg{width:100%;height:auto;border-radius:14px;background:#00000010}
-  article{background:var(--paper);border:1px solid var(--ring);box-shadow:0 10px 28px var(--ring);border-radius:16px;padding:22px}
-  article img{max-width:100%;height:auto;border-radius:8px}
-  article h1,article h2,article h3{scroll-margin-top:80px}
-  .foot{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .pill{border:1px solid var(--ring);padding:4px 10px;border-radius:999px;color:var(--muted);font-size:.85rem}
-  .toast{position:fixed;right:16px;bottom:16px;background:#000; color:#fff;padding:10px 12px;border-radius:10px;opacity:.9;display:none}
-  .hidden{display:none}
-  .searchbox{min-width:200px;padding:6px 8px;border-radius:10px;border:1px solid #ffffff40;background:#ffffff18;color:#fff;outline:none}
-  .searchbox::placeholder{color:#ffffffcc}
-  mark{background:#fff59d;color:#000;padding:0 2px;border-radius:4px}
-</style>
-</head>
-<body>
-<header>
-  <div class="bar">
-    <a class="home" href="/scrolls/">← Vault</a>
-    <input id="q" class="searchbox" placeholder="Search in scroll… (Enter)">
-    <button id="aPlus" class="btn" title="Increase font">A+</button>
-    <button id="aMinus" class="btn" title="Decrease font">A-</button>
-    <button id="toggleTheme" class="btn" title="Theme">🌙 Night</button>
-    <div class="spacer"></div>
-    <button id="bookmarkBtn" class="btn" title="Bookmark">🔖 Bookmark</button>
-    <button id="shareBtn" class="btn" title="Copy link">🔗 Share</button>
-  </div>
-</header>
-
-<main class="wrap">
-  <div class="meta" id="meta"></div>
-  <h1 class="title" id="title">Loading…</h1>
-  <img id="lead" class="leadimg hidden" alt="">
-  <article id="content">Fetching scroll…</article>
-  <div class="foot" id="tags"></div>
-</main>
-
-<div class="toast" id="toast">Copied!</div>
-
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 (function(){
   const $ = sel => document.querySelector(sel);
   const params = new URLSearchParams(location.search);
-  const rawPath = params.get('path');                      // might be site path OR GitHub blob URL
-  const fromParam = params.get('from');                    // optional override for JSON path
+  const rawPath = params.get('path');     // may be encoded, or a GitHub blob URL
+  const fromParam = params.get('from');   // optional override
   const themeBtn = $('#toggleTheme');
   const toast = $('#toast');
 
@@ -85,15 +13,14 @@
   const prefersLight = matchMedia('(prefers-color-scheme: light)').matches;
   const initialTheme = savedTheme || (prefersLight ? 'light' : 'dark');
   document.documentElement.setAttribute('data-theme', initialTheme);
-  updateThemeButton(initialTheme);
+  themeBtn.textContent = initialTheme === 'light' ? '🌙 Night' : '☀️ Day';
   themeBtn.addEventListener('click', ()=>{
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
     const next = cur === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('scrollTheme', next);
-    updateThemeButton(next);
+    themeBtn.textContent = next === 'light' ? '🌙 Night' : '☀️ Day';
   });
-  function updateThemeButton(theme){ themeBtn.textContent = theme === 'light' ? '🌙 Night' : '☀️ Day'; }
 
   // ---------- Font ----------
   let fs = parseFloat(localStorage.getItem('scrollFS') || '16');
@@ -102,13 +29,15 @@
   $('#aMinus').onclick = ()=>{ fs=Math.max(fs-1,12); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
 
   // ---------- Share / Bookmark ----------
-  $('#shareBtn').onclick = async()=>{ try{ await navigator.clipboard.writeText(location.href); showToast('Link copied'); }catch{ showToast('Copy failed'); } };
-  $('#bookmarkBtn').onclick = ()=>{ if(!rawPath) return; const key='scrollBookmarks'; const list = JSON.parse(localStorage.getItem(key) || '[]'); if(!list.includes(rawPath)){ list.push(rawPath); localStorage.setItem(key, JSON.stringify(list)); showToast('Bookmarked'); } else showToast('Already bookmarked'); };
-  function showToast(txt){ toast.textContent = txt; toast.style.display='block'; setTimeout(()=>toast.style.display='none', 1200); }
+  $('#shareBtn').onclick = async()=>{ try{ await navigator.clipboard.writeText(location.href); toastMsg('Link copied'); }catch{ toastMsg('Copy failed'); } };
+  $('#bookmarkBtn').onclick = ()=>{ if(!rawPath) return; const k='scrollBookmarks'; const list=JSON.parse(localStorage.getItem(k)||'[]'); if(!list.includes(rawPath)){ list.push(rawPath); localStorage.setItem(k,JSON.stringify(list)); toastMsg('Bookmarked'); } else toastMsg('Already bookmarked'); };
+  function toastMsg(t){ toast.textContent=t; toast.style.display='block'; setTimeout(()=>toast.style.display='none',1200); }
 
-  // ---------- Path resolution (accept GitHub URLs) ----------
+  // ---------- Path resolution ----------
   function resolvePath(p){
     if(!p) return '';
+    try { p = decodeURIComponent(p); } catch {}
+    // GitHub blob/raw -> site path
     const mBlob = p.match(/^https?:\/\/github\.com\/[^\/]+\/[^\/]+\/blob\/[^\/]+\/(.+)$/);
     if(mBlob) return mBlob[1];
     const mRaw = p.match(/^https?:\/\/raw\.githubusercontent\.com\/[^\/]+\/[^\/]+\/[^\/]+\/(.+)$/);
@@ -117,7 +46,7 @@
   }
   const pathParam = resolvePath(rawPath);
 
-  // ---------- Robust JSON fetcher ----------
+  // ---------- JSON fetch (tries multiple locations) ----------
   async function tryFetchJson(urls){
     for(const u of urls){
       try{
@@ -128,7 +57,7 @@
     return null;
   }
 
-  // Prefer explicit ?from=, else try relative then absolute
+  // IMPORTANT: order matters (relative first because read.html is under /scrolls/)
   const jsonCandidates = [
     ...(fromParam ? [fromParam] : []),
     './commentary-scrolls/data.json',
@@ -137,12 +66,19 @@
 
   async function loadMeta(){
     const data = await tryFetchJson(jsonCandidates);
-    if(!data) return null;
-    const norm = (x)=> String(x||'').replace(/^\/+/, '');
-    return data.find(x => norm(x.url) === norm(pathParam)) || null;
+    if(!data){
+      debug('Could not load data.json from:', jsonCandidates);
+      return null;
+    }
+    const norm = s => String(s||'').replace(/^\/+/, '');
+    const item = data.find(x => norm(x.url) === norm(pathParam)) || null;
+    if(!item){
+      debug('No item matched url=', pathParam);
+    }
+    return item;
   }
 
-  // ---------- Render ----------
+  // ---------- Markdown render ----------
   async function loadMD(){
     if(!pathParam){
       $('#title').textContent='Missing ?path=';
@@ -154,6 +90,7 @@
     if(!res.ok){
       $('#title').textContent='Not found';
       $('#content').textContent='Could not fetch '+mdPath;
+      debug('MD fetch failed:', mdPath, res.status);
       return;
     }
     const raw = await res.text();
@@ -163,7 +100,7 @@
     const m = raw.match(/^---\s*?\n([\s\S]*?)\n---\s*?\n?/);
     if(m){ try{ meta = parseYAML(m[1]); body = raw.slice(m[0].length); }catch{} }
 
-    // merge with data.json if available
+    // merge with data.json
     const j = await loadMeta();
     if(j){
       meta.title = meta.title || j.title;
@@ -211,7 +148,6 @@
     }); return o;
   }
   function fileBase(p){ return (p.split('/').pop()||'').replace(/\.md$/,''); }
-
   function highlight(term){
     const art = $('#content'); const t = (term||'').trim();
     if(!t){ art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,''); return; }
@@ -221,9 +157,20 @@
     const first = art.querySelector('mark'); if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
   }
 
+  // tiny on-page debug note (shows only if needed)
+  function debug(...args){
+    console.log('[reader]', ...args);
+    let el = document.getElementById('debugnote');
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'debugnote';
+      el.style.cssText = 'position:fixed;left:12px;bottom:12px;padding:6px 10px;border-radius:8px;background:#000000aa;color:#fff;font:12px system-ui';
+      document.body.appendChild(el);
+    }
+    el.textContent = 'Note: metadata not found. Check data.json path or url match.';
+  }
+
   // go
   loadMD();
 })();
 </script>
-</body>
-</html>
