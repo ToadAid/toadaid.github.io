@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scroll Vault — ToadAid</title>
+  <meta name="description" content="The ToadAid Scroll Vault — preserved Lore and offerings of Tobyworld." />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/assets/icons/site.webmanifest">
+  <meta name="theme-color" content="#355e3b" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Scroll Vault — ToadAid" />
+  <meta property="og:description" content="All preserved scrolls of Tobyworld — one flame, many hands." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://toadaid.github.io/scrolls/" />
+  <meta property="og:image" content="/assets/art/vault-hero.jpg" />
+
+  <style>
+    :root{
+      --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:56px 20px;text-align:center}
+    header h1{margin:0 0 8px;font-size:clamp(1.6rem,3.2vw,2.4rem)}
+    header p{margin:0;opacity:.92}
+
+    .wrap{max-width:1000px;margin:0 auto;padding:28px 18px 56px}
+    nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
+    nav.breadcrumb a{opacity:.95}
+
+    .section-title{margin:22px 2px 10px;font-weight:800;font-size:1.05rem;letter-spacing:.2px;color:#2d4a33}
+    .grid{display:grid;gap:18px}
+    @media (min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+    .card{
+      background:var(--paper);
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,.06);
+      box-shadow:0 8px 24px var(--ring);
+      display:flex;
+      flex-direction:column;
+      transition:transform .25s ease, box-shadow .25s ease;
+    }
+    .card:hover{ transform:translateY(-6px); box-shadow:0 12px 28px rgba(0,0,0,.12) }
+
+    .thumb{width:100%;height:auto;object-fit:cover;display:block;background:var(--bg);max-height:320px}
+    .body{padding:14px 14px 16px}
+    .title{font-weight:700;margin:0 0 6px}
+    .meta{font-size:.9rem;color:var(--muted);margin-bottom:8px}
+    .tag{display:inline-block;background:#eaf3ec;color:#244d30;border:1px solid #d4e7d8;padding:2px 8px;border-radius:999px;font-size:.78rem;margin-right:6px}
+
+    .empty{padding:14px;border:1px dashed #cfd8ce;border-radius:12px;color:var(--muted);text-align:center}
+    footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📜 Scroll Vault</h1>
+    <p>All preserved scrolls of Tobyworld — one flame, many hands.</p>
+  </header>
+
+  <nav class="breadcrumb"><a href="/">← Back to Home</a></nav>
+
+  <main class="wrap">
+    <!-- Static / curated section you already had -->
+    <h2 class="section-title">Featured Scrolls</h2>
+    <section class="grid">
+      <!-- T001 -->
+      <a class="card" href="/scrolls/TOAD_T001/">
+        <img class="thumb" src="/scrolls/TOAD_T001/TOAD_T001_HonorCard.jpg" alt="TOAD_T001 Honor Card" />
+        <div class="body">
+          <h3 class="title">TOAD_T001 · Humble Toad</h3>
+          <div class="meta">Epoch: Endurance (E4)</div>
+          <div>
+            <span class="tag">777</span>
+            <span class="tag">Lore</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- L139 -->
+      <a class="card" href="/scrolls/TOBY_L139/">
+        <img class="thumb" src="/scrolls/TOBY_L139/l139-signs.jpg" alt="TOBY_L139 artwork" />
+        <div class="body">
+          <h3 class="title">TOBY_L139 · The Signs Were Never Hidden</h3>
+          <div class="meta">Lore Scroll</div>
+          <div>
+            <span class="tag">Lore</span>
+            <span class="tag">777</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- L140 -->
+      <a class="card" href="/scrolls/TOBY_L140/">
+        <img class="thumb" src="/scrolls/TOBY_L140/l140-patience-vault.jpg" alt="TOBY_L140 artwork" />
+        <div class="body">
+          <h3 class="title">TOBY_L140 · The Vault of Patience</h3>
+          <div class="meta">Lore Scroll</div>
+          <div>
+            <span class="tag">Patience</span>
+            <span class="tag">Lore</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- L141 -->
+      <a class="card" href="/scrolls/TOBY_L141/">
+        <img class="thumb" src="/scrolls/TOBY_L141/nolight_without_darkness.jpg" alt="TOBY_L141 artwork" />
+        <div class="body">
+          <h3 class="title">TOBY_L141 · No Light Without Darkness</h3>
+          <div class="meta">Riddle Scroll</div>
+          <div>
+            <span class="tag">Riddle</span>
+            <span class="tag">Lore</span>
+            <span class="tag">777</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- L142 -->
+      <a class="card" href="/scrolls/TOBY_L142/">
+        <img class="thumb" src="/scrolls/TOBY_L142/unmoved_by_imitation.jpg" alt="TOBY_L142 artwork" />
+        <div class="body">
+          <h3 class="title">TOBY_L142 · Unmoved by Imitation</h3>
+          <div class="meta">Riddle Scroll</div>
+          <div>
+            <span class="tag">Riddle</span>
+            <span class="tag">Lore</span>
+            <span class="tag">Identity</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Placeholder -->
+      <div class="card" aria-hidden="true">
+        <img class="thumb" src="/assets/art/placeholder.jpg" alt="More coming soon" />
+        <div class="body">
+          <h3 class="title">More Scrolls Coming</h3>
+          <div class="meta">Recorded by ToadAid</div>
+          <div><span class="tag">Soon</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dynamic commentary section -->
+    <h2 class="section-title" id="commentary-title" style="display:none">Commentary Scrolls</h2>
+    <section class="grid" id="commentary-grid"></section>
+    <div id="commentary-empty" class="empty" style="display:none">
+      No commentary scrolls found yet. Add items to <code>/scrolls/commentary-scrolls/data.json</code>.
+    </div>
+  </main>
+
+  <footer>
+    🐸📜 Preserving every word. One Vault, forever.
+  </footer>
+
+  <script>
+    // Load /scrolls/commentary-scrolls/data.json and render as cards
+    (async function loadCommentary(){
+      const grid = document.getElementById('commentary-grid');
+      const empty = document.getElementById('commentary-empty');
+      const title = document.getElementById('commentary-title');
+
+      try{
+        // Because this file is /scrolls/index.html, use a relative path:
+        const res = await fetch('./commentary-scrolls/data.json', { cache: 'no-store' });
+        if(!res.ok) throw new Error(res.status + ' ' + res.statusText);
+        const items = await res.json();
+
+        // Normalize potential schemas
+        const norm = (items || []).map(x => ({
+          id: x.id || x.slug || '',
+          date: x.date || '',
+          title: x.title || (x.meta && x.meta.title) || 'Untitled Scroll',
+          url: x.url || `scrolls/commentary-scrolls/${x.file || (x.id + '.md')}`,
+          img: x.img || x.cover || '/assets/art/placeholder.jpg',
+          tags: Array.isArray(x.tags) ? x.tags : [],
+        }));
+
+        if(norm.length === 0){
+          empty.style.display = 'block';
+          return;
+        }
+
+        title.style.display = 'block';
+        grid.innerHTML = norm.map(toCard).join('');
+      }catch(err){
+        // On missing/invalid JSON, just keep the page usable
+        console.error('Commentary load failed:', err);
+        empty.style.display = 'block';
+      }
+
+      function toCard(it){
+        const tags = it.tags.map(t => `<span class="tag">${escapeHtml(String(t))}</span>`).join('');
+        return `
+          <a class="card" href="/${escapeAttr(it.url)}">
+            <img class="thumb" src="${escapeAttr(it.img)}" alt="${escapeAttr(it.title)}" />
+            <div class="body">
+              <h3 class="title">${escapeHtml(it.title)}</h3>
+              <div class="meta">${it.date ? 'Date: '+escapeHtml(it.date) : 'Commentary Scroll'}</div>
+              <div>${tags}</div>
+            </div>
+          </a>
+        `;
+      }
+      function escapeHtml(s){ return (s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+      function escapeAttr(s){ return escapeHtml(s); }
+    })();
+  </script>
+</body>
+</html>
