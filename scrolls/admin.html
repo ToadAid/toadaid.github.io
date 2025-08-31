@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Commentary Index Admin — ToadAid</title>
+<style>
+  body{font:15px/1.6 system-ui,Segoe UI,Roboto,Arial;margin:24px;max-width:900px}
+  h1{margin:0 0 10px} .muted{color:#6b6b6b}
+  button{padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#f7f7f7;cursor:pointer}
+  pre{background:#f5f5f5;border:1px solid #eee;border-radius:10px;padding:12px;overflow:auto}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 16px}
+</style>
+</head>
+<body>
+<h1>📜 Commentary Index Admin</h1>
+<p class="muted">Scans <code>scrolls/commentary-scrolls</code> via GitHub API, parses front-matter, and produces <code>data.json</code>.</p>
+
+<div class="row">
+  <button id="runBtn">Scan & Build</button>
+  <button id="dlBtn" disabled>Download data.json</button>
+  <span id="status" class="muted"></span>
+</div>
+
+<pre id="out">[Click “Scan & Build”]</pre>
+
+<script>
+const owner = "ToadAid";
+const repo  = "toadaid.github.io";
+const path  = "scrolls/commentary-scrolls";
+
+const out    = document.getElementById('out');
+const status = document.getElementById('status');
+const runBtn = document.getElementById('runBtn');
+const dlBtn  = document.getElementById('dlBtn');
+
+runBtn.onclick = async () => {
+  status.textContent = "Listing files...";
+  dlBtn.disabled = true; out.textContent = "";
+
+  try{
+    const listRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
+    if(!listRes.ok) throw new Error(`List failed: ${listRes.status}`);
+    const files = (await listRes.json()).filter(f => f.name.endsWith('.md'));
+
+    status.textContent = `Found ${files.length} markdown files. Fetching…`;
+
+    const items = [];
+    for (const f of files) {
+      const raw = await fetch(f.download_url).then(r => r.ok ? r.text() : "");
+      const {meta, body} = parseFM(raw);
+      const title = meta.title || guessTitle(body) || f.name.replace(/\.md$/,'');
+      const date  = meta.date  || "";
+      const cover = meta.cover || "";
+      const tags  = Array.isArray(meta.tags) ? meta.tags : [];
+      items.push({
+        id: meta.id || title,
+        date,
+        title,
+        url: `${path}/${f.name}`,
+        img: cover,
+        tags,
+        tweet: meta.tweet || ""
+      });
+    }
+
+    items.sort((a,b)=> String(b.date).localeCompare(String(a.date)));
+    const json = JSON.stringify(items, null, 2);
+
+    out.textContent = json;
+    status.textContent = "Done.";
+    dlBtn.disabled = false;
+    dlBtn.onclick = () => download("data.json", json);
+
+  }catch(err){
+    status.textContent = "Error. See console.";
+    console.error(err);
+    out.textContent = String(err);
+  }
+};
+
+function parseFM(txt){
+  const m = txt.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
+  if(!m) return {meta:{}, body:txt};
+  return {meta: tinyYAML(m[1]), body: txt.slice(m[0].length)};
+}
+function tinyYAML(y){
+  const o={};
+  y.split(/\r?\n/).forEach(line=>{
+    const m = line.match(/^(\w+):\s*(.*)$/); if(!m) return;
+    const k=m[1]; let v=m[2].trim();
+    if(v.startsWith('[') && v.endsWith(']')){
+      o[k]=v.slice(1,-1).split(',').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
+    }else{
+      o[k]=v.replace(/^["']|["']$/g,'');
+    }
+  }); return o;
+}
+function guessTitle(md){
+  const m = md.match(/^\s*#\s+(.+)$/m); return m ? m[1].trim() : "";
+}
+function download(name, text){
+  const blob = new Blob([text], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), {href:url, download:name});
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
