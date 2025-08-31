@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scroll Reader — ToadAid</title>
+<meta name="description" content="Reader for ToadAid Scrolls">
+<link rel="icon" href="/assets/icons/favicon.ico">
+<style>
+  :root{
+    --bg:#f5f1e6; --ink:#2f2f2f; --muted:#6b6b6b; --paper:#fffdf6; --ring:rgba(0,0,0,.08);
+    --accent:#355e3b; --link:#2f6b3a;
+  }
+  [data-theme="dark"]{
+    --bg:#0f1210; --ink:#e8f0e8; --muted:#a6b2a8; --paper:#0b0d0b; --ring:rgba(255,255,255,.06);
+    --accent:#7ed6a0; --link:#9bd4a8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+  a{color:var(--link);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{
+    position:sticky;top:0;z-index:10;
+    background:linear-gradient(180deg,rgba(53,94,59,.98),rgba(53,94,59,.92));
+    color:#fff;border-bottom:1px solid #00000020;
+  }
+  .bar{max-width:1100px;margin:0 auto;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .bar a.home{color:#fff;opacity:.95}
+  .spacer{flex:1}
+  .btn{
+    background:#ffffff18;border:1px solid #ffffff35;color:#fff;padding:6px 10px;border-radius:10px;cursor:pointer
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:22px 16px 60px}
+  .meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.9rem;margin-bottom:16px}
+  .title{font-weight:800;font-size:clamp(1.4rem,2.8vw,2rem);margin:6px 0 10px}
+  .leadimg{width:100%;height:auto;border-radius:14px;background:#00000010}
+  article{background:var(--paper);border:1px solid var(--ring);box-shadow:0 10px 28px var(--ring);border-radius:16px;padding:22px}
+  article img{max-width:100%;height:auto;border-radius:8px}
+  article h1,article h2,article h3{scroll-margin-top:80px}
+  .foot{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .pill{border:1px solid var(--ring);padding:4px 10px;border-radius:999px;color:var(--muted);font-size:.85rem}
+  .toast{position:fixed;right:16px;bottom:16px;background:#000; color:#fff;padding:10px 12px;border-radius:10px;opacity:.9;display:none}
+  .hidden{display:none}
+  .searchbox{min-width:200px;padding:6px 8px;border-radius:10px;border:1px solid #ffffff40;background:#ffffff18;color:#fff;outline:none}
+  .searchbox::placeholder{color:#ffffffcc}
+  mark{background:#fff59d;color:#000;padding:0 2px;border-radius:4px}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <a class="home" href="/scrolls/">← Vault</a>
+    <input id="q" class="searchbox" placeholder="Search in scroll… (Enter)">
+    <button id="aPlus" class="btn" title="Increase font">A+</button>
+    <button id="aMinus" class="btn" title="Decrease font">A-</button>
+    <button id="toggleTheme" class="btn" title="Theme">☀️/🌙</button>
+    <div class="spacer"></div>
+    <button id="bookmarkBtn" class="btn" title="Bookmark">🔖 Bookmark</button>
+    <button id="shareBtn" class="btn" title="Copy link">🔗 Share</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="meta" id="meta"></div>
+  <h1 class="title" id="title">Loading…</h1>
+  <img id="lead" class="leadimg hidden" alt="">
+  <article id="content">Fetching scroll…</article>
+  <div class="foot" id="tags"></div>
+</main>
+
+<div class="toast" id="toast">Copied!</div>
+
+<!-- marked.js for Markdown -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+(function(){
+  const $ = sel => document.querySelector(sel);
+  const params = new URLSearchParams(location.search);
+  const path = params.get('path');   // e.g. scrolls/commentary-scrolls/TOBY_xxx.md
+  const from = params.get('from');   // optional source json path for metadata
+  const themeBtn = $('#toggleTheme');
+  const toast = $('#toast');
+
+  // Theme
+  const savedTheme = localStorage.getItem('scrollTheme');
+  if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+  themeBtn.addEventListener('click', ()=>{
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = cur==='light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('scrollTheme', next);
+  });
+
+  // Font size controls
+  let fs = parseFloat(localStorage.getItem('scrollFS') || '16');
+  document.body.style.fontSize = fs + 'px';
+  $('#aPlus').onclick = ()=>{ fs=Math.min(fs+1,22); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
+  $('#aMinus').onclick = ()=>{ fs=Math.max(fs-1,12); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
+
+  // Share
+  $('#shareBtn').onclick = async()=>{
+    try{
+      await navigator.clipboard.writeText(location.href);
+      showToast('Link copied');
+    }catch(e){ showToast('Copy failed'); }
+  };
+
+  // Bookmark (local only)
+  $('#bookmarkBtn').onclick = ()=>{
+    if(!path) return;
+    const key='scrollBookmarks';
+    const list = JSON.parse(localStorage.getItem(key) || '[]');
+    if(!list.includes(path)){ list.push(path); localStorage.setItem(key, JSON.stringify(list)); showToast('Bookmarked'); }
+    else { showToast('Already bookmarked'); }
+  };
+
+  // Mini toast
+  function showToast(txt){
+    toast.textContent = txt; toast.style.display='block';
+    setTimeout(()=>toast.style.display='none', 1200);
+  }
+
+  // Load metadata (from data.json if provided)
+  async function loadMeta(){
+    if(!from) return null;
+    try{
+      const res = await fetch(from, {cache:'no-store'});
+      if(!res.ok) return null;
+      const arr = await res.json();
+      const item = arr.find(x => (x.url && location.pathname.replace(/^\//,'')+location.search).includes(x.url)) ||
+                   arr.find(x => x.url === path) ||
+                   null;
+      return item;
+    }catch{ return null; }
+  }
+
+  // Fetch markdown file
+  async function loadMD(){
+    if(!path){ $('#title').textContent='Missing ?path='; $('#content').textContent='Provide ?path=... to a .md file.'; return; }
+    const res = await fetch('/'+path, {cache:'no-store'});
+    if(!res.ok){ $('#title').textContent='Not found'; $('#content').textContent='Could not fetch '+path; return; }
+    const raw = await res.text();
+
+    // Try to parse front-matter
+    let meta = {}, body = raw;
+    const m = raw.match(/^---\s*?\n([\s\S]*?)\n---\s*?\n?/);
+    if(m){
+      try{
+        meta = parseYAML(m[1]);
+        body = raw.slice(m[0].length);
+      }catch{ body = raw; }
+    }
+
+    // Render
+    $('#title').textContent = meta.title || guessTitle(body) || path.split('/').pop().replace(/\.md$/,'');
+    const lead = $('#lead');
+    if(meta.cover){ lead.src = meta.cover; lead.classList.remove('hidden'); lead.alt = meta.title || 'Cover'; }
+    $('#meta').innerHTML = [
+      meta.id ? `<span>🆔 ${escapeHtml(meta.id)}</span>` : '',
+      meta.date ? `<span>📅 ${escapeHtml(meta.date)}</span>` : ''
+    ].filter(Boolean).join('<span>•</span>');
+    $('#content').innerHTML = marked.pars
