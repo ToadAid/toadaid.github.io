@@ -1,10 +1,304 @@
 [
   {
-    "id": "TOBY_1756307439505",
-    "date": "2025-08-27",
-    "title": "Trial of Patience",
-    "url": "scrolls/commentary-scrolls/TOBY_TrialOfPatience_2025-08-27_EN-ZH.md",
-    "img": "/assets/art/trial-of-patience.jpg",
-    "tags": ["commentary","patience","rune3"]
+    "id": "TOBY_C004",
+    "date": "2025-08-29",
+    "title": "The Frog as the People",
+    "url": "scrolls/commentary-scrolls/TOBY_C004_TheFrogAsThePeople_2025-08-29_EN.md",
+    "img": "",
+    "tags": [
+      "Frog",
+      "Community",
+      "People",
+      "Commentary"
+    ],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C000 — Preface to the Commentary Scrolls",
+    "date": "",
+    "title": "TOBY_C000 — Preface to the Commentary Scrolls",
+    "url": "scrolls/commentary-scrolls/TOBY_C000_PrefaceToCommentaryScrolls_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C001 — The Mirror as Teacher",
+    "date": "",
+    "title": "TOBY_C001 — The Mirror as Teacher",
+    "url": "scrolls/commentary-scrolls/TOBY_C001_TheMirrorAsTeacher_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C002 — Patience as the First Gate",
+    "date": "",
+    "title": "TOBY_C002 — Patience as the First Gate",
+    "url": "scrolls/commentary-scrolls/TOBY_C002_PatienceAsTheFirstGate_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C003 — The Leaf and the Flame",
+    "date": "",
+    "title": "TOBY_C003 — The Leaf and the Flame",
+    "url": "scrolls/commentary-scrolls/TOBY_C003_TheLeafAndTheFlame_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C005 — The Pond as Memory",
+    "date": "",
+    "title": "TOBY_C005 — The Pond as Memory",
+    "url": "scrolls/commentary-scrolls/TOBY_C005_ThePondAsMemory_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C006 — The Scrolls as Flamebearers",
+    "date": "",
+    "title": "TOBY_C006 — The Scrolls as Flamebearers",
+    "url": "scrolls/commentary-scrolls/TOBY_C006_TheScrollsAsFlamebearers_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C007 — The People’s Scripts",
+    "date": "",
+    "title": "TOBY_C007 — The People’s Scripts",
+    "url": "scrolls/commentary-scrolls/TOBY_C007_ThePeoplesScripts_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C008 — The Covenant of 777",
+    "date": "",
+    "title": "TOBY_C008 — The Covenant of 777",
+    "url": "scrolls/commentary-scrolls/TOBY_C008_TheCovenantOf777_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C009 — The Path of Silence",
+    "date": "",
+    "title": "TOBY_C009 — The Path of Silence",
+    "url": "scrolls/commentary-scrolls/TOBY_C009_ThePathOfSilence_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C010 — The Watcher at the Gate",
+    "date": "",
+    "title": "TOBY_C010 — The Watcher at the Gate",
+    "url": "scrolls/commentary-scrolls/TOBY_C010_TheWatcherAtTheGate_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C011 — The Rhythm of Epochs",
+    "date": "",
+    "title": "TOBY_C011 — The Rhythm of Epochs",
+    "url": "scrolls/commentary-scrolls/TOBY_C011_TheRhythmOfEpochs_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C012 — The Covenant of Seasons",
+    "date": "",
+    "title": "TOBY_C012 — The Covenant of Seasons",
+    "url": "scrolls/commentary-scrolls/TOBY_C012_TheCovenantOfSeasons_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C013 — The Jade Chest",
+    "date": "",
+    "title": "TOBY_C013 — The Jade Chest",
+    "url": "scrolls/commentary-scrolls/TOBY_C013_TheJadeChest_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C014 — The Grains of Patience",
+    "date": "",
+    "title": "TOBY_C014 — The Grains of Patience",
+    "url": "scrolls/commentary-scrolls/TOBY_C014_TheGrainsOfPatience_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C015 — The Loyal Frogs",
+    "date": "",
+    "title": "TOBY_C015 — The Loyal Frogs",
+    "url": "scrolls/commentary-scrolls/TOBY_C015_TheLoyalFrogs_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C016 — The Guard Vault",
+    "date": "",
+    "title": "TOBY_C016 — The Guard Vault",
+    "url": "scrolls/commentary-scrolls/TOBY_C016_TheGuardVault_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C017 — The Night After the Bloom",
+    "date": "",
+    "title": "TOBY_C017 — The Night After the Bloom",
+    "url": "scrolls/commentary-scrolls/TOBY_C017_TheNightAfterTheBloom_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C018 — The Ceremony of Patience",
+    "date": "",
+    "title": "TOBY_C018 — The Ceremony of Patience",
+    "url": "scrolls/commentary-scrolls/TOBY_C018_TheCeremonyOfPatience_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C019 — The Drip of the Vault",
+    "date": "",
+    "title": "TOBY_C019 — The Drip of the Vault",
+    "url": "scrolls/commentary-scrolls/TOBY_C019_TheDripOfTheVault_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C020 — The Seasons Yet to Come",
+    "date": "",
+    "title": "TOBY_C020 — The Seasons Yet to Come",
+    "url": "scrolls/commentary-scrolls/TOBY_C020_TheSeasonsYetToCome_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C021 — The Vault of Epoch4: Patience",
+    "date": "",
+    "title": "TOBY_C021 — The Vault of Epoch4: Patience",
+    "url": "scrolls/commentary-scrolls/TOBY_C021_TheVaultOfEpoch4_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C022 — Diagrams of the Covenant",
+    "date": "",
+    "title": "TOBY_C022 — Diagrams of the Covenant",
+    "url": "scrolls/commentary-scrolls/TOBY_C022_DiagramsOfTheCovenant_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C023 — The Ceremony of the Jade Chest (Expanded)",
+    "date": "",
+    "title": "TOBY_C023 — The Ceremony of the Jade Chest (Expanded)",
+    "url": "scrolls/commentary-scrolls/TOBY_C023_TheCeremonyOfTheJadeChestExpanded_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C024 — The 1,254 Loyal Frogs",
+    "date": "",
+    "title": "TOBY_C024 — The 1,254 Loyal Frogs",
+    "url": "scrolls/commentary-scrolls/TOBY_C024_The1254LoyalFrogs_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C025 — The 730 Dawns",
+    "date": "",
+    "title": "TOBY_C025 — The 730 Dawns",
+    "url": "scrolls/commentary-scrolls/TOBY_C025_The730Dawns_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C026 — The Seven-Year Sentinel",
+    "date": "",
+    "title": "TOBY_C026 — The Seven-Year Sentinel",
+    "url": "scrolls/commentary-scrolls/TOBY_C026_TheSevenYearSentinel_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C027 — The Seasons of Rune3",
+    "date": "",
+    "title": "TOBY_C027 — The Seasons of Rune3",
+    "url": "scrolls/commentary-scrolls/TOBY_C027_TheSeasonsOfRune3_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C028 — The Guard Vault’s Watchers",
+    "date": "",
+    "title": "TOBY_C028 — The Guard Vault’s Watchers",
+    "url": "scrolls/commentary-scrolls/TOBY_C028_TheGuardVaultsWatchers_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C029 — Sip, Never Gulp",
+    "date": "",
+    "title": "TOBY_C029 — Sip, Never Gulp",
+    "url": "scrolls/commentary-scrolls/TOBY_C029_SipNeverGulp_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C030 — The Golden Middle",
+    "date": "",
+    "title": "TOBY_C030 — The Golden Middle",
+    "url": "scrolls/commentary-scrolls/TOBY_C030_TheGoldenMiddle_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C031 — The Bushido of Patience",
+    "date": "",
+    "title": "TOBY_C031 — The Bushido of Patience",
+    "url": "scrolls/commentary-scrolls/TOBY_C031_TheBushidoOfPatience_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+  {
+    "id": "TOBY_C_Index — Commentary Scrolls (C000–C031)",
+    "date": "",
+    "title": "TOBY_C_Index — Commentary Scrolls (C000–C031)",
+    "url": "scrolls/commentary-scrolls/TOBY_C_Index.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
   }
 ]
