@@ -75,76 +75,81 @@
 (function(){
   const $ = sel => document.querySelector(sel);
   const params = new URLSearchParams(location.search);
-  const pathParam = params.get('path');   // e.g. scrolls/commentary-scrolls/TOBY_xxx.md
-  const from = params.get('from') || '/scrolls/commentary-scrolls/data.json';
+  const rawPath = params.get('path');                      // might be site path OR GitHub blob URL
+  const fromParam = params.get('from');                    // optional override for JSON path
   const themeBtn = $('#toggleTheme');
   const toast = $('#toast');
 
-  // -------- Theme (fix: set initial + correct label) --------
+  // ---------- Theme ----------
   const savedTheme = localStorage.getItem('scrollTheme');
-  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  const prefersLight = matchMedia('(prefers-color-scheme: light)').matches;
   const initialTheme = savedTheme || (prefersLight ? 'light' : 'dark');
   document.documentElement.setAttribute('data-theme', initialTheme);
   updateThemeButton(initialTheme);
-
   themeBtn.addEventListener('click', ()=>{
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = (cur === 'light') ? 'dark' : 'light';
+    const next = cur === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('scrollTheme', next);
     updateThemeButton(next);
   });
+  function updateThemeButton(theme){ themeBtn.textContent = theme === 'light' ? '🌙 Night' : '☀️ Day'; }
 
-  function updateThemeButton(theme){
-    themeBtn.textContent = (theme === 'light') ? '🌙 Night' : '☀️ Day';
-  }
-
-  // -------- Font size --------
+  // ---------- Font ----------
   let fs = parseFloat(localStorage.getItem('scrollFS') || '16');
   document.body.style.fontSize = fs + 'px';
   $('#aPlus').onclick = ()=>{ fs=Math.min(fs+1,22); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
   $('#aMinus').onclick = ()=>{ fs=Math.max(fs-1,12); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
 
-  // -------- Share --------
-  $('#shareBtn').onclick = async()=>{
-    try{
-      await navigator.clipboard.writeText(location.href);
-      showToast('Link copied');
-    }catch(e){ showToast('Copy failed'); }
-  };
+  // ---------- Share / Bookmark ----------
+  $('#shareBtn').onclick = async()=>{ try{ await navigator.clipboard.writeText(location.href); showToast('Link copied'); }catch{ showToast('Copy failed'); } };
+  $('#bookmarkBtn').onclick = ()=>{ if(!rawPath) return; const key='scrollBookmarks'; const list = JSON.parse(localStorage.getItem(key) || '[]'); if(!list.includes(rawPath)){ list.push(rawPath); localStorage.setItem(key, JSON.stringify(list)); showToast('Bookmarked'); } else showToast('Already bookmarked'); };
+  function showToast(txt){ toast.textContent = txt; toast.style.display='block'; setTimeout(()=>toast.style.display='none', 1200); }
 
-  // -------- Bookmark (local) --------
-  $('#bookmarkBtn').onclick = ()=>{
-    if(!pathParam) return;
-    const key='scrollBookmarks';
-    const list = JSON.parse(localStorage.getItem(key) || '[]');
-    if(!list.includes(pathParam)){ list.push(pathParam); localStorage.setItem(key, JSON.stringify(list)); showToast('Bookmarked'); }
-    else { showToast('Already bookmarked'); }
-  };
+  // ---------- Path resolution (accept GitHub URLs) ----------
+  function resolvePath(p){
+    if(!p) return '';
+    const mBlob = p.match(/^https?:\/\/github\.com\/[^\/]+\/[^\/]+\/blob\/[^\/]+\/(.+)$/);
+    if(mBlob) return mBlob[1];
+    const mRaw = p.match(/^https?:\/\/raw\.githubusercontent\.com\/[^\/]+\/[^\/]+\/[^\/]+\/(.+)$/);
+    if(mRaw) return mRaw[1];
+    return p.replace(/^\/+/, '');
+  }
+  const pathParam = resolvePath(rawPath);
 
-  function showToast(txt){
-    toast.textContent = txt; toast.style.display='block';
-    setTimeout(()=>toast.style.display='none', 1200);
+  // ---------- Robust JSON fetcher ----------
+  async function tryFetchJson(urls){
+    for(const u of urls){
+      try{
+        const res = await fetch(u, {cache:'no-store'});
+        if(res.ok) return await res.json();
+      }catch(e){}
+    }
+    return null;
   }
 
-  // -------- Fetch metadata from data.json (optional) --------
+  // Prefer explicit ?from=, else try relative then absolute
+  const jsonCandidates = [
+    ...(fromParam ? [fromParam] : []),
+    './commentary-scrolls/data.json',
+    '/scrolls/commentary-scrolls/data.json'
+  ];
+
   async function loadMeta(){
-    try{
-      const res = await fetch(from, {cache:'no-store'});
-      if(!res.ok) return null;
-      const arr = await res.json();
-      return arr.find(x => x.url === normalizePath(pathParam)) || null;
-    }catch{ return null; }
+    const data = await tryFetchJson(jsonCandidates);
+    if(!data) return null;
+    const norm = (x)=> String(x||'').replace(/^\/+/, '');
+    return data.find(x => norm(x.url) === norm(pathParam)) || null;
   }
 
-  // -------- Fetch markdown + render (fix: complete marked.parse) --------
+  // ---------- Render ----------
   async function loadMD(){
     if(!pathParam){
       $('#title').textContent='Missing ?path=';
-      $('#content').textContent='Provide ?path=... to a .md file.';
+      $('#content').innerHTML='<p>Provide <code>?path=</code> to a <code>.md</code> file.</p>';
       return;
     }
-    const mdPath = '/'+normalizePath(pathParam);
+    const mdPath = '/'+pathParam.replace(/^\/+/, '');
     const res = await fetch(mdPath, {cache:'no-store'});
     if(!res.ok){
       $('#title').textContent='Not found';
@@ -153,12 +158,12 @@
     }
     const raw = await res.text();
 
-    // parse front-matter
+    // front-matter
     let meta = {}, body = raw;
     const m = raw.match(/^---\s*?\n([\s\S]*?)\n---\s*?\n?/);
     if(m){ try{ meta = parseYAML(m[1]); body = raw.slice(m[0].length); }catch{} }
 
-    // optional: merge with data.json metadata
+    // merge with data.json if available
     const j = await loadMeta();
     if(j){
       meta.title = meta.title || j.title;
@@ -168,7 +173,7 @@
       meta.id    = meta.id    || j.id;
     }
 
-    // Render header/meta
+    // header/meta
     $('#title').textContent = meta.title || guessTitle(body) || fileBase(mdPath);
     const lead = $('#lead');
     if(meta.cover){ lead.src = meta.cover; lead.classList.remove('hidden'); lead.alt = meta.title || 'Cover'; }
@@ -177,26 +182,23 @@
       meta.date ? `<span>📅 ${escapeHtml(meta.date)}</span>` : ''
     ].filter(Boolean).join('<span>•</span>');
 
-    // Render markdown
-    try{
-      $('#content').innerHTML = marked.parse(body);
-    }catch(e){
-      $('#content').textContent = body; // plain fallback
-    }
+    // markdown
+    try{ $('#content').innerHTML = marked.parse(body); }
+    catch{ $('#content').textContent = body; }
 
     // tags
-    const tags = (meta.tags && Array.isArray(meta.tags)) ? meta.tags : [];
+    const tags = Array.isArray(meta.tags) ? meta.tags : [];
     $('#tags').innerHTML = tags.map(t=>`<span class="pill">#${escapeHtml(String(t))}</span>`).join('');
 
     // search
-    const q = document.getElementById('q');
+    const q = $('#q');
     q.addEventListener('keydown', e=>{
       if(e.key !== 'Enter') return;
       highlight(q.value);
     });
   }
 
-  // -------- Helpers --------
+  // ---------- Helpers ----------
   function escapeHtml(s){ return (s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function guessTitle(md){ const m = md.match(/^\s*#\s+(.+)$/m); return m ? m[1].trim() : ''; }
   function parseYAML(y){
@@ -209,19 +211,17 @@
     }); return o;
   }
   function fileBase(p){ return (p.split('/').pop()||'').replace(/\.md$/,''); }
-  function normalizePath(p){ return String(p||'').replace(/^\/+/, ''); }
 
-  // very light highlighter
   function highlight(term){
     const art = $('#content'); const t = (term||'').trim();
     if(!t){ art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,''); return; }
     const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,''); // clear
+    art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,'');
     art.innerHTML = art.innerHTML.replace(new RegExp(`(${esc})`, 'gi'), '<mark>$1</mark>');
     const first = art.querySelector('mark'); if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
   }
 
-  // go!
+  // go
   loadMD();
 })();
 </script>
