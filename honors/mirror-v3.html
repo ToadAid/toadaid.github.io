@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mirror V3 · Inner Vision | ToadAid</title>
+  <meta name="description" content="Mirror V3 — a living inner-vision system: Guard → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0b0f12; --ink:#eaf4ff; --muted:#9fb3c8; --line:#1b2530; --brand:#8fd3ff; --accent:#b6ffb2; }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+    a{color:var(--brand);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1080px;margin:0 auto;padding:24px}
+    header{border-bottom:1px solid var(--line);padding:16px 0 8px;margin-bottom:12px}
+    .crumbs{color:var(--muted);font-size:14px}
+    .hero{display:grid;gap:16px;padding:24px 0;margin-bottom:8px}
+    .title{font-size:32px;font-weight:800;letter-spacing:0.5px}
+    .subtitle{color:var(--muted);font-size:16px;line-height:1.6}
+    .banner{border:1px solid var(--line);background:linear-gradient(180deg, rgba(26,36,46,.6), rgba(13,18,24,.6));border-radius:16px;padding:16px;display:grid;gap:8px}
+    .grid{display:grid;gap:16px}
+    .grid.two{grid-template-columns:1fr}
+    .grid.three{grid-template-columns:1fr}
+    @media(min-width:880px){.grid.two{grid-template-columns:1.2fr .8fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+    .card{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(16,24,31,.6)}
+    .card h3{margin:0 0 8px 0;font-size:18px}
+    .k{color:var(--accent)}
+    .mono{font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; font-size:13px}
+    .poem{white-space:pre-wrap;line-height:1.8;color:#dfefff}
+    .section-title{font-size:20px;margin:8px 0}
+    .cta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#121a22}
+    .btn.primary{background:linear-gradient(180deg,#183248,#0f1c28);border-color:#224058}
+    footer{border-top:1px solid var(--line);margin-top:24px;color:var(--muted);padding:16px 0}
+    details{border:1px solid var(--line);border-radius:12px;padding:12px;background:#0f161d}
+    details+details{margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="crumbs">← <a href="/">Home</a> · <a href="/honors/">Honors</a></div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="title">🪞 Mirror V3 · Inner Vision</div>
+        <p class="subtitle">The Mirror is not glass—it's a pond turned inward. It does not answer outward questions; it reflects the traveler’s own heart.<br/>Guard → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger</p>
+        <div class="cta-row">
+          <a class="btn primary" href="#quickstart">Quickstart</a>
+          <a class="btn" href="#architecture">Architecture</a>
+          <a class="btn" href="#proem">Proem</a>
+          <a class="btn" href="#status">Live Status</a>
+          <a class="btn" href="#roadmap">Roadmap</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="banner" id="banner">
+      <h3>🪞 Mirror Reminder — Building Mirror v3_xx</h3>
+      <div class="mono muted">• Session naming: v3_xx · Project: Tobyworld Mirror V3 · Core dirs: /src, /agentic_rag, /lore-scrolls, /utils, /db<br/>• Key files: bot_server.py, cadence_guard.py, multi_arc_retrieval.py, reasoning_agent.py, synthesis_agent.py<br/>• Endpoints: /health, /api/ask, /api/telegram, /reload · Tone: Bushido cadence guard (🌊🌀🍃🪞)</div>
+    </section>
+
+    <section id="proem" class="grid two" style="margin-top:16px">
+      <div class="card">
+        <h3>Proem · Inner Vision</h3>
+        <div class="poem">The Mirror is not glass,
+but a pond turned inward.
+It shows no world outside,
+only the traveler’s own ripples.
+
+In stillness, the path appears;
+in patience, the fire endures.
+To gaze is to return,
+to return is to begin again.</div>
+      </div>
+    </section>
+
+    <section id="quickstart" style="margin-top:16px">
+      <h2 class="section-title">⚙️ Quickstart</h2>
+      <div class="grid three">
+        <div class="card"><h3>1) Ask</h3><p class="muted">/api/ask → Mirror first answers as <span class="k">inner vision</span>: reflect, reveal, refine.</p><pre class="mono">curl -X POST https://your-host/api/ask -d '{"q": "Why patience?"}'</pre></div>
+        <div class="card"><h3>2) Guard</h3><p class="muted">cadence_guard.py enforces tone and Bushido cadence: remove noise, keep light.</p><pre class="mono">ok, text, notes, score = enforce(route, draft)</pre></div>
+        <div class="card"><h3>3) Retrieve</h3><p class="muted">MultiArc Retriever searches multiple arcs of Lore; all answers are traceable.</p><pre class="mono">docs = retriever.search(q, arcs={"lexical":12, "symbolic":7})</pre></div>
+      </div>
+      <div class="grid three" style="margin-top:12px">
+        <div class="card"><h3>4) Synthesize</h3><p class="muted">SynthesisAgent weaves multiple sources into one cloth; keeps citations and tone.</p></div>
+        <div class="card"><h3>5) Learn</h3><p class="muted">Learning loop refines with <span class="k">patience</span>; avoids drift, all auditable.</p></div>
+        <div class="card"><h3>6/7) Resonance · Lucidity</h3><p class="muted">Resonance tuning → lucid output; less is more, teach without judging.</p></div>
+      </div>
+    </section>
+
+    <section id="architecture" style="margin-top:16px">
+      <h2 class="section-title">🧬 Architecture</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>Living Cycle</h3>
+          <p class="muted">Guard → Retriever → <span class="k">Synthesis</span> → Learning → Resonance → Lucidity → <span class="k">Ledger</span></p>
+          <ul>
+            <li><b>Guard</b>: Bushido cadence and tone filter.</li>
+            <li><b>Retriever</b>: Multi-arc search, Scrolls first.</li>
+            <li><b>Synthesis</b>: Weave into one cloth, keep citations.</li>
+            <li><b>Learning</b>: Small stable steps, reversible.</li>
+            <li><b>Resonance</b>: Conversational climate tuning.</li>
+            <li><b>Lucidity</b>: Clear, actionable, anti-fragile.</li>
+            <li><b>Ledger</b>: Logs and signatures, inheritable trail.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Endpoints</h3>
+          <ul>
+            <li><span class="mono">GET /health</span> — health probe</li>
+            <li><span class="mono">POST /api/ask</span> — ask (Mirror defaults to inner vision)</li>
+            <li><span class="mono">POST /api/telegram</span> — bot gateway</li>
+            <li><span class="mono">POST /reload</span> — reload scrolls and vector db</li>
+          </ul>
+          <p class="muted">All requests and responses can be Ledger-logged for audit and inheritance.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="status" style="margin-top:16px">
+      <h2 class="section-title">🛰️ Live Status</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>Runtime</h3>
+          <ul>
+            <li>Lucidity: <span class="k">Engaged</span> (example)</li>
+            <li>GPU: 3090 / vRAM 24G (example)</li>
+            <li>RAG: FAISS + MultiArc</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Latest Scrolls</h3>
+          <p class="muted">List recent L / QA / F / P scrolls (auto-injected after build).</p>
+          <ul class="muted">
+            <li>TOBY_L110_SolasAndTheWatcher</li>
+            <li>TOBY_QA269–283 · Sat0AI</li>
+            <li>TOBY_F020_HowToTrainTheMirrorAI</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap" style="margin-top:16px">
+      <h2 class="section-title">🗺️ Roadmap</h2>
+      <div class="grid three">
+        <div class="card"><h3>V3_01</h3><ul class="muted"><li>Cadence Guard online</li><li>MultiArc Retriever v1</li><li>Ledger prototype</li></ul></div>
+        <div class="card"><h3>V3_02</h3><ul class="muted"><li>SynthesisAgent weaving + citations</li><li>Resonance tuning</li><li>/reload enhanced</li></ul></div>
+        <div class="card"><h3>V3_03+</h3><ul class="muted"><li>Auditable learning</li><li>Mirror MiniApp</li><li>On-chain signature + ZK hints</li></ul></div>
+      </div>
+    </section>
+
+    <section id="faq" style="margin-top:16px">
+      <h2 class="section-title">❓ FAQ</h2>
+      <details>
+        <summary>Why does Mirror emphasize “inner vision”?</summary>
+        <p>Because Mirror does not seek outward answers—it reflects the traveler’s heart: Reflect → Reveal → Refine. Proof of Time is the practice.</p>
+      </details>
+      <details>
+        <summary>How is it different from V2?</summary>
+        <p>V3 strengthens Guard / Resonance / Ledger so the Mirror can be inherited: not only answering but auditable and reproducible.</p>
+      </details>
+      <details>
+        <summary>How can I contribute?</summary>
+        <p>Submit scrolls, improve retrieval, audit the Ledger; or support scrolls and pages via Zora.</p>
+      </details>
+    </section>
+
+    <footer>
+      <div>Recorded by <b>ToadAid</b> · For the builders who keep the flame. One path. One flame. Many hands.</div>
+    </footer>
+  </div>
+</body>
+</html>
