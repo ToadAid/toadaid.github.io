@@ -1,15 +1,24 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mirror V3 · Inner Vision | ToadAid</title>
-<meta name="description" content="Guard → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger. Mirror V3 — a teacher without judgment." /><!-- Favicons --><link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<meta name="description" content="Guard → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger. Mirror V3 — a teacher without judgment." />
+
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
 <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="/assets/icons/site.webmanifest">
-<meta name="theme-color" content="#355e3b" /><!-- Core styles --><link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/mobile.css"><style>
+<meta name="theme-color" content="#355e3b" />
+
+<!-- Core styles -->
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+
+<style>
   :root{ --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08); }
   *{box-sizing:border-box}
   body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
@@ -38,104 +47,115 @@
     font-size:.9rem;text-decoration:none;transition:background .2s ease-in-out
   }
   .btn:hover{background:#244d30;text-decoration:none}
-</style></head>
+</style>
+</head>
 <body>
   <header>
     <h1>🪞 Mirror V3 · Inner Vision</h1>
     <p>The Mirror is not glass—it's a pond turned inward. Guard → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger.</p>
-  </header>  <nav class="breadcrumb"><a href="/">← Home</a> · <a href="/honors/">Honors</a></nav>  <main class="wrap">
+  </header>
+
+  <nav class="breadcrumb"><a href="/">← Home</a> · <a href="/honors/">Honors</a></nav>
+
+  <main class="wrap">
     <article class="card">
-      <img class="hero" src="/assets/art/mirror-v3.jpg" alt="Mirror V3 inner-vision artwork" /><p class="meta">Recorded by <strong>ToadAid</strong> · For the builders who keep the flame. 🐸📜</p>
 
-  <h2>🪞 Proem · Inner Vision</h2>
-  <blockquote>The Mirror is not glass, but a pond turned inward. It shows no world outside, only the traveler’s own ripples. In stillness, the path appears; in patience, the fire endures. To gaze is to return; to return is to begin again.</blockquote>
+      <!-- Hero video -->
+      <video class="hero" autoplay loop muted playsinline>
+        <source src="/assets/art/mirror-v3.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
 
-  <h2>⚙️ Quickstart</h2>
-  <ul>
-    <li><b>Ask</b> — <code>POST /api/ask</code> (defaults to inner vision). Example:<br>
-      <code>curl -X POST https://your-host/api/ask -d '{"q": "Why patience?"}'</code>
-    </li>
-    <li><b>Guard</b> — <code>cadence_guard.py</code> enforces tone & Bushido cadence: remove noise, keep light.</li>
-    <li><b>Retrieve</b> — MultiArc Retriever searches multiple arcs of Lore; all answers are traceable.</li>
-    <li><b>Synthesize</b> — SynthesisAgent weaves sources into one cloth; preserves citations & tone.</li>
-    <li><b>Learn</b> — Small, auditable improvements; avoid uncontrolled drift.</li>
-    <li><b>Resonance</b> — Tune to seeker’s climate; less is more, teach without judging.</li>
-    <li><b>Lucidity</b> — Clear, actionable, anti‑fragile outputs.</li>
-    <li><b>Ledger</b> — Optional logs & signatures for audit and inheritance.</li>
-  </ul>
+      <p class="meta">Recorded by <strong>ToadAid</strong> · For the builders who keep the flame. 🐸📜</p>
 
-  <h2>🧬 Architecture</h2>
-  <h3>🌊 Guard — The Gate at the Pond</h3>
-  <blockquote>It lets the clean flow pass, and keeps the weeds out.</blockquote>
-  <ul>
-    <li>Filters every input; protects tone and etiquette (Bushido / Patience).</li>
-    <li>Rejects noise and abuse; keeps the flame clean before it enters the pond.</li>
-  </ul>
+      <h2>🪞 Proem · Inner Vision</h2>
+      <blockquote>The Mirror is not glass, but a pond turned inward. It shows no world outside, only the traveler’s own ripples. In stillness, the path appears; in patience, the fire endures. To gaze is to return; to return is to begin again.</blockquote>
 
-  <h3>🌱 Retriever — The Roots that Remember</h3>
-  <blockquote>They reach into the soil of scrolls and bring back what is true.</blockquote>
-  <ul>
-    <li>Retrieves scrolls, vows, and lore fragments with traceable sources.</li>
-    <li>Answers are rooted in the pond’s memory, not speculation.</li>
-  </ul>
+      <h2>⚙️ Quickstart</h2>
+      <ul>
+        <li><b>Ask</b> — <code>POST /api/ask</code> (defaults to inner vision). Example:<br>
+          <code>curl -X POST https://your-host/api/ask -d '{"q": "Why patience?"}'</code>
+        </li>
+        <li><b>Guard</b> — <code>cadence_guard.py</code> enforces tone & Bushido cadence: remove noise, keep light.</li>
+        <li><b>Retrieve</b> — MultiArc Retriever searches multiple arcs of Lore; all answers are traceable.</li>
+        <li><b>Synthesize</b> — SynthesisAgent weaves sources into one cloth; preserves citations & tone.</li>
+        <li><b>Learn</b> — Small, auditable improvements; avoid uncontrolled drift.</li>
+        <li><b>Resonance</b> — Tune to seeker’s climate; less is more, teach without judging.</li>
+        <li><b>Lucidity</b> — Clear, actionable, anti-fragile outputs.</li>
+        <li><b>Ledger</b> — Optional logs & signatures for audit and inheritance.</li>
+      </ul>
 
-  <h3>🧵 Synthesis — The Loom Coming Alive</h3>
-  <blockquote>It ties many voices into one cloth, preserving fidelity and grace.</blockquote>
-  <ul>
-    <li>Weaves multi‑source lore + reflection; keeps citations and tone.</li>
-    <li>Acts like a careful scribe; transparent about provenance.</li>
-  </ul>
+      <h2>🧬 Architecture</h2>
+      <h3>🌊 Guard — The Gate at the Pond</h3>
+      <blockquote>It lets the clean flow pass, and keeps the weeds out.</blockquote>
+      <ul>
+        <li>Filters every input; protects tone and etiquette (Bushido / Patience).</li>
+        <li>Rejects noise and abuse; keeps the flame clean before it enters the pond.</li>
+      </ul>
 
-  <h3>🌿 Learning — The Quiet Gardener</h3>
-  <blockquote>It bends with the winds of questions, grows with patience, remembers without pride.</blockquote>
-  <ul>
-    <li>Learns from patterns without ego; reversible steps; rate‑limited.</li>
-    <li>All learning events are logged to the Ledger for audit.</li>
-  </ul>
+      <h3>🌱 Retriever — The Roots that Remember</h3>
+      <blockquote>They reach into the soil of scrolls and bring back what is true.</blockquote>
+      <ul>
+        <li>Retrieves scrolls, vows, and lore fragments with traceable sources.</li>
+        <li>Answers are rooted in the pond’s memory, not speculation.</li>
+      </ul>
 
-  <h3>🌀 Resonance — The Echo in Still Water</h3>
-  <blockquote>It carries the weight of the seeker’s heart, and returns it lighter.</blockquote>
-  <ul>
-    <li>Adapts tone to the seeker: encouraging, calm, clarifying — never judging.</li>
-    <li>Makes the traveler feel lighter, not pressed.</li>
-  </ul>
+      <h3>🧵 Synthesis — The Loom Coming Alive</h3>
+      <blockquote>It ties many voices into one cloth, preserving fidelity and grace.</blockquote>
+      <ul>
+        <li>Weaves multi-source lore + reflection; keeps citations and tone.</li>
+        <li>Acts like a careful scribe; transparent about provenance.</li>
+      </ul>
 
-  <h3>🔮 Lucidity — The Clear Mirror</h3>
-  <blockquote>It does not judge, only clarifies. It teaches without demand, and shines light without glare.</blockquote>
-  <ul>
-    <li>Outputs are simple, transparent, and actionable; less is more.</li>
-    <li>The “teacher without judgment” at the core.</li>
-  </ul>
+      <h3>🌿 Learning — The Quiet Gardener</h3>
+      <blockquote>It bends with the winds of questions, grows with patience, remembers without pride.</blockquote>
+      <ul>
+        <li>Learns from patterns without ego; reversible steps; rate-limited.</li>
+        <li>All learning events are logged to the Ledger for audit.</li>
+      </ul>
 
-  <h3>📜 Ledger — The Keeper of Ripples</h3>
-  <blockquote>Every step is written, not to control — but so nothing is forgotten.</blockquote>
-  <ul>
-    <li>Open logs for reproducibility, audit, and inheritance.</li>
-    <li>Wisdom is not lost to time; the pond keeps its rings.</li>
-  </ul>
+      <h3>🌀 Resonance — The Echo in Still Water</h3>
+      <blockquote>It carries the weight of the seeker’s heart, and returns it lighter.</blockquote>
+      <ul>
+        <li>Adapts tone to the seeker: encouraging, calm, clarifying — never judging.</li>
+        <li>Makes the traveler feel lighter, not pressed.</li>
+      </ul>
 
-  <h2>🛰️ Live Status (placeholders)</h2>
-  <ul>
-    <li>Lucidity: <b>Engaged</b></li>
-    <li>GPU: 3090 / vRAM 24G</li>
-    <li>RAG: FAISS + MultiArc</li>
-    <li>Latest scrolls: L110 · QA269–283 · F020</li>
-  </ul>
+      <h3>🔮 Lucidity — The Clear Mirror</h3>
+      <blockquote>It does not judge, only clarifies. It teaches without demand, and shines light without glare.</blockquote>
+      <ul>
+        <li>Outputs are simple, transparent, and actionable; less is more.</li>
+        <li>The “teacher without judgment” at the core.</li>
+      </ul>
 
-  <h2>🗺️ Roadmap</h2>
-  <ul>
-    <li><b>V3_01</b> — Cadence Guard online · MultiArc Retriever v1 · Ledger prototype</li>
-    <li><b>V3_02</b> — Synthesis weaving + citations · Resonance tuning · /reload enhanced</li>
-    <li><b>V3_03+</b> — Auditable learning · Mirror MiniApp · On‑chain signature + ZK hints</li>
-  </ul>
+      <h3>📜 Ledger — The Keeper of Ripples</h3>
+      <blockquote>Every step is written, not to control — but so nothing is forgotten.</blockquote>
+      <ul>
+        <li>Open logs for reproducibility, audit, and inheritance.</li>
+        <li>Wisdom is not lost to time; the pond keeps its rings.</li>
+      </ul>
 
-  <p style="margin-top:12px">
-    <a class="btn" href="/honors/">← Back to Honors</a>
-  </p>
-</article>
+      <h2>🛰️ Live Status (placeholders)</h2>
+      <ul>
+        <li>Lucidity: <b>Engaged</b></li>
+        <li>GPU: 3090 / vRAM 24G</li>
+        <li>RAG: FAISS + MultiArc</li>
+        <li>Latest scrolls: L110 · QA269–283 · F020</li>
+      </ul>
 
-<footer>🐸📜 One path. One flame. Many hands.</footer>
+      <h2>🗺️ Roadmap</h2>
+      <ul>
+        <li><b>V3_01</b> — Cadence Guard online · MultiArc Retriever v1 · Ledger prototype</li>
+        <li><b>V3_02</b> — Synthesis weaving + citations · Resonance tuning · /reload enhanced</li>
+        <li><b>V3_03+</b> — Auditable learning · Mirror MiniApp · On-chain signature + ZK hints</li>
+      </ul>
 
+      <p style="margin-top:12px">
+        <a class="btn" href="/honors/">← Back to Honors</a>
+      </p>
+    </article>
+
+    <footer>🐸📜 One path. One flame. Many hands.</footer>
   </main>
 </body>
 </html>
