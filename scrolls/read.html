@@ -20,7 +20,7 @@
   a{color:var(--link);text-decoration:none}
   a:hover{text-decoration:underline}
   header{
-    position:sticky;top:0;z-index:10;
+    position:sticky;top:0;z-index:20;
     background:linear-gradient(180deg,rgba(53,94,59,.98),rgba(53,94,59,.92));
     color:#fff;border-bottom:1px solid #00000020;
   }
@@ -39,12 +39,34 @@
   article h1,article h2,article h3{scroll-margin-top:80px}
   .foot{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .pill{border:1px solid var(--ring);padding:4px 10px;border-radius:999px;color:var(--muted);font-size:.85rem}
-  .toast{position:fixed;right:16px;bottom:16px;background:#000; color:#fff;padding:10px 12px;border-radius:10px;opacity:.9;display:none}
+  .toast{position:fixed;right:16px;bottom:16px;background:#000; color:#fff;padding:10px 12px;border-radius:10px;opacity:.9;display:none;z-index:50}
   .hidden{display:none}
   .searchbox{min-width:200px;padding:6px 8px;border-radius:10px;border:1px solid #ffffff40;background:#ffffff18;color:#fff;outline:none}
   .searchbox::placeholder{color:#ffffffcc}
   mark{background:#fff59d;color:#000;padding:0 2px;border-radius:4px}
   .note{margin-top:10px;color:#8aa07f;font-size:.9rem}
+
+  /* Panel for All Scrolls */
+  .panel{
+    position:fixed; inset:0; display:none; z-index:40;
+    background:rgba(0,0,0,.45); backdrop-filter: blur(2px);
+  }
+  .panel.open{display:block}
+  .panelInner{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(900px,92vw); max-height:80vh; overflow:auto;
+    background:var(--paper); border:1px solid var(--ring); box-shadow:0 20px 40px var(--ring); border-radius:16px;
+    padding:14px;
+  }
+  .panelHeader{display:flex; align-items:center; gap:10px; margin:6px 0 12px}
+  .panelHeader h3{margin:0; font-size:1.05rem}
+  .grid{display:grid; gap:10px; grid-template-columns:repeat(auto-fill, minmax(260px,1fr))}
+  .item{
+    display:flex; gap:10px; align-items:center; padding:10px; border:1px solid var(--ring); border-radius:12px; background:var(--bg);
+    cursor:pointer
+  }
+  .thumb{width:48px;height:48px;border-radius:10px;object-fit:cover;background:#00000010;flex:0 0 48px}
+  .metaLine{color:var(--muted); font-size:.85rem}
 </style>
 </head>
 <body>
@@ -56,6 +78,12 @@
     <button id="aMinus" class="btn" title="Decrease font">A-</button>
     <button id="toggleTheme" class="btn" title="Theme">🌙 Night</button>
     <div class="spacer"></div>
+
+    <!-- NAV controls -->
+    <button id="prevBtn" class="btn" title="Previous">◀ Prev</button>
+    <button id="openList" class="btn" title="All Scrolls">📚 All</button>
+    <button id="nextBtn" class="btn" title="Next">Next ▶</button>
+
     <button id="bookmarkBtn" class="btn" title="Bookmark">🔖 Bookmark</button>
     <button id="shareBtn" class="btn" title="Copy link">🔗 Share</button>
   </div>
@@ -70,6 +98,18 @@
   <div id="note" class="note"></div>
 </main>
 
+<!-- All Scrolls Panel -->
+<div id="panel" class="panel" aria-hidden="true">
+  <div class="panelInner">
+    <div class="panelHeader">
+      <h3>All Commentary Scrolls</h3>
+      <div class="spacer"></div>
+      <button id="closeList" class="btn">Close</button>
+    </div>
+    <div id="list" class="grid"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast">Copied!</div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -78,8 +118,8 @@
   const $ = s=>document.querySelector(s);
   const note = $('#note');
   const params = new URLSearchParams(location.search);
-  const rawPath = params.get('path');       // may be site path OR github blob/raw
-  const fromParam = params.get('from');     // optional override for json
+  const rawPath = params.get('path');       // site path OR github blob/raw
+  const fromParam = params.get('from');     // optional override json
   const toast = $('#toast');
 
   // --- Theme ---
@@ -130,7 +170,6 @@
   }
   $('#q').addEventListener('keydown', e=>{ if(e.key==='Enter') highlight(e.target.value); });
 
-  // Accept site paths + GitHub URLs
   function resolvePath(p){
     if(!p) return '';
     try{ p = decodeURIComponent(p); }catch{}
@@ -141,8 +180,9 @@
     return p.replace(/^\/+/, '');
   }
   const pathParam = resolvePath(rawPath);
+  const norm = s => String(s||'').replace(/^\/+/, '');
 
-  // Try these JSON locations
+  // JSON locations to try
   const jsonCandidates = [
     ...(fromParam ? [fromParam] : []),
     './commentary-scrolls/data.json',
@@ -150,28 +190,31 @@
   ];
   async function loadJson(){
     for(const u of jsonCandidates){
-      try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return await r.json(); }catch{}
+      try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return {arr:await r.json(), from:u}; }catch{}
     }
-    return null;
+    return {arr:null, from:null};
+  }
+
+  // NAV helpers
+  function goTo(url, from){
+    const target = `/scrolls/read.html?path=${encodeURIComponent(url)}&from=${encodeURIComponent(from||'/scrolls/commentary-scrolls/data.json')}`;
+    location.href = target;
   }
 
   // Main
   (async function(){
+    const {arr, from} = await loadJson();
+
     // If no ?path=, auto-open the first item from data.json
     if(!pathParam){
-      const arr = await loadJson();
-      if(arr && arr.length && arr[0].url){
-        location.replace(`/scrolls/read.html?path=${encodeURIComponent(arr[0].url)}&from=/scrolls/commentary-scrolls/data.json`);
-        return;
-      }
+      if(arr && arr.length && arr[0].url){ goTo(arr[0].url, from); return; }
       $('#title').textContent='Missing ?path='; $('#content').textContent='No path and no data.json found.'; return;
     }
 
-    // Build site path + RAW fallback
+    // Build site path + RAW fallback (for Jekyll sites)
     const sitePath = '/'+pathParam.replace(/^\/+/, '');
     const rawURL   = 'https://raw.githubusercontent.com/ToadAid/toadaid.github.io/main/' + pathParam.replace(/^\/+/, '');
 
-    // Fetch markdown (site first, then RAW)
     let text = '';
     let res  = await fetch(sitePath, {cache:'no-store'});
     if(!res.ok){ res = await fetch(rawURL, {cache:'no-store'}); }
@@ -189,10 +232,8 @@
     if(fm){ try{ meta = parseYAML(fm[1]); body = text.slice(fm[0].length); }catch{} }
 
     // Merge metadata from data.json
-    const data = await loadJson();
-    if(data){
-      const norm = s => String(s||'').replace(/^\/+/, '');
-      const j = data.find(x => norm(x.url) === norm(pathParam));
+    if(arr){
+      const j = arr.find(x => norm(x.url) === norm(pathParam));
       if(j){
         meta.title = meta.title || j.title;
         meta.date  = meta.date  || j.date;
@@ -213,7 +254,70 @@
     const tags = Array.isArray(meta.tags) ? meta.tags : [];
     $('#tags').innerHTML = tags.map(t=>`<span class="pill">#${escapeHtml(String(t))}</span>`).join('');
 
-    note.textContent = ''; // clear
+    // ----- NAV wiring (Prev/Next + All list) -----
+    const prevBtn = $('#prevBtn');
+    const nextBtn = $('#nextBtn');
+    const openList = $('#openList');
+    const panel = $('#panel');
+    const closeList = $('#closeList');
+    const listEl = $('#list');
+
+    if(arr && arr.length){
+      // sort by date desc (when present)
+      const list = [...arr].sort((a,b)=>{
+        const da = Date.parse(a.date||''); const db = Date.parse(b.date||'');
+        if (isNaN(da) && isNaN(db)) return 0;
+        if (isNaN(da)) return 1;
+        if (isNaN(db)) return -1;
+        return db - da;
+      });
+
+      // index of current
+      let idx = Math.max(0, list.findIndex(it => norm(it.url) === norm(pathParam)));
+      if (idx === -1) idx = 0;
+
+      // Prev/Next actions
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx === list.length - 1;
+      prevBtn.onclick = () => { if(idx>0) goTo(list[idx-1].url, from); };
+      nextBtn.onclick = () => { if(idx<list.length-1) goTo(list[idx+1].url, from); };
+
+      // Build panel list (with thumbnails if provided)
+      listEl.innerHTML = list.map(it=>{
+        const img = it.img ? `<img class="thumb" src="${it.img}" alt="">` : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:18px">📜</div>`;
+        const id = it.id ? `<strong>${escapeHtml(it.id)}</strong>` : '';
+        const date = it.date ? ` · ${escapeHtml(it.date)}` : '';
+        return `<div class="item" data-url="${encodeURIComponent(it.url)}">
+                  ${img}
+                  <div>
+                    <div>${id}${date}</div>
+                    <div>${escapeHtml(it.title || '')}</div>
+                    <div class="metaLine">${escapeHtml(it.url)}</div>
+                  </div>
+                </div>`;
+      }).join('');
+
+      // open/close panel
+      function openPanel(){ panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
+      function closePanel(){ panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
+      openList.onclick = openPanel;
+      closeList.onclick = closePanel;
+      panel.addEventListener('click', e=>{ if(e.target===panel) closePanel(); });
+
+      // click item -> navigate
+      listEl.addEventListener('click', e=>{
+        const el = e.target.closest('.item'); if(!el) return;
+        const url = decodeURIComponent(el.getAttribute('data-url'));
+        goTo(url, from);
+      });
+    } else {
+      // no JSON — disable nav
+      prevBtn.disabled = nextBtn.disabled = true;
+      openList.disabled = true;
+    }
+
+    // clear any note
+    note.textContent = '';
   })();
 })();
 </script>
