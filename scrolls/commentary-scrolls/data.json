@@ -1,19 +1,5 @@
 [
   {
-    "id": "TOBY_C004",
-    "date": "2025-08-29",
-    "title": "The Frog as the People",
-    "url": "scrolls/commentary-scrolls/TOBY_C004_TheFrogAsThePeople_2025-08-29_EN.md",
-    "img": "",
-    "tags": [
-      "Frog",
-      "Community",
-      "People",
-      "Commentary"
-    ],
-    "tweet": ""
-  },
-  {
     "id": "TOBY_C000 — Preface to the Commentary Scrolls",
     "date": "",
     "title": "TOBY_C000 — Preface to the Commentary Scrolls",
@@ -45,6 +31,16 @@
     "date": "",
     "title": "TOBY_C003 — The Leaf and the Flame",
     "url": "scrolls/commentary-scrolls/TOBY_C003_TheLeafAndTheFlame_2025-08-29_EN.md",
+    "img": "",
+    "tags": [],
+    "tweet": ""
+  },
+
+    {
+    "id": "TOBY_C004",
+    "date": "2025-08-29",
+    "title": "The Frog as the People",
+    "url": "scrolls/commentary-scrolls/TOBY_C004_TheFrogAsThePeople_2025-08-29_EN.md",
     "img": "",
     "tags": [],
     "tweet": ""
