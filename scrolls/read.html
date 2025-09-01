@@ -19,11 +19,17 @@
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
   a{color:var(--link);text-decoration:none}
   a:hover{text-decoration:underline}
-  header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,rgba(53,94,59,.98),rgba(53,94,59,.92));color:#fff;border-bottom:1px solid #00000020;}
+  header{
+    position:sticky;top:0;z-index:10;
+    background:linear-gradient(180deg,rgba(53,94,59,.98),rgba(53,94,59,.92));
+    color:#fff;border-bottom:1px solid #00000020;
+  }
   .bar{max-width:1100px;margin:0 auto;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .bar a.home{color:#fff;opacity:.95}
   .spacer{flex:1}
-  .btn{background:#ffffff18;border:1px solid #ffffff35;color:#fff;padding:6px 10px;border-radius:10px;cursor:pointer}
+  .btn{
+    background:#ffffff18;border:1px solid #ffffff35;color:#fff;padding:6px 10px;border-radius:10px;cursor:pointer
+  }
   .wrap{max-width:900px;margin:0 auto;padding:22px 16px 60px}
   .meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.9rem;margin-bottom:16px}
   .title{font-weight:800;font-size:clamp(1.4rem,2.8vw,2rem);margin:6px 0 10px}
@@ -38,6 +44,7 @@
   .searchbox{min-width:200px;padding:6px 8px;border-radius:10px;border:1px solid #ffffff40;background:#ffffff18;color:#fff;outline:none}
   .searchbox::placeholder{color:#ffffffcc}
   mark{background:#fff59d;color:#000;padding:0 2px;border-radius:4px}
+  .note{margin-top:10px;color:#8aa07f;font-size:.9rem}
 </style>
 </head>
 <body>
@@ -60,6 +67,7 @@
   <img id="lead" class="leadimg hidden" alt="">
   <article id="content">Fetching scroll…</article>
   <div class="foot" id="tags"></div>
+  <div id="note" class="note"></div>
 </main>
 
 <div class="toast" id="toast">Copied!</div>
@@ -67,10 +75,11 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 (function(){
-  const $ = sel => document.querySelector(sel);
+  const $ = s=>document.querySelector(s);
+  const note = $('#note');
   const params = new URLSearchParams(location.search);
-  const rawPath = params.get('path');
-  const fromParam = params.get('from');
+  const rawPath = params.get('path');       // may be site path OR github blob/raw
+  const fromParam = params.get('from');     // optional override for json
   const toast = $('#toast');
 
   // --- Theme ---
@@ -78,33 +87,64 @@
   const prefersLight = matchMedia('(prefers-color-scheme: light)').matches;
   const initialTheme = savedTheme || (prefersLight ? 'light' : 'dark');
   document.documentElement.setAttribute('data-theme', initialTheme);
-  $('#toggleTheme').textContent = initialTheme === 'light' ? '🌙 Night' : '☀️ Day';
-  $('#toggleTheme').onclick = ()=>{
+  const themeBtn = $('#toggleTheme');
+  themeBtn.textContent = initialTheme==='light' ? '🌙 Night' : '☀️ Day';
+  themeBtn.onclick = ()=>{
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = cur==='light'?'dark':'light';
-    document.documentElement.setAttribute('data-theme',next);
-    localStorage.setItem('scrollTheme',next);
-    $('#toggleTheme').textContent = next==='light'?'🌙 Night':'☀️ Day';
+    const next = cur==='light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('scrollTheme', next);
+    themeBtn.textContent = next==='light' ? '🌙 Night' : '☀️ Day';
   };
 
-  // --- Font size ---
+  // --- Font ---
   let fs = parseFloat(localStorage.getItem('scrollFS') || '16');
-  document.body.style.fontSize = fs+'px';
+  document.body.style.fontSize = fs + 'px';
   $('#aPlus').onclick = ()=>{ fs=Math.min(fs+1,22); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
   $('#aMinus').onclick = ()=>{ fs=Math.max(fs-1,12); document.body.style.fontSize=fs+'px'; localStorage.setItem('scrollFS',fs); };
 
   // --- Share / Bookmark ---
-  $('#shareBtn').onclick = async()=>{ try{ await navigator.clipboard.writeText(location.href); msg('Link copied'); }catch{ msg('Copy failed'); } };
-  $('#bookmarkBtn').onclick = ()=>{ if(!rawPath) return; const k='scrollBookmarks'; const list=JSON.parse(localStorage.getItem(k)||'[]'); if(!list.includes(rawPath)){ list.push(rawPath); localStorage.setItem(k,JSON.stringify(list)); msg('Bookmarked'); } else msg('Already bookmarked'); };
-  function msg(t){ toast.textContent=t; toast.style.display='block'; setTimeout(()=>toast.style.display='none',1200); }
+  $('#shareBtn').onclick = async()=>{ try{ await navigator.clipboard.writeText(location.href); show('Link copied'); }catch{ show('Copy failed'); } };
+  $('#bookmarkBtn').onclick = ()=>{ if(!rawPath) return; const k='scrollBookmarks'; const list=JSON.parse(localStorage.getItem(k)||'[]'); if(!list.includes(rawPath)){ list.push(rawPath); localStorage.setItem(k,JSON.stringify(list)); show('Bookmarked'); } else show('Already bookmarked'); };
+  function show(t){ toast.textContent=t; toast.style.display='block'; setTimeout(()=>toast.style.display='none',1200); }
 
-  // --- Path helper ---
-  function norm(p){ try{ return decodeURIComponent(String(p||'').replace(/^\/+/,'')); }catch{return p;} }
-  const pathParam = norm(rawPath);
+  // --- Helpers ---
+  function escapeHtml(s){ return (s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function guessTitle(md){ const m = md.match(/^\s*#\s+(.+)$/m); return m ? m[1].trim() : ''; }
+  function parseYAML(y){
+    const o={};
+    y.split(/\r?\n/).forEach(line=>{
+      const m=line.match(/^(\w+):\s*(.*)$/); if(!m) return;
+      const k=m[1]; let v=m[2].trim();
+      if(v.startsWith('[')&&v.endsWith(']')) o[k]=v.slice(1,-1).split(',').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
+      else o[k]=v.replace(/^["']|["']$/g,'');
+    }); return o;
+  }
+  function highlight(term){
+    const art = $('#content'); const t=(term||'').trim();
+    if(!t){ art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,''); return; }
+    const esc=t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    art.innerHTML = art.innerHTML.replace(/<\/?mark>/g,'');
+    art.innerHTML = art.innerHTML.replace(new RegExp(`(${esc})`,'gi'),'<mark>$1</mark>');
+    const first=art.querySelector('mark'); if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  $('#q').addEventListener('keydown', e=>{ if(e.key==='Enter') highlight(e.target.value); });
 
-  // --- JSON fetch ---
+  // Accept site paths + GitHub URLs
+  function resolvePath(p){
+    if(!p) return '';
+    try{ p = decodeURIComponent(p); }catch{}
+    const mBlob = p.match(/^https?:\/\/github\.com\/[^\/]+\/[^\/]+\/blob\/[^\/]+\/(.+)$/);
+    if(mBlob) return mBlob[1];
+    const mRaw = p.match(/^https?:\/\/raw\.githubusercontent\.com\/[^\/]+\/[^\/]+\/[^\/]+\/(.+)$/);
+    if(mRaw) return mRaw[1];
+    return p.replace(/^\/+/, '');
+  }
+  const pathParam = resolvePath(rawPath);
+
+  // Try these JSON locations
   const jsonCandidates = [
-    ...(fromParam?[fromParam]:[]),
+    ...(fromParam ? [fromParam] : []),
     './commentary-scrolls/data.json',
     '/scrolls/commentary-scrolls/data.json'
   ];
@@ -115,51 +155,66 @@
     return null;
   }
 
-  // --- Main loader ---
-  async function loadMD(){
-    // auto-load first scroll if none given
+  // Main
+  (async function(){
+    // If no ?path=, auto-open the first item from data.json
     if(!pathParam){
-      const arr=await loadJson();
+      const arr = await loadJson();
       if(arr && arr.length && arr[0].url){
         location.replace(`/scrolls/read.html?path=${encodeURIComponent(arr[0].url)}&from=/scrolls/commentary-scrolls/data.json`);
         return;
       }
-      $('#title').textContent='Missing ?path='; $('#content').textContent='No path and no data.json'; return;
+      $('#title').textContent='Missing ?path='; $('#content').textContent='No path and no data.json found.'; return;
     }
 
-    const mdPath='/'+pathParam;
-    const res=await fetch(mdPath,{cache:'no-store'});
-    if(!res.ok){ $('#title').textContent='Not found'; $('#content').textContent='Could not fetch '+mdPath; return; }
-    const raw=await res.text();
+    // Build site path + RAW fallback
+    const sitePath = '/'+pathParam.replace(/^\/+/, '');
+    const rawURL   = 'https://raw.githubusercontent.com/ToadAid/toadaid.github.io/main/' + pathParam.replace(/^\/+/, '');
 
-    // front matter
-    let meta={},body=raw;
-    const m=raw.match(/^---\s*?\n([\s\S]*?)\n---\s*?\n?/);
-    if(m){ try{ meta=parseYAML(m[1]); body=raw.slice(m[0].length); }catch{} }
+    // Fetch markdown (site first, then RAW)
+    let text = '';
+    let res  = await fetch(sitePath, {cache:'no-store'});
+    if(!res.ok){ res = await fetch(rawURL, {cache:'no-store'}); }
+    if(!res.ok){
+      $('#title').textContent='Not found';
+      $('#content').innerHTML = `<p>Could not fetch:</p><code>${sitePath}</code><p>Tried fallback:</p><code>${rawURL}</code>`;
+      note.textContent = 'If you prefer site paths to work, add a ".nojekyll" file at repo root.';
+      return;
+    }
+    text = await res.text();
 
-    // merge with data.json
-    const arr=await loadJson();
-    if(arr){ const j=arr.find(x=>norm(x.url)===pathParam); if(j) Object.assign(meta,{title:meta.title||j.title,date:meta.date||j.date,cover:meta.cover||j.img,tags:meta.tags||j.tags,id:meta.id||j.id}); }
+    // Front-matter (optional)
+    let meta={}, body=text;
+    const fm = text.match(/^---\s*?\n([\s\S]*?)\n---\s*?\n?/);
+    if(fm){ try{ meta = parseYAML(fm[1]); body = text.slice(fm[0].length); }catch{} }
 
-    // render
-    $('#title').textContent=meta.title||guessTitle(body)||fileBase(mdPath);
-    if(meta.cover){ $('#lead').src=meta.cover; $('#lead').classList.remove('hidden'); }
-    $('#meta').innerHTML=[meta.id?`<span>🆔 ${escapeHtml(meta.id)}</span>`:'',meta.date?`<span>📅 ${escapeHtml(meta.date)}</span>`:''].filter(Boolean).join('<span>•</span>');
-    try{ $('#content').innerHTML=marked.parse(body);}catch{ $('#content').textContent=body; }
-    $('#tags').innerHTML=(Array.isArray(meta.tags)?meta.tags:[]).map(t=>`<span class="pill">#${escapeHtml(t)}</span>`).join('');
+    // Merge metadata from data.json
+    const data = await loadJson();
+    if(data){
+      const norm = s => String(s||'').replace(/^\/+/, '');
+      const j = data.find(x => norm(x.url) === norm(pathParam));
+      if(j){
+        meta.title = meta.title || j.title;
+        meta.date  = meta.date  || j.date;
+        meta.cover = meta.cover || j.img;
+        meta.tags  = meta.tags  || j.tags;
+        meta.id    = meta.id    || j.id;
+      }
+    }
 
-    // search highlight
-    $('#q').addEventListener('keydown',e=>{if(e.key==='Enter') highlight($('#q').value);});
-  }
+    // Render
+    $('#title').textContent = meta.title || guessTitle(body) || (pathParam.split('/').pop()||'').replace(/\.md$/,'');
+    if(meta.cover){ const lead=$('#lead'); lead.src=meta.cover; lead.classList.remove('hidden'); lead.alt=meta.title||'Cover'; }
+    $('#meta').innerHTML = [
+      meta.id   ? `<span>🆔 ${escapeHtml(meta.id)}</span>` : '',
+      meta.date ? `<span>📅 ${escapeHtml(meta.date)}</span>` : ''
+    ].filter(Boolean).join('<span>•</span>');
+    try{ $('#content').innerHTML = marked.parse(body); }catch{ $('#content').textContent = body; }
+    const tags = Array.isArray(meta.tags) ? meta.tags : [];
+    $('#tags').innerHTML = tags.map(t=>`<span class="pill">#${escapeHtml(String(t))}</span>`).join('');
 
-  // --- Helpers ---
-  function escapeHtml(s){return (s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-  function guessTitle(md){const m=md.match(/^\s*#\s+(.+)$/m);return m?m[1].trim():'';}
-  function parseYAML(y){const o={};y.split(/\r?\n/).forEach(line=>{const m=line.match(/^(\w+):\s*(.*)$/);if(!m)return;const k=m[1];let v=m[2].trim();if(v.startsWith('[')&&v.endsWith(']')){o[k]=v.slice(1,-1).split(',').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);}else{o[k]=v.replace(/^["']|["']$/g,'');}});return o;}
-  function fileBase(p){return (p.split('/').pop()||'').replace(/\.md$/,'');}
-  function highlight(term){const art=$('#content');const t=(term||'').trim();if(!t){art.innerHTML=art.innerHTML.replace(/<\/?mark>/g,'');return;}const esc=t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');art.innerHTML=art.innerHTML.replace(/<\/?mark>/g,'');art.innerHTML=art.innerHTML.replace(new RegExp(`(${esc})`,'gi'),'<mark>$1</mark>');const first=art.querySelector('mark');if(first)first.scrollIntoView({behavior:'smooth',block:'center'});}
-  
-  loadMD();
+    note.textContent = ''; // clear
+  })();
 })();
 </script>
 </body>
