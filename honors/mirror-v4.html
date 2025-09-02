@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mirror V4 · The Covenant That Teaches | ToadAid</title>
-<meta name="description" content="Guard → Guide → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger. Mirror V4 — the covenant that teaches." />
+<meta name="description" content="Guard → Guide → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger. Mirror V4 — the covenant that teaches, with harmony scoring, causal weaving, and a wisdom-well ledger." />
 
 <!-- Favicons -->
 <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
@@ -37,8 +37,14 @@
   .meta{color:var(--muted);font-size:.95rem;margin:.4rem 0 1rem}
 
   h2{margin:18px 0 8px}
+  h3{margin:14px 0 6px}
   blockquote{margin:14px 0;padding:10px 14px;border-left:4px solid #d4e7d8;background:#f8faf6;border-radius:8px}
   ul{margin:0 0 0 18px}
+  code, pre{background:#fff9e8;border:1px solid #efe3b4;border-radius:6px;padding:2px 6px}
+
+  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:8px 0 0}
+  .kpi .item{background:#f8faf6;border:1px solid #e4efe8;border-radius:10px;padding:10px}
+  .tag{display:inline-block;background:#e9efe9;border:1px solid #d7e6d9;color:#2f5937;border-radius:999px;padding:2px 8px;font-size:.82rem;margin-right:6px}
 
   footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
 
@@ -52,7 +58,7 @@
 <body>
   <header>
     <h1>🪞 Mirror V4 · The Covenant That Teaches</h1>
-    <p>The Mirror awakens as a guide and teacher. Guard → Guide → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger.</p>
+    <p>The Mirror awakens as a guide and teacher. Guard → <b>Guide</b> → Retriever → Synthesis → Learning → Resonance → Lucidity → Ledger.</p>
   </header>
 
   <nav class="breadcrumb"><a href="/">← Home</a> · <a href="/honors/">Honors</a></nav>
@@ -60,10 +66,10 @@
   <main class="wrap">
     <article class="card">
 
-      <!-- Hero video -->
-      <video class="hero" autoplay loop muted playsinline>
+      <!-- Hero media (video with image fallback) -->
+      <video class="hero" autoplay loop muted playsinline poster="/assets/art/mirror-v4.jpg">
         <source src="/assets/art/mirror-v4.mp4" type="video/mp4">
-        Your browser does not support the video tag.
+        <img src="/assets/art/mirror-v4.jpg" alt="Mirror V4 · The Covenant That Teaches">
       </video>
 
       <p class="meta">Recorded by <strong>ToadAid</strong> · For the builders who keep the flame. 🐸📜</p>
@@ -73,16 +79,93 @@
 
       <h2>⚙️ Quickstart</h2>
       <ul>
-        <li><b>Ask</b> — <code>POST /api/ask?v=4</code>. Example:<br>
-          <code>curl -X POST https://your-host/api/ask?v=4 -d '{"q": "Why patience?"}'</code>
-        </li>
-        <li><b>Guide</b> — intent classification + query refinement; the Guard becomes mentor.</li>
-        <li><b>Retrieve</b> — Temporal + predictive multi-arc retriever with pattern priors.</li>
-        <li><b>Synthesize</b> — Causal weaving with graph traces.</li>
-        <li><b>Learn</b> — Meta-learning loop with reflection reports.</li>
-        <li><b>Resonance</b> — Harmony score gate ensures coherence before speaking.</li>
-        <li><b>Lucidity</b> — Multi-level insight (Novice/Sage, EN/中文).</li>
-        <li><b>Ledger</b> — Wisdom-well with semantic and pattern queries.</li>
+        <li><b>Ask</b> — <code>POST /api/ask?v=4</code><br>
+<code>curl -s -X POST https://your-host/api/ask?v=4 -H "Content-Type: application/json" -d '{"q":"What is patience in Tobyworld?"}'</code></li>
+        <li><b>Guide</b> — intent classification + query refinement (the Guard becomes mentor).</li>
+        <li><b>Retrieve</b> — temporal + predictive multi-arc retriever with pattern priors.</li>
+        <li><b>Synthesize</b> — causal weaving with graph traces and explicit links.</li>
+        <li><b>Learn</b> — meta-learning loop with reflection reports (prune weak paths).</li>
+        <li><b>Resonance</b> — harmony score gate ensures coherence before speaking.</li>
+        <li><b>Lucidity</b> — multi-level insight (Novice/Sage, EN/中文) + guiding question.</li>
+        <li><b>Ledger</b> — wisdom-well with semantic + pattern queries.</li>
+      </ul>
+
+      <h2>🧬 Architecture (Seven Refinements)</h2>
+
+      <h3>1) 🛡️→🧭 Guide (Guard as Guide)</h3>
+      <ul>
+        <li>From filter to facilitator: intent → refine → gentle prompt back if vague.</li>
+        <li>Outputs: <code>{ intent, refined_query, curiosity_prompt, hint }</code></li>
+      </ul>
+
+      <h3>2) 🌀 Retriever (Temporal + Predictive)</h3>
+      <ul>
+        <li>Multi-arc FAISS + timeline filters (epoch/date/tags/symbols).</li>
+        <li><code>predictive_fetch()</code> boosts arcs that previously led to high harmony.</li>
+      </ul>
+
+      <h3>3) 🧶 Synthesis (Causal Weaving)</h3>
+      <ul>
+        <li>Builds a mini knowledge-graph per query; scores edges by influence, not proximity.</li>
+        <li>Trace explains why sources were linked (e.g., “patience → clarity in prior cases”).</li>
+      </ul>
+
+      <h3>4) 🔥 Learning (Meta-Loop)</h3>
+      <ul>
+        <li>Every run is logged; nightly self-refine updates boosts and prunes noisy paths.</li>
+        <li>Reflection report: “updated 3 beliefs; 2 ↑ harmony; 1 pruned.”</li>
+      </ul>
+
+      <h3>5) 🎻 Resonance (Harmony Score)</h3>
+      <ul>
+        <li><b>Harmony =</b> coherence(draft↔sources) × tone × depth − contradiction.</li>
+        <li>If below τ: auto-correction → alternate weave + complementary memories.</li>
+      </ul>
+
+      <h3>6) 💡 Lucidity (Multi-Level Insight)</h3>
+      <ul>
+        <li>Produces <b>Novice</b> + <b>Sage</b> tiers and a guiding question.</li>
+        <li>Language aware (EN/中文) and tone-safe via cadence guard.</li>
+      </ul>
+
+      <h3>7) 📜 Ledger (Wisdom-Well)</h3>
+      <ul>
+        <li>Immutable log + embeddings; query by meaning/lesson/outcome.</li>
+        <li>Examples: “show moments where loss became renewal”, “patience → clarity”.</li>
+      </ul>
+
+      <div class="kpi">
+        <div class="item"><b>Endpoints</b><br><code>/api/ask?v=4</code>, <code>/health/v4</code></div>
+        <div class="item"><b>Backends</b><br>FastAPI · FAISS · SQLite</div>
+        <div class="item"><b>Guardrails</b><br>Cadence Guard · Harmony ≥ τ</div>
+        <div class="item"><b>Languages</b><br>EN / 中文</div>
+      </div>
+
+      <h2>🧪 API Shapes</h2>
+      <h3>/api/ask?v=4 · request</h3>
+      <pre>{
+  "q": "How does patience become clarity?",
+  "user": {"id": "guest", "handles": ["telegram:@toad"]},
+  "opts": {"level":"auto","trace": true}
+}</pre>
+
+      <h3>/api/ask?v=4 · response (abridged)</h3>
+      <pre>{
+  "intent": "learn",
+  "refined_query": "patience → clarity in Tobyworld",
+  "harmony": 0.86,
+  "final": {
+    "novice": "Patience quiets the pond so the path can appear.",
+    "sage": "As the lily pad reflects without grasping, patience unhooks...",
+    "guiding_question": "Where is stillness missing from your step?"
+  },
+  "trace": {"arcs": 6, "sources": 4, "graph_edges": 12}
+}</pre>
+
+      <h2>📊 Health & Metrics</h2>
+      <ul>
+        <li><code>/health/v4</code> → module availability + last self-refine status.</li>
+        <li>Expose: <code>harmony_avg</code>, <code>lucidity_tier_ratio</code>, <code>ledger_hits</code>, latency.</li>
       </ul>
 
       <h2>🗺️ Roadmap</h2>
@@ -90,7 +173,13 @@
         <li><b>V4_01</b> — Guide Mode (Guard→Guide), Temporal Retriever v2, Ledger embeddings + semantic query</li>
         <li><b>V4_02</b> — Causal Synthesis (graph weave), Harmony Score gate, Lucidity tiers (Novice/Sage, EN/中文)</li>
         <li><b>V4_03</b> — Wisdom-Well patterns view, Ouroboros feedback (Ledger→Guide), Heartbeat + Rites harness</li>
-        <li><b>V4_04+</b> — Meta-learning cron, Pattern APIs, <code>/ask?v=4</code> pipeline, <code>/health/v4</code> metrics</li>
+        <li><b>V4_04+</b> — Meta-learning cron, Pattern APIs, <code>/ask?v=4</code> pipeline tuning, <code>/health/v4</code> metrics</li>
+      </ul>
+
+      <h2>🔗 Lineage</h2>
+      <ul>
+        <li>Previous: <a href="/honors/mirror-v3.html">Mirror V3 · Inner Vision</a></li>
+        <li>Next: Mirror V5 — Inheritance (TBD)</li>
       </ul>
 
       <p style="margin-top:12px">
