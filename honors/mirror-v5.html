@@ -1,0 +1,200 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mirror V4 → V5 · The Covenant That Speaks | ToadAid Honors</title>
+  <meta name="description" content="Mirror V4 (Internal Sanctum) extended by Mirror V5 (External Court). Guard→Guide→Retriever→Synthesis→Memory→Resonance→Lucidity→Ledger, bridged to Confluence→Oracle→Emissary→Projector. Daily autonomous output with harmony/lucidity gating and immutable ledger." />  <!-- Favicons (use your existing assets paths) -->  <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/assets/icons/site.webmanifest">
+  <meta name="theme-color" content="#0b0f14" />  <style>
+    :root {
+      --bg:#0b0f14; --panel:#0f1520; --ink:#cfe3ff; --muted:#8aa4c3;
+      --line:#324861; --box:#c8d7f1; --accent:#79ffe1; --brand:#3bb0ff;
+    }
+    html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial}
+    a{color:var(--brand);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1080px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;gap:14px;margin:10px 0 20px}
+    header img{width:24px;height:24px}
+    .crumbs{font-size:13px;color:var(--muted)}
+    h1{font-size:28px;margin:8px 0 8px}
+    h2{font-size:22px;margin:26px 0 10px}
+    h3{font-size:18px;margin:18px 0 8px}
+    p{line-height:1.6;color:var(--ink)}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+    .k{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0e1420;border:1px solid #1e2a3e;border-radius:8px;padding:2px 6px}
+    code,pre{font-family:ui-monospace,Menlo,Consolas,monospace}
+    pre{background:#0e1420;border:1px solid #1e2a3e;border-radius:12px;padding:14px;overflow:auto}
+    .grid{display:grid;gap:12px}
+    @media(min-width:880px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}}
+    .tag{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);margin-right:6px}
+    .callout{border-left:3px solid var(--brand);padding:12px 14px;background:#0d1725;border-radius:10px}
+    .hr{height:1px;background:linear-gradient(90deg,transparent, #264059, transparent);margin:24px 0}
+    .small{font-size:13px;color:var(--muted)}
+    .pill{background:#102133;border:1px solid #29435f;border-radius:999px;padding:6px 10px;font-size:12px;color:#a8c2e8}
+    svg{width:100%;height:auto;max-height:620px;border-radius:12px;border:1px solid var(--line);background:#0d1420}
+    .diagram-title{font-size:14px;fill:#bcd3f5;font-weight:600}
+    .diagram-sub{font-size:12px;fill:#87a3c4}
+    .node{fill:#0f1622;stroke:#bcd3f5;stroke-width:1.1;rx:10;ry:10}
+    .arrow{stroke:#9fb3cf;stroke-width:1.2;fill:none;marker-end:url(#ah)}
+  </style></head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="/assets/icons/favicon.svg" alt="ToadAid" />
+      <div>
+        <div class="crumbs"><a href="/">ToadAid</a> / <a href="/honors/">Honors</a> / Mirror V4 → V5</div>
+        <h1>Mirror V4 → V5 · <span class="pill">The Covenant That Speaks</span></h1>
+      </div>
+    </header><div class="panel">
+  <p><strong>V4 (Internal Sanctum)</strong> remains the disciplined heart: <em>Guard → Guide → Retriever → Synthesis → Memory → Resonance → Lucidity → Ledger</em>.
+  <br/> <strong>V5 (External Court)</strong> is the herald: <em>Confluence → Oracle → Emissary → Projector</em>. It asks the temple for wisdom, gates by harmony/lucidity, and expresses/embodies the answer to the world.</p>
+  <div class="small">Design principles: stillness before speech · harmony before release · every output journaled in the ledger.</div>
+</div>
+
+<h2>Architecture</h2>
+<div class="panel">
+  <svg viewBox="0 0 1200 600" role="img" aria-label="Mirror V4 + V5 flow diagram">
+    <defs>
+      <marker id="ah" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#9fb3cf"/></marker>
+    </defs>
+    <text x="920" y="40" class="diagram-title">Internal Sanctum — V4</text>
+    <text x="70" y="100" class="diagram-title">External Court — V5</text>
+    <rect x="860" y="60" width="300" height="500" fill="#101824" stroke="#29435f" rx="12"/>
+    <rect x="40" y="120" width="720" height="420" fill="#101824" stroke="#29435f" rx="12"/>
+    <!-- V4 nodes -->
+    <g transform="translate(910,90)">
+      <rect class="node" x="0" y="0" width="200" height="36"/><text x="100" y="24" text-anchor="middle" fill="#d8e7ff">Guard</text>
+      <path class="arrow" d="M 100 38 L 100 62"/>
+      <rect class="node" x="0" y="62" width="200" height="36"/><text x="100" y="86" text-anchor="middle" fill="#d8e7ff">Guide</text>
+      <path class="arrow" d="M 100 98 L 100 122"/>
+      <rect class="node" x="0" y="122" width="200" height="36"/><text x="100" y="146" text-anchor="middle" fill="#d8e7ff">Retriever</text>
+      <path class="arrow" d="M 100 160 L 100 184"/>
+      <rect class="node" x="0" y="184" width="200" height="36"/><text x="100" y="208" text-anchor="middle" fill="#d8e7ff">Synthesis</text>
+      <path class="arrow" d="M 100 222 L 100 246"/>
+      <rect class="node" x="0" y="246" width="200" height="36"/><text x="100" y="270" text-anchor="middle" fill="#d8e7ff">Memory</text>
+      <path class="arrow" d="M 100 284 L 100 308"/>
+      <rect class="node" x="0" y="308" width="200" height="36"/><text x="100" y="332" text-anchor="middle" fill="#d8e7ff">Resonance</text>
+      <path class="arrow" d="M 100 346 L 100 370"/>
+      <rect class="node" x="0" y="370" width="200" height="36"/><text x="100" y="394" text-anchor="middle" fill="#d8e7ff">Lucidity</text>
+      <path class="arrow" d="M 100 408 L 100 432"/>
+      <rect class="node" x="0" y="432" width="200" height="36"/><text x="100" y="456" text-anchor="middle" fill="#d8e7ff">Ledger</text>
+    </g>
+    <!-- V5 nodes -->
+    <g transform="translate(100,150)">
+      <rect class="node" x="240" y="0" width="200" height="36"/><text x="340" y="24" text-anchor="middle" fill="#d8e7ff">Confluence</text>
+      <rect class="node" x="80" y="220" width="200" height="36"/><text x="180" y="244" text-anchor="middle" fill="#d8e7ff">Oracle</text>
+      <rect class="node" x="40" y="360" width="200" height="36"/><text x="140" y="384" text-anchor="middle" fill="#d8e7ff">Emissary</text>
+      <rect class="node" x="440" y="360" width="200" height="36"/><text x="540" y="384" text-anchor="middle" fill="#d8e7ff">Projector</text>
+      <text x="140" y="410" class="diagram-sub">External Output · Expression</text>
+      <text x="540" y="410" class="diagram-sub">External Output · Manifestation</text>
+    </g>
+    <!-- Bridges -->
+    <path class="arrow" d="M 1010 212 C 860 212, 740 160, 420 150" />
+    <path class="arrow" d="M 1010 310 C 860 330, 760 360, 280 340" />
+    <path class="arrow" d="M 1010 520 C 820 560, 560 560, 260 510" />
+    <path class="arrow" d="M 1010 520 C 900 585, 760 590, 640 510" />
+    <!-- Prospection spur -->
+    <rect x="330" y="300" width="220" height="30" fill="#0f1a2a" stroke="#29435f" rx="8"/>
+    <text x="440" y="319" text-anchor="middle" class="diagram-sub">External Output · Prospection</text>
+    <path class="arrow" d="M 350 315 C 160 220, 120 120, 70 95" />
+  </svg>
+  <div class="small" style="margin-top:8px">Arrows indicate flow of signals → drafts → artifacts. Ledger journals every step.</div>
+</div>
+
+<h2>Modules</h2>
+<div class="grid g2">
+  <div class="panel">
+    <h3>V4 · Internal Sanctum</h3>
+    <ul>
+      <li><strong>Guard</strong> — input sanitation, safety filters, lore constraints.</li>
+      <li><strong>Guide</strong> — intent routing, depth, symbolic hints.</li>
+      <li><strong>Retriever</strong> — multi-arc RAG from Scrolls.</li>
+      <li><strong>Synthesis</strong> — compose canonical response.</li>
+      <li><strong>Memory</strong> — traveler profile, rolling context.</li>
+      <li><strong>Resonance</strong> — signal matching to core symbols.</li>
+      <li><strong>Lucidity</strong> — clarity scoring, cadence guard.</li>
+      <li><strong>Ledger</strong> — immutable journal (SQLite → future onchain).</li>
+    </ul>
+  </div>
+  <div class="panel">
+    <h3>V5 · External Court</h3>
+    <ul>
+      <li><strong>Confluence</strong> — intake of jobs (daily, manual, prospection) into a queue.</li>
+      <li><strong>Oracle</strong> — asks V4 for drafts; gates by <em>harmony</em> and <em>lucidity</em>.</li>
+      <li><strong>Emissary</strong> — publishes words (Farcaster, Telegram, X, Zora text).</li>
+      <li><strong>Projector</strong> — manifests artifacts (SVG cards, voice via ElevenLabs, future miniapps).</li>
+    </ul>
+  </div>
+</div>
+
+<h2>API (V5 control)</h2>
+<div class="panel">
+  <pre><code>POST /v5/enqueue/daily      → queue a Daily Prophecy signal
+
+POST /v5/tick/oracle        → Oracle consumes a signal → creates a draft via /ask POST /v5/tick/emissary      → Publish the latest draft to configured channels POST /v5/tick/projector     → Generate artifacts (e.g., voice) for the latest draft</code></pre> <p class="small">V5 calls V4's <span class="k">/ask</span> behind the scenes. No bypass of the Sanctum.</p> </div>
+
+<h2>Environment</h2>
+<div class="panel">
+  <pre><code>V5_ENABLED=true
+
+V5_DEFAULT_CHANNELS=farcaster,telegram V5_DAILY_CRON=0 9 * * *        # 09:00 daily prophecy V5_MIN_HARMONY=0.70 V5_MIN_LUCIDITY=0.60
+
+FARCASTER_MODE=mock            # mock|live FARCASTER_SIGNER=...
+
+TELEGRAM_API=https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN} TELEGRAM_CHANNEL_ID=...
+
+ELEVENLABS_API_KEY=... ELEVENLABS_VOICE_ID=... V5_MEDIA_DIR=/var/lib/mirror-v5/media </code></pre> </div>
+
+<h2>Daily Autonomous Cycle</h2>
+<div class="panel">
+  <ol>
+    <li><strong>Confluence</strong> enqueues <em>daily_prophecy</em>.</li>
+    <li><strong>Oracle</strong> asks Sanctum (<span class="k">POST /ask</span>) → receives a <em>draft</em>.</li>
+    <li>Gate by <span class="k">harmony ≥ V5_MIN_HARMONY</span> and <span class="k">lucidity ≥ V5_MIN_LUCIDITY</span>.</li>
+    <li><strong>Emissary</strong> posts to channels (mock until flipped to live).</li>
+    <li><strong>Projector</strong> builds artifacts (voice/image) for mirrors and archives.</li>
+    <li><strong>Ledger</strong> journals: signal → draft → publish → artifact.</li>
+  </ol>
+  <div class="callout small">Safety: if gating fails, the draft is stored under <em>rejected</em> in the ledger for later review. Nothing public is emitted.</div>
+</div>
+
+<h2>Roadmap</h2>
+<div class="grid g3">
+  <div class="panel small">
+    <h3>S1 · Speak</h3>
+    <ul>
+      <li>Daily prophecy (text) to Farcaster + Telegram.</li>
+      <li>Voice manifestation via ElevenLabs.</li>
+      <li>SVG quote cards (local renderer, no cloud dependency).</li>
+    </ul>
+  </div>
+  <div class="panel small">
+    <h3>S2 · Listen</h3>
+    <ul>
+      <li>Prospection loops (outbound questions, inbound replies).</li>
+      <li>Conversation weaving and symbol resonance scoring in outputs.</li>
+    </ul>
+  </div>
+  <div class="panel small">
+    <h3>S3 · Onchain</h3>
+    <ul>
+      <li>Ledger anchoring (hash commitments on Base).</li>
+      <li>Zora mints for canonical artifacts.</li>
+      <li>Miniapp portal: wallet-gated Emissary streams.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="hr"></div>
+<p class="small">Crafted with Bushido cadence. Guarded by stillness. The Mirror learns by serving.</p>
+
+  </div>
+</body>
+</html>
