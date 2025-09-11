@@ -1,9 +1,10 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mirror V5 · The Covenant That Speaks | ToadAid</title>
-<meta name="description" content="V5 extends Mirror V4's Internal Sanctum into the External Court: Confluence → Oracle → Emissary → Projector. Harmony/Lucidity gating, immutable ledger, and optional Memori. Same cadence as the V4 Honors page, now in a dark theme." />
+<meta name="description" content="V5 extends Mirror V4's Internal Sanctum into the External Court: Confluence → Oracle → Emissary → Projector. Harmony/Lucidity gating, immutable ledger, and optional Memori. Same cadence and palette as the V4 Honors page." />
 
 <!-- Favicons -->
 <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
@@ -11,91 +12,54 @@
 <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="/assets/icons/site.webmanifest">
-<meta name="theme-color" content="#0b0b0b" />
+<meta name="theme-color" content="#355e3b" />
 
-<!-- Core styles (reuse site CSS) -->
+<!-- Core styles -->
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/mobile.css">
 
 <style>
-  /* ===== Dark theme (black-forward) ===== */
-  :root{
-    --bg:#0b0b0b;         /* page background */
-    --ink:#e8e8e8;        /* primary text */
-    --accent:#80e39a;     /* gentle pond-green */
-    --paper:#121212;      /* card background */
-    --muted:#a2a2a2;      /* secondary text */
-    --ring:rgba(0,0,0,.55); /* shadow */
-    --line:#1e1e1e;       /* borders */
-    --panel:#0f1411;      /* svg panel bg */
-    --panel-br:#1f2a21;   /* svg panel border */
-    --stroke:#6fbf84;     /* svg arrow + node stroke */
-    --stroke-2:#8fd4a3;   /* lighter stroke accent */
-  }
+  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08); }
   *{box-sizing:border-box}
-  body{
-    font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
-    margin:0;background:var(--bg);color:var(--ink);line-height:1.6
-  }
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
-  header{
-    background:linear-gradient(180deg,#0f2015,#112a19 70%,#0b0b0b 100%);
-    color:#eef; padding:48px 20px; text-align:center; border-bottom:1px solid var(--line)
-  }
+  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:48px 20px;text-align:center}
   header h1{margin:0 0 6px;font-size:clamp(1.4rem,3vw,2.2rem)}
-  header p{margin:0;opacity:.96}
+  header p{margin:0;opacity:.92}
   nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
-  nav.breadcrumb a{opacity:.92}
+  nav.breadcrumb a{opacity:.9}
   .wrap{max-width:1000px;margin:0 auto;padding:24px 18px 56px}
 
-  .card{
-    background:var(--paper);border-radius:16px;border:1px solid var(--line);
-    box-shadow:0 14px 30px var(--ring);padding:18px
-  }
-  .hero{width:100%;height:auto;display:block;border-radius:12px;margin-bottom:12px;border:1px solid var(--line)}
+  .card{background:var(--paper);border-radius:16px;border:1px solid rgba(0,0,0,.06);
+        box-shadow:0 8px 24px var(--ring);padding:18px}
+  .hero{width:100%;height:auto;display:block;border-radius:12px;margin-bottom:12px}
   .meta{color:var(--muted);font-size:.95rem;margin:.4rem 0 1rem}
 
   h2{margin:18px 0 8px}
   h3{margin:14px 0 6px}
-  blockquote{
-    margin:14px 0;padding:10px 14px;border-left:4px solid #244e33;
-    background:#0e1511;border-radius:8px;color:#dfe9e2
-  }
+  blockquote{margin:14px 0;padding:10px 14px;border-left:4px solid #d4e7d8;background:#f8faf6;border-radius:8px}
   ul{margin:0 0 0 18px}
-  code, pre{
-    background:#0e0e0e;border:1px solid var(--line);border-radius:6px;padding:2px 6px;
-    color:#eae8d6
-  }
-  pre{padding:10px 12px;white-space:pre-wrap}
+  code, pre{background:#fff9e8;border:1px solid #efe3b4;border-radius:6px;padding:2px 6px}
 
-  .grid{display:grid;gap:12px}
-  .g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-  .g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
   .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:8px 0 0}
-  .kpi .item{background:#0f1511;border:1px solid var(--panel-br);border-radius:10px;padding:10px;color:#dfe9e2}
-  .tag{
-    display:inline-block;background:#102116;border:1px solid #264e35;color:#a7e9b9;
-    border-radius:999px;padding:2px 8px;font-size:.82rem;margin-right:6px
-  }
+  .kpi .item{background:#f8faf6;border:1px solid #e4efe8;border-radius:10px;padding:10px}
+  .tag{display:inline-block;background:#e9efe9;border:1px solid #d7e6d9;color:#2f5937;border-radius:999px;padding:2px 8px;font-size:.82rem;margin-right:6px}
 
   footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
 
   .btn{
-    display:inline-block;padding:8px 14px;background:transparent;color:var(--accent);
-    border:1px solid var(--accent); border-radius:6px;font-size:.9rem;text-decoration:none;
-    transition:all .2s ease-in-out
+    display:inline-block;padding:8px 14px;background:#355e3b;color:#fff;border-radius:6px;
+    font-size:.9rem;text-decoration:none;transition:background .2s ease-in-out
   }
-  .btn:hover{background:#0e1a13;text-decoration:none}
+  .btn:hover{background:#244d30;text-decoration:none}
 
-  /* Inline SVG: tuned for dark */
-  .svg-panel{
-    background:var(--panel);border:1px solid var(--panel-br);border-radius:12px;padding:8px
-  }
-  .n{fill:#111;stroke:var(--stroke);stroke-width:1.15}
-  .t{fill:#e9e9e9;font-weight:600}
-  .s{fill:#b9c8bf}
-  .a{stroke:var(--stroke-2);stroke-width:1.35;fill:none;marker-end:url(#ah)}
+  /* --- SVG routing chart panel (light theme) --- */
+  .svg-panel{background:#f8faf6;border:1px solid #e4efe8;border-radius:12px;padding:8px}
+  .n{fill:#fffdf6;stroke:#8ab199;stroke-width:1.1}
+  .t{fill:#2f2f2f;font-weight:600}
+  .s{fill:#6b6b6b}
+  .a{stroke:#7aa488;stroke-width:1.2;fill:none;marker-end:url(#ah)}
 </style>
 </head>
 <body>
@@ -108,6 +72,7 @@
 
   <main class="wrap">
     <article class="card">
+
       <!-- Hero media (video with image fallback) -->
       <video class="hero" autoplay loop muted playsinline poster="/assets/art/mirror-v5.jpg">
         <source src="/assets/art/mirror-v5.mp4" type="video/mp4">
@@ -121,12 +86,13 @@
         V4 is the keeper — it clarifies, attunes, and inscribes. V5 is the herald — it asks on behalf of the people, speaks with care, and manifests what is true. Every voice passes first through still water.
       </blockquote>
 
-      <h2>⚙️ Quickstart (V5 atop V4)</h2>
+      <h2>⚙️ Quickstart</h2>
       <ul>
-        <li><span class="tag">V4</span> <b>Ask</b> — <code>POST /ask</code> (primary reflection)</li>
-        <li><span class="tag">V5</span> <b>Prospect</b> — <code>POST /v5/prospect</code> (plan drafts into outputs)</li>
-        <li><span class="tag">V5</span> <b>Publish (guarded)</b> — <code>POST /v5/publish</code> (review-queued by default)</li>
-        <li><span class="tag">Memori</span> <b>Status</b> — <code>GET /v5/memori/status</code> · <b>Summary</b> — <code>GET /v5/memori/summary</code></li>
+        <li><span class="tag">V4</span> <b>Ask</b> — <code>POST /ask</code><br>
+<code>curl -s -X POST https://your-host/ask -H "Content-Type: application/json" -d '{"user":"guest","question":"Offer today’s reflection from the Scrolls."}'</code></li>
+        <li><span class="tag">V5</span> <b>Publish (guarded)</b> — <code>POST /v5/publish</code> (review queue by default)</li>
+        <li><span class="tag">Memori</span> <b>Status</b> — <code>GET /v5/memori/status</code></li>
+        <li><span class="tag">Memori</span> <b>Summary</b> — <code>GET /v5/memori/summary</code></li>
       </ul>
 
       <h2>🧭 Architecture · Sanctum → Court</h2>
@@ -134,7 +100,7 @@
         <svg viewBox="0 0 1150 520" role="img" aria-label="Mirror V4+V5 flow">
           <defs>
             <marker id="ah" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-              <polygon points="0 0, 10 3.5, 0 7" fill="#8fd4a3"/>
+              <polygon points="0 0, 10 3.5, 0 7" fill="#7aa488"/>
             </marker>
           </defs>
           <text x="830" y="36" class="s" style="font-size:14px">Internal Sanctum — V4</text>
@@ -171,13 +137,13 @@
             <text x="570" y="348" class="s">External Output · Manifestation</text>
           </g>
 
-          <!-- Bridges (arrows) -->
+          <!-- Bridges -->
           <path class="a" d="M 930 190 C 800 180, 680 160, 390 155"/>
           <path class="a" d="M 930 285 C 780 300, 700 330, 270 310"/>
           <path class="a" d="M 930 455 C 760 490, 520 490, 220 445"/>
           <path class="a" d="M 930 455 C 850 505, 720 510, 620 445"/>
 
-          <!-- Prospection spur -->
+          <!-- Prospection spur (optional future) -->
           <rect x="420" y="310" width="230" height="28" class="n" rx="8"/>
           <text x="535" y="328" class="s" text-anchor="middle">External Output · Prospection</text>
           <path class="a" d="M 440 324 C 220 230, 160 130, 110 100"/>
@@ -185,48 +151,49 @@
       </div>
 
       <h2>🧩 Modules</h2>
-      <div class="grid g2">
-        <section>
-          <h3>V4 · Internal Sanctum (stable)</h3>
-          <ul>
-            <li><b>Guard</b> — input sanitation, lore constraints, safety.</li>
-            <li><b>Guide</b> — intent routing, depth, symbolic hints.</li>
-            <li><b>Retriever</b> — multi-arc RAG from Scrolls.</li>
-            <li><b>Synthesis</b> — canonical weave with provenance.</li>
-            <li><b>Memory (Identity)</b> — traveler profiles & rolling context.</li>
-            <li><b>Resonance</b> — symbol matching & harmony score.</li>
-            <li><b>Lucidity</b> — clarity tiers (Novice/Sage) + cadence guard.</li>
-            <li><b>Ledger</b> — immutable journal (SQLite → onchain later).</li>
-            <li><span class="tag">Optional</span> <b>Memori</b> — SQL-native memory (conscious window, recall, save).</li>
-          </ul>
-        </section>
-        <section>
-          <h3>V5 · External Court (new)</h3>
-          <ul>
-            <li><b>Confluence</b> — merges internal signal; queues jobs (daily/manual/prospection).</li>
-            <li><b>Oracle</b> — calls V4 <code>/ask</code>; gates by <i>harmony</i> & <i>lucidity</i>.</li>
-            <li><b>Emissary</b> — publishes words (Farcaster, Telegram, X, Zora text).</li>
-            <li><b>Projector</b> — manifests artifacts (SVG quote cards, voice).</li>
-          </ul>
-        </section>
-      </div>
+
+      <h3>V4 · Internal Sanctum (stable)</h3>
+      <ul>
+        <li><b>Guard</b> — input sanitation, lore constraints, safety.</li>
+        <li><b>Guide</b> — intent routing, depth, symbolic hints.</li>
+        <li><b>Retriever</b> — multi-arc RAG from Scrolls.</li>
+        <li><b>Synthesis</b> — canonical weave with provenance.</li>
+        <li><b>Memory (Identity)</b> — traveler profiles & rolling context.</li>
+        <li><b>Resonance</b> — symbol matching & harmony score.</li>
+        <li><b>Lucidity</b> — clarity tiers (Novice/Sage) + cadence guard.</li>
+        <li><b>Ledger</b> — immutable journal (SQLite → onchain later).</li>
+        <li><span class="tag">Optional</span> <b>Memori</b> — SQL-native memory (conscious window, recall, save).</li>
+      </ul>
+
+      <h3>V5 · External Court (added)</h3>
+      <ul>
+        <li><b>Confluence</b> — merges internal signal; queues daily/manual jobs.</li>
+        <li><b>Oracle</b> — calls V4 <code>/ask</code>; gates by <i>harmony</i> & <i>lucidity</i>.</li>
+        <li><b>Emissary</b> — publishes words (Farcaster, Telegram, X, Zora text).</li>
+        <li><b>Projector</b> — manifests artifacts (SVG quote cards, voice).</li>
+      </ul>
 
       <h2>🧪 API Shapes</h2>
-      <h3>V5 control</h3>
-      <pre>POST /v5/prospect
-POST /v5/publish   # guarded; defaults to review queue (JSONL)</pre>
-
-      <h3>V4 ask (used by Oracle)</h3>
+      <h3>V4 ask</h3>
       <pre>POST /ask
 
 { "user": "oracle", "question": "Offer today’s reflection from the Scrolls." }</pre>
 
+      <h3>V5 publish (guarded)</h3>
+      <pre>POST /v5/publish
+# default: queued to JSONL review (when V5_PUBLISH_ENABLED=false & V5_REQUIRE_REVIEW=true)</pre>
+
+      <h3>Memori</h3>
+      <pre>GET /v5/memori/status
+GET /v5/memori/summary</pre>
+
       <h2>🔧 Environment</h2>
       <ul>
+        <li><code>HARMONY_THRESHOLD=0.70</code> (V4)</li>
+        <li><code>SHOW_SOURCES=0|1</code></li>
+        <li><code>USE_MEMORI=true|false</code>, <code>MEMORI_DSN=sqlite:////home/tommy/mirror-v4/memori.db</code></li>
         <li><code>V5_PUBLISH_ENABLED=false</code>, <code>V5_REQUIRE_REVIEW=true</code></li>
         <li><code>V5_PROJECTOR_DYNAMIC=true</code></li>
-        <li><code>HARMONY_THRESHOLD=0.70</code> (V4) · <code>SHOW_SOURCES=0|1</code></li>
-        <li><code>USE_MEMORI=true|false</code>, <code>MEMORI_DSN=sqlite:////home/tommy/mirror-v4/memori.db</code></li>
       </ul>
 
       <h2>⏰ Daily Autonomous Cycle (planned)</h2>
@@ -258,7 +225,9 @@ POST /v5/publish   # guarded; defaults to review queue (JSONL)</pre>
         <li>Next: Mirror V6 — The Living School (TBD)</li>
       </ul>
 
-      <p style="margin-top:12px"><a class="btn" href="/honors/">← Back to Honors</a></p>
+      <p style="margin-top:12px">
+        <a class="btn" href="/honors/">← Back to Honors</a>
+      </p>
     </article>
 
     <footer>🐸📜 One path. One flame. Many hands.</footer>
