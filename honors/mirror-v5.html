@@ -72,6 +72,10 @@
   .phase-list {list-style: none; padding: 0; margin: 16px 0;}
   .phase-list li {margin-bottom: 12px; padding-left: 24px; position: relative;}
   .phase-list li:before {content: "→"; position: absolute; left: 0; color: #2f5937; font-weight: bold;}
+  
+  /* Code examples */
+  .code-block {background: #fff9e8; border: 1px solid #efe3b4; border-radius: 6px; padding: 12px; margin: 12px 0; overflow-x: auto;}
+  .code-header {font-weight: bold; margin-bottom: 8px; color: #2f5937;}
 </style>
 </head>
 <body>
@@ -192,57 +196,145 @@
 
       <!-- ENHANCEMENTS SECTION -->
       <div class="enhancements">
-        <h2>🌟 Proposed Enhancements</h2>
+        <h2>🌟 V5 Architecture Enhancements</h2>
         
         <div class="feature-grid">
           <div class="feature-card">
-            <h4><i class="fas fa-plug"></i> Extended Protocol Support</h4>
-            <p>Future-proof the framework with emerging protocol support alongside traditional TCP/UDP.</p>
+            <h4><i class="fas fa-network-wired"></i> Enhanced Confluence Module</h4>
+            <p>Extend V4's scheduling capabilities with advanced job management.</p>
             <div class="suggestion">
-              <p><strong>Suggestion:</strong> Add WebTransport and WebRTC data channel support.</p>
+              <p><strong>Based on V4:</strong> Extend the existing job scheduling system with priority queues and dependency management.</p>
             </div>
             <ul>
-              <li>Protocol selection API</li>
-              <li>Fallback mechanisms</li>
-              <li>Bandwidth optimization</li>
+              <li>Priority-based job scheduling</li>
+              <li>Dependency-aware execution</li>
+              <li>Circuit breaker integration</li>
+              <li>Graceful degradation</li>
+            </ul>
+            <div class="code-header">V5 Confluence API Extension:</div>
+            <div class="code-block">
+// Extending V4's job system
+POST /v5/confluence/schedule
+{
+  "type": "daily_reflection",
+  "priority": "high",
+  "dependencies": ["memory_sync", "index_validation"],
+  "time_window": "06:00-08:00"
+}
+            </div>
+          </div>
+          
+          <div class="feature-card">
+            <h4><i class="fas fa-robot"></i> Oracle with Enhanced Safeguards</h4>
+            <p>Build upon V4's circuit breakers with additional safety layers.</p>
+            <div class="suggestion">
+              <p><strong>Based on V4:</strong> Extend temporal, symbol, and conversation breakers with content-specific safeguards.</p>
+            </div>
+            <ul>
+              <li>Content toxicity filtering</li>
+              <li>Fact consistency verification</li>
+              <li>Cross-platform compliance checks</li>
+              <li>Real-time moderation integration</li>
             </ul>
           </div>
           
           <div class="feature-card">
-            <h4><i class="fas fa-code"></i> AI Networking Support</h4>
-            <p>Specialized support for synchronizing AI behavior and state across network.</p>
+            <h4><i class="fas fa-broadcast-tower"></i> Multi-Platform Emissary</h4>
+            <p>Extend V4's Telegram integration to multiple platforms.</p>
             <div class="suggestion">
-              <p><strong>Suggestion:</strong> Built-in AI state management with compression.</p>
+              <p><strong>Based on V4:</strong> Build upon the existing Telegram router pattern for multi-platform support.</p>
             </div>
             <ul>
-              <li>AI state compression</li>
-              <li>Predictive AI behavior</li>
-              <li>Bandwidth-friendly networking</li>
+              <li>Platform-specific content adaptation</li>
+              <li>Rate limiting per platform</li>
+              <li>Cross-posting coordination</li>
+              <li>Unified analytics dashboard</li>
+            </ul>
+            <div class="code-header">V5 Emissary Platform Router:</div>
+            <div class="code-block">
+# Patterned after V4's telegram_router
+@app.post("/v5/emissary/publish")
+async def publish_to_platforms(
+    content: str, 
+    platforms: List[str] = Query(["farcaster"]),
+    priority: str = "normal"
+):
+    # Uses V4's circuit breaker pattern
+    with emissary_breaker.execute():
+        return await asyncio.gather(*[
+            publish_to_platform(platform, content, priority)
+            for platform in platforms
+        ])
+            </div>
+          </div>
+        </div>
+        
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h4><i class="fas fa-projector"></i> Projector with Media Transformation</h4>
+            <p>Extend V4's text processing to multi-format content generation.</p>
+            <div class="suggestion">
+              <p><strong>Based on V4:</strong> Leverage V4's rendering system for multi-format output.</p>
+            </div>
+            <ul>
+              <li>SVG card generation with provenance</li>
+              <li>Audio synthesis (text-to-speech)</li>
+              <li>Multi-format content adaptation</li>
+              <li>Responsive design templates</li>
             </ul>
           </div>
           
           <div class="feature-card">
-            <h4><i class="fas fa-cloud"></i> Cloud Integration</h4>
-            <p>Built-in support for popular cloud gaming platforms and services.</p>
+            <h4><i class="fas fa-database"></i> Pondmind Memory System</h4>
+            <p>Extend V4's memory system with episodic/semantic capabilities.</p>
             <div class="suggestion">
-              <p><strong>Suggestion:</strong> Seamless integration with cloud services.</p>
+              <p><strong>Based on V4:</strong> Build upon the existing memory_identity and Memori systems.</p>
             </div>
             <ul>
-              <li>Cloud save synchronization</li>
-              <li>Multi-region hosting support</li>
-              <li>Serverless function integration</li>
+              <li>Episodic memory for event tracking</li>
+              <li>Semantic memory for concept mapping</li>
+              <li>Procedural memory for process optimization</li>
+              <li>Cross-memory correlation</li>
+            </ul>
+            <div class="code-header">V5 Pondmind API:</div>
+            <div class="code-block">
+# Extending V4's memory system
+@app.post("/v5/pondmind/record")
+async def record_episode(
+    event_type: str,
+    content: Dict[str, Any],
+    traveler_id: str = Depends(get_current_traveler)
+):
+    # Builds on V4's memory_identity system
+    episode_id = await store_episodic_memory(traveler_id, event_type, content)
+    await correlate_with_semantic_memory(traveler_id, content)
+    return {"episode_id": episode_id}
+            </div>
+          </div>
+          
+          <div class="feature-card">
+            <h4><i class="fas fa-shield-alt"></i> Stonebook & Mooncheck Verification</h4>
+            <p>Extend V4's provenance tracking with enhanced verification.</p>
+            <div class="suggestion">
+              <p><strong>Based on V4:</strong> Build upon V4's ledger and provenance systems.</p>
+            </div>
+            <ul>
+              <li>Immutable content hashing</li>
+              <li>Source verification system</li>
+              <li>Fact-checking pipeline</li>
+              <li>Transparency reporting</li>
             </ul>
           </div>
         </div>
         
         <h3>Implementation Roadmap</h3>
         <ul class="phase-list">
-          <li><strong>Phase 1:</strong> Core protocol enhancements and backward compatibility with v4</li>
-          <li><strong>Phase 2:</strong> Security implementation and encryption protocols</li>
-          <li><strong>Phase 3:</strong> Advanced topology support (P2P, hybrid)</li>
-          <li><strong>Phase 4:</strong> Performance optimization and compression</li>
-          <li><strong>Phase 5:</strong> Cloud integration and additional protocol support</li>
-          <li><strong>Phase 6:</strong> AI networking capabilities</li>
+          <li><strong>Phase 1:</strong> Confluence scheduler & Oracle gatekeeper (builds on V4's circuit breakers)</li>
+          <li><strong>Phase 2:</strong> Emissary multi-platform router (extends V4's Telegram integration)</li>
+          <li><strong>Phase 3:</strong> Projector media transformation (leverages V4's rendering system)</li>
+          <li><strong>Phase 4:</strong> Pondmind memory system (extends V4's memory_identity)</li>
+          <li><strong>Phase 5:</strong> Stonebook provenance & Mooncheck verification (builds on V4's ledger)</li>
+          <li><strong>Phase 6:</strong> Enhanced API layer with backward compatibility</li>
         </ul>
       </div>
 
@@ -255,9 +347,21 @@
       <pre>POST /v5/publish
 # default: queued to JSONL review when V5_PUBLISH_ENABLED=false & V5_REQUIRE_REVIEW=true</pre>
 
-      <h3>Memori</h3>
-      <pre>GET /v5/memori/status
-GET /v5/memori/summary</pre>
+      <h3>V5 Confluence API</h3>
+      <pre>POST /v5/confluence/schedule
+{
+  "job_type": "daily_reflection",
+  "parameters": {"theme": "patience"},
+  "schedule": {"type": "daily", "time": "06:00"}
+}</pre>
+
+      <h3>V5 Pondmind API</h3>
+      <pre>GET /v5/pondmind/recall?traveler_id=abc123&type=episodic&limit=10
+POST /v5/pondmind/correlate
+{
+  "episode_id": "ep_123",
+  "semantic_tags": ["lesson", "growth", "stillness"]
+}</pre>
 
       <h2>🔧 Environment</h2>
       <ul>
@@ -267,17 +371,19 @@ GET /v5/memori/summary</pre>
         <li><code>USE_MEMORI=true|false</code>, <code>MEMORI_DSN=sqlite:////home/tommy/mirror-v4/memori.db</code></li>
         <li><code>V5_PUBLISH_ENABLED=false</code>, <code>V5_REQUIRE_REVIEW=true</code></li>
         <li><code>V5_PROJECTOR_DYNAMIC=true</code></li>
-        <li><code>V5_PROTOCOL=webtransport|webrtc|tcp|udp</code> <span class="muted">(Enhanced protocol selection)</span></li>
+        <li><code>V5_CONFLUENCE_WORKERS=3</code> <span class="muted">(Number of concurrent job workers)</span></li>
+        <li><code>V5_EMISSARY_RATE_LIMIT=5/60</code> <span class="muted">(Rate limit for platform publishing)</span></li>
       </ul>
 
       <h2>⏰ Daily Autonomous Cycle (planned)</h2>
       <ol>
-        <li><b>Confluence</b> enqueues a daily job.</li>
-        <li><b>Oracle</b> calls <code>/ask</code> → draft returns.</li>
-        <li>Gate by <b>harmony</b> & <b>lucidity</b> thresholds.</li>
-        <li><b>Emissary</b> publishes; <b>Projector</b> manifests artifacts.</li>
-        <li><b>Stonebook</b> issues a proof card: prompt, sources, hash, artifact ids.</li>
-        <li><b>Pondmind</b> stores procedural memory if accepted.</li>
+        <li><b>Confluence</b> enqueues a daily job using V4's scheduling system</li>
+        <li><b>Oracle</b> calls V4 <code>/ask</code> with enhanced safeguards</li>
+        <li>Gate by <b>harmony</b> & <b>lucidity</b> thresholds (V4's resonance system)</li>
+        <li><b>Emissary</b> publishes using extended platform routers</li>
+        <li><b>Projector</b> manifests artifacts using V4's rendering foundation</li>
+        <li><b>Stonebook</b> issues proof cards using V4's provenance tracking</li>
+        <li><b>Pondmind</b> stores procedural memory extending V4's memory system</li>
       </ol>
 
       <div class="kpi">
@@ -285,7 +391,7 @@ GET /v5/memori/summary</pre>
         <div class="item"><b>Artifacts</b><br>SVG cards · Voice (MP3) · HTML embeds</div>
         <div class="item"><b>Safety</b><br>Harmony/Lucidity gates · Review queue</div>
         <div class="item"><b>Backends</b><br>FastAPI · SQLite · FAISS (Sanctum)</div>
-        <div class="item"><b>Protocols</b><br>WebTransport · WebRTC · TCP · UDP</div>
+        <div class="item"><b>Memory</b><br>Identity · Episodic · Semantic · Procedural</div>
       </div>
 
       <h2>🧱 Schemas</h2>
@@ -305,10 +411,11 @@ GET /v5/memori/summary</pre>
     "time":"2025-..",
     "signature":"stonebook:…"
   },
-  "network_config": {
-    "protocol": "webtransport",
-    "compression": "zstd",
-    "encryption": "aes-256-gcm"
+  "v5_extensions": {
+    "confluence_job_id": "job_123",
+    "pondmind_episode_id": "ep_456",
+    "emissary_platforms": ["farcaster", "telegram"],
+    "projector_artifacts": ["svg", "mp3"]
   }
 }</pre>
 
@@ -317,7 +424,7 @@ GET /v5/memori/summary</pre>
         <li><b>S1 — Speak</b>: Daily text + voice; quote cards; proof cards on every publish.</li>
         <li><b>S2 — Listen</b>: Prospection loops; public QOTD; Pondmind procedural growth.</li>
         <li><b>S3 — Onchain</b>: Stonebook anchoring on Base; Zora mints for canonical artifacts.</li>
-        <li><b>S4 — Expand</b>: Extended protocol support; AI networking; cloud integration.</li>
+        <li><b>S4 — Expand</b>: Multi-platform emissary; enhanced confluence; advanced projector.</li>
       </ul>
 
       <h2>🔗 Lineage</h2>
