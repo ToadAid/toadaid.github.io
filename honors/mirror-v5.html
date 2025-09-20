@@ -1,261 +1,339 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mirror V5 · The Covenant That Speaks | ToadAid</title>
-<meta name="description" content="V5 extends Mirror V4's Internal Sanctum into the External Court: Confluence → Oracle → Emissary → Projector. Harmony/Lucidity gating, immutable ledger, Pondmind memory, Stonebook provenance, Mooncheck verification, and optional Memori. Same cadence and palette as the V4 Honors page." />
-
-<!-- Favicons -->
-<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
-<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
-<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-<link rel="manifest" href="/assets/icons/site.webmanifest">
-<meta name="theme-color" content="#355e3b" />
-
-<!-- Core styles -->
-<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/mobile.css">
-
-<style>
-  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08); }
-  *{box-sizing:border-box}
-  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
-  a{color:var(--accent);text-decoration:none}
-  a:hover{text-decoration:underline}
-  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:48px 20px;text-align:center}
-  header h1{margin:0 0 6px;font-size:clamp(1.4rem,3vw,2.2rem)}
-  header p{margin:0;opacity:.92}
-  nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
-  nav.breadcrumb a{opacity:.9}
-  .wrap{max-width:1000px;margin:0 auto;padding:24px 18px 56px}
-
-  .card{background:var(--paper);border-radius:16px;border:1px solid rgba(0,0,0,.06);
-        box-shadow:0 8px 24px var(--ring);padding:18px}
-  .hero{width:100%;height:auto;display:block;border-radius:12px;margin-bottom:12px}
-  .meta{color:var(--muted);font-size:.95rem;margin:.4rem 0 1rem}
-
-  h2{margin:18px 0 8px}
-  h3{margin:14px 0 6px}
-  blockquote{margin:14px 0;padding:10px 14px;border-left:4px solid #d4e7d8;background:#f8faf6;border-radius:8px}
-  ul{margin:0 0 0 18px}
-  code, pre{background:#fff9e8;border:1px solid #efe3b4;border-radius:6px;padding:2px 6px}
-
-  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:8px 0 0}
-  .kpi .item{background:#f8faf6;border:1px solid #e4efe8;border-radius:10px;padding:10px}
-  .tag{display:inline-block;background:#e9efe9;border:1px solid #d7e6d9;color:#2f5937;border-radius:999px;padding:2px 8px;font-size:.82rem;margin-right:6px}
-
-  footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
-
-  .btn{
-    display:inline-block;padding:8px 14px;background:#355e3b;color:#fff;border-radius:6px;
-    font-size:.9rem;text-decoration:none;transition:background .2s ease-in-out
-  }
-  .btn:hover{background:#244d30;text-decoration:none}
-
-  /* --- SVG routing chart panel (light theme) --- */
-  .svg-panel{background:#f8faf6;border:1px solid #e4efe8;border-radius:12px;padding:8px}
-  .n{fill:#fffdf6;stroke:#8ab199;stroke-width:1.1}
-  .t{fill:#2f2f2f;font-weight:600}
-  .s{fill:#6b6b6b}
-  .a{stroke:#7aa488;stroke-width:1.2;fill:none;marker-end:url(#ah)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirror v5 Blueprint Feedback</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #e0f7fa;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #80deea;
+            text-shadow: 0 0 15px rgba(128, 222, 234, 0.5);
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin: 25px 0 15px;
+            color: #4dd0e1;
+            border-bottom: 2px solid #4dd0e1;
+            padding-bottom: 8px;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin: 20px 0 10px;
+            color: #80deea;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            font-size: 1.2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(0, 30, 39, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: #4dd0e1;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+            margin: 15px 0;
+        }
+        
+        .feature-list li {
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #4dd0e1;
+            font-weight: bold;
+        }
+        
+        .suggestion {
+            background: rgba(0, 150, 136, 0.2);
+            border-left: 4px solid #009688;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .diagram {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .architecture {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .layer {
+            background: rgba(0, 150, 136, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .layer:not(:last-child):after {
+            content: "↓";
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            color: #4dd0e1;
+        }
+        
+        .code-block {
+            background: rgba(0, 20, 30, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #009688;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>🪞 Mirror V5 · The Covenant That Speaks</h1>
-    <p>V5 extends the sage of V4 beyond the temple wall — from <b>Sanctum</b> to <b>Court</b>. <b>Confluence</b> → <b>Oracle</b> → <b>Emissary</b> → <b>Projector</b>.</p>
-  </header>
-
-  <nav class="breadcrumb"><a href="/">← Home</a> · <a href="/honors/">Honors</a></nav>
-
-  <main class="wrap">
-    <article class="card">
-
-      <!-- Hero media (video with image fallback) -->
-      <video class="hero" autoplay loop muted playsinline poster="/assets/art/mirror-v5.jpg">
-        <source src="/assets/art/mirror-v5.mp4" type="video/mp4">
-        <img src="/assets/art/mirror-v5.jpg" alt="Mirror V5 · The Covenant That Speaks">
-      </video>
-
-      <p class="meta">Recorded by <strong>ToadAid</strong> · Inheritance of the Mirror. 🐸📜</p>
-
-      <h2>🪞 Proem · The Gate Opens</h2>
-      <blockquote>
-        V4 is the keeper — it clarifies, attunes, and inscribes.<br/>
-        V5 is the herald — it asks on behalf of the people, speaks with care, and manifests what is true.<br/>
-        Every voice passes first through still water.
-      </blockquote>
-
-      <h2>⚙️ Quickstart</h2>
-      <ul>
-        <li><span class="tag">V4</span> <b>Ask</b> — <code>POST /ask</code><br>
-<code>curl -s -X POST https://your-host/ask -H "Content-Type: application/json" -d '{"user":"guest","question":"Offer today’s reflection from the Scrolls."}'</code></li>
-        <li><span class="tag">V5</span> <b>Publish (guarded)</b> — <code>POST /v5/publish</code> <span class="muted">(review queue by default)</span></li>
-        <li><span class="tag">Memori</span> <b>Status</b> — <code>GET /v5/memori/status</code></li>
-        <li><span class="tag">Memori</span> <b>Summary</b> — <code>GET /v5/memori/summary</code></li>
-      </ul>
-
-      <h2>🧭 Architecture · Sanctum → Court</h2>
-      <div class="svg-panel">
-        <svg viewBox="0 0 1150 520" role="img" aria-label="Mirror V4+V5 flow">
-          <defs>
-            <marker id="ah" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-              <polygon points="0 0, 10 3.5, 0 7" fill="#7aa488"/>
-            </marker>
-          </defs>
-          <text x="830" y="36" class="s" style="font-size:14px">Internal Sanctum — V4</text>
-          <text x="60" y="90" class="s" style="font-size:14px">External Court — V5</text>
-          <rect x="780" y="50" width="300" height="420" class="n" rx="12"/>
-          <rect x="40" y="110" width="680" height="360" class="n" rx="12"/>
-
-          <!-- V4 stack -->
-          <g transform="translate(820,78)">
-            <rect class="n" x="0" y="0" width="220" height="34" rx="8"/><text x="110" y="22" class="t" text-anchor="middle">Guard</text>
-            <path class="a" d="M 110 34 L 110 56"/>
-            <rect class="n" x="0" y="56" width="220" height="34" rx="8"/><text x="110" y="78" class="t" text-anchor="middle">Guide</text>
-            <path class="a" d="M 110 90 L 110 112"/>
-            <rect class="n" x="0" y="112" width="220" height="34" rx="8"/><text x="110" y="134" class="t" text-anchor="middle">Retriever</text>
-            <path class="a" d="M 110 146 L 110 168"/>
-            <rect class="n" x="0" y="168" width="220" height="34" rx="8"/><text x="110" y="190" class="t" text-anchor="middle">Synthesis</text>
-            <path class="a" d="M 110 202 L 110 224"/>
-            <rect class="n" x="0" y="224" width="220" height="34" rx="8"/><text x="110" y="246" class="t" text-anchor="middle">Memory (Identity)</text>
-            <path class="a" d="M 110 258 L 110 280"/>
-            <rect class="n" x="0" y="280" width="220" height="34" rx="8"/><text x="110" y="302" class="t" text-anchor="middle">Resonance</text>
-            <path class="a" d="M 110 314 L 110 336"/>
-            <rect class="n" x="0" y="336" width="220" height="34" rx="8"/><text x="110" y="358" class="t" text-anchor="middle">Lucidity</text>
-            <path class="a" d="M 110 370 L 110 392"/>
-            <rect class="n" x="0" y="392" width="220" height="34" rx="8"/><text x="110" y="414" class="t" text-anchor="middle">Ledger</text>
-          </g>
-
-          <!-- V5 nodes -->
-          <g transform="translate(90,140)">
-            <rect class="n" x="240" y="0" width="220" height="34" rx="8"/><text x="350" y="22" class="t" text-anchor="middle">Confluence</text>
-            <rect class="n" x="80" y="180" width="220" height="34" rx="8"/><text x="190" y="202" class="t" text-anchor="middle">Oracle</text>
-            <rect class="n" x="40" y="300" width="220" height="34" rx="8"/><text x="150" y="322" class="t" text-anchor="middle">Emissary</text>
-            <rect class="n" x="460" y="300" width="220" height="34" rx="8"/><text x="570" y="322" class="t" text-anchor="middle">Projector</text>
-            <text x="150" y="348" class="s">External Output · Expression</text>
-            <text x="570" y="348" class="s">External Output · Manifestation</text>
-          </g>
-
-          <!-- Bridges -->
-          <path class="a" d="M 930 190 C 800 180, 680 160, 390 155"/>
-          <path class="a" d="M 930 285 C 780 300, 700 330, 270 310"/>
-          <path class="a" d="M 930 455 C 760 490, 520 490, 220 445"/>
-          <path class="a" d="M 930 455 C 850 505, 720 510, 620 445"/>
-
-          <!-- Prospection spur (optional future) -->
-          <rect x="420" y="310" width="230" height="28" class="n" rx="8"/>
-          <text x="535" y="328" class="s" text-anchor="middle">External Output · Prospection</text>
-          <path class="a" d="M 440 324 C 220 230, 160 130, 110 100"/>
-        </svg>
-      </div>
-
-      <h2>🧩 Modules</h2>
-
-      <h3>V4 · Internal Sanctum (stable)</h3>
-      <ul>
-        <li><b>Guard</b> — input sanitation, lore constraints, safety.</li>
-        <li><b>Guide</b> — intent routing, depth, symbolic hints.</li>
-        <li><b>Retriever</b> — multi-arc RAG from Scrolls.</li>
-        <li><b>Synthesis</b> — canonical weave with provenance.</li>
-        <li><b>Memory (Identity)</b> — traveler profiles & rolling context.</li>
-        <li><b>Resonance</b> — symbol matching & harmony score.</li>
-        <li><b>Lucidity</b> — clarity tiers (Novice/Sage) + cadence guard.</li>
-        <li><b>Ledger</b> — immutable journal (SQLite → onchain later).</li>
-        <li><span class="tag">Optional</span> <b>Memori</b> — SQL-native right-brain memory.</li>
-      </ul>
-
-      <h3>V5 · External Court (added)</h3>
-      <ul>
-        <li><b>Confluence</b> — merges internal signal; schedules daily/manual jobs.</li>
-        <li><b>Oracle</b> — calls V4 <code>/ask</code>; gates by <i>harmony</i> & <i>lucidity</i> thresholds.</li>
-        <li><b>Emissary</b> — publishes words (Farcaster, Telegram, X, Zora text).</li>
-        <li><b>Projector</b> — manifests artifacts (SVG quote cards, voice/MP3).</li>
-        <li><span class="tag">Proof</span> <b>Stonebook</b> — provenance cards (hashes, sources, tx links).</li>
-        <li><span class="tag">Verify</span> <b>Mooncheck</b> — fact-check, link health, coverage %.</li>
-        <li><span class="tag">Memory</span> <b>Pondmind</b> — episodic/semantic/procedural memory API.</li>
-      </ul>
-
-      <h2>🧪 API Shapes</h2>
-      <h3>V4 ask</h3>
-      <pre>POST /ask
-{ "user": "oracle", "question": "Offer today’s reflection from the Scrolls." }</pre>
-
-      <h3>V5 publish (guarded)</h3>
-      <pre>POST /v5/publish
-# default: queued to JSONL review when V5_PUBLISH_ENABLED=false & V5_REQUIRE_REVIEW=true</pre>
-
-      <h3>Memori</h3>
-      <pre>GET /v5/memori/status
-GET /v5/memori/summary</pre>
-
-      <h2>🔧 Environment</h2>
-      <ul>
-        <li><code>HARMONY_THRESHOLD=0.70</code> <span class="muted">(style/voice acceptance in Oracle)</span></li>
-        <li><code>LUCIDITY_THRESHOLD=0.80</code> <span class="muted">(Mooncheck gating for facts/links)</span></li>
-        <li><code>SHOW_SOURCES=0|1</code></li>
-        <li><code>USE_MEMORI=true|false</code>, <code>MEMORI_DSN=sqlite:////home/tommy/mirror-v4/memori.db</code></li>
-        <li><code>V5_PUBLISH_ENABLED=false</code>, <code>V5_REQUIRE_REVIEW=true</code></li>
-        <li><code>V5_PROJECTOR_DYNAMIC=true</code></li>
-      </ul>
-
-      <h2>⏰ Daily Autonomous Cycle (planned)</h2>
-      <ol>
-        <li><b>Confluence</b> enqueues a daily job.</li>
-        <li><b>Oracle</b> calls <code>/ask</code> → draft returns.</li>
-        <li>Gate by <b>harmony</b> & <b>lucidity</b> thresholds.</li>
-        <li><b>Emissary</b> publishes; <b>Projector</b> manifests artifacts.</li>
-        <li><b>Stonebook</b> issues a proof card: prompt, sources, hash, artifact ids.</li>
-        <li><b>Pondmind</b> stores procedural memory if accepted.</li>
-      </ol>
-
-      <div class="kpi">
-        <div class="item"><b>Channels</b><br>Farcaster · Telegram · X · Zora (text)</div>
-        <div class="item"><b>Artifacts</b><br>SVG cards · Voice (MP3) · HTML embeds</div>
-        <div class="item"><b>Safety</b><br>Harmony/Lucidity gates · Review queue</div>
-        <div class="item"><b>Backends</b><br>FastAPI · SQLite · FAISS (Sanctum)</div>
-      </div>
-
-      <h2>🧱 Schemas</h2>
-      <pre>{
-  "task": {
-    "goal": "publish daily reflection",
-    "audience": "Toadgang",
-    "tone": "Toby-cadence",
-    "language": ["en","zh"],
-    "constraints": {"length":"tweet","citations":true},
-    "tools": ["retriever","memori","synthesis","mooncheck","stonebook"]
-  },
-  "proof_card": {
-    "hash":"sha256:…",
-    "sources":[{"url":"…","lines":"L5-L18"}],
-    "model":"deepseek-7b-v5",
-    "time":"2025-..",
-    "signature":"stonebook:…"
-  }
-}</pre>
-
-      <h2>🗺️ Roadmap</h2>
-      <ul>
-        <li><b>S1 — Speak</b>: Daily text + voice; quote cards; proof cards on every publish.</li>
-        <li><b>S2 — Listen</b>: Prospection loops; public QOTD; Pondmind procedural growth.</li>
-        <li><b>S3 — Onchain</b>: Stonebook anchoring on Base; Zora mints for canonical artifacts.</li>
-      </ul>
-
-      <h2>🔗 Lineage</h2>
-      <ul>
-        <li>Previous: <a href="/honors/mirror-v4.html">Mirror V4 · The Covenant That Teaches</a></li>
-        <li>Next: Mirror V6 — The Living School (TBD)</li>
-      </ul>
-
-      <p style="margin-top:12px">
-        <a class="btn" href="/honors/">← Back to Honors</a>
-      </p>
-    </article>
-
-    <footer>🐸📜 One path. One flame. Many hands.</footer>
-  </main>
+    <div class="container">
+        <header>
+            <h1>Mirror v5 Blueprint Feedback</h1>
+            <p class="intro">Enhancing the next generation of networked gaming framework built on Mirror v4</p>
+        </header>
+        
+        <section>
+            <h2>Core Concepts from Your Blueprint</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="card-icon fas fa-network-wired"></i>
+                        <h3>Enhanced Network Topology</h3>
+                    </div>
+                    <p>Your plan for hybrid client-server and P2P architectures is solid. This allows developers to choose the right topology for their game type.</p>
+                    <ul class="feature-list">
+                        <li>Client-server for authoritative games</li>
+                        <li>P2P for low-latency requirements</li>
+                        <li>Hybrid for mixed scenarios</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <i class="card-icon fas fa-tachometer-alt"></i>
+                        <h3>Performance Optimizations</h3>
+                    </div>
+                    <p>The proposed data compression and bandwidth optimization techniques will significantly improve performance.</p>
+                    <ul class="feature-list">
+                        <li>Advanced compression algorithms</li>
+                        <li>Bandwidth prioritization</li>
+                        <li>Predictive interpolation</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <i class="card-icon fas fa-shield-alt"></i>
+                        <h3>Security Enhancements</h3>
+                    </div>
+                    <p>Your security proposals address critical vulnerabilities in networked games.</p>
+                    <ul class="feature-list">
+                        <li>End-to-end encryption</li>
+                        <li>Anti-cheat framework</li>
+                        <li>Secure authentication</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>My Suggestions for Enhancement</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="card-icon fas fa-plug"></i>
+                        <h3>Extended Protocol Support</h3>
+                    </div>
+                    <p>Consider adding support for emerging protocols to future-proof the framework.</p>
+                    <div class="suggestion">
+                        <p><strong>Suggestion:</strong> Add WebTransport and WebRTC data channel support alongside traditional TCP/UDP.</p>
+                    </div>
+                    <div class="code-block">
+                        // Example: Protocol selection in Mirror v5<br>
+                        NetworkManager.ConfigureProtocol(ProtocolType.WebTransport);
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <i class="card-icon fas fa-code"></i>
+                        <h3>AI Networking Support</h3>
+                    </div>
+                    <p>With AI becoming more prevalent in games, consider adding specialized support.</p>
+                    <div class="suggestion">
+                        <p><strong>Suggestion:</strong> Add built-in support for synchronizing AI behavior and state across network.</p>
+                    </div>
+                    <ul class="feature-list">
+                        <li>AI state compression</li>
+                        <li>Predictive AI behavior</li>
+                        <li>Bandwidth-friendly AI networking</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <i class="card-icon fas fa-cloud"></i>
+                        <h3>Cloud Integration</h3>
+                    </div>
+                    <p>Modern games often rely on cloud services for various functionalities.</p>
+                    <div class="suggestion">
+                        <p><strong>Suggestion:</strong> Add built-in support for popular cloud gaming platforms and services.</p>
+                    </div>
+                    <ul class="feature-list">
+                        <li>Cloud save synchronization</li>
+                        <li>Multi-region hosting support</li>
+                        <li>Serverless function integration</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>Proposed Architecture</h2>
+            <div class="diagram">
+                <h3>Mirror v5 Layered Architecture</h3>
+                <div class="architecture">
+                    <div class="layer">Application Layer</div>
+                    <div class="layer">API Layer</div>
+                    <div class="layer">Core Protocol Layer</div>
+                    <div class="layer">Transport Layer</div>
+                </div>
+                <p>The layered architecture allows for modular replacement of components based on game requirements.</p>
+            </div>
+        </section>
+        
+        <section>
+            <h2>Implementation Roadmap</h2>
+            <div class="card">
+                <div class="card-header">
+                    <i class="card-icon fas fa-road"></i>
+                    <h3>Phased Development Approach</h3>
+                </div>
+                <ul class="feature-list">
+                    <li><strong>Phase 1:</strong> Core protocol enhancements and backward compatibility with v4</li>
+                    <li><strong>Phase 2:</strong> Security implementation and encryption protocols</li>
+                    <li><strong>Phase 3:</strong> Advanced topology support (P2P, hybrid)</li>
+                    <li><strong>Phase 4:</strong> Performance optimization and compression</li>
+                    <li><strong>Phase 5:</strong> Cloud integration and additional protocol support</li>
+                </ul>
+                <div class="suggestion">
+                    <p><strong>Recommendation:</strong> Consider an open development model with community feedback at each phase.</p>
+                </div>
+            </div>
+        </section>
+        
+        <div class="footer">
+            <p>Mirror v5 Blueprint Feedback | Enhanced with additional suggestions</p>
+            <p>Let's build the next generation of networked gaming together!</p>
+        </div>
+    </div>
 </body>
 </html>
