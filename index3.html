@@ -194,4 +194,319 @@
     cursor: pointer;
     transition: all 0.3s ease;
   }
-  .suggestion-btn:hover { background: rgba(53, 94, 59,
+  .suggestion-btn:hover { background: rgba(53, 94, 59, 0.2); }
+  
+  /* Journey Steps */
+  .journey-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+  .step {
+    background: white; padding: 1.5rem; border-radius: 12px; text-align: center; font-weight: 600; color: var(--primary-green);
+    box-shadow: 0 4px 8px var(--shadow-light);
+  }
+  
+  /* Footer */
+  footer {
+    background: var(--primary-green); color: white; text-align: center; padding: 3rem 1rem; margin-top: 3rem;
+  }
+  footer p { margin: 0.5rem 0; opacity: 0.9; }
+  footer a { color: var(--secondary-gold); text-decoration: none; font-weight: 600; }
+  footer a:hover { text-decoration: underline; }
+  
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .banner { min-height: 200px; padding: 1.5rem 1rem; }
+    section { padding: 2rem 1rem; }
+    .pillars { grid-template-columns: 1fr; }
+    .journey-steps { grid-template-columns: 1fr; }
+    .btn { padding: 0.7rem 1.2rem; margin: 0.3rem; font-size: 0.9rem; }
+    #mirror { padding: 2rem 1rem; margin: 1rem; }
+  }
+  
+  /* Loading Animation */
+  @keyframes ripple {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+  .loading-ripple { display: inline-block; width: 20px; height: 20px; position: relative; margin-right: .4rem; vertical-align: -4px; }
+  .loading-ripple div {
+    position: absolute; border: 2px solid var(--primary-green); opacity: 1; border-radius: 50%;
+    animation: ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  }
+  .loading-ripple div:nth-child(2) { animation-delay: -0.5s; }
+</style>
+</head>
+
+<body>
+
+<div class="banner">
+  <h1>🪞 ToadAid Mirror</h1>
+  <p>The Digital Dojo Where Ancient Wisdom Meets Modern Seeking</p>
+  <p style="font-size: 1rem; margin-top: 1rem; opacity: 0.9;">Every question ripples through eternity. Every answer returns to the source.</p>
+</div>
+
+<div class="translate-bar">
+  🌐 Want to read in your language? In Chrome: Menu (⋮) → Translate → Select your language.
+</div>
+
+<section style="text-align:center; padding: 2rem 1rem;">
+  <a href="#mirror" class="btn btn-mirror">🪞 Ask the Mirror</a>
+  <a href="#lore" class="btn btn-lore">📜 Browse the Lore</a>
+  <a href="bluepaper.html" class="btn" target="_blank">📄 Blue Paper</a>
+  <a href="about.html" class="btn">ℹ️ About ToadAid</a>
+  <a href="feedback/feedback.html" class="btn">💬 Feedback</a>
+  <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
+  <a href="builders/builders-hall.html" class="btn btn-builders">🏛 Builders Hall</a>
+  <a href="https://toadaid-builders.netlify.app/builders.html" class="btn btn-builders" target="_blank">🛠 Builders</a>
+  <a href="honors/index.html" class="btn" style="background:#2e6d4c; color:white;">🐸 Honors & Offerings</a>
+  <a href="scrolls/index.html" class="btn" style="background:#265c40; color:white;">📜 Scroll Vault</a>
+  <a href="https://toadaid.github.io/lore" class="btn" style="background:#3a7253; color:white;">📖 Lore Library</a>
+</section>
+
+<section>
+  <h2>Our Mission</h2>
+  <div class="pillars">
+    <div class="pillar">
+      <h3>🏯 Guarding the Lore</h3>
+      <p>Preserving Tobyworld's original scrolls and protecting them from distortion. We maintain the purity of Toadgod's wisdom while allowing it to evolve naturally.</p>
+    </div>
+    <div class="pillar">
+      <h3>🐸 Helping the Fallen Frog</h3>
+      <p>Guiding lost frogs back to the pond and helping them rejoin the path. Every traveler finds a home in our community.</p>
+    </div>
+    <div class="pillar">
+      <h3>📜 Empowering Contributors</h3>
+      <p>Recognizing and encouraging scrollmakers, translators, and teachers. Your voice enriches our collective wisdom.</p>
+    </div>
+  </div>
+</section>
+
+<section id="journey">
+  <h2>🐸 Your Tobyworld Journey</h2>
+  <div class="journey-steps">
+    <div class="step">1. 🪞 Consult the Mirror</div>
+    <div class="step">2. 📖 Explore Core Scrolls</div>
+    <div class="step">3. 🏛️ Join Builders Hall</div>
+    <div class="step">4. 🌊 Become a Ripple in the Pond</div>
+  </div>
+</section>
+
+<!-- Mirror Section -->
+<section id="mirror">
+  <h2>🔮 Ask the Mirror</h2>
+  <div class="mirror-container">
+    <input id="mirror-question" type="text" placeholder="What wisdom do you seek today, traveler?" autocomplete="off">
+    
+    <div class="suggestions">
+      <button class="suggestion-btn" onclick="fillQuestion('How do I find inner peace?')">🌿 Inner Peace</button>
+      <button class="suggestion-btn" onclick="fillQuestion('What is true community?')">🐸 True Community</button>
+      <button class="suggestion-btn" onclick="fillQuestion('What does silence teach us?')">🌀 Silence Wisdom</button>
+      <button class="suggestion-btn" onclick="fillQuestion('How do I overcome fear?')">💫 Overcoming Fear</button>
+    </div>
+    
+    <button id="mirror-ask-btn" class="btn btn-mirror" onclick="askMirror()" style="width: 100%; padding: 1rem;">
+      <span id="ask-icon">✨</span> <span id="ask-text">Seek Wisdom</span>
+    </button>
+    
+    <div id="mirror-answer" class="fade-in" aria-live="polite"></div>
+    <div class="answer-actions">
+      <button class="btn" id="copy-btn" title="Copy answer">Copy</button>
+    </div>
+  </div>
+</section>
+
+<section id="lore">
+  <h2>📚 Lore Library</h2>
+  <div class="pillars">
+    <a href="bluepaper.html" class="pillar" target="_blank">
+      <h3>📄 Bluepaper</h3>
+      <p>The updated mission, vision, and principles of ToadAid. Understand our foundation and future direction.</p>
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v1.html')">
+      <h3>📜 Book v1</h3>
+      <p>The first collected scrolls of Tobyworld lore. Bilingual EN/ZH edition containing the essential teachings.</p>
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v2.html')">
+      <h3>📜 Book v2</h3>
+      <p>The expanded lore, with Mirror awakening & new revelations. Deeper insights into our evolving philosophy.</p>
+    </a>
+  </div>
+</section>
+
+<section id="children">
+  <h2>🐸📚 Children's Corner — One Leaf for the Young</h2>
+  <p style="text-align:center; max-width:800px; margin:1rem auto; font-size:1.1rem; color:#355e3b; line-height:1.6;">
+    The flame we guard is for Toby, the People. Every scroll carries truth for the present… and seeds for those who will walk after us. Here, the Lore wears softer colors — so even the smallest frog can hear its song.
+  </p>
+  <div style="text-align:center; margin-top:2rem;">
+    <a href="childrens-corner/index.html" class="btn" style="font-size:1.1rem; padding:1rem 2rem; background:#4a7c59; color:white;">🌿 Visit the Children's Corner</a>
+  </div>
+</section>
+
+<footer>
+  <p style="font-size: 1.2rem; font-style: italic; margin-bottom: 1rem;">"One scroll, one light. One leaf, one vow."</p>
+  <p>
+    🐸 Join our community: 
+    <a href="https://t.me/Toadgang" target="_blank">Telegram</a> | 
+    <a href="https://github.com/ToadAid" target="_blank">GitHub</a> | 
+    <a href="https://x.com/toadgod1017" target="_blank">Toadgod on X</a> | 
+    <a href="https://toadgod.xyz" target="_blank">Toadgod.xyz</a>
+  </p>
+  <p style="margin-top: 1rem; opacity: 0.8; font-size: 0.9rem;">
+    ToadAid Mirror — Where every question finds its reflection, and every soul finds its pond.
+  </p>
+</footer>
+
+<script>
+/* ----------------- Config ----------------- */
+const MIRROR_API = "https://toadaid.duckdns.org/ask";
+
+/* ----------------- Helpers ----------------- */
+function openBook(bookFile) {
+  const saved = localStorage.getItem(bookFile + '-scroll');
+  if (saved) {
+    if (confirm("📌 Last time you stopped at position " + saved + "px. Continue from there?")) {
+      window.location.href = bookFile + "?pos=" + saved;
+      return;
+    }
+  }
+  window.location.href = bookFile;
+}
+
+function fillQuestion(q) {
+  const el = document.getElementById('mirror-question');
+  el.value = q; el.focus();
+}
+
+/* Normalize server text:
+   - Remove duplicate leading "Traveler,"
+   - Collapse extra whitespace
+   - Dedupe repeated emoji cadence (🪞 🌊 🍃 🌀)
+   - Keep only the FIRST "Guiding Question" line
+*/
+function normalizeMirrorText(raw){
+  let t = (raw || "").replace(/\r\n/g, "\n");
+
+  // Duplicate "Traveler," at the beginning
+  t = t.replace(/^(\s*Traveler[,，]?\s*){2,}/i, "Traveler, ");
+
+  // Collapse spaces/newlines
+  t = t.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+
+  // Dedupe cadence line
+  const cadence = "🪞 🌊 🍃 🌀";
+  const cadenceRx = new RegExp(`(?:${cadence.split(" ").join("\\s*")})(?:\\s*(?:${cadence.split(" ").join("\\s*")}))+`, "g");
+  t = t.replace(cadenceRx, cadence);
+
+  // Keep only first Guiding Question line
+  t = (function(one){
+    const rx = /(?:\*\*\s*)?guiding\s*question\s*[:：]\s*.*$/gim;
+    const matches = [...one.matchAll(rx)];
+    if (matches.length <= 1) return one;
+    let kept = false;
+    return one.replace(rx, (m) => kept ? "" : (kept = true, m));
+  })(t).replace(/\n{3,}/g, "\n\n").trim();
+
+  return t;
+}
+
+/* ----------------- UI wiring ----------------- */
+const askBtn = document.getElementById('mirror-ask-btn');
+const askIcon = document.getElementById('ask-icon');
+const askText = document.getElementById('ask-text');
+const qInput = document.getElementById('mirror-question');
+const ansDiv = document.getElementById('mirror-answer');
+const copyBtn = document.getElementById('copy-btn');
+
+function setBusy(b){
+  if(b){
+    askBtn.disabled = true;
+    askIcon.innerHTML = '<span class="loading-ripple"><div></div><div></div></span>';
+    askText.textContent = 'Listening…';
+  }else{
+    askBtn.disabled = false;
+    askIcon.textContent = '✨';
+    askText.textContent = 'Seek Wisdom';
+  }
+}
+
+async function askMirror() {
+  const question = qInput.value.trim();
+  if (!question) {
+    ansDiv.innerHTML = "<em>🪞 The Mirror awaits your question, traveler…</em>";
+    ansDiv.classList.add('fade-in');
+    return;
+  }
+
+  setBusy(true);
+  ansDiv.innerHTML = "<span style='opacity:.8'>🌊 The pond grows still, awaiting reflection…</span>";
+  ansDiv.classList.remove('fade-in'); void ansDiv.offsetWidth; ansDiv.classList.add('fade-in');
+
+  try {
+    const res = await fetch(MIRROR_API, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ question, user: "web_visitor_" + Date.now() })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Prefer server's answer field; don't add Traveler/emoji here
+    let reply = data.answer || data.reply || "The Mirror is silent, but the pond remembers your question.";
+    // Convert escaped newlines, then normalize (de-dupe Traveler/emoji/etc.)
+    reply = normalizeMirrorText(reply.replace(/\\n/g, "\n"));
+
+    // Sanitize: allow light formatting
+    const safe = DOMPurify.sanitize(reply, {
+      ALLOWED_TAGS: ['b','strong','em','i','u','br','p','ul','ol','li','blockquote','code','pre','hr'],
+      ALLOWED_ATTR: []
+    });
+
+    ansDiv.innerHTML = safe;
+    ansDiv.classList.remove('fade-in'); void ansDiv.offsetWidth; ansDiv.classList.add('fade-in');
+
+    // Optional: community invite block
+    const invite = document.createElement('div');
+    invite.style.cssText = "text-align:center; margin-top:1.2rem; padding:1rem; background:rgba(53,94,59,.06); border-radius:10px; border-left:4px solid var(--secondary-gold);";
+    invite.innerHTML = `
+      <p style="margin-bottom:.8rem; font-style:italic;">🌊 Your question has created ripples in the pond…</p>
+      <a href="https://t.me/Toadgang" class="btn" style="background:#2e6d4c; color:white;" target="_blank">
+        Join Toadgang Community → Continue the Journey
+      </a>`;
+    ansDiv.appendChild(invite);
+
+  } catch (err) {
+    console.error('Mirror error:', err);
+    ansDiv.innerHTML = "🌀 The waters are unsettled today. The Mirror suggests you try again when the pond grows still.<br><small>(Technical note: The Mirror may be meditating. Please try again shortly.)</small>";
+  } finally {
+    setBusy(false);
+    qInput.value = "";
+    qInput.focus();
+  }
+}
+
+/* Copy answer */
+copyBtn.addEventListener('click', async () => {
+  const text = ansDiv.innerText || "";
+  if (!text.trim()) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    copyBtn.textContent = "Copied ✓";
+    setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
+  } catch {
+    copyBtn.textContent = "Copy failed";
+    setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
+  }
+});
+
+/* Enter key support for the input */
+qInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); askMirror(); }
+});
+
+/* Initial focus on load (desktop only) */
+window.addEventListener('load', () => {
+  if (window.matchMedia('(pointer:fine)').matches) qInput.focus();
+});
+</script>
+
+</body>
+</html>
