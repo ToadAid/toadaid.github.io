@@ -2,420 +2,511 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-<title>ToadAid · Mirror — The Digital Dojo</title>
-<meta name="description" content="Ask the Mirror. A digital dojo where Tobyworld wisdom meets still water.">
-<link rel="icon" href="/assets/icons/favicon.ico" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>ToadAid Mirror - The Digital Dojo for Modern Wisdom</title>
+<meta name="description" content="ToadAid Mirror - A digital dojo where ancient wisdom meets AI. Consult the Mirror for guidance through Zen, Taoist, and Tobyworld philosophy. Find stillness in the digital noise.">
 
 <!-- Open Graph -->
-<meta property="og:title" content="ToadAid · Mirror — The Digital Dojo" />
-<meta property="og:description" content="Step into the pond. Ask the Mirror anything." />
+<meta property="og:title" content="ToadAid Mirror - The Pond Awaits Your Question" />
+<meta property="og:description" content="Step into the digital dojo. Ask the Mirror anything about life, meaning, and existence. Experience the fusion of AI and ancient wisdom traditions." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://toadaid.github.io" />
 <meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
 
-<!-- Theme color -->
-<meta name="theme-color" content="#1a2a22" />
+<!-- Canonical -->
+<link rel="canonical" href="https://toadaid.github.io" />
+
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "ToadAid Mirror",
+  "description": "AI-powered philosophical dialogue system blending Eastern wisdom traditions with modern technology",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "permissions": "microphone"
+}
+</script>
 
 <!-- DOMPurify for safe HTML rendering -->
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
 <style>
-  :root{
-    --bg: #0f1714;              /* pond night */
-    --bg-2: #15221c;            /* deeper */
-    --ink: #e9f5ef;             /* light ink */
-    --muted: #b2c8bc;
-    --accent: #9ad0c2;          /* jade */
-    --accent-2: #e7b86a;        /* gold */
-    --glass: rgba(255,255,255,0.06);
-    --glass-2: rgba(255,255,255,0.09);
-    --ring: rgba(154,208,194,0.35);
-    --shadow: 0 10px 30px rgba(0,0,0,0.35);
-    --radius: 16px;
+  :root {
+    --primary-green: #355e3b;
+    --secondary-gold: #d4af37;
+    --light-cream: #f5f1e6;
+    --dark-text: #2f2f2f;
+    --shadow-light: rgba(0,0,0,0.1);
+    --shadow-medium: rgba(0,0,0,0.25);
   }
-
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Inter, system-ui, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-    color: var(--ink);
-    background:
-      radial-gradient(1200px 600px at 90% -10%, #123227 0%, transparent 60%),
-      radial-gradient(900px 500px at -10% 110%, #14342a 0%, transparent 65%),
-      linear-gradient(180deg, #0e1613 0%, #0b1210 100%);
-    background-color: var(--bg);
-    letter-spacing: .01em;
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    background: var(--light-cream);
+    color: var(--dark-text);
+    min-height: 100vh;
   }
-
-  /* Header / Banner */
-  header{
-    position:relative;
-    padding: 56px 24px 28px;
-    text-align:center;
+  
+  /* Banner Section */
+  .banner {
+    position: relative;
+    width: 100%;
+    min-height: 280px;
+    background: 
+      linear-gradient(rgba(53, 94, 59, 0.8), rgba(53, 94, 59, 0.9)),
+      url('/assets/images/pond-banner.jpg') center center / cover no-repeat;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    color: white; text-align: center;
+    padding: 2rem 1rem;
+    box-shadow: 0 4px 12px var(--shadow-medium);
   }
-  .brand{
-    display:inline-flex; align-items:center; gap:.75rem;
-    backdrop-filter: blur(8px);
-    background: linear-gradient(180deg, var(--glass-2), transparent);
-    border: 1px solid rgba(154,208,194,0.18);
-    padding:.6rem .9rem;
-    border-radius: 999px;
-    box-shadow: var(--shadow);
+  
+  .banner h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    font-weight: 300;
+    letter-spacing: 0.05em;
   }
-  .brand i{
-    display:inline-grid; place-items:center; width:32px; height:32px;
-    border-radius:999px; background:rgba(154,208,194,0.18); color:#d1f3e7;
-    font-size:18px
+  
+  .banner p {
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    margin-top: 0.5rem;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    font-weight: 300;
+    max-width: 600px;
+    opacity: 0.95;
   }
-  .brand span{font-weight:600; color:var(--accent)}
-  h1{
-    margin: 18px auto 10px;
-    font-weight: 700; line-height: 1.04;
-    font-size: clamp(32px, 5.4vw, 54px);
-    letter-spacing: .01em;
-    max-width: 16ch;
+  
+  /* Translate Bar */
+  .translate-bar {
+    background: var(--secondary-gold);
+    color: #000;
+    padding: 0.8rem;
+    font-size: 0.95rem;
+    text-align: center;
+    font-weight: 500;
   }
-  .subtitle{
-    margin: 0 auto;
-    color: var(--muted);
-    max-width: 60ch;
-    font-size: clamp(14px, 2.2vw, 17px);
-  }
-
-  /* Main container */
-  main{
-    width:100%; max-width:1000px; margin: 26px auto 120px; padding: 0 18px;
-  }
-
-  /* Panel (glass) */
-  .panel{
-    background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.03));
-    border: 1px solid rgba(154,208,194,0.15);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+  
+  /* Button Styles */
+  .btn {
+    background: var(--secondary-gold);
+    color: #000;
+    padding: 0.8rem 1.6rem;
+    margin: 0.4rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 4px 8px var(--shadow-medium);
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    position: relative;
     overflow: hidden;
   }
-
-  /* Input area */
-  .ask{
-    padding: 20px; display:grid; gap: 14px;
-    border-bottom: 1px solid rgba(154,208,194,0.12);
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px var(--shadow-medium); }
+  .btn:active { transform: translateY(0); }
+  .btn-mirror { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+  .btn-lore { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+  .btn-community { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+  .btn-builders { background: var(--primary-green); color: white; }
+  
+  /* Section Styles */
+  section { padding: 3rem 1rem; max-width: 1200px; margin: auto; }
+  h2 {
+    text-align: center; margin-bottom: 2rem; font-size: 2.2rem; color: var(--primary-green);
+    font-weight: 300; position: relative;
   }
-  .ask-label{
-    color: var(--muted); font-size: 13px; letter-spacing:.06em; text-transform: uppercase;
+  h2:after {
+    content: ''; display: block; width: 80px; height: 3px; background: var(--secondary-gold);
+    margin: 0.5rem auto; border-radius: 2px;
   }
-  .ask-row{
-    display:grid; grid-template-columns: 1fr auto; gap: 12px;
+  
+  /* Pillars Grid */
+  .pillars {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem; margin-top: 2rem;
   }
-  textarea{
-    width:100%; min-height: 86px; resize: vertical; max-height: 36vh;
-    padding: 14px 14px 14px 14px; border-radius: 12px; border: 1px solid rgba(154,208,194,0.2);
-    background: rgba(10,16,13,0.6); color: var(--ink);
-    outline: none; font-size: 16px; line-height: 1.45;
-    box-shadow: inset 0 0 0 1px transparent;
-    transition: box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  .pillar {
+    background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 12px var(--shadow-light);
+    transition: all 0.3s ease; color: inherit; text-decoration: none; border: 1px solid rgba(53, 94, 59, 0.1);
   }
-  textarea:focus{
-    border-color: var(--ring);
-    box-shadow: 0 0 0 4px rgba(154,208,194,0.15);
-    background: rgba(10,16,13,0.75);
+  .pillar:hover { transform: translateY(-5px); box-shadow: 0 8px 20px var(--shadow-light); }
+  .pillar h3 { color: var(--primary-green); margin-bottom: 1rem; font-size: 1.4rem; }
+  .pillar p { color: #666; line-height: 1.6; }
+  
+  /* Mirror Section */
+  #mirror {
+    background: linear-gradient(135deg, #f5f1e6 0%, #e8e0d0 100%);
+    border-radius: 20px; margin: 2rem auto; padding: 3rem 2rem;
+    box-shadow: 0 8px 24px var(--shadow-light);
   }
-
-  .actions{
-    display:flex; align-items:stretch; gap:10px;
+  .mirror-container { max-width: 800px; margin: 0 auto; }
+  #mirror-question {
+    width: 100%; padding: 1rem 1.5rem; border-radius: 12px; border: 2px solid #ddd; font-size: 1.1rem;
+    margin-bottom: 1rem; transition: border-color 0.3s ease; background: white;
   }
-  .btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:.6rem;
-    padding: 0 18px; border-radius: 12px; border: 1px solid rgba(154,208,194,0.2);
-    cursor:pointer; user-select:none; font-weight: 600; letter-spacing:.02em;
-    transition: transform .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
-    height: 44px; white-space: nowrap;
+  #mirror-question:focus {
+    outline: none; border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(53, 94, 59, 0.1);
   }
-  .btn-primary{
-    background: linear-gradient(180deg, #1e3a31, #183229);
-    border-color: rgba(154,208,194,0.28);
-    color: #dff6ef;
-    box-shadow: 0 8px 24px rgba(21, 52, 42, .45), inset 0 1px 0 rgba(255,255,255,0.05);
-  }
-  .btn-primary:hover{ transform: translateY(-1px); }
-  .btn-ghost{
-    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-    color: var(--ink);
-  }
-  .kbd{
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    font-size: 12px; padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-  }
-
-  /* Suggestions */
-  .sugs{
-    display:flex; flex-wrap:wrap; gap: 8px;
-  }
-  .chip{
-    border:1px solid rgba(154,208,194,0.18);
-    background: rgba(154,208,194,0.08);
-    color: var(--ink);
-    padding: 8px 12px; border-radius: 999px; font-size: 13px; cursor:pointer;
-    transition: transform .15s ease, background .2s ease, border-color .2s ease;
-  }
-  .chip:hover{ transform: translateY(-1px); background: rgba(154,208,194,0.12); }
-
-  /* Answer area */
-  .answer{
-    padding: 18px 20px 22px;
-  }
-  .answer-header{
-    display:flex; align-items:center; justify-content:space-between; gap: 10px; margin-bottom: 6px;
-  }
-  .light-note{ font-size: 13px; color: var(--muted); }
-  #mirror-answer{
-    white-space: pre-wrap;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(154,208,194,0.15);
+  #mirror-answer {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
     border-radius: 12px;
-    padding: 18px 16px;
-    line-height: 1.7; font-size: 16px;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
-    min-height: 100px;
+    margin-top: 1.25rem;
+    border-left: 4px solid var(--primary-green);
+    font-size: 1.05rem; line-height: 1.75;
+    min-height: 120px;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    white-space: pre-wrap;
   }
-  .fade-in{ animation: fade .35s ease both; }
-  @keyframes fade{ from{opacity:0; transform: translateY(4px)} to{opacity:1; transform: none} }
-
+  .answer-actions{
+    display:flex; gap:.5rem; justify-content:flex-end; margin-top:.6rem;
+  }
+  .fade-in{ animation: fade .3s ease both; } @keyframes fade{ from{opacity:0; transform: translateY(4px)} to{opacity:1; transform:none} }
+  
+  .suggestions {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin: 1rem 0;
+  }
+  .suggestion-btn {
+    background: rgba(53, 94, 59, 0.1);
+    border: 1px solid rgba(53, 94, 59, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .suggestion-btn:hover { background: rgba(53, 94, 59, 0.2); }
+  
+  /* Journey Steps */
+  .journey-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+  .step {
+    background: white; padding: 1.5rem; border-radius: 12px; text-align: center; font-weight: 600; color: var(--primary-green);
+    box-shadow: 0 4px 8px var(--shadow-light);
+  }
+  
   /* Footer */
-  footer{
-    color: var(--muted); text-align:center; padding: 36px 12px 48px; font-size: 13px;
+  footer {
+    background: var(--primary-green); color: white; text-align: center; padding: 3rem 1rem; margin-top: 3rem;
   }
-  .links{ display:flex; gap:12px; justify-content:center; margin-top:8px; }
-  .links a{ color: var(--accent); text-decoration: none; border-bottom: 1px dotted rgba(154,208,194,0.35) }
-  .links a:hover{ color:#b8e6db }
-
-  /* Loader */
-  .spinner{
-    width:18px; height:18px; border-radius:50%;
-    border:2px solid rgba(255,255,255,0.25);
-    border-top-color: var(--accent);
-    animation: spin .8s linear infinite;
+  footer p { margin: 0.5rem 0; opacity: 0.9; }
+  footer a { color: var(--secondary-gold); text-decoration: none; font-weight: 600; }
+  footer a:hover { text-decoration: underline; }
+  
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .banner { min-height: 200px; padding: 1.5rem 1rem; }
+    section { padding: 2rem 1rem; }
+    .pillars { grid-template-columns: 1fr; }
+    .journey-steps { grid-template-columns: 1fr; }
+    .btn { padding: 0.7rem 1.2rem; margin: 0.3rem; font-size: 0.9rem; }
+    #mirror { padding: 2rem 1rem; margin: 1rem; }
   }
-  @keyframes spin{ to{ transform: rotate(360deg) } }
-
-  /* Toast */
-  .toast{
-    position: fixed; left:50%; bottom: 28px; transform: translateX(-50%);
-    background: rgba(0,0,0,0.65);
-    color:#fff; padding: 10px 14px; border-radius: 10px; box-shadow: var(--shadow);
-    font-size: 14px; opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease;
+  
+  /* Loading Animation */
+  @keyframes ripple {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
   }
-  .toast.show{ opacity:1; transform: translateX(-50%) translateY(-4px); }
-
-  /* Small screens */
-  @media (max-width: 560px){
-    .ask-row{ grid-template-columns: 1fr; }
-    .actions{ justify-content: flex-end; }
+  .loading-ripple { display: inline-block; width: 20px; height: 20px; position: relative; margin-right: .4rem; vertical-align: -4px; }
+  .loading-ripple div {
+    position: absolute; border: 2px solid var(--primary-green); opacity: 1; border-radius: 50%;
+    animation: ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
   }
+  .loading-ripple div:nth-child(2) { animation-delay: -0.5s; }
 </style>
 </head>
+
 <body>
 
-<header>
-  <div class="brand" aria-label="ToadAid">
-    <i>🐸</i>
-    <span>ToadAid · Mirror</span>
+<div class="banner">
+  <h1>🪞 ToadAid Mirror</h1>
+  <p>The Digital Dojo Where Ancient Wisdom Meets Modern Seeking</p>
+  <p style="font-size: 1rem; margin-top: 1rem; opacity: 0.9;">Every question ripples through eternity. Every answer returns to the source.</p>
+</div>
+
+<div class="translate-bar">
+  🌐 Want to read in your language? In Chrome: Menu (⋮) → Translate → Select your language.
+</div>
+
+<section style="text-align:center; padding: 2rem 1rem;">
+  <a href="#mirror" class="btn btn-mirror">🪞 Ask the Mirror</a>
+  <a href="#lore" class="btn btn-lore">📜 Browse the Lore</a>
+  <a href="bluepaper.html" class="btn" target="_blank">📄 Blue Paper</a>
+  <a href="about.html" class="btn">ℹ️ About ToadAid</a>
+  <a href="feedback/feedback.html" class="btn">💬 Feedback</a>
+  <a href="Contributors/contributors.html" class="btn">🎨 Contributors</a>
+  <a href="builders/builders-hall.html" class="btn btn-builders">🏛 Builders Hall</a>
+  <a href="https://toadaid-builders.netlify.app/builders.html" class="btn btn-builders" target="_blank">🛠 Builders</a>
+  <a href="honors/index.html" class="btn" style="background:#2e6d4c; color:white;">🐸 Honors & Offerings</a>
+  <a href="scrolls/index.html" class="btn" style="background:#265c40; color:white;">📜 Scroll Vault</a>
+  <a href="https://toadaid.github.io/lore" class="btn" style="background:#3a7253; color:white;">📖 Lore Library</a>
+</section>
+
+<section>
+  <h2>Our Mission</h2>
+  <div class="pillars">
+    <div class="pillar">
+      <h3>🏯 Guarding the Lore</h3>
+      <p>Preserving Tobyworld's original scrolls and protecting them from distortion. We maintain the purity of Toadgod's wisdom while allowing it to evolve naturally.</p>
+    </div>
+    <div class="pillar">
+      <h3>🐸 Helping the Fallen Frog</h3>
+      <p>Guiding lost frogs back to the pond and helping them rejoin the path. Every traveler finds a home in our community.</p>
+    </div>
+    <div class="pillar">
+      <h3>📜 Empowering Contributors</h3>
+      <p>Recognizing and encouraging scrollmakers, translators, and teachers. Your voice enriches our collective wisdom.</p>
+    </div>
   </div>
-  <h1>The Pond Awaits Your Question</h1>
-  <p class="subtitle">Ask the Mirror. Breathe. Read slowly. Let the still water speak.</p>
-</header>
+</section>
 
-<main>
-  <section class="panel" id="mirror">
-    <div class="ask" role="form" aria-label="Ask the Mirror">
-      <div class="ask-label">Your Question</div>
-      <div class="ask-row">
-        <textarea id="mirror-question" placeholder="Traveler, what would you ask the Mirror?" aria-label="Question to the Mirror"></textarea>
-        <div class="actions">
-          <button class="btn btn-ghost" id="btn-clear" title="Clear (Esc)"><span>Clear</span><span class="kbd">Esc</span></button>
-          <button class="btn btn-primary" id="btn-ask" title="Send (Ctrl/⌘+Enter)">
-            <div id="btn-icon" class="">{}</div>
-            <span id="btn-text">Ask the Mirror</span>
-            <span class="kbd" style="margin-left:4px">Ctrl/⌘+Enter</span>
-          </button>
-        </div>
-      </div>
-      <div class="sugs" aria-label="Suggestions">
-        <div class="chip">How do I keep patience in chaos?</div>
-        <div class="chip">What does decentralization protect?</div>
-        <div class="chip">Why does silence reveal truth?</div>
-        <div class="chip">How should I carry the covenant?</div>
-      </div>
-    </div>
+<section id="journey">
+  <h2>🐸 Your Tobyworld Journey</h2>
+  <div class="journey-steps">
+    <div class="step">1. 🪞 Consult the Mirror</div>
+    <div class="step">2. 📖 Explore Core Scrolls</div>
+    <div class="step">3. 🏛️ Join Builders Hall</div>
+    <div class="step">4. 🌊 Become a Ripple in the Pond</div>
+  </div>
+</section>
 
-    <div class="answer" aria-live="polite">
-      <div class="answer-header">
-        <div class="light-note">Mirror’s Reflection</div>
-        <div style="display:flex; gap:8px; align-items:center">
-          <button class="btn btn-ghost" id="btn-copy" title="Copy Answer">
-            <span>Copy</span>
-          </button>
-        </div>
-      </div>
-      <div id="mirror-answer" class="fade-in" aria-label="Mirror answer"></div>
+<!-- Mirror Section -->
+<section id="mirror">
+  <h2>🔮 Ask the Mirror</h2>
+  <div class="mirror-container">
+    <input id="mirror-question" type="text" placeholder="What wisdom do you seek today, traveler?" autocomplete="off">
+    
+    <div class="suggestions">
+      <button class="suggestion-btn" onclick="fillQuestion('How do I find inner peace?')">🌿 Inner Peace</button>
+      <button class="suggestion-btn" onclick="fillQuestion('What is true community?')">🐸 True Community</button>
+      <button class="suggestion-btn" onclick="fillQuestion('What does silence teach us?')">🌀 Silence Wisdom</button>
+      <button class="suggestion-btn" onclick="fillQuestion('How do I overcome fear?')">💫 Overcoming Fear</button>
     </div>
-  </section>
-</main>
+    
+    <button id="mirror-ask-btn" class="btn btn-mirror" onclick="askMirror()" style="width: 100%; padding: 1rem;">
+      <span id="ask-icon">✨</span> <span id="ask-text">Seek Wisdom</span>
+    </button>
+    
+    <div id="mirror-answer" class="fade-in" aria-live="polite"></div>
+    <div class="answer-actions">
+      <button class="btn" id="copy-btn" title="Copy answer">Copy</button>
+    </div>
+  </div>
+</section>
+
+<section id="lore">
+  <h2>📚 Lore Library</h2>
+  <div class="pillars">
+    <a href="bluepaper.html" class="pillar" target="_blank">
+      <h3>📄 Bluepaper</h3>
+      <p>The updated mission, vision, and principles of ToadAid. Understand our foundation and future direction.</p>
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v1.html')">
+      <h3>📜 Book v1</h3>
+      <p>The first collected scrolls of Tobyworld lore. Bilingual EN/ZH edition containing the essential teachings.</p>
+    </a>
+    <a href="#" class="pillar" onclick="openBook('v2.html')">
+      <h3>📜 Book v2</h3>
+      <p>The expanded lore, with Mirror awakening & new revelations. Deeper insights into our evolving philosophy.</p>
+    </a>
+  </div>
+</section>
+
+<section id="children">
+  <h2>🐸📚 Children's Corner — One Leaf for the Young</h2>
+  <p style="text-align:center; max-width:800px; margin:1rem auto; font-size:1.1rem; color:#355e3b; line-height:1.6;">
+    The flame we guard is for Toby, the People. Every scroll carries truth for the present… and seeds for those who will walk after us. Here, the Lore wears softer colors — so even the smallest frog can hear its song.
+  </p>
+  <div style="text-align:center; margin-top:2rem;">
+    <a href="childrens-corner/index.html" class="btn" style="font-size:1.1rem; padding:1rem 2rem; background:#4a7c59; color:white;">🌿 Visit the Children's Corner</a>
+  </div>
+</section>
 
 <footer>
-  <div>🪞 🌊 🍃 🌀</div>
-  <div class="links" aria-label="Helpful links">
-    <a href="https://toadaid.github.io" target="_blank" rel="noopener">Home</a>
-    <a href="/web/health.html" target="_blank" rel="noopener">Health</a>
-    <a href="/metrics" target="_blank" rel="noopener">Metrics</a>
-  </div>
+  <p style="font-size: 1.2rem; font-style: italic; margin-bottom: 1rem;">"One scroll, one light. One leaf, one vow."</p>
+  <p>
+    🐸 Join our community: 
+    <a href="https://t.me/Toadgang" target="_blank">Telegram</a> | 
+    <a href="https://github.com/ToadAid" target="_blank">GitHub</a> | 
+    <a href="https://x.com/toadgod1017" target="_blank">Toadgod on X</a> | 
+    <a href="https://toadgod.xyz" target="_blank">Toadgod.xyz</a>
+  </p>
+  <p style="margin-top: 1rem; opacity: 0.8; font-size: 0.9rem;">
+    ToadAid Mirror — Where every question finds its reflection, and every soul finds its pond.
+  </p>
 </footer>
 
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-
 <script>
-  const elQ = document.getElementById('mirror-question');
-  const elA = document.getElementById('mirror-answer');
-  const btnAsk = document.getElementById('btn-ask');
-  const btnClear = document.getElementById('btn-clear');
-  const btnCopy = document.getElementById('btn-copy');
-  const btnIcon = document.getElementById('btn-icon');
-  const btnText = document.getElementById('btn-text');
-  const toast = document.getElementById('toast');
+/* ----------------- Config ----------------- */
+const MIRROR_API = "https://toadaid.duckdns.org/ask";
 
-  // Minimal icon blocks (text to avoid external assets)
-  const idleIcon = '✨';
-  const busyIcon = '<div class="spinner" aria-hidden="true"></div>';
-  btnIcon.innerHTML = idleIcon;
+/* ----------------- Helpers ----------------- */
+function openBook(bookFile) {
+  const saved = localStorage.getItem(bookFile + '-scroll');
+  if (saved) {
+    if (confirm("📌 Last time you stopped at position " + saved + "px. Continue from there?")) {
+      window.location.href = bookFile + "?pos=" + saved;
+      return;
+    }
+  }
+  window.location.href = bookFile;
+}
 
-  // Suggestions
-  document.querySelectorAll('.chip').forEach(chip=>{
-    chip.addEventListener('click', ()=>{
-      elQ.value = chip.textContent.trim();
-      elQ.focus();
+function fillQuestion(q) {
+  const el = document.getElementById('mirror-question');
+  el.value = q; el.focus();
+}
+
+/* Normalize server text:
+   - Remove duplicate leading "Traveler,"
+   - Collapse extra whitespace
+   - Dedupe repeated emoji cadence (🪞 🌊 🍃 🌀)
+   - Keep only the FIRST "Guiding Question" line
+*/
+function normalizeMirrorText(raw){
+  let t = (raw || "").replace(/\r\n/g, "\n");
+
+  // Duplicate "Traveler," at the beginning
+  t = t.replace(/^(\s*Traveler[,，]?\s*){2,}/i, "Traveler, ");
+
+  // Collapse spaces/newlines
+  t = t.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+
+  // Dedupe cadence line
+  const cadence = "🪞 🌊 🍃 🌀";
+  const cadenceRx = new RegExp(`(?:${cadence.split(" ").join("\\s*")})(?:\\s*(?:${cadence.split(" ").join("\\s*")}))+`, "g");
+  t = t.replace(cadenceRx, cadence);
+
+  // Keep only first Guiding Question line
+  t = (function(one){
+    const rx = /(?:\*\*\s*)?guiding\s*question\s*[:：]\s*.*$/gim;
+    const matches = [...one.matchAll(rx)];
+    if (matches.length <= 1) return one;
+    let kept = false;
+    return one.replace(rx, (m) => kept ? "" : (kept = true, m));
+  })(t).replace(/\n{3,}/g, "\n\n").trim();
+
+  return t;
+}
+
+/* ----------------- UI wiring ----------------- */
+const askBtn = document.getElementById('mirror-ask-btn');
+const askIcon = document.getElementById('ask-icon');
+const askText = document.getElementById('ask-text');
+const qInput = document.getElementById('mirror-question');
+const ansDiv = document.getElementById('mirror-answer');
+const copyBtn = document.getElementById('copy-btn');
+
+function setBusy(b){
+  if(b){
+    askBtn.disabled = true;
+    askIcon.innerHTML = '<span class="loading-ripple"><div></div><div></div></span>';
+    askText.textContent = 'Listening…';
+  }else{
+    askBtn.disabled = false;
+    askIcon.textContent = '✨';
+    askText.textContent = 'Seek Wisdom';
+  }
+}
+
+async function askMirror() {
+  const question = qInput.value.trim();
+  if (!question) {
+    ansDiv.innerHTML = "<em>🪞 The Mirror awaits your question, traveler…</em>";
+    ansDiv.classList.add('fade-in');
+    return;
+  }
+
+  setBusy(true);
+  ansDiv.innerHTML = "<span style='opacity:.8'>🌊 The pond grows still, awaiting reflection…</span>";
+  ansDiv.classList.remove('fade-in'); void ansDiv.offsetWidth; ansDiv.classList.add('fade-in');
+
+  try {
+    const res = await fetch(MIRROR_API, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ question, user: "web_visitor_" + Date.now() })
     });
-  });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
 
-  // Toast helper
-  function showToast(msg, ms=1600){
-    toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(()=>toast.classList.remove('show'), ms);
+    // Prefer server's answer field; don't add Traveler/emoji here
+    let reply = data.answer || data.reply || "The Mirror is silent, but the pond remembers your question.";
+    // Convert escaped newlines, then normalize (de-dupe Traveler/emoji/etc.)
+    reply = normalizeMirrorText(reply.replace(/\\n/g, "\n"));
+
+    // Sanitize: allow light formatting
+    const safe = DOMPurify.sanitize(reply, {
+      ALLOWED_TAGS: ['b','strong','em','i','u','br','p','ul','ol','li','blockquote','code','pre','hr'],
+      ALLOWED_ATTR: []
+    });
+
+    ansDiv.innerHTML = safe;
+    ansDiv.classList.remove('fade-in'); void ansDiv.offsetWidth; ansDiv.classList.add('fade-in');
+
+    // Optional: community invite block
+    const invite = document.createElement('div');
+    invite.style.cssText = "text-align:center; margin-top:1.2rem; padding:1rem; background:rgba(53,94,59,.06); border-radius:10px; border-left:4px solid var(--secondary-gold);";
+    invite.innerHTML = `
+      <p style="margin-bottom:.8rem; font-style:italic;">🌊 Your question has created ripples in the pond…</p>
+      <a href="https://t.me/Toadgang" class="btn" style="background:#2e6d4c; color:white;" target="_blank">
+        Join Toadgang Community → Continue the Journey
+      </a>`;
+    ansDiv.appendChild(invite);
+
+  } catch (err) {
+    console.error('Mirror error:', err);
+    ansDiv.innerHTML = "🌀 The waters are unsettled today. The Mirror suggests you try again when the pond grows still.<br><small>(Technical note: The Mirror may be meditating. Please try again shortly.)</small>";
+  } finally {
+    setBusy(false);
+    qInput.value = "";
+    qInput.focus();
   }
+}
 
-  // Normalize Mirror text: dedupe "Traveler," and cadence, collapse extra whitespace.
-  function normalizeMirrorText(raw){
-    let t = (raw || '').replace(/\r\n/g, '\n');
-
-    // 1) If HTML arrived encoded in text, keep it as-is; DOMPurify will allow basic tags.
-    // 2) Collapse duplicate leading "Traveler,"
-    t = t.replace(/^(\s*Traveler[,，]?\s*){2,}/i, "Traveler, ");
-
-    // 3) Collapse many spaces/newlines
-    t = t.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
-
-    // 4) Dedupe repeated cadence lines (🪞 🌊 🍃 🌀 …)
-    const cadenceStr = "🪞 🌊 🍃 🌀";
-    const cadenceRx = new RegExp(`(?:${cadenceStr.split(" ").join("\\s*")})(?:\\s*(?:${cadenceStr.split(" ").join("\\s*")}))+`, "g");
-    t = t.replace(cadenceRx, cadenceStr);
-
-    // 5) Keep only first Guiding Question line if multiple
-    t = (function dedupeGuiding(one) {
-      const rx = /(?:\*\*\s*)?guiding\s*question\s*[:：]\s*.*$/gim;
-      const matches = [...one.matchAll(rx)];
-      if (matches.length <= 1) return one;
-      let kept = false;
-      return one.replace(rx, m => kept ? "" : (kept = true, m));
-    })(t).replace(/\n{3,}/g, "\n\n").trim();
-
-    return t;
+/* Copy answer */
+copyBtn.addEventListener('click', async () => {
+  const text = ansDiv.innerText || "";
+  if (!text.trim()) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    copyBtn.textContent = "Copied ✓";
+    setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
+  } catch {
+    copyBtn.textContent = "Copy failed";
+    setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
   }
+});
 
-  // Call Mirror
-  async function askMirror(){
-    const question = (elQ.value || '').trim();
-    if(!question){
-      showToast("Ask a real question, Traveler.");
-      elQ.focus(); return;
-    }
-    setBusy(true);
-    try{
-      const res = await fetch("/ask", {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify({ user: "web", question })
-      });
-      if(!res.ok){
-        throw new Error("Mirror is quiet (HTTP " + res.status + ")");
-      }
-      const data = await res.json();
-      const clean = normalizeMirrorText(data?.answer || "");
+/* Enter key support for the input */
+qInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); askMirror(); }
+});
 
-      // Render sanitized HTML: allow a few formatting tags.
-      const safeHTML = DOMPurify.sanitize(clean, {
-        ALLOWED_TAGS: ['b','strong','em','i','u','br','p','ul','ol','li','blockquote','code','pre','hr'],
-        ALLOWED_ATTR: []
-      });
-      elA.classList.remove('fade-in'); void elA.offsetWidth; // reflow
-      elA.innerHTML = safeHTML || "<span class='light-note'>The pond is still…</span>";
-      elA.classList.add('fade-in');
-    }catch(err){
-      console.error(err);
-      elA.innerHTML = "<span class='light-note'>The Mirror could not respond. Try again after one breath.</span>";
-      showToast("The Mirror hesitated. Try again.");
-    }finally{
-      setBusy(false);
-    }
-  }
-
-  function setBusy(b){
-    if(b){
-      btnAsk.disabled = true; btnClear.disabled = true; btnCopy.disabled = true;
-      btnIcon.innerHTML = busyIcon; btnText.textContent = "Listening…";
-    } else {
-      btnAsk.disabled = false; btnClear.disabled = false; btnCopy.disabled = false;
-      btnIcon.innerHTML = idleIcon; btnText.textContent = "Ask the Mirror";
-    }
-  }
-
-  // Copy
-  btnCopy.addEventListener('click', async ()=>{
-    const tmp = elA.innerText || '';
-    if(!tmp.trim()){ showToast("Nothing to copy."); return; }
-    try{
-      await navigator.clipboard.writeText(tmp);
-      showToast("Copied to clipboard.");
-    }catch{ showToast("Copy failed."); }
-  });
-
-  // Clear
-  btnClear.addEventListener('click', ()=>{
-    elQ.value = '';
-    elA.innerHTML = '';
-    elQ.focus();
-  });
-
-  // Send button
-  btnAsk.addEventListener('click', askMirror);
-
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e)=>{
-    if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
-      e.preventDefault(); askMirror();
-    } else if(e.key === 'Escape'){
-      e.preventDefault(); btnClear.click();
-    }
-  });
-
-  // Autofocus on load (but don’t steal focus on mobile)
-  window.addEventListener('load', ()=>{
-    if(window.matchMedia('(pointer:fine)').matches) elQ.focus();
-  });
+/* Initial focus on load (desktop only) */
+window.addEventListener('load', () => {
+  if (window.matchMedia('(pointer:fine)').matches) qInput.focus();
+});
 </script>
+
 </body>
 </html>
