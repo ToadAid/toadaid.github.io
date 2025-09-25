@@ -34,7 +34,7 @@
     --bg:#f5f1e6;
     --ink:#2f2f2f;
     --green:#355e3b;
-    --gold:#ffd23f;        /* brighter like screenshot translate bar/buttons */
+    --gold:#ffd23f;
     --gold-ink:#1a1a1a;
     --card:#ffffff;
     --chip:#214834;
@@ -47,7 +47,7 @@
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
 
-  /* ---------- Banner (bright image with subtle shade) ---------- */
+  /* ---------- Banner (bright with subtle shade) ---------- */
   .banner{
     position:relative;width:100%;min-height:260px;
     background:
@@ -60,7 +60,7 @@
   .banner h1{font-size:clamp(1.9rem,4.6vw,2.8rem);text-shadow:0 2px 8px rgba(0,0,0,.55);font-weight:700}
   .banner p{font-size:clamp(1rem,2.2vw,1.2rem);margin-top:.45rem;text-shadow:0 1px 4px rgba(0,0,0,.45)}
 
-  /* ---------- Translate strip & buttons like screenshot ---------- */
+  /* ---------- Translate strip & buttons ---------- */
   .translate-bar{background:var(--gold);color:var(--gold-ink);padding:.65rem 1rem;text-align:center;font-weight:700}
 
   .btn{
@@ -79,35 +79,57 @@
   .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:.6rem}
   .pillar{background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 2px 8px var(--shadow-s);border:1px solid rgba(0,0,0,.06);color:inherit}
 
-  /* Seek Wisdom bar */
-.cta{
-  width:100%;
-  padding:1rem 1.2rem;
-  border:0;
-  border-radius:12px;
-  background:linear-gradient(135deg,#6b5bd2,#7b4aa2);
-  color:#fff;
-  font:600 1.05rem/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* ---------- Mirror Section (like your screenshot) ---------- */
+  #mirror{background:linear-gradient(135deg,#f5f1e6,#e8e0d0);border-radius:16px;box-shadow:0 6px 16px var(--shadow-s);margin:2rem 1rem}
+  .mirror-wrap{max-width:860px;margin:auto;padding:1.5rem}
 
-  /* center perfectly */
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:.6rem;
-  text-align:center;
+  #mirror-question{
+    display:block;width:100%;
+    padding:1rem 1.2rem;border-radius:12px;border:2px solid #d7ddd7;background:#fff;font-size:16px;
+    box-shadow:0 1px 2px rgba(0,0,0,.04) inset;-webkit-appearance:none;appearance:none;
+  }
+  #mirror-question:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(53,94,59,.12)}
 
-  /* polish */
-  box-shadow:0 6px 12px var(--shadow-s);
-  cursor:pointer;
-  -webkit-appearance:none;
-  appearance:none;
-}
-#ask-label{display:inline-block}
-#ask-spinner{display:none}          /* your JS toggles this */
-.loading-ripple{position:relative;width:18px;height:18px}
-.loading-ripple div{position:absolute;border:2px solid #fff;border-radius:50%;
-  animation:ripple 1s cubic-bezier(0,.2,.8,1) infinite}
-.loading-ripple div:nth-child(2){animation-delay:-.5s}
+  .sugs{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin:.9rem 0}
+  .chip{
+    -webkit-appearance:none;appearance:none;
+    background:var(--accent-veil);
+    border:1px solid rgba(53,94,59,.25);
+    padding:.55rem .95rem;border-radius:22px;
+    font:700 0.95rem/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:inherit;cursor:pointer
+  }
+  .chip:hover{background:rgba(53,94,59,.18)}
+
+  /* Seek Wisdom bar — perfectly centered */
+  .cta{
+    width:100%;padding:1rem 1.2rem;border:0;border-radius:12px;
+    background:linear-gradient(135deg,#6b5bd2,#7b4aa2);color:#fff;
+    font:600 1.05rem/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+    display:flex;align-items:center;justify-content:center;gap:.6rem;text-align:center;
+    box-shadow:0 6px 12px var(--shadow-s);cursor:pointer;-webkit-appearance:none;appearance:none;
+  }
+  #ask-label{display:inline-block}
+  #ask-spinner{display:none}
+  .loading-ripple{position:relative;width:18px;height:18px}
+  @keyframes ripple{0%{transform:scale(.8);opacity:1}100%{transform:scale(2.4);opacity:0}}
+  .loading-ripple div{position:absolute;border:2px solid #fff;border-radius:50%;animation:ripple 1s cubic-bezier(0,.2,.8,1) infinite}
+  .loading-ripple div:nth-child(2){animation-delay:-.5s}
+
+  /* Answer card + typographic blocks */
+  .mirror-dialogue{background:#fff;border-left:4px solid var(--green);border-radius:12px;box-shadow:0 4px 12px var(--shadow-s);padding:1.1rem;margin-top:1rem;opacity:0;transform:translateY(14px);transition:all .3s ease}
+  .mirror-dialogue.visible{opacity:1;transform:translateY(0)}
+  .user-question{background:#edf0ec;border-left:4px solid #d4af37;border-radius:10px;padding:.9rem 1rem;margin:.4rem .4rem 1rem;font-style:italic}
+  .mirror-response{line-height:1.75}
+  .mirror-greeting{color:var(--green);font-weight:700;margin:.5rem 0 1rem}
+  .wisdom-point{background:rgba(212,175,55,.12);border-left:3px solid #d4af37;border-radius:10px;padding:.9rem 1rem;margin:1rem 0}
+  .wisdom-point strong{color:var(--green);display:block;margin-bottom:.35rem}
+  .wisdom-paragraph{margin:.7rem 0}
+  .guiding-question{background:rgba(53,94,59,.12);border-left:3px solid var(--green);border-radius:10px;padding:.9rem 1rem;margin:1rem 0;font-style:italic}
+  .guiding-question strong{color:var(--green)}
+  .symbols-line{text-align:center;letter-spacing:.18em;opacity:.85;margin:1rem 0}
+  .mirror-signature{opacity:.75;text-align:right;margin-top:1rem;font-style:italic;color:var(--green)}
+  .error-message{background:rgba(244,67,54,.1);border-left:4px solid #f44336;border-radius:10px;padding:1rem;margin-top:1rem}
 
   @media (max-width:720px){
     section{padding:1.6rem 1rem}
@@ -165,9 +187,9 @@
       <button class="chip" onclick="fillQuestion('How do I overcome fear?')">💫 Overcoming Fear</button>
     </div>
 
-    <button id="mirror-ask-btn" class="btn cta" onclick="askMirror()">
-    <span class="loading-ripple" id="ask-spinner" style="display:none"><div></div><div></div></span>
-    <span id="ask-label">Seek Wisdom</span>
+    <button id="mirror-ask-btn" class="cta" onclick="askMirror()">
+      <span class="loading-ripple" id="ask-spinner"><div></div><div></div></span>
+      <span id="ask-label">Seek Wisdom</span>
     </button>
 
     <div id="mirror-answer"></div>
