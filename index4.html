@@ -381,6 +381,10 @@ header::before {
   margin-bottom: 0.5rem;
 }
 
+.wisdom-paragraph {
+  margin: 0.75rem 0;
+}
+
 .guiding-question {
   background: rgba(53, 94, 59, 0.08);
   padding: 1rem;
@@ -543,25 +547,6 @@ footer {
     width: 100%;
     max-width: 300px;
   }
-}
-
-/* Animation for typewriter effect */
-.typewriter {
-  overflow: hidden;
-  border-right: 2px solid var(--primary);
-  white-space: nowrap;
-  margin: 0 auto;
-  animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
-}
-
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-
-@keyframes blink-caret {
-  from, to { border-color: transparent }
-  50% { border-color: var(--primary) }
 }
 </style>
 </head>
@@ -828,7 +813,7 @@ function formatMirrorResponse(question, responseStructure) {
   return html;
 }
 
-// Enhanced typewriter effect
+// Enhanced typewriter effect - FIXED to include "You asked:" part
 async function typewriterEffect(htmlContent) {
   return new Promise(async (resolve) => {
     // Create container but don't show content yet
@@ -837,10 +822,12 @@ async function typewriterEffect(htmlContent) {
     container.style.opacity = '0';
     ansDiv.appendChild(container);
     
-    // Parse HTML structure for segmented display
+    // Parse the entire HTML structure including the "You asked" part
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
-    const sections = tempDiv.querySelector('.mirror-response').children;
+    
+    // Get all child elements of the mirror-dialogue
+    const dialogueChildren = tempDiv.querySelector('.mirror-dialogue').children;
     
     let currentIndex = 0;
     
@@ -851,12 +838,12 @@ async function typewriterEffect(htmlContent) {
     
     // Function to show next section with typing effect
     async function showNextSection() {
-      if (currentIndex >= sections.length) {
+      if (currentIndex >= dialogueChildren.length) {
         resolve();
         return;
       }
       
-      const section = sections[currentIndex];
+      const section = dialogueChildren[currentIndex];
       const sectionHTML = section.outerHTML;
       const textContent = section.textContent || section.innerText || '';
       
@@ -868,7 +855,7 @@ async function typewriterEffect(htmlContent) {
       currentIndex++;
       
       // Give breathing space between sections
-      if (currentIndex < sections.length) {
+      if (currentIndex < dialogueChildren.length) {
         await new Promise(r => setTimeout(r, 150));
       }
       
@@ -890,6 +877,9 @@ function getTypingSpeed(element) {
   }
   if (element.classList.contains('wisdom-point')) {
     return 25; // Medium for wisdom points
+  }
+  if (element.classList.contains('user-question')) {
+    return 30; // Medium for user question
   }
   return 20; // Default speed
 }
