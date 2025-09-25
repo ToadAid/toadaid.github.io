@@ -40,7 +40,6 @@
     --shadow-medium: rgba(0,0,0,0.22);
     --border-soft: rgba(53,94,59,0.12);
     --accent-veil: rgba(53, 94, 59, 0.08);
-    --accent-veil-strong: rgba(53, 94, 59, 0.12);
   }
 
   /* ---------- RESET / BASE ---------- */
@@ -438,19 +437,6 @@
   }
 
   /* ---------- TYPEWRITER EFFECT ---------- */
-  .typewriter-container {
-    display: inline-block;
-    overflow: hidden;
-    border-right: 2px solid var(--primary-green);
-    white-space: nowrap;
-    animation: typewriter 3.5s steps(40, end) infinite alternate;
-  }
-
-  @keyframes typewriter {
-    from { width: 0; }
-    to { width: 100%; }
-  }
-
   .typewriter-element {
     overflow: hidden;
     border-right: 2px solid var(--primary-green);
@@ -461,43 +447,6 @@
   @keyframes typing {
     from { width: 0; }
     to { width: 100%; }
-  }
-
-  .fade-in {
-    animation: fadeIn 0.5s ease forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ---------- RESPONSIVE ---------- */
-  @media (max-width: 768px) {
-    section { padding: 2rem 1rem; }
-    .pillars { grid-template-columns: 1fr; }
-    .journey-steps { grid-template-columns: 1fr; }
-    .btn { padding: .7rem 1.2rem; margin: .3rem; font-size: .9rem; }
-    #mirror { padding: 2rem 1rem; margin: 1rem; }
-    .suggestions { flex-direction: column; align-items: center; }
-    .suggestion-btn { width: 100%; max-width: 280px; }
-    .mirror-dialogue { padding: 1.25rem; }
-  }
-
-  @media (max-width: 520px) {
-    section[style*="text-align:center"] .btn { 
-      display: inline-flex; 
-      justify-content: center; 
-      align-items: center; 
-      width: 100%; 
-      max-width: 460px; 
-    }
-    
-    #mirror-ask-btn { 
-      position: sticky; 
-      bottom: 12px; 
-      z-index: 5; 
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -660,19 +609,28 @@ function fillQuestion(q) {
   qInput.focus(); 
 }
 
+/* Robust cleaner: no double Traveler lines, no repeated cadence, first Guiding Question only */
 function cleanMirrorResponse(reply) {
   if (!reply) return "The Mirror is silent, but the pond remembers your question.";
-  // collapse duplicate "Traveler,"
-  reply = reply.replace(/^(\s*Traveler[,，]?\s*){2,}/i, 'Traveler, ');
-  // collapse cadence line duplicates
-  const cadence = "🪞 🌊 🍃 🌀";
-  const cRx = new RegExp(`(?:${cadence.split(" ").join("\\s*")})(?:\\s*(?:${cadence.split(" ").join("\\s*")}))+`, 'g');
-  reply = reply.replace(cRx, cadence);
-  // keep only first "Guiding Question"
+
+  reply = reply.replace(/\r\n/g, '\n');
+
+  // collapse *adjacent lines* of "Traveler,"
+  reply = reply.replace(/(^|\n)\s*Traveler[,，]?\s*(\n\s*Traveler[,，]?)+/gi, '$1Traveler,');
+
+  // collapse inline duplicates at the start of a line
+  reply = reply.replace(/(^|\n)\s*(Traveler[,，]?)\s+Traveler[,，]?/gi, '$1$2');
+
+  // collapse emoji cadence lines (spacing-insensitive)
+  const cadence = /(🪞\s*🌊\s*🍃\s*🌀)(?:\s*(?:🪞\s*🌊\s*🍃\s*🌀))+?/g;
+  reply = reply.replace(cadence, '🪞 🌊 🍃 🌀');
+
+  // keep only the first "Guiding Question"
   let seenGQ = false;
   reply = reply.replace(/(?:\*\*\s*)?guiding\s*question\s*[:：]\s*.*$/gim, m => (seenGQ ? '' : (seenGQ = true, m)));
+
   // normalize whitespace
-  reply = reply.replace(/\r\n/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  reply = reply.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
   return reply;
 }
 
@@ -704,7 +662,7 @@ function formatMirrorResponse(question, s) {
     if (m) {
       const title = m[1];
       const content = point.replace(/\*\*(.*?)\*\*/, '').trim();
-      html += `<div class="wisdom-point"><strong>${title}</strong>${content}</div>`;
+      html += `<div class="wisdom-point"><strong>${title}</strong>${content ? ' ' + content : ''}</div>`;
     } else {
       html += `<div class="wisdom-paragraph">${point}</div>`;
     }
@@ -746,118 +704,67 @@ function setBusy(b){
 /* ----------------- TYPEWRITER EFFECT ----------------- */
 async function typewriterEffect(htmlContent) {
   return new Promise(async (resolve) => {
-    // Create container but don't show content yet
     const container = document.createElement('div');
     container.className = 'mirror-dialogue';
     container.style.opacity = '0';
     ansDiv.appendChild(container);
     
-    // Parse HTML structure for segmented display
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
-    const sections = tempDiv.querySelector('.mirror-response').children;
+    const children = tempDiv.querySelector('.mirror-dialogue').children; // includes "You asked" + .mirror-response
     
-    let currentIndex = 0;
+    let i = 0;
+    setTimeout(() => { container.style.opacity = '1'; }, 100);
     
-    // Show container with fade-in
-    setTimeout(() => {
-      container.style.opacity = '1';
-    }, 100);
-    
-    // Function to show next section with typing effect
-    async function showNextSection() {
-      if (currentIndex >= sections.length) {
-        resolve();
-        return;
-      }
-      
-      const section = sections[currentIndex];
+    async function step() {
+      if (i >= children.length) { resolve(); return; }
+      const section = children[i];
       const sectionHTML = section.outerHTML;
-      const textContent = section.textContent || section.innerText || '';
-      
-      // Adjust speed based on content type
+      const textContent = section.textContent || '';
       const speed = getTypingSpeed(section);
-      
       await typewriteSection(container, sectionHTML, textContent, speed);
-      
-      currentIndex++;
-      
-      // Give breathing space between sections
-      if (currentIndex < sections.length) {
-        await new Promise(r => setTimeout(r, 150));
-      }
-      
-      showNextSection();
+      i++;
+      if (i < children.length) await new Promise(r => setTimeout(r, 150));
+      step();
     }
-    
-    // Start the segmented display
-    showNextSection();
+    step();
   });
 }
 
-// Determine typing speed based on content type
 function getTypingSpeed(element) {
-  if (element.classList.contains('symbols-line')) {
-    return 80; // Faster for symbols
-  }
-  if (element.classList.contains('guiding-question')) {
-    return 35; // Slower for important questions
-  }
-  if (element.classList.contains('wisdom-point')) {
-    return 25; // Medium for wisdom points
-  }
-  return 20; // Default speed
+  if (element.classList.contains('symbols-line')) return 80;
+  if (element.classList.contains('guiding-question')) return 35;
+  if (element.classList.contains('wisdom-point')) return 25;
+  if (element.classList.contains('user-question')) return 30;
+  return 20;
 }
 
-// Typewrite a single section
 function typewriteSection(container, html, textContent, speed) {
   return new Promise((resolve) => {
-    const sectionElement = document.createElement('div');
-    sectionElement.className = html.match(/class="([^"]*)"/)?.[1] || '';
-    container.appendChild(sectionElement);
-    
-    let currentChar = 0;
-    
-    function typeNextChar() {
-      if (currentChar < textContent.length) {
-        // Process characters in batches to reduce DOM operations
-        const batchSize = Math.max(1, Math.floor(speed / 8));
-        const batch = textContent.substr(currentChar, batchSize);
-        
-        // Use textContent for typing effect
-        sectionElement.textContent = textContent.substr(0, currentChar + batchSize);
-        
-        currentChar += batchSize;
-        
-        // Scroll to keep current section visible
-        sectionElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        
-        // Use requestAnimationFrame for smooth timing
-        requestAnimationFrame(() => {
-          setTimeout(typeNextChar, speed / batchSize);
-        });
+    const el = document.createElement('div');
+    el.className = html.match(/class="([^"]*)"/)?.[1] || '';
+    container.appendChild(el);
+    let n = 0;
+    (function tick(){
+      if (n < textContent.length) {
+        const batch = Math.max(1, Math.floor(speed/8));
+        el.textContent = textContent.substr(0, n + batch);
+        n += batch;
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        requestAnimationFrame(() => setTimeout(tick, speed / batch));
       } else {
-        // Replace with final HTML to preserve formatting
-        sectionElement.outerHTML = html;
+        el.outerHTML = html; // swap to final HTML (keeps formatting)
         resolve();
       }
-    }
-    
-    typeNextChar();
+    })();
   });
 }
 
+/* ----------------- ASK ----------------- */
 async function askMirror() {
   const question = qInput.value.trim();
-  if (!question) { 
-    showError("The Mirror awaits your question, traveler..."); 
-    return; 
-  }
-  
-  if (!navigator.onLine) { 
-    showError("📶 You're offline — the pond is resting. I'll be here when you return."); 
-    return; 
-  }
+  if (!question) { showError("The Mirror awaits your question, traveler..."); return; }
+  if (!navigator.onLine) { showError("📶 You're offline — the pond is resting. I'll be here when you return."); return; }
 
   setBusy(true);
   ansDiv.innerHTML = '<div style="text-align:center; padding:2rem;">🌊 The pond grows still, awaiting reflection...</div>';
@@ -868,26 +775,19 @@ async function askMirror() {
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify({ question, user: "web_visitor_" + Date.now() })
     });
-    
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
 
+    const data = await res.json();
     let reply = data.answer || data.reply || "The Mirror is silent, but the pond remembers your question.";
     reply = cleanMirrorResponse(reply);
 
     const s = parseMirrorResponse(reply);
     const html = formatMirrorResponse(question, s);
 
-    // Clear and use typewriter effect
     ansDiv.innerHTML = '';
     await typewriterEffect(html);
-    
-    setTimeout(() => {
-      const dlg = ansDiv.querySelector('.mirror-dialogue');
-      if (dlg) dlg.classList.add('visible');
-    }, 15);
 
-    setTimeout(showCommunityInvitation, 600);
+    setTimeout(showCommunityInvitation, 500);
   } catch (err) {
     console.error('Mirror error:', err);
     showError("🌀 The waters are unsettled today. The Mirror suggests you try again when the pond grows still.");
@@ -899,12 +799,7 @@ async function askMirror() {
 }
 
 /* Enter-to-send */
-qInput.addEventListener('keydown', (e) => { 
-  if (e.key === 'Enter') { 
-    e.preventDefault(); 
-    askMirror(); 
-  }
-});
+qInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); askMirror(); }});
 
 /* Focus on load (desktop) */
 window.addEventListener('load', () => {
