@@ -235,23 +235,28 @@ function fillQuestion(q){ qInput.value=q; qInput.focus(); }
 /* Off-ramp detection: accepts with/without emoji tail */
 const BOW_RX = /Traveler,\s*the reflection rests(?:\.[^\n]*)?(?:[\s\S]*?(?:🪞🌊🍃🌀))?/i;
 
-/* Cleaner: normalize, fix Traveler duplication, normalize/dedupe GQ, collapse symbols, drop inline signature */
+/* Cleaner: stronger Traveler dedupe, normalize GQ, collapse symbols, drop inline signature */
 function cleanMirrorResponse(reply){
   if(!reply) return "The Mirror is silent, but the pond remembers your question.";
 
   // Normalize whitespace
   reply = reply.replace(/\r\n/g,'\n').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n');
 
+  // Strip *Traveler*, **Traveler**, ***Traveler***
+  reply = reply.replace(/\*{1,3}\s*Traveler\s*\*{1,3}/gi,'Traveler');
+
   // Fix duplicated/fragmented "Traveler,"
   reply = reply
-    .replace(/^(\s*Traveler[,，]?\s*){2,}/im,'Traveler, ')
-    .replace(/^Traveler,\s*\*\*?Traveler\*\*?,\s*/i,'Traveler, ')
+    // line-start pairs like "Traveler, **Traveler**, "
+    .replace(/(^|\n)\s*Traveler,\s*(?:\*{1,3}\s*)?Traveler(?:\s*\*{1,3})?\s*,\s*/gi,'$1Traveler, ')
+    // anywhere: collapse multiple "Traveler," repeats
+    .replace(/(Traveler,\s*){2,}/gi,'Traveler, ')
+    // fragments split by newline/comma
     .replace(/Traveler\s*\n\s*,/gi,'Traveler, ')
     .replace(/^\s*Traveler\s*$/gim,'Traveler,')
-    .replace(/^\s*Traveler\s*,\s*/im,'Traveler, ')
-    .replace(/\*\*Traveler\*\*/gi,'Traveler');
+    .replace(/^\s*Traveler\s*,\s*/im,'Traveler, ');
 
-  // Normalize any "Guiding Question" label variants to a single canonical form
+  // Normalize any "Guiding Question" label variants
   reply = reply.replace(/\*\*\s*Guiding\s*Question\s*\*\*\s*:?/gi,'Guiding Question:');
 
   // Collapse repeated cadence symbols to one instance
@@ -265,17 +270,14 @@ function cleanMirrorResponse(reply){
   // Fix odd "1. :" artifacts
   reply = reply.replace(/(\d+)\.\s*:/g, '$1. ');
 
-  // Keep only the first "Guiding Question:" line (drop empties & later ones)
+  // Keep only the first "Guiding Question:" (drop empties & later ones)
   const lines = reply.split('\n');
   let seenGQ = false;
   const kept = [];
   for (let raw of lines){
     const line = raw.trim();
-    if (/^Guiding\s*Question\s*:\s*$/i.test(line)) {
-      // empty label → skip
-      continue;
-    }
-    if (/^Guiding\s*Question\s*:/i.test(line)) {
+    if (/^Guiding\s*Question\s*:\s*$/i.test(line)) continue; // empty label
+    if (/^Guiding\s*Question\s*:/i.test(line)){
       if (seenGQ) continue;
       seenGQ = true;
       kept.push(line);
@@ -313,10 +315,7 @@ function parseMirrorResponse(reply){
 
     if(/[🪞🌊🍃🌀]/.test(line) && line.length<=16){ s.symbols = line; continue; }
 
-    if(/^guiding\s*question\s*:/i.test(line)){
-      s.guidingQuestion = line;
-      continue;
-    }
+    if(/^guiding\s*question\s*:/i.test(line)){ s.guidingQuestion = line; continue; }
 
     if(/\*\*(.*?)\*\*/.test(line)){ s.points.push(line); continue; }
 
@@ -335,10 +334,7 @@ function formatMirrorResponse(question, s){
   if(s.greeting) html += `<div class="mirror-greeting">${s.greeting}</div>`;
 
   // Off-ramp = show only the bow, no extras
-  if (s.offRamp) {
-    html += `</div></div>`;
-    return html;
-  }
+  if (s.offRamp) { html += `</div></div>`; return html; }
 
   s.paragraphs.forEach(p=>{ if(!/\*\*(.*?)\*\*/.test(p)) html += `<div class="wisdom-paragraph">${p}</div>`; });
   s.points.forEach(point=>{
@@ -463,13 +459,8 @@ async function askMirror(){
     ansDiv.innerHTML = '';
     await typewriterEffect(html);
 
-    // Only invite on normal flow (not off-ramp)
     if (!s.offRamp) {
       setTimeout(showCommunityInvitation, 600);
-    } else {
-      // Optional: disable input to honor the rest
-      // qInput.disabled = true;
-      // askBtn.disabled = true;
     }
   }catch(err){
     console.error('Mirror error:', err);
