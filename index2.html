@@ -232,10 +232,10 @@ const ansDiv = document.getElementById('mirror-answer');
 
 function fillQuestion(q){ qInput.value=q; qInput.focus(); }
 
-/* Off-ramp detection: accept with or without emoji tail */
+/* Off-ramp detection: accepts with/without emoji tail */
 const BOW_RX = /Traveler,\s*the reflection rests(?:\.[^\n]*)?(?:[\s\S]*?(?:🪞🌊🍃🌀))?/i;
 
-/* Cleaner: normalize, fix "Traveler", collapse symbols, dedupe GQ, drop inline signature */
+/* Cleaner: normalize, fix Traveler duplication, normalize/dedupe GQ, collapse symbols, drop inline signature */
 function cleanMirrorResponse(reply){
   if(!reply) return "The Mirror is silent, but the pond remembers your question.";
 
@@ -245,35 +245,56 @@ function cleanMirrorResponse(reply){
   // Fix duplicated/fragmented "Traveler,"
   reply = reply
     .replace(/^(\s*Traveler[,，]?\s*){2,}/im,'Traveler, ')
+    .replace(/^Traveler,\s*\*\*?Traveler\*\*?,\s*/i,'Traveler, ')
     .replace(/Traveler\s*\n\s*,/gi,'Traveler, ')
     .replace(/^\s*Traveler\s*$/gim,'Traveler,')
-    .replace(/^\s*Traveler\s*,\s*/im,'Traveler, ');
+    .replace(/^\s*Traveler\s*,\s*/im,'Traveler, ')
+    .replace(/\*\*Traveler\*\*/gi,'Traveler');
 
-  // Collapse repeated cadence symbols
+  // Normalize any "Guiding Question" label variants to a single canonical form
+  reply = reply.replace(/\*\*\s*Guiding\s*Question\s*\*\*\s*:?/gi,'Guiding Question:');
+
+  // Collapse repeated cadence symbols to one instance
   const cadence = "🪞 🌊 🍃 🌀";
   const cRx = new RegExp(`(?:${cadence.split(" ").join("\\s*")})(?:\\s*(?:${cadence.split(" ").join("\\s*")}))+`,'g');
   reply = reply.replace(cRx, cadence);
 
-  // Remove any model-inlined signature line (frontend adds its own in normal flow)
+  // Remove model-inlined signature lines (frontend adds its own in normal flow)
   reply = reply.replace(/^\s*🪞\s*The Mirror has spoken\s*$/gim, '');
 
   // Fix odd "1. :" artifacts
   reply = reply.replace(/(\d+)\.\s*:/g, '$1. ');
 
-  // Keep only the first Guiding Question
+  // Keep only the first "Guiding Question:" line (drop empties & later ones)
+  const lines = reply.split('\n');
   let seenGQ = false;
-  reply = reply.replace(/(?:\*\*\s*)?guiding\s*question\s*[:：]\s*.*$/gim, m => (seenGQ ? '' : (seenGQ = true, m)));
+  const kept = [];
+  for (let raw of lines){
+    const line = raw.trim();
+    if (/^Guiding\s*Question\s*:\s*$/i.test(line)) {
+      // empty label → skip
+      continue;
+    }
+    if (/^Guiding\s*Question\s*:/i.test(line)) {
+      if (seenGQ) continue;
+      seenGQ = true;
+      kept.push(line);
+      continue;
+    }
+    kept.push(raw);
+  }
+  reply = kept.join('\n').replace(/\n{3,}/g,'\n\n').trim();
 
-  return reply.trim();
+  return reply;
 }
 
-/* Parse → off-ramp first, then structure normal content */
+/* Parse → off-ramp first, then structure */
 function parseMirrorResponse(reply){
   const bow = reply.match(BOW_RX);
   if (bow) {
     return {
       offRamp: true,
-      greeting: bow[0].trim().replace(/\n+/g,' '), // single-line bow
+      greeting: bow[0].trim().replace(/\n+/g,' '),
       points: [],
       guidingQuestion: "",
       symbols: "",
@@ -292,9 +313,7 @@ function parseMirrorResponse(reply){
 
     if(/[🪞🌊🍃🌀]/.test(line) && line.length<=16){ s.symbols = line; continue; }
 
-    if(/guiding\s*question/i.test(line)){
-      // drop empty GQ labels
-      if (/guiding\s*question\s*[:：]\s*$/i.test(line)) continue;
+    if(/^guiding\s*question\s*:/i.test(line)){
       s.guidingQuestion = line;
       continue;
     }
