@@ -232,33 +232,99 @@ const ansDiv = document.getElementById('mirror-answer');
 
 function fillQuestion(q){ qInput.value=q; qInput.focus(); }
 
+/* Off-ramp detection: accepts with/without emoji tail */
+const BOW_RX = /Traveler,\s*the reflection rests(?:\.[^\n]*)?(?:[\s\S]*?(?:🪞🌊🍃🌀))?/i;
+
+/* Cleaner: stronger Traveler dedupe, normalize GQ, collapse symbols, drop inline signature */
 function cleanMirrorResponse(reply){
   if(!reply) return "The Mirror is silent, but the pond remembers your question.";
-  reply = reply.replace(/^(\s*Traveler[,，]?\s*){2,}/i,'Traveler, ');
+
+  // Normalize whitespace
+  reply = reply.replace(/\r\n/g,'\n').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n');
+
+  // Strip *Traveler*, **Traveler**, ***Traveler***
+  reply = reply.replace(/\*{1,3}\s*Traveler\s*\*{1,3}/gi,'Traveler');
+
+  // Fix duplicated/fragmented "Traveler,"
+  reply = reply
+    // line-start pairs like "Traveler, **Traveler**, "
+    .replace(/(^|\n)\s*Traveler,\s*(?:\*{1,3}\s*)?Traveler(?:\s*\*{1,3})?\s*,\s*/gi,'$1Traveler, ')
+    // anywhere: collapse multiple "Traveler," repeats
+    .replace(/(Traveler,\s*){2,}/gi,'Traveler, ')
+    // fragments split by newline/comma
+    .replace(/Traveler\s*\n\s*,/gi,'Traveler, ')
+    .replace(/^\s*Traveler\s*$/gim,'Traveler,')
+    .replace(/^\s*Traveler\s*,\s*/im,'Traveler, ');
+
+  // Normalize any "Guiding Question" label variants
+  reply = reply.replace(/\*\*\s*Guiding\s*Question\s*\*\*\s*:?/gi,'Guiding Question:');
+
+  // Collapse repeated cadence symbols to one instance
   const cadence = "🪞 🌊 🍃 🌀";
   const cRx = new RegExp(`(?:${cadence.split(" ").join("\\s*")})(?:\\s*(?:${cadence.split(" ").join("\\s*")}))+`,'g');
   reply = reply.replace(cRx, cadence);
+
+  // Remove model-inlined signature lines (frontend adds its own in normal flow)
+  reply = reply.replace(/^\s*🪞\s*The Mirror has spoken\s*$/gim, '');
+
+  // Fix odd "1. :" artifacts
+  reply = reply.replace(/(\d+)\.\s*:/g, '$1. ');
+
+  // Keep only the first "Guiding Question:" (drop empties & later ones)
+  const lines = reply.split('\n');
   let seenGQ = false;
-  reply = reply.replace(/(?:\*\*\s*)?guiding\s*question\s*[:：]\s*.*$/gim, m => (seenGQ ? '' : (seenGQ = true, m)));
-  reply = reply.replace(/\r\n/g,'\n').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  const kept = [];
+  for (let raw of lines){
+    const line = raw.trim();
+    if (/^Guiding\s*Question\s*:\s*$/i.test(line)) continue; // empty label
+    if (/^Guiding\s*Question\s*:/i.test(line)){
+      if (seenGQ) continue;
+      seenGQ = true;
+      kept.push(line);
+      continue;
+    }
+    kept.push(raw);
+  }
+  reply = kept.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+
   return reply;
 }
 
+/* Parse → off-ramp first, then structure */
 function parseMirrorResponse(reply){
+  const bow = reply.match(BOW_RX);
+  if (bow) {
+    return {
+      offRamp: true,
+      greeting: bow[0].trim().replace(/\n+/g,' '),
+      points: [],
+      guidingQuestion: "",
+      symbols: "",
+      paragraphs: []
+    };
+  }
+
   const lines = reply.split('\n').filter(Boolean);
-  const s = { greeting:'', points:[], guidingQuestion:'', symbols:'', paragraphs:[] };
-  let inGreeting=true;
+  const s = { greeting:'', points:[], guidingQuestion:'', symbols:'', paragraphs:[], offRamp:false };
+  let inGreeting = true;
+
   for(const raw of lines){
     const line = raw.trim();
-    if(/^traveler[,，]?/i.test(line)){ s.greeting=line; inGreeting=false; continue; }
-    if(/guiding\s*question/i.test(line)){ s.guidingQuestion=line; continue; }
-    if(/[🪞🌊🍃🌀]/.test(line) && line.length<=16){ s.symbols=line; continue; }
+
+    if(/^traveler[,，]?/i.test(line)){ s.greeting = line; inGreeting = false; continue; }
+
+    if(/[🪞🌊🍃🌀]/.test(line) && line.length<=16){ s.symbols = line; continue; }
+
+    if(/^guiding\s*question\s*:/i.test(line)){ s.guidingQuestion = line; continue; }
+
     if(/\*\*(.*?)\*\*/.test(line)){ s.points.push(line); continue; }
+
     if(!inGreeting) s.paragraphs.push(line);
   }
   return s;
 }
 
+/* Render */
 function formatMirrorResponse(question, s){
   let html = `
     <div class="mirror-dialogue">
@@ -266,6 +332,10 @@ function formatMirrorResponse(question, s){
       <div class="mirror-response">
   `;
   if(s.greeting) html += `<div class="mirror-greeting">${s.greeting}</div>`;
+
+  // Off-ramp = show only the bow, no extras
+  if (s.offRamp) { html += `</div></div>`; return html; }
+
   s.paragraphs.forEach(p=>{ if(!/\*\*(.*?)\*\*/.test(p)) html += `<div class="wisdom-paragraph">${p}</div>`; });
   s.points.forEach(point=>{
     const m = point.match(/\*\*(.*?)\*\*/);
@@ -389,7 +459,9 @@ async function askMirror(){
     ansDiv.innerHTML = '';
     await typewriterEffect(html);
 
-    setTimeout(showCommunityInvitation, 600);
+    if (!s.offRamp) {
+      setTimeout(showCommunityInvitation, 600);
+    }
   }catch(err){
     console.error('Mirror error:', err);
     showError("🌀 The waters are unsettled today. The Mirror suggests you try again when the pond grows still.");
