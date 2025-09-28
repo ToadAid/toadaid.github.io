@@ -232,28 +232,48 @@ const ansDiv = document.getElementById('mirror-answer');
 
 function fillQuestion(q){ qInput.value=q; qInput.focus(); }
 
-/* NEW: detect server off-ramp final bow */
-const BOW_RX = /Traveler,\s*the reflection rests\.[\s\S]*?(?:🪞🌊🍃🌀)?/i;
+/* Off-ramp detection: accept with or without emoji tail */
+const BOW_RX = /Traveler,\s*the reflection rests(?:\.[^\n]*)?(?:[\s\S]*?(?:🪞🌊🍃🌀))?/i;
 
+/* Cleaner: normalize, fix "Traveler", collapse symbols, dedupe GQ, drop inline signature */
 function cleanMirrorResponse(reply){
   if(!reply) return "The Mirror is silent, but the pond remembers your question.";
-  reply = reply.replace(/^(\s*Traveler[,，]?\s*){2,}/i,'Traveler, ');
+
+  // Normalize whitespace
+  reply = reply.replace(/\r\n/g,'\n').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n');
+
+  // Fix duplicated/fragmented "Traveler,"
+  reply = reply
+    .replace(/^(\s*Traveler[,，]?\s*){2,}/im,'Traveler, ')
+    .replace(/Traveler\s*\n\s*,/gi,'Traveler, ')
+    .replace(/^\s*Traveler\s*$/gim,'Traveler,')
+    .replace(/^\s*Traveler\s*,\s*/im,'Traveler, ');
+
+  // Collapse repeated cadence symbols
   const cadence = "🪞 🌊 🍃 🌀";
-  const cRx = new RegExp(`(?:${cadence.split(" ").join("\\\\s*")})(?:\\s*(?:${cadence.split(" ").join("\\\\s*")}))+`,'g');
+  const cRx = new RegExp(`(?:${cadence.split(" ").join("\\s*")})(?:\\s*(?:${cadence.split(" ").join("\\s*")}))+`,'g');
   reply = reply.replace(cRx, cadence);
+
+  // Remove any model-inlined signature line (frontend adds its own in normal flow)
+  reply = reply.replace(/^\s*🪞\s*The Mirror has spoken\s*$/gim, '');
+
+  // Fix odd "1. :" artifacts
+  reply = reply.replace(/(\d+)\.\s*:/g, '$1. ');
+
+  // Keep only the first Guiding Question
   let seenGQ = false;
   reply = reply.replace(/(?:\*\*\s*)?guiding\s*question\s*[:：]\s*.*$/gim, m => (seenGQ ? '' : (seenGQ = true, m)));
-  reply = reply.replace(/\r\n/g,'\n').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
-  return reply;
+
+  return reply.trim();
 }
 
+/* Parse → off-ramp first, then structure normal content */
 function parseMirrorResponse(reply){
-  // Off-ramp check first
   const bow = reply.match(BOW_RX);
   if (bow) {
     return {
       offRamp: true,
-      greeting: bow[0].trim(),
+      greeting: bow[0].trim().replace(/\n+/g,' '), // single-line bow
       points: [],
       guidingQuestion: "",
       symbols: "",
@@ -263,18 +283,30 @@ function parseMirrorResponse(reply){
 
   const lines = reply.split('\n').filter(Boolean);
   const s = { greeting:'', points:[], guidingQuestion:'', symbols:'', paragraphs:[], offRamp:false };
-  let inGreeting=true;
+  let inGreeting = true;
+
   for(const raw of lines){
     const line = raw.trim();
-    if(/^traveler[,，]?/i.test(line)){ s.greeting=line; inGreeting=false; continue; }
-    if(/guiding\s*question/i.test(line)){ s.guidingQuestion=line; continue; }
-    if(/[🪞🌊🍃🌀]/.test(line) && line.length<=16){ s.symbols=line; continue; }
+
+    if(/^traveler[,，]?/i.test(line)){ s.greeting = line; inGreeting = false; continue; }
+
+    if(/[🪞🌊🍃🌀]/.test(line) && line.length<=16){ s.symbols = line; continue; }
+
+    if(/guiding\s*question/i.test(line)){
+      // drop empty GQ labels
+      if (/guiding\s*question\s*[:：]\s*$/i.test(line)) continue;
+      s.guidingQuestion = line;
+      continue;
+    }
+
     if(/\*\*(.*?)\*\*/.test(line)){ s.points.push(line); continue; }
+
     if(!inGreeting) s.paragraphs.push(line);
   }
   return s;
 }
 
+/* Render */
 function formatMirrorResponse(question, s){
   let html = `
     <div class="mirror-dialogue">
@@ -283,7 +315,7 @@ function formatMirrorResponse(question, s){
   `;
   if(s.greeting) html += `<div class="mirror-greeting">${s.greeting}</div>`;
 
-  // If off-ramp, render only the bow and stop
+  // Off-ramp = show only the bow, no extras
   if (s.offRamp) {
     html += `</div></div>`;
     return html;
