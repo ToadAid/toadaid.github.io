@@ -203,7 +203,7 @@ footer a{color:#ffd23f;font-weight:800}
 </section>
 
 <footer>
-  <p>“One scroll, one light. One leaf, one vow.”</p>
+  <p>"One scroll, one light. One leaf, one vow."</p>
   <p>🐸 Join us:
     <a href="https://t.me/Toadgang" target="_blank">Telegram</a> |
     <a href="https://github.com/ToadAid" target="_blank">GitHub</a> |
@@ -432,21 +432,29 @@ function typewriteSection(container, html, text, speed){
   });
 }
 
-/* Ask */
+/* Ask - WITH TIMEOUT FIX */
 async function askMirror(){
   const question = qInput.value.trim();
   if(!question){ showError("The Mirror awaits your question, traveler..."); return; }
-  if(!navigator.onLine){ showError("📶 You’re offline — the pond is resting. I’ll be here when you return."); return; }
+  if(!navigator.onLine){ showError("📶 You're offline — the pond is resting. I'll be here when you return."); return; }
 
   setBusy(true);
   ansDiv.innerHTML = '<div style="text-align:center;padding:1.1rem">🌊 The pond grows still, awaiting reflection...</div>';
 
+  let timeoutId;
   try{
+    const controller = new AbortController();
+    timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
+
     const res = await fetch(MIRROR_API, {
       method:'POST',
       headers:{ "Content-Type":"application/json", "Accept":"application/json" },
-      body: JSON.stringify({ question, user: "web_visitor_" + Date.now() })
+      body: JSON.stringify({ question, user: "web_visitor_" + Date.now() }),
+      signal: controller.signal  // Connect abort controller
     });
+
+    clearTimeout(timeoutId); // Clear timeout if request succeeds
+
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
@@ -463,8 +471,14 @@ async function askMirror(){
       setTimeout(showCommunityInvitation, 600);
     }
   }catch(err){
+    clearTimeout(timeoutId); // Clear timeout in catch too
     console.error('Mirror error:', err);
-    showError("🌀 The waters are unsettled today. The Mirror suggests you try again when the pond grows still.");
+    
+    if (err.name === 'AbortError') {
+      showError("🌀 The Mirror is taking longer to reflect today. The pond suggests patience, or try a simpler question.");
+    } else {
+      showError("🌀 The waters are unsettled today. The Mirror suggests you try again when the pond grows still.");
+    }
   }finally{
     setBusy(false);
     qInput.value=''; if(window.matchMedia('(pointer:fine)').matches) qInput.focus();
