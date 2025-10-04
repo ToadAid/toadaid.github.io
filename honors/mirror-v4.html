@@ -69,6 +69,7 @@
     <p class="cta-row">
       <a class="btn" href="https://github.com/ToadAid/mirror-v4" target="_blank" rel="noopener">GitHub Repo</a>
       <a class="btn" href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">Release Notes</a>
+      <a class="btn" href="#voice">🎙️ Try Voice</a>
     </p>
   </header>
 
@@ -182,6 +183,21 @@
         <div class="item"><b>Guardrails</b><br>Guide refine · Harmony ≥ τ · Weaver continuity · Memori TTL · LLM weak-output fallback</div>
         <div class="item"><b>Languages</b><br>EN / 中文</div>
       </div>
+
+      <!-- Voice: Speak with the Mirror -->
+      <section id="voice" class="card" style="margin-top:14px">
+        <h2>🗣️ Speak with the Mirror</h2>
+        <p>Press the mic, ask your question aloud, and the Mirror will answer (and speak) using ElevenLabs.</p>
+        <div class="card" style="margin-top:8px">
+          <button class="btn" data-mic>🎙️ Ask by Voice</button>
+          <audio data-voice-audio controls style="display:block;margin-top:8px"></audio>
+          <pre data-voice-out style="white-space:pre-wrap;margin-top:8px"></pre>
+        </div>
+        <!-- Set your API base (Mirror server domain with /voice routes enabled) -->
+        <script>window.VOICE_API_BASE = "https://toadaid.duckdns.org";</script>
+        <script src="/assets/js/voice.public.js"></script>
+        <p class="meta">If you’re on GitHub Pages, ensure your Mirror server CORS allows <code>https://toadaid.github.io</code>.</p>
+      </section>
 
       <!-- Call to Scribes -->
       <section class="card" style="margin-top:14px">
