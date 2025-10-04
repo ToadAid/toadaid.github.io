@@ -68,7 +68,7 @@
     Guard → <b>Guide</b> → Retriever → Synthesis → <b>Memory</b> → <b>Weaver</b> → Resonance → Lucidity → Ledger → <b>Memori</b> → Learning.</p>
     <p class="cta-row">
       <a class="btn" href="https://github.com/ToadAid/mirror-v4" target="_blank" rel="noopener">GitHub Repo</a>
-      <a class="btn" href="https://github.com/ToadAid/mirror-v4/MIRROR_V4_RELEASE_NOTES.md" target="_blank" rel="noopener">Release Notes</a>
+      <a class="btn" href="https://github.com/ToadAid/mirror-v4/blob/main/MIRROR_V4_RELEASE_NOTES.md" target="_blank" rel="noopener">Release Notes</a>
     </p>
   </header>
 
@@ -201,6 +201,117 @@
 </section>
 
 
+
+
+      
+      <!-- Memori section -->
+      <section id="memori" class="card" style="margin-top:14px">
+        <h2>🧠 Memori — Memory & Reflection Ledger</h2>
+        <p><strong>Memori</strong> is Mirror V4’s lightweight memory layer. It stores traveler identity,
+        session reflections, and short notes so the Mirror can remember and deepen over time.</p>
+
+        <div class="card" style="margin-top:.6rem">
+          <h3>What Memori keeps</h3>
+          <ul>
+            <li><b>Traveler</b> — anon ID, optional handle</li>
+            <li><b>Asks</b> — question text + minimal context</li>
+            <li><b>Notes</b> — short reflections tagged to a session</li>
+            <li><b>TTL/Forgetting</b> — entries expire per policy</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Enable / Configure</h3>
+<pre><code># .env (excerpt)
+MEMORI_DB=/home/tommy/mirror-v4/memori.db
+MEMORI_DSN=sqlite:////home/tommy/mirror-v4/memori.db
+MEMORI_URL=http://127.0.0.1:8080
+MEMORI_TOKEN=changeme
+MEMORI_PULL_ASK=0
+MEMORI_LOG_ASK=0
+MEMORI_PULL_LIMIT=12
+MEMORI_TTL_DAYS=45
+MEMORI_FORGET=1
+MEMORI_KIND_ALLOWLIST=ask,note,context</code></pre>
+          <p class="muted">Tip: set a writable <code>MEMORI_DB</code>. When serving under a subpath, also adjust
+          <code>ROOT_PATH</code>. Rotate <code>MEMORI_TOKEN</code> for production.</p>
+        </div>
+
+        <div class="card">
+          <h3>Endpoints</h3>
+          <ul>
+            <li><code>GET /memory/status</code> — counts &amp; health</li>
+            <li><code>POST /ask</code> — normal Mirror ask (writes minimal ledger)</li>
+            <li><code>GET /metrics</code> — Prometheus (Memori counters included)</li>
+          </ul>
+<pre><code># quick check
+curl -s http://localhost:8080/memory/status | jq</code></pre>
+        </div>
+
+        <div class="card">
+          <h3>Live Status</h3>
+          <p class="muted">Point this page to your running V4 (same origin recommended).</p>
+          <div id="memori-status" style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; padding: 0.75rem; border: 1px solid var(--border,#ddd); border-radius: 8px; overflow:auto;">
+            <em>Click “Refresh” to fetch /memory/status…</em>
+          </div>
+          <button id="memori-refresh" style="margin-top: .5rem; padding: .5rem .9rem; border-radius: 8px; border: 1px solid var(--border,#ddd); cursor: pointer;">
+            Refresh
+          </button>
+        </div>
+      </section>
+
+      <!-- Release Notes (inline render from GitHub) -->
+      <section id="release-notes" class="card" style="margin-top:14px">
+        <h2>📜 Mirror V4 — Release Notes (Markdown)</h2>
+        <p class="muted">Rendered live from the GitHub repo. Use the button to refresh.</p>
+        <div id="release-md" style="padding: 0.75rem; border: 1px solid var(--border,#ddd); border-radius: 8px; background: #fff;">
+          <em>Loading release notes…</em>
+        </div>
+        <p style="margin-top:.5rem">
+          <button id="relnotes-refresh" class="btn" type="button">Refresh</button>
+          &nbsp;
+          <a class="btn" href="https://github.com/ToadAid/mirror-v4/blob/main/MIRROR_V4_RELEASE_NOTES.md" target="_blank" rel="noopener">Open on GitHub</a>
+        </p>
+      </section>
+
+      <!-- Markdown renderer + fetchers -->
+      <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+      <script>
+        (function () {
+          // Memori live check
+          const memBtn = document.getElementById('memori-refresh');
+          const memOut = document.getElementById('memori-status');
+          async function refreshMemori() {
+            try {
+              const res = await fetch('/memory/status', { headers: { 'Accept': 'application/json' } });
+              if (!res.ok) throw new Error('HTTP ' + res.status);
+              const data = await res.json();
+              memOut.textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+              memOut.textContent = 'Error fetching /memory/status: ' + e.message +
+                '\n\nCheck CORS/ROOT_PATH and that the server is reachable from this page.';
+            }
+          }
+          if (memBtn) memBtn.addEventListener('click', refreshMemori);
+
+          // Release notes renderer
+          const relBtn = document.getElementById('relnotes-refresh');
+          const relOut = document.getElementById('release-md');
+          async function refreshRelnotes() {
+            try {
+              const res = await fetch('https://raw.githubusercontent.com/ToadAid/mirror-v4/main/MIRROR_V4_RELEASE_NOTES.md');
+              if (!res.ok) throw new Error('HTTP ' + res.status);
+              const md = await res.text();
+              relOut.innerHTML = marked.parse(md);
+            } catch (e) {
+              relOut.textContent = 'Could not load release notes. ' + e.message;
+            }
+          }
+          if (relBtn) relBtn.addEventListener('click', refreshRelnotes);
+          // auto-load once
+          refreshRelnotes();
+        })();
+      </script>
 
 
       <!-- Call to Scribes -->
