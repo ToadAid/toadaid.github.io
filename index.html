@@ -444,7 +444,7 @@ async function askMirror(){
   let timeoutId;
   try{
     const controller = new AbortController();
-    timeoutId = setTimeout(() => controller.abort(), 90000); // 120-second timeout
+    timeoutId = setTimeout(() => controller.abort(), 180000); // 180-second timeout
 
     const res = await fetch(MIRROR_API, {
       method:'POST',
