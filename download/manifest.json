@@ -1,0 +1,36 @@
+{
+  "version": "4.0.0",
+  "title": "Mirror V4 — The Living Scrolls Engine",
+  "released": "2025-10-08",
+  "build": "community",
+  "files": {
+    "installer": {
+      "name": "MirrorV4-Setup-4.0.0.zip",
+      "url": "https://toadaid.github.io/download/MirrorV4-Setup-4.0.0.zip",
+      "sha256": "61dd9f44048c722d18823b885a77f84cf622516435fb93729df18aedbd128f4a",
+      "size": "≈310 MB",
+      "notes": "Includes Start Menu and desktop shortcuts. Installs to C:\\Mirror-V4."
+    },
+    "portable": {
+      "name": "MirrorV4-Portable-4.0.0.zip",
+      "url": "https://toadaid.github.io/download/MirrorV4-Portable-4.0.0.zip",
+      "sha256": "82da82a83f97e48e553b45f89f7f33a27de9e440643313aed9cbd0b7d2ef377c",
+      "size": "≈280 MB",
+      "notes": "No installation required — unzip anywhere and run MirrorV4.exe."
+    }
+  },
+  "requirements": {
+    "os": "Windows 10 or later",
+    "llm": "Optional — LM Studio with meta-llama-3.1-8b-instruct",
+    "disk": "≥ 600 MB free"
+  },
+  "links": {
+    "repo": "https://github.com/ToadAid/mirror-v4",
+    "releaseNotes": "https://github.com/ToadAid/mirror-v4/blob/main/MIRROR_V4_RELEASE_NOTES.md",
+    "website": "https://toadaid.github.io/download/"
+  },
+  "credits": {
+    "author": "ToadAid Community",
+    "message": "One path. One flame. Many hands. 🪞🌊🍃"
+  }
+}
