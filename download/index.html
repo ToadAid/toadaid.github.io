@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Download · Mirror V4 | ToadAid</title>
+<meta name="description" content="Download Mirror V4 for Windows. Community build by ToadAid.">
+
+<!-- Social cards -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Download · Mirror V4">
+<meta property="og:description" content="Windows installer and portable zip for Mirror V4.">
+<meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-v4.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Download · Mirror V4">
+<meta name="twitter:description" content="Windows installer and portable zip for Mirror V4.">
+<meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-v4.jpg">
+
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+
+<!-- Core styles -->
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+
+<style>
+  :root{ --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b; --ring:rgba(0,0,0,.08); }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:48px 20px;text-align:center}
+  header h1{margin:0 0 6px;font-size:clamp(1.4rem,3vw,2.2rem)}
+  header p{margin:0;opacity:.92}
+  nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
+  nav.breadcrumb a{opacity:.9}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 18px 56px}
+  .cta-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0 0}
+  .card{background:var(--paper);border-radius:16px;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);padding:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+  .meta{color:var(--muted);font-size:.95rem;margin:.4rem 0 1rem}
+  h2{margin:18px 0 8px}
+  h3{margin:14px 0 6px}
+  ul{margin:0 0 0 18px}
+  code, pre{background:#fff9e8;border:1px solid #efe3b4;border-radius:6px;padding:2px 6px}
+  footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
+  .btn{
+    display:inline-block;padding:10px 16px;background:#355e3b;color:#fff;border-radius:8px;
+    font-size:.95rem;text-decoration:none;transition:background .2s ease-in-out
+  }
+  .btn:hover{background:#244d30;text-decoration:none}
+  .pill {display:inline-block;background:#e9efe9;border:1px solid #d7e6d9;color:#2f5937;border-radius:999px;padding:2px 8px;font-size:.82rem;margin-right:6px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+</style>
+</head>
+<body>
+  <header>
+    <h1>🪞 Mirror V4 — Download</h1>
+    <p>Community build by <b>ToadAid</b>. “AI need not be only a tool.”</p>
+    <p class="cta-row">
+      <a class="btn" href="https://github.com/ToadAid/mirror-v4" target="_blank" rel="noopener">GitHub Repo</a>
+      <a class="btn" href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">All Releases</a>
+    </p>
+  </header>
+
+  <nav class="breadcrumb"><a href="/">← Home</a> · <a href="/honors/">Honors</a></nav>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Get Mirror V4 (Windows)</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Installer (recommended)</h3>
+          <p class="meta">Default path: <code>C:\Mirror-V4</code></p>
+          <p><a class="btn" href="https://github.com/ToadAid/mirror-v4/releases/download/v4.0.0/MirrorV4-Setup-4.0.0.exe">Download Installer</a></p>
+          <ul>
+            <li>Creates Start Menu & desktop shortcuts</li>
+            <li>Bundles web UI + prompts + scrolls</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Portable (zip)</h3>
+          <p class="meta">No install — unzip & run</p>
+          <p><a class="btn" href="https://github.com/ToadAid/mirror-v4/releases/download/v4.0.0/MirrorV4-Portable-4.0.0.zip">Download Zip</a></p>
+          <ul>
+            <li>Unzip anywhere</li>
+            <li>Run <code>MirrorV4.exe</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="meta">Requires Windows 10+ · ~300–600MB free disk</p>
+      <p>
+        <span class="pill">Optional</span> For local LLM responses install
+        <a href="https://lmstudio.ai/" target="_blank" rel="noopener">LM Studio</a> and download
+        <code class="mono">meta-llama-3.1-8b-instruct</code>.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Quick Start</h2>
+      <ol>
+        <li>Install to <code>C:\Mirror-V4</code> (or unzip the portable).</li>
+        <li>(Optional) In LM Studio: download <code>meta-llama-3.1-8b-instruct</code> and start the local server at <code>http://127.0.0.1:1234/v1</code>.</li>
+        <li>Launch Mirror V4 (shortcut or <code>MirrorV4.exe</code>).</li>
+        <li>Open your browser to <code>http://127.0.0.1:8080/web/index.html</code>.</li>
+      </ol>
+      <p class="meta">Tip: If the page is blank, make sure the server is running and LM Studio (if used) is on.</p>
+    </section>
+
+    <section class="card">
+      <h2>Configuration (.env)</h2>
+<pre><code>API_KEY=supersecret
+HOST=127.0.0.1
+PORT=8080
+LOG_LEVEL=info
+
+WEB_DIR=C:\Mirror-V4\web
+PROMPTS_DIR=C:\Mirror-V4\prompts
+SCROLLS_DIR=C:\Mirror-V4\lore-scrolls
+
+LLM_PROVIDER=lmstudio
+LLM_BASE_URL=http://127.0.0.1:1234/v1
+LLM_MODEL=meta-llama-3.1-8b-instruct</code></pre>
+      <p class="meta">Installer drops a prefilled <code>.env</code> in the app folder. Edit if you change ports/paths.</p>
+    </section>
+
+    <section class="card">
+      <h2>Verify Downloads (SHA-256)</h2>
+      <pre class="mono">MirrorV4-Setup-4.0.0.exe    &lt;paste-sha256-here&gt;
+MirrorV4-Portable-4.0.0.zip &lt;paste-sha256-here&gt;</pre>
+      <p>PowerShell:</p>
+      <pre class="mono">Get-FileHash .\MirrorV4-Setup-4.0.0.exe -Algorithm SHA256</pre>
+    </section>
+
+    <section class="card">
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li><b>Nothing opens?</b> Browse to <code>http://127.0.0.1:8080/web/index.html</code>.</li>
+        <li><b>Port 8080 in use?</b> Close other instances or change <code>PORT</code> in <code>.env</code>.</li>
+        <li><b>Blank page?</b> Ensure the server is running; check <code>.env</code> paths to <code>web/</code>, <code>prompts/</code>, <code>lore-scrolls/</code>.</li>
+        <li><b>No LLM replies?</b> Start LM Studio and confirm <code>LLM_BASE_URL</code> is reachable.</li>
+      </ul>
+    </section>
+
+    <footer>🐸📜 One path. One flame. Many hands.</footer>
+  </main>
+</body>
+</html>
