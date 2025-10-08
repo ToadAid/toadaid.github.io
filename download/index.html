@@ -64,7 +64,7 @@
     <p>Community build by <b>ToadAid</b>. “AI need not be only a tool.”</p>
     <p class="cta-row">
       <a class="btn" href="https://github.com/ToadAid/mirror-v4" target="_blank" rel="noopener">GitHub Repo</a>
-      <a class="btn" href="https://github.com/ToadAid/mirror-v4/MIRROR_V4_RELEASE_NOTES.md" target="_blank" rel="noopener">All Releases</a>
+      <a class="btn" href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">All Releases</a>
     </p>
   </header>
 
@@ -73,30 +73,16 @@
   <main class="wrap">
     <section class="card">
       <h2>Get Mirror V4 (Windows)</h2>
-      <div class="grid">
+      <div id="dl-grid" class="grid" aria-live="polite">
         <div class="card">
-          <h3>Installer (recommended)</h3>
-          <p class="meta">Default path: <code>C:\Mirror-V4</code></p>
-          <p><a class="btn" href="https://toadaid.github.io/download/MirrorV4-Setup-4.0.0.zip">Download Installer</a></p>
-          <ul>
-            <li>Creates Start Menu & desktop shortcuts</li>
-            <li>Bundles web UI + prompts + scrolls</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Portable (zip)</h3>
-          <p class="meta">No install — unzip & run</p>
-          <p><a class="btn" href="https://toadaid.github.io/download/MirrorV4-4.0.0.zip">Download Zip</a></p>
-          <ul>
-            <li>Unzip anywhere</li>
-            <li>Run <code>MirrorV4.exe</code></li>
-          </ul>
+          <h3>Loading latest release…</h3>
+          <p class="meta">If this stalls, use <a href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">Releases</a>.</p>
         </div>
       </div>
 
       <p class="meta">Requires Windows 10+ · ~300–600MB free disk</p>
       <p>
-        <span class="pill">Optional</span> For local LLM responses install
+        <span class="pill">Optional</span> For local LLM replies install
         <a href="https://lmstudio.ai/" target="_blank" rel="noopener">LM Studio</a> and download
         <code class="mono">meta-llama-3.1-8b-instruct</code>.
       </p>
@@ -132,10 +118,17 @@ LLM_MODEL=meta-llama-3.1-8b-instruct</code></pre>
 
     <section class="card">
       <h2>Verify Downloads (SHA-256)</h2>
-      <pre class="mono">MirrorV4-Setup-4.0.0.exe    &lt;paste-sha256-here&gt;
-MirrorV4-Portable-4.0.0.zip &lt;paste-sha256-here&gt;</pre>
+      <pre id="sha-box" class="mono">Fetching checksums (if provided in release notes)…</pre>
       <p>PowerShell:</p>
       <pre class="mono">Get-FileHash .\MirrorV4-Setup-4.0.0.exe -Algorithm SHA256</pre>
+    </section>
+
+    <section class="card">
+      <h2>Release Notes</h2>
+      <div id="release-md"><em>Loading MIRROR_V4_RELEASE_NOTES.md…</em></div>
+      <p style="margin-top:.5rem">
+        <a class="btn" href="https://github.com/ToadAid/mirror-v4/blob/main/MIRROR_V4_RELEASE_NOTES.md" target="_blank" rel="noopener">Open on GitHub</a>
+      </p>
     </section>
 
     <section class="card">
@@ -150,5 +143,86 @@ MirrorV4-Portable-4.0.0.zip &lt;paste-sha256-here&gt;</pre>
 
     <footer>🐸📜 One path. One flame. Many hands.</footer>
   </main>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <script>
+    // ---------- Load latest release & build cards ----------
+    async function loadLatest() {
+      const grid = document.getElementById('dl-grid');
+      try {
+        const resp = await fetch('https://api.github.com/repos/ToadAid/mirror-v4/releases/latest', {
+          headers: { 'Accept': 'application/vnd.github+json' }
+        });
+        if (!resp.ok) throw new Error('GitHub API ' + resp.status);
+        const rel = await resp.json();
+        const assets = (rel.assets || []);
+
+        const installer = assets.find(a => /MirrorV4-Setup-.*\.exe$/i.test(a.name));
+        const portable  = assets.find(a => /MirrorV4-Portable-.*\.zip$/i.test(a.name));
+
+        function card(title, meta, url, bullets) {
+          return `
+            <div class="card">
+              <h3>${title}</h3>
+              <p class="meta">${meta}</p>
+              <p><a class="btn" href="${url}">Download</a></p>
+              <ul>${bullets.map(li => `<li>${li}</li>`).join('')}</ul>
+            </div>`;
+        }
+
+        const parts = [];
+        if (installer) {
+          parts.push(card(
+            'Installer (recommended)',
+            'Default path: C:\\Mirror-V4',
+            installer.browser_download_url,
+            ['Creates Start Menu & desktop shortcuts','Bundles web UI + prompts + scrolls']
+          ));
+        }
+        if (portable) {
+          parts.push(card(
+            'Portable (zip)',
+            'No install — unzip & run',
+            portable.browser_download_url,
+            ['Unzip anywhere','Run <code>MirrorV4.exe</code>']
+          ));
+        }
+
+        grid.innerHTML = parts.length
+          ? parts.join('')
+          : `<div class="card">No assets found in the latest release. See <a href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">all releases</a>.</div>`;
+      } catch (e) {
+        grid.innerHTML = `<div class="card">Could not load latest release: ${e.message}. Try the <a href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">Releases page</a>.</div>`;
+      }
+    }
+
+    // ---------- Release notes with fallback ----------
+    async function loadRelnotes() {
+      const out = document.getElementById('release-md');
+      const urls = [
+        'https://raw.githubusercontent.com/ToadAid/mirror-v4/main/MIRROR_V4_RELEASE_NOTES.md',
+        'https://cdn.jsdelivr.net/gh/ToadAid/mirror-v4@main/MIRROR_V4_RELEASE_NOTES.md'
+      ];
+      for (const u of urls) {
+        try {
+          const r = await fetch(u + '?_=' + Date.now());
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          const md = await r.text();
+          out.innerHTML = marked.parse(md);
+          // optional: try to scrape SHA lines into the checksum box
+          const shaBox = document.getElementById('sha-box');
+          const lines = md.split('\n').filter(x => /MirrorV4-(Setup|Portable)-.*\.(exe|zip)\s+([a-f0-9]{64})/i.test(x));
+          if (lines.length) shaBox.textContent = lines.join('\n');
+          return;
+        } catch (e) { /* try next */ }
+      }
+      out.innerHTML = '<div class="meta">Could not load release notes. Open on GitHub above.</div>';
+    }
+
+    loadLatest();
+    loadRelnotes();
+  </script>
 </body>
 </html>
