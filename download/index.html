@@ -64,7 +64,7 @@
     <p>Community build by <b>ToadAid</b>. “AI need not be only a tool.”</p>
     <p class="cta-row">
       <a class="btn" href="https://github.com/ToadAid/mirror-v4" target="_blank" rel="noopener">GitHub Repo</a>
-      <a class="btn" href="https://github.com/ToadAid/mirror-v4/" target="_blank" rel="noopener">All Releases</a>
+      <a class="btn" href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">All Releases</a>
     </p>
   </header>
 
@@ -73,10 +73,28 @@
   <main class="wrap">
     <section class="card">
       <h2>Get Mirror V4 (Windows)</h2>
-      <div id="dl-grid" class="grid" aria-live="polite">
-        <div class="card">
-          <h3>Loading latest release…</h3>
-          <p class="meta">If this stalls, use <a href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">Releases</a>.</p>
+
+      <!-- Static buttons (work immediately with your hosted files) -->
+      <div id="dl-grid" class="grid">
+        <div class="card" id="installer-card">
+          <h3>Installer (recommended)</h3>
+          <p class="meta">Default path: <code>C:\Mirror-V4</code></p>
+          <!-- Update filenames if yours differ -->
+          <p><a class="btn" id="installer-link" href="/download/MirrorV4-Setup-4.0.0.exe">Download Installer</a></p>
+          <ul>
+            <li>Creates Start Menu & desktop shortcuts</li>
+            <li>Bundles web UI + prompts + scrolls</li>
+          </ul>
+        </div>
+
+        <div class="card" id="portable-card">
+          <h3>Portable (zip)</h3>
+          <p class="meta">No install — unzip & run</p>
+          <p><a class="btn" id="portable-link" href="/download/MirrorV4-Portable-4.0.0.zip">Download Zip</a></p>
+          <ul>
+            <li>Unzip anywhere</li>
+            <li>Run <code>MirrorV4.exe</code></li>
+          </ul>
         </div>
       </div>
 
@@ -118,7 +136,7 @@ LLM_MODEL=meta-llama-3.1-8b-instruct</code></pre>
 
     <section class="card">
       <h2>Verify Downloads (SHA-256)</h2>
-      <pre id="sha-box" class="mono">Fetching checksums (if provided in release notes)…</pre>
+      <pre id="sha-box" class="mono">If you add /download/checksums.txt, we’ll display it here.</pre>
       <p>PowerShell:</p>
       <pre class="mono">Get-FileHash .\MirrorV4-Setup-4.0.0.exe -Algorithm SHA256</pre>
     </section>
@@ -148,58 +166,39 @@ LLM_MODEL=meta-llama-3.1-8b-instruct</code></pre>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <script>
-    // ---------- Load latest release & build cards ----------
-    async function loadLatest() {
-      const grid = document.getElementById('dl-grid');
+    // --- Optional dynamic override via /download/manifest.json ---
+    // If you add a small JSON file, this script will replace the static links above.
+    // Example manifest.json:
+    // { "installer": "MirrorV4-Setup-4.0.0.exe", "portable": "MirrorV4-Portable-4.0.0.zip", "version": "4.0.0" }
+    (async function(){
       try {
-        const resp = await fetch('https://api.github.com/repos/ToadAid/mirror-v4/releases/latest', {
-          headers: { 'Accept': 'application/vnd.github+json' }
-        });
-        if (!resp.ok) throw new Error('GitHub API ' + resp.status);
-        const rel = await resp.json();
-        const assets = (rel.assets || []);
-
-        const installer = assets.find(a => /MirrorV4-Setup-.*\.exe$/i.test(a.name));
-        const portable  = assets.find(a => /MirrorV4-Portable-.*\.zip$/i.test(a.name));
-
-        function card(title, meta, url, bullets) {
-          return `
-            <div class="card">
-              <h3>${title}</h3>
-              <p class="meta">${meta}</p>
-              <p><a class="btn" href="${url}">Download</a></p>
-              <ul>${bullets.map(li => `<li>${li}</li>`).join('')}</ul>
-            </div>`;
+        const r = await fetch('./manifest.json?_=' + Date.now());
+        if (!r.ok) throw 0;
+        const m = await r.json();
+        if (m.installer) {
+          document.getElementById('installer-link').href = '/download/' + m.installer;
         }
-
-        const parts = [];
-        if (installer) {
-          parts.push(card(
-            'Installer (recommended)',
-            'Default path: C:\\Mirror-V4',
-            installer.browser_download_url,
-            ['Creates Start Menu & desktop shortcuts','Bundles web UI + prompts + scrolls']
-          ));
+        if (m.portable) {
+          document.getElementById('portable-link').href = '/download/' + m.portable;
         }
-        if (portable) {
-          parts.push(card(
-            'Portable (zip)',
-            'No install — unzip & run',
-            portable.browser_download_url,
-            ['Unzip anywhere','Run <code>MirrorV4.exe</code>']
-          ));
+        if (m.version) {
+          // optionally reflect version somewhere if you want
         }
+      } catch (_) { /* keep static links */ }
+    })();
 
-        grid.innerHTML = parts.length
-          ? parts.join('')
-          : `<div class="card">No assets found in the latest release. See <a href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">all releases</a>.</div>`;
-      } catch (e) {
-        grid.innerHTML = `<div class="card">Could not load latest release: ${e.message}. Try the <a href="https://github.com/ToadAid/mirror-v4/releases" target="_blank" rel="noopener">Releases page</a>.</div>`;
-      }
-    }
+    // --- Optional checksums.txt in /download/ ---
+    (async function(){
+      const box = document.getElementById('sha-box');
+      try {
+        const r = await fetch('./checksums.txt?_=' + Date.now());
+        if (!r.ok) return;
+        box.textContent = await r.text();
+      } catch(e) { /* ignore */ }
+    })();
 
-    // ---------- Release notes with fallback ----------
-    async function loadRelnotes() {
+    // --- Release notes with fallback (raw → jsDelivr) ---
+    (async function(){
       const out = document.getElementById('release-md');
       const urls = [
         'https://raw.githubusercontent.com/ToadAid/mirror-v4/main/MIRROR_V4_RELEASE_NOTES.md',
@@ -208,21 +207,18 @@ LLM_MODEL=meta-llama-3.1-8b-instruct</code></pre>
       for (const u of urls) {
         try {
           const r = await fetch(u + '?_=' + Date.now());
-          if (!r.ok) throw new Error('HTTP ' + r.status);
+          if (!r.ok) throw new Error();
           const md = await r.text();
           out.innerHTML = marked.parse(md);
-          // optional: try to scrape SHA lines into the checksum box
+          // Try to auto-pull SHA lines into the checksum box
           const shaBox = document.getElementById('sha-box');
-          const lines = md.split('\n').filter(x => /MirrorV4-(Setup|Portable)-.*\.(exe|zip)\s+([a-f0-9]{64})/i.test(x));
+          const lines = md.split('\n').filter(x => /MirrorV4-(Setup|Portable)-.*\.(exe|zip)\s+[a-f0-9]{64}/i.test(x));
           if (lines.length) shaBox.textContent = lines.join('\n');
           return;
         } catch (e) { /* try next */ }
       }
       out.innerHTML = '<div class="meta">Could not load release notes. Open on GitHub above.</div>';
-    }
-
-    loadLatest();
-    loadRelnotes();
+    })();
   </script>
 </body>
 </html>
