@@ -1,0 +1,15 @@
+# Mirror V4 — SHA-256 Checksums
+# Community build by ToadAid 🐸📜
+# Verify integrity using PowerShell or Linux:
+#   PowerShell → Get-FileHash .\MirrorV4-Setup-4.0.0.zip -Algorithm SHA256
+#   Linux      → sha256sum MirrorV4-Setup-4.0.0.zip MirrorV4-Portable-4.0.0.zip
+# Paste or check your hashes below ↓
+
+MirrorV4-Setup-4.0.0.zip    61dd9f44048c722d18823b885a77f84cf622516435fb93729df18aedbd128f4a
+MirrorV4-Portable-4.0.0.zip 82da82a83f97e48e553b45f89f7f33a27de9e440643313aed9cbd0b7d2ef377c
+
+# When updating:
+# 1. Rebuild new ZIPs
+# 2. Run the same checksum command
+# 3. Replace these hash lines
+# 4. Commit & push — the website will display them automatically.
