@@ -75,7 +75,23 @@
     transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
   }
   .btn-honor:hover{
-    background:#3b4a6b; transform:translateY(-1px);
+    background:#173425; transform:translateY(-1px);
+    box-shadow:0 6px 12px rgba(0,0,0,.3);
+  }
+
+  /* V5 twilight tone using your #3b4a6b */
+  .btn-v5{
+    background:linear-gradient(180deg,#3b4a6b,#2e3b58);
+    color:#ffffff;
+    border:1px solid #24324c;
+    box-shadow:0 3px 8px rgba(0,0,0,.25);
+    border-radius:14px;
+    font-weight:700;
+    transition:transform .15s ease, box-shadow .15s ease, background .25s ease;
+  }
+  .btn-v5:hover{
+    background:linear-gradient(180deg,#43537b,#364466);
+    transform:translateY(-1px);
     box-shadow:0 6px 12px rgba(0,0,0,.3);
   }
 
@@ -226,7 +242,7 @@
       <!-- Models & Scrolls -->
       <rect x="80" y="380" width="230" height="88" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
       <text x="195" y="410" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Local Models</text>
-      <text x="195" y="432" text-anchor="middle" font-size="12" fill="#334155">LM Studio / GGUF</text>
+      <text x="195" y="432" text-anchor="middle" font-size="12" fill="#334155">LM Studio • GGUF</text>
 
       <rect x="900" y="370" width="260" height="88" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
       <text x="1030" y="400" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Lore Scrolls</text>
@@ -254,7 +270,7 @@
     </p>
     <div style="text-align:center; margin-top:1rem;">
       <a class="btn btn-deep" href="/honors/mirror-v4.html">🔎 See full diagram & V4 release notes</a>
-      <a class="btn btn-outline" href="/honors/mirror-v5.html">🛠️ Explore the Road to V5</a>
+      <a class="btn btn-v5" href="/honors/mirror-v5.html">🛠️ Explore the Road to V5</a>
     </div>
   </div>
 </section>
