@@ -34,13 +34,14 @@
   body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
-  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:48px 20px;text-align:center}
-  header h1{margin:0 0 6px;font-size:clamp(1.4rem,3vw,2.2rem)}
-  header p{margin:0;opacity:.92}
+  header{background:linear-gradient(180deg,#2e4c32,#3c6b46);color:#fff;padding:48px 20px;text-align:center;position:relative;overflow:hidden}
+  header::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.1) 100%);pointer-events:none}
+  header h1{margin:0 0 6px;font-size:clamp(1.4rem,3vw,2.2rem);position:relative}
+  header p{margin:0;opacity:.92;position:relative}
   nav.breadcrumb{max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem}
   nav.breadcrumb a{opacity:.9}
   .wrap{max-width:1000px;margin:0 auto;padding:24px 18px 56px}
-  .cta-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0 0}
+  .cta-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0 0;position:relative}
   .card{background:var(--paper);border-radius:16px;border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 24px var(--ring);padding:18px}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
   .meta{color:var(--muted);font-size:.95rem;margin:.4rem 0 1rem}
@@ -51,17 +52,90 @@
   footer{margin-top:18px;color:var(--muted);font-size:.92rem;text-align:center}
   .btn{
     display:inline-block;padding:10px 16px;background:#355e3b;color:#fff;border-radius:8px;
-    font-size:.95rem;text-decoration:none;transition:background .2s ease-in-out
+    font-size:.95rem;text-decoration:none;transition:all 0.3s ease-in-out;position:relative;overflow:hidden
   }
-  .btn:hover{background:#244d30;text-decoration:none}
+  .btn:hover{background:#244d30;text-decoration:none;transform:translateY(-1px);box-shadow:0 4px 12px rgba(53,94,59,0.3)}
   .pill {display:inline-block;background:#e9efe9;border:1px solid #d7e6d9;color:#2f5937;border-radius:999px;padding:2px 8px;font-size:.82rem;margin-right:6px}
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  /* Mirror Animation */
+  .mirror-emoji {
+    display: inline-block;
+    font-size: 1.2em;
+    animation: mirrorFloat 3s ease-in-out infinite;
+    position: relative;
+  }
+
+  @keyframes mirrorFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-3px) rotate(1deg); }
+  }
+
+  .mirror-emoji::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    width: 20px;
+    height: 3px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    animation: ripple 3s ease-in-out infinite;
+  }
+
+  @keyframes ripple {
+    0%, 100% { 
+      opacity: 0.3;
+      transform: translateX(-50%) scale(1);
+    }
+    50% { 
+      opacity: 0.1;
+      transform: translateX(-50%) scale(1.5);
+    }
+  }
+
+  /* Additional ripple effects for cards */
+  .card {
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(53,94,59,0.03) 0%, transparent 20%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .card:hover::before {
+    opacity: 1;
+  }
+
+  /* Mirror reflection effect on header */
+  .mirror-reflection {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
   <header>
-    <h1>🪞 Mirror V4 — Download</h1>
-    <p>Community build by <b>ToadAid</b>. “AI need not be only a tool.”</p>
+    <div class="mirror-reflection"></div>
+    <h1><span class="mirror-emoji">🪞</span> Mirror V4 — Download</h1>
+    <p>Community build by <b>ToadAid</b>. "AI need not be only a tool."</p>
     <p class="cta-row">
       <a class="btn" href="https://github.com/ToadAid/mirror-v4" target="_blank" rel="noopener">GitHub Repo</a>
       <a class="btn" href="https://github.com/ToadAid/mirror-v4" target="_blank" rel="noopener">All Releases</a>
@@ -136,7 +210,7 @@ LLM_MODEL=meta-llama-3.1-8b-instruct</code></pre>
 
     <section class="card">
       <h2>Verify Downloads (SHA-256)</h2>
-      <pre id="sha-box" class="mono">If you add /download/checksums.txt, we’ll display it here.</pre>
+      <pre id="sha-box" class="mono">If you add /download/checksums.txt, we'll display it here.</pre>
       <p>PowerShell:</p>
       <pre class="mono">Get-FileHash .\MirrorV4-Setup-4.0.0.exe -Algorithm SHA256</pre>
     </section>
@@ -166,10 +240,18 @@ LLM_MODEL=meta-llama-3.1-8b-instruct</code></pre>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <script>
+    // Mouse tracking for ripple effects
+    document.addEventListener('mousemove', function(e) {
+      document.querySelectorAll('.card').forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--x', `${x}%`);
+        card.style.setProperty('--y', `${y}%`);
+      });
+    });
+
     // --- Optional dynamic override via /download/manifest.json ---
-    // If you add a small JSON file, this script will replace the static links above.
-    // Example manifest.json:
-    // { "installer": "MirrorV4-Setup-4.0.0.exe", "portable": "MirrorV4-Portable-4.0.0.zip", "version": "4.0.0" }
     (async function(){
       try {
         const r = await fetch('./manifest.json?_=' + Date.now());
