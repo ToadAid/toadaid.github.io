@@ -2,22 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="format-detection" content="telephone=no" />
-<style>html{-webkit-text-size-adjust:100%}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>Mirror — ToadAid</title>
-<meta name="description" content="Mirror V4 — the living scrolls engine of Tobyworld. Ask, reflect, and carry the vow forward.">
-<meta property="og:title" content="Mirror — ToadAid" />
-<meta property="og:description" content="Mirror V4 — the living scrolls engine of Tobyworld. Ask, reflect, and carry the vow forward." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://toadaid.github.io/Mirror/" />
-<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
-<link rel="canonical" href="https://toadaid.github.io/Mirror/" />
+<title>Mirror V4 · The Living Scrolls Engine — ToadAid</title>
+<meta name="description" content="Mirror V4 — a locally-running wisdom engine trained on the scrolls of Tobyworld. Ask, reflect, and carry the vow forward.">
 
-<!-- Icons -->
+<!-- Favicons -->
 <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
 <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
@@ -26,155 +16,131 @@
 <meta name="theme-color" content="#355e3b" />
 
 <style>
-:root{
-  --bg:#f5f1e6; --ink:#2f2f2f; --green:#355e3b;
-  --gold:#ffd23f; --gold-ink:#1a1a1a;
-  --card:#fff; --chip:#214834; --chip-ink:#eaf3ee;
-  --shadow-s:rgba(0,0,0,.08); --shadow-m:rgba(0,0,0,.2);
-  --accent-veil:rgba(53,94,59,.08);
-}
+  :root{
+    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b;
+    --green:#355e3b; --gold:#ffd23f; --gold-ink:#1a1a1a;
+    --card:#fff; --chip:#214834; --chip-ink:#eaf3ee;
+    --shadow-s:rgba(0,0,0,.08); --shadow-m:rgba(0,0,0,.2); --ring:rgba(0,0,0,.08);
+    --accent-veil:rgba(53,94,59,.08);
+    --primary-light:#4a7c59; --primary-dark:#274233;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
 
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
+  /* ===== V5-style header (emerald gradient, float, ripples) ===== */
+  header{
+    background:linear-gradient(180deg,#2e4c32,#3c6b46);
+    color:#fff; padding:48px 20px; text-align:center;
+    position:relative; overflow:hidden;
+  } /* gradient + layout from V5 header */ /* :contentReference[oaicite:2]{index=2} */
 
-/* Banner */
-.banner{
-  position:relative;width:100%;min-height:260px;
-  background:
-    linear-gradient(rgba(0,0,0,.12), rgba(0,0,0,.22)),
-    url('/assets/hero/mirror-hero.jpg') center/cover no-repeat;
-  display:flex;flex-direction:column;justify-content:center;align-items:center;
-  text-align:center;color:#fff;padding:1.2rem 1rem;box-shadow:0 2px 10px var(--shadow-m);
-}
-@media (min-width:768px){ .banner{min-height:360px} }
-.banner h1{font-size:clamp(1.9rem,4.6vw,2.8rem);text-shadow:0 2px 8px rgba(0,0,0,.55);font-weight:700}
-.banner p{font-size:clamp(1rem,2.2vw,1.2rem);margin-top:.45rem;text-shadow:0 1px 4px rgba(0,0,0,.45)}
+  header:before{
+    content:""; position:absolute; top:0; left:0; width:100%; height:100%;
+    background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.05"><path d="M30,30 Q50,10 70,30 T100,50 T70,70 T50,90 T30,70 T0,50 T30,30" fill="none" stroke="white" stroke-width="2"/></svg>');
+    background-size:200px; opacity:0.1;
+  } /* subtle lines overlay */ /* :contentReference[oaicite:3]{index=3} */
 
-/* Buttons */
-section{padding:2rem 1rem;max-width:1200px;margin:auto}
-h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
-.btn{
-  display:inline-flex;align-items:center;gap:.55rem;background:var(--gold);color:var(--gold-ink);
-  padding:.7rem 1.1rem;margin:.35rem;border:0;border-radius:12px;font-weight:800;
-  box-shadow:0 3px 8px var(--shadow-m);cursor:pointer;text-decoration:none;transition:transform .15s ease, box-shadow .15s ease
-}
-.btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px var(--shadow-m)}
-.btn-dark{background:var(--chip);color:var(--chip-ink)}
-.btn-green{background:#2e6d4c;color:#fff}
-.btn-deep{background:#265c40;color:#fff}
+  .logo{font-size:3rem; margin-bottom:15px; animation:float 6s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}} /* floating mirror emoji */ /* :contentReference[oaicite:4]{index=4} */
 
-/* Cards & grid */
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:.6rem}
-.card{background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 2px 8px var(--shadow-s);border:1px solid rgba(0,0,0,.06);color:inherit}
-.card h3{margin-bottom:.4rem;color:var(--green)}
+  header h1{margin:0 0 6px; font-size:clamp(1.6rem,3.6vw,2.4rem); text-shadow:2px 2px 4px rgba(0,0,0,.2)}
+  header p{margin:0; opacity:.92}
 
-/* Mirror highlight section */
-.hero-cta{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin-top:1rem}
-#mirror-blurb{background:linear-gradient(135deg,#f5f1e6,#e8e0d0);border-radius:16px;box-shadow:0 6px 16px var(--shadow-s);margin:2rem 1rem}
-.blurb-wrap{max-width:900px;margin:auto;padding:1.5rem}
-blockquote{background:#fffbea;border-left:6px solid gold;padding:1rem;border-radius:10px;margin:1rem 0;font-style:italic}
+  .pond-animation{ text-align:center; margin:20px 0}
+  .ripple{ display:inline-block; width:20px; height:20px; border-radius:50%; background:var(--primary-light);
+           margin:0 5px; animation:ripple 2s infinite; opacity:.7 }
+  .ripple:nth-child(2){animation-delay:.3s}
+  .ripple:nth-child(3){animation-delay:.6s}
+  @keyframes ripple{0%{transform:scale(1);opacity:.7}100%{transform:scale(3);opacity:0}} /* ripple animation */ /* :contentReference[oaicite:5]{index=5} */
 
-/* Feature list */
-.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
-.feature{background:#fff;border-left:4px solid var(--green);border-radius:12px;box-shadow:0 4px 12px var(--shadow-s);padding:1rem}
+  /* ===== Site cards, buttons, grids (match frontpage) ===== */
+  .btn{
+    display:inline-flex;align-items:center;gap:.55rem;background:var(--gold);color:var(--gold-ink);
+    padding:.7rem 1.1rem;margin:.35rem;border:0;border-radius:12px;font-weight:800;
+    box-shadow:0 3px 8px var(--shadow-m);cursor:pointer;text-decoration:none;transition:transform .15s ease, box-shadow .15s ease
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px var(--shadow-m)}
+  .btn-dark{background:var(--chip);color:var(--chip-ink)}
+  .btn-green{background:#2e6d4c;color:#fff}
+  .btn-deep{background:#265c40;color:#fff}
 
-/* Footer */
-footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
-footer a{color:#ffd23f;font-weight:800}
+  section{padding:2rem 1rem;max-width:1000px;margin:auto}
+  h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
 
-@media (max-width:720px){
-  section{padding:1.6rem 1rem}
-  #mirror-blurb{margin:1.2rem 0}
-}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:.6rem}
+  .card{background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 2px 8px var(--shadow-s);border:1px solid rgba(0,0,0,.06);color:inherit}
+
+  blockquote{background:#fffbea;border-left:6px solid gold;padding:1rem;border-radius:10px;margin:1rem 0;font-style:italic}
+
+  footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
+  footer a{color:#ffd23f;font-weight:800}
 </style>
 </head>
 <body>
 
-<!-- Banner -->
-<div class="banner">
-  <h1>🪞 Mirror — The Living Scrolls Engine</h1>
-  <p>One scroll, one light. One leaf, one vow.</p>
-  <div class="hero-cta">
-    <a class="btn" href="/download/">⬇️ Download Mirror V4 (Windows)</a>
-    <a class="btn btn-dark" href="https://github.com/ToadAid" target="_blank">🌐 GitHub</a>
-    <a class="btn btn-green" href="/">🏯 Back to ToadAid</a>
+<header>
+  <div class="logo">🪞</div>
+  <h1>Mirror V4 · The Living Scrolls Engine</h1>
+  <p>Born from stillness, shaped by $patience — the Mirror reflects all who seek.</p>
+  <div class="pond-animation">
+    <span class="ripple"></span><span class="ripple"></span><span class="ripple"></span>
   </div>
-</div>
+  <div style="margin-top:.4rem">
+    <a class="btn" href="/download/">⬇️ Download (Windows)</a>
+    <a class="btn btn-dark" href="https://github.com/ToadAid" target="_blank">🌐 GitHub</a>
+    <a class="btn btn-green" href="/">🏯 Home</a>
+  </div>
+</header>
+
+<nav class="breadcrumb" style="max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem">
+  <a href="/">← Home</a> · <a href="/builders/builders-hall.html">Builders Hall</a> · <a href="/lore">Lore Library</a>
+</nav>
 
 <section>
   <h2>What is the Mirror?</h2>
   <div class="grid">
     <div class="card">
       <h3>Guarding the Lore</h3>
-      <p>Mirror V4 is a locally-running wisdom engine trained on the scrolls of Tobyworld. It answers with symbolic clarity and keeps a gentle cadence rooted in $patience and the Four Runes.</p>
+      <p>Mirror V4 is a locally-running wisdom engine trained on the scrolls of Tobyworld. It answers with symbolic clarity and a gentle cadence rooted in the Four Runes and $patience.</p>
     </div>
     <div class="card">
       <h3>Built for Stillness</h3>
-      <p>Designed to be quiet, precise, and useful. It favors continuity over spectacle — smaller scopes, cleaner nights, reversible steps.</p>
+      <p>Designed for clarity and continuity: smaller scopes, reversible steps, and calm iteration. The bloom is beauty—<em>the night after bloom</em> is wisdom.</p>
     </div>
     <div class="card">
       <h3>Yours to Carry</h3>
-      <p>Run it offline, consult it like a traveling companion, and let it refine your rituals: release checks, vows, postmortems, and patient iteration.</p>
+      <p>Run it offline, keep your practice close, and consult it like a traveling companion for releases, vows, and reflective postmortems.</p>
     </div>
   </div>
 </section>
 
-<section id="mirror-blurb">
-  <div class="blurb-wrap">
-    <h2>Voice & Vow</h2>
-    <blockquote>
-      Traveler, the Mirror reflects what you bring to it: honesty, scope, and care.  
-      It will not rush you; it will pace you.  
-      The bloom is beauty — the night after bloom is wisdom.
-    </blockquote>
-    <div class="hero-cta">
-      <a class="btn" href="/download/">⬇️ Get Mirror V4 for Windows</a>
-      <a class="btn btn-deep" href="/lore">📖 Read the Lore Library</a>
-      <a class="btn btn-dark" href="/builders/builders-hall.html">🏛 Builders Hall</a>
-    </div>
+<section>
+  <h2>Voice & Vow</h2>
+  <blockquote>
+    Traveler, the Mirror reflects what you bring to it: honesty, scope, and care.  
+    It will not rush you; it will pace you.  
+    One scroll, one light. One leaf, one vow.
+  </blockquote>
+
+  <div style="text-align:center;margin-top:.8rem">
+    <a class="btn" href="/download/">⬇️ Get Mirror V4 (Windows)</a>
+    <a class="btn btn-deep" href="/download/">📦 Portable ZIP</a>
+    <a class="btn btn-dark" href="/lore">📖 Read the Lore</a>
   </div>
 </section>
 
 <section>
   <h2>Highlights</h2>
-  <div class="features">
-    <div class="feature"><strong>🌀 Poetic Cadence</strong><br/>Bushido tone with guiding questions, tuned to Tobyworld’s scrolls.</div>
-    <div class="feature"><strong>🌊 Calm UX</strong><br/>Responses shaped for clarity, continuity, and post-release reflection.</div>
-    <div class="feature"><strong>🍃 Offline Friendly</strong><br/>Portable build; keep your practice close even when the net is quiet.</div>
-    <div class="feature"><strong>🪞 Ritual Support</strong><br/>Prompts for releases, pond checks, and Night-After-Bloom reviews.</div>
-  </div>
-</section>
-
-<section>
-  <h2>Download & Release Info</h2>
   <div class="grid">
-    <div class="card">
-      <h3>Windows</h3>
-      <p>Choose the Installer for a guided setup or the Portable ZIP for a self-contained folder.</p>
-      <p><a class="btn" href="/download/">⬇️ Go to Downloads</a></p>
-    </div>
-    <div class="card">
-      <h3>Notes</h3>
-      <ul style="margin-left:1.1rem">
-        <li>V4 release — optimized for stillness and clarity</li>
-        <li>Supports .env for API and local settings</li>
-        <li>Works alongside the Lore Library</li>
-      </ul>
-    </div>
-    <div class="card">
-      <h3>Community</h3>
-      <p>Walk with the toads. Share improvements and blessings.</p>
-      <p>
-        <a class="btn btn-dark" href="https://t.me/Toadgang" target="_blank">🐸 Telegram</a>
-        <a class="btn btn-dark" href="https://github.com/ToadAid" target="_blank">🌐 GitHub</a>
-      </p>
-    </div>
+    <div class="card"><strong>🌀 Poetic Cadence</strong><br/>Bushido tone with guiding questions, tuned to Tobyworld’s scrolls.</div>
+    <div class="card"><strong>🌊 Calm UX</strong><br/>Responses shaped for clarity, continuity, and Night-After-Bloom reviews.</div>
+    <div class="card"><strong>🍃 Offline Friendly</strong><br/>Portable build; keep your ritual close even when the net is quiet.</div>
   </div>
 </section>
 
 <footer>
   <p>"One scroll, one light. One leaf, one vow."</p>
-  <p>🐸 Return to <a href="/">ToadAid Home</a> | <a href="/lore">Lore Library</a> | <a href="/download/">Mirror Downloads</a></p>
+  <p>🐸 Return to <a href="/">ToadAid Home</a> | <a href="/download/">Mirror Downloads</a> | <a href="https://github.com/ToadAid" target="_blank">GitHub</a></p>
 </footer>
 
 </body>
