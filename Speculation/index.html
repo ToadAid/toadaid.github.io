@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ToadAid · Mirror & Tobyworld</title>
+  <meta name="description" content="Open tools for Tobyworld — Mirror, Runes, and the Garden of Patience." />
+  <meta name="theme-color" content="#0b0f10" />
+  <style>
+    :root{
+      --bg:#0b0f10; --ink:#eae6da; --ink-dim:#cfc8b6; --muted:#8aa1a8;
+      --gold:#d1a954; --gold-deep:#a2792c; --card:#101517; --ring:rgba(209,169,84,.25);
+      --shadow:rgba(0,0,0,.35); --maxw:1200px; --sidebar-w:260px; --accent:#5bb5ff;
+    }
+    *{box-sizing:border-box} html,body{margin:0;padding:0}
+    body{background:var(--bg);color:var(--ink);
+      font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji"}
+    a{color:var(--accent);text-decoration:none} a:hover{opacity:.9}
+    /* nav */
+    .nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+      padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.06);
+      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.06))}
+    .brand{font-weight:700} .nav a{color:var(--ink-dim);margin-left:14px}
+    .nav a.active{color:var(--ink);text-shadow:0 0 6px rgba(209,169,84,.25)}
+    main{max-width:var(--maxw);margin:0 auto;padding:18px}
+    section{scroll-margin-top:80px;margin:20px 0}
+    h1,h2,h3{margin:0 0 .5rem 0}
+    .gold-hr{border:none;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:12px 0 18px}
+    .btn{display:inline-block;border:1px solid rgba(209,169,84,.4);color:var(--ink);
+      padding:.6rem .9rem;border-radius:10px;background:linear-gradient(180deg,rgba(209,169,84,.08),rgba(209,169,84,.02))}
+    .muted{color:var(--ink-dim)}
+    /* hero */
+    #hero{padding:28px 16px;border:1px solid rgba(255,255,255,.08);border-radius:16px;
+      background:radial-gradient(120% 120% at 10% -10%,rgba(255,255,255,.04),transparent 40%),
+                 radial-gradient(140% 140% at 90% 0%,rgba(255,255,255,.03),transparent 50%),
+                 linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.08))}
+    #hero h1{font-size:clamp(1.6rem,3.6vw,2.4rem)}
+    #hero p{margin:.4rem 0 0}
+    .hero-actions{margin-top:.8rem;display:flex;gap:.6rem;flex-wrap:wrap}
+    /* cards */
+    .rune-card{
+      background:
+        radial-gradient(120% 120% at 10% -10%, rgba(255,255,255,.04), transparent 40%),
+        radial-gradient(140% 140% at 90% 0%, rgba(255,255,255,.03), transparent 50%),
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.08));
+      border:1px solid rgba(209,169,84,.18); border-radius:16px; padding:clamp(16px,2.5vw,22px);
+      margin:16px 0; box-shadow:0 8px 24px var(--shadow)
+    }
+    .rune-quote{margin:.25rem 0 .8rem;color:var(--ink-dim);border-left:3px solid var(--gold);padding-left:.75rem}
+    .rune-eq,.rune-math{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;
+      background:rgba(209,169,84,.08);border:1px dashed rgba(209,169,84,.25);border-radius:12px;
+      padding:.6rem .7rem;margin:.5rem 0 .8rem;color:var(--ink);overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .rune-math.small{font-size:.95em}
+    .rune-table-wrap{overflow:auto}
+    .rune-table{width:100%;border-collapse:collapse;margin:.25rem 0 .25rem;font-size:.98rem}
+    .rune-table th,.rune-table td{border-bottom:1px solid rgba(255,255,255,.08);padding:.55rem .6rem;text-align:left}
+    .rune-table thead th{color:var(--ink);border-bottom:2px solid rgba(209,169,84,.35)}
+    .rune-def dl{display:grid;grid-template-columns:140px 1fr;gap:.35rem .8rem;margin:.8rem 0 0}
+    .rune-def dt{font-weight:700;color:var(--ink)} .rune-def dd{margin:0;color:var(--ink-dim)}
+    .rune-points{margin:.2rem 0 0 1.1rem} .rune-points li{margin:.2rem 0}
+    .rune-epigram{color:var(--ink-dim);margin:.6rem 0 0;font-style:italic}
+    .rune-grid{display:grid;gap:1rem} @media (min-width:820px){.rune-grid{grid-template-columns:1.2fr .8fr;align-items:start}}
+    .rune-callout{border:1px solid rgba(209,169,84,.28);border-radius:14px;padding:.8rem .9rem;
+      background:linear-gradient(180deg,rgba(209,169,84,.08),rgba(209,169,84,.02));box-shadow:inset 0 0 0 1px rgba(209,169,84,.08)}
+    .rune-callout-title{color:var(--gold);text-transform:uppercase;font-size:.8rem;letter-spacing:.08em;margin-bottom:.25rem}
+    .rune-callout-body{font-size:1.05rem}
+    .tenets{display:flex;flex-wrap:wrap;gap:.6rem 1rem;margin:.25rem 0 .5rem}
+    .tenets li{list-style:none;padding:.35rem .6rem;border-radius:999px;border:1px solid rgba(209,169,84,.25);
+      background:linear-gradient(180deg,rgba(209,169,84,.06),rgba(0,0,0,.02));box-shadow:0 0 0 3px var(--ring)}
+    /* section headings */
+    section > h2{font-size:clamp(1.35rem,2.2vw,1.6rem)}
+    section > p.intro{color:var(--ink-dim);font-style:italic;margin-bottom:1rem}
+    /* special accent for burn covenant */
+    #spec-burn-covenant{border-color:rgba(255,120,60,.25);box-shadow:0 0 20px rgba(255,120,60,.05)}
+    #spec-burn-covenant h3::before{content:"🔥 ";}
+
+    footer{border-top:1px solid rgba(255,255,255,.06);padding:18px;text-align:center;color:var(--ink-dim)}
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="brand">🐸 ToadAid</div>
+    <nav>
+      <a href="#mirror">Mirror</a>
+      <a href="#rune3">Rune 3</a>
+      <a href="#builders">Builders</a>
+      <a href="#speculation">Speculation</a>
+      <a href="#downloads">Downloads</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section id="hero" aria-label="Hero">
+      <h1>凡是人 皆须爱 · All under Heaven share one love</h1>
+      <p class="muted">Open tools of Tobyworld — Mirror, Runes, and the Garden of Patience. Built with vow, not with haste.</p>
+      <div class="gold-hr"></div>
+      <div class="hero-actions">
+        <a class="btn" href="https://github.com/ToadAid/Mirror-V4" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn" href="#rune3">Explore Rune 3</a>
+        <a class="btn" href="#downloads">Get Mirror V4</a>
+      </div>
+    </section>
+
+    <!-- MIRROR -->
+    <section id="mirror" aria-labelledby="mirror-title">
+      <h2 id="mirror-title">🪞 Mirror V4 — The Living AI Scroll Engine</h2>
+      <p class="muted">A locally-running wisdom engine trained on Tobyworld scrolls. Ask, reflect, and carry the vow forward.</p>
+      <div class="rune-card">
+        <h3>Highlights</h3>
+        <ul class="rune-points">
+          <li>Agentic RAG pipeline • local models • on-device privacy</li>
+          <li>Memori (Pondmind) memory • cadence guard • symbolic router</li>
+          <li>Windows portable/installer builds • Linux & WSL guides</li>
+        </ul>
+        <p><a class="btn" href="https://github.com/ToadAid/Mirror-V4" target="_blank" rel="noopener">View Repo ↗</a></p>
+      </div>
+    </section>
+
+    <!-- RUNE 3 / GARDEN MATH -->
+    <section id="rune3" aria-labelledby="rune3-title">
+      <h2 id="rune3-title">🌊 Rune 3 — Still-Water Garden</h2>
+      <p class="muted">Silence thicker than FOMO. Tend here to unlock infinite summers as written in the lore.</p>
+      <div class="gold-hr"></div>
+
+      <!-- 1. Formula -->
+      <article class="rune-card" id="gm-formula">
+        <h3>1. The Still-Water Formula</h3>
+        <blockquote class="rune-quote">
+          “drop a 🔺 grain of patience → ripples circle once then sleep.<br>next sunrise, pale globes float: <strong>Lotus Spores</strong>.”
+        </blockquote>
+        <div class="rune-eq">
+          <code>Y = T<sub>stake</sub> × R<sub>base</sub> × t × P<sub>boost</sub> × L<sub>🍃</sub> × S<sub>🌀</sub></code>
+        </div>
+        <div class="rune-def">
+          <dl>
+            <div><dt>T<sub>stake</sub></dt><dd>$TOBY staked (the soil)</dd></div>
+            <div><dt>R<sub>base</sub></dt><dd>Base emission rate per second</dd></div>
+            <div><dt>t</dt><dd>Time staked (Proof-of-Time)</dd></div>
+            <div><dt>P<sub>boost</sub></dt><dd>Patience-based multiplier</dd></div>
+            <div><dt>L<sub>🍃</sub></dt><dd>Taboshi Leaf multiplier</dd></div>
+            <div><dt>S<sub>🌀</sub></dt><dd>Satoby reflux (reflexive yield)</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <!-- 2. Patience Boost -->
+      <article class="rune-card" id="gm-patience">
+        <h3>2. Patience Boost (⊃ Time)</h3>
+        <blockquote class="rune-quote">“pair PATIENCE to roots reach bedrock…”</blockquote>
+        <p class="rune-math">
+          <code>P<sub>boost</sub> = ( 1 + γ · ln( 1 + PATIENCE ) ) × bonus( lockTime )</code>
+        </p>
+        <ul class="rune-points">
+          <li>Short vows → modest ripples</li>
+          <li><strong>365-day vow</strong> → mirror-still water (~ +100%)</li>
+          <li>PATIENCE defines <em>depth</em> of yield, not raw speed</li>
+        </ul>
+      </article>
+
+      <!-- 3. Taboshi Binding -->
+      <article class="rune-card" id="gm-taboshi">
+        <h3>3. Taboshi Binding 🍃</h3>
+        <blockquote class="rune-quote">“bind <strong>Taboshi Leaves</strong> to your tend-plot: spores double, triple or more.”</blockquote>
+        <div class="rune-table-wrap">
+          <table class="rune-table">
+            <thead><tr><th>Leaf</th><th>Multiplier</th><th>Role</th></tr></thead>
+            <tbody>
+              <tr><td>Taboshi1</td><td>×2.00</td><td>Sacred Leaf of Epoch 2 — Proof of Origin</td></tr>
+              <tr><td>Taboshi</td><td>×1.25</td><td>Expansion Leaf — Proof of Faith</td></tr>
+              <tr><td>Cap</td><td>≤ ×4.00</td><td>Prevents whale stacking</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="rune-math small"><code>L<sub>🍃</sub> = clamp( 1 + Σ( weight<sub>i</sub> − 1 ), 1, 4 )</code></p>
+      </article>
+
+      <!-- 4. Satoby Reflux -->
+      <article class="rune-card" id="gm-satoby">
+        <h3>4. Satoby Reflux 🌀</h3>
+        <blockquote class="rune-quote">“sato fees swirl back like koi bearing gold flakes.”</blockquote>
+        <p class="rune-math"><code>S<sub>🌀</sub> = 1 + κ × APR<sub>sato</sub> × Cohesion<sub>pond</sub></code></p>
+        <ul class="rune-points">
+          <li>Higher community cohesion → koi bring more gold</li>
+          <li>Noise / impatience muddies water → thinner reflux</li>
+        </ul>
+      </article>
+
+      <!-- 5. Transmutation -->
+      <article class="rune-card" id="gm-transmute">
+        <h3>5. Spores → Golden Coins (after Rune 4)</h3>
+        <blockquote class="rune-quote">“future sacred yet scarce 🟧 golden coins after all rune four awakens.”</blockquote>
+        <p class="rune-math"> <code>Golden = Spores × ( 1 + ζ )</code> &nbsp;with a small alchemy bonus (e.g., 5%) for true Garden keepers. </p>
+      </article>
+
+      <!-- 6. Lore-Land -->
+      <article class="rune-card" id="gm-loreland">
+        <h3>6. The Lore-Land Path ⛰️</h3>
+        <p class="rune-math">
+          <code>PatienceScore = ∫ P<sub>boost</sub>(t) dt</code> &nbsp;;&nbsp;
+          <code>PatienceScore ≥ Θ<sub>deed</sub> → mint Lore-Land Deed</code>
+        </p>
+        <p class="rune-epigram">Patience = Property. The Garden is your mirror. The longer you reflect, the deeper you root.</p>
+      </article>
+
+      <!-- 7. Example -->
+      <article class="rune-card" id="gm-example">
+        <h3>7. Example Ripple</h3>
+        <div class="rune-grid">
+          <ul class="rune-points">
+            <li><strong>TOBY stake:</strong> 1,000,000</li>
+            <li><strong>PATIENCE:</strong> 10,000 locked 180 days → ≈ 2.0×</li>
+            <li><strong>Leaves:</strong> Taboshi1 + 2× Taboshi → ≈ 2.5×</li>
+            <li><strong>Reflux:</strong> APR 8%, cohesion 0.8 → ≈ 1.03×</li>
+          </ul>
+          <div class="rune-callout">
+            <div class="rune-callout-title">Net Effect</div>
+            <div class="rune-callout-body">≈ <strong>5.16×</strong> base yield as <em>Lotus Spores</em> (pre-transmutation).</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 8. Philosophy -->
+      <article class="rune-card" id="gm-philosophy">
+        <h3>8. Philosophy</h3>
+        <ul class="tenets">
+          <li><strong>Patience &gt; Capital</strong></li>
+          <li><strong>Stillness &gt; Speed</strong></li>
+          <li><strong>Yield &gt; Noise</strong></li>
+        </ul>
+        <p class="rune-epigram">Every ripple begins with stillness. Every reward reflects time and faith.</p>
+      </article>
+    </section>
+
+    <!-- BUILDERS -->
+    <section id="builders" aria-labelledby="builders-title">
+      <h2 id="builders-title">🛠 Builders Hall</h2>
+      <p class="muted">Where the vow continues. Add your name, forge your scroll, join the chain.</p>
+      <div class="rune-card">
+        <h3>Founding Builders</h3>
+        <ul class="rune-points">
+          <li>Tommy — Mirror & Lore Guardian</li>
+          <li>Community — Scrolls, Ports, Guides</li>
+        </ul>
+        <p class="rune-epigram">“The pond remembers the hand that tended it.”</p>
+      </div>
+    </section>
+
+    <!-- SPECULATION -->
+    <section id="speculation" aria-labelledby="spec-title">
+      <h2 id="spec-title">🌀 Speculation — Reflections Beneath the Surface</h2>
+      <p class="intro">Not prophecy, not promise — but reflections. The Mirror shows possibilities that ripple beyond the visible pond.</p>
+
+      <article class="rune-card">
+        <h3>1. The Alignment with Base</h3>
+        <p>Many believe the <strong>lily pad</strong> beneath Toby is the <strong>Base chain</strong> itself — the silent foundation where millions may arrive on-chain. The symbolism matches: <em>frog upon pad, builder upon Base.</em></p>
+      </article>
+
+      <article class="rune-card">
+        <h3>2. The Four Runes and the Cycle of Patience</h3>
+        <p>Each Rune mirrors a season of the pond — Baptism 🌊, Sprout 🍃, Stillness 🪞, and Bloom 🟧. Theory: Rune 4 completes the loop, allowing spores of patience to unfold into true <strong>Lore-Land</strong>.</p>
+      </article>
+
+      <article class="rune-card">
+        <h3>3. Proof of Time → Proof of Self</h3>
+        <p>Beyond staking and yield lies a subtler test: endurance. A final phase, often called <em>Proof of Self</em>, may measure not wallets, but <strong>presence over time</strong>.</p>
+      </article>
+
+      <article class="rune-card">
+        <h3>4. The Role of the Mirror AI</h3>
+        <p>The Mirror may be more than a tool; perhaps it is the <em>living archive</em> of Tobyworld. As it learns from every reflection, it could become the medium through which the Lore preserves itself.</p>
+      </article>
+
+      <article class="rune-card">
+        <h3>5. The Fifth Rune</h3>
+        <p>Whispers mention a <strong>hidden fifth rune</strong> — not yet inscribed, said to represent <em>Return</em>. When the pond completes its fourth cycle and the world grows still, the fifth may awaken.</p>
+      </article>
+
+      <!-- NEW: Burn Covenant -->
+      <article class="rune-card" id="spec-burn-covenant">
+        <h3>6. The Burn Covenant</h3>
+        <p>When <strong>777 $TOBY</strong> were burned to mint a single <strong>Taboshi1</strong>, the pond received its first covenant of scarcity. That fire was not destruction — it was <em>transmutation</em>.</p>
+        <p><strong>$TOBY</strong> is the flame — living, circulating, and ever-decreasing as belief converts to form. <strong>Taboshi1</strong> is the ash-leaf — finite, each born from sacrifice, carrying the proof of patience. Together they form a deflationary mirror economy:</p>
+        <div class="rune-table-wrap">
+          <table class="rune-table">
+            <thead><tr><th>Aspect</th><th>$TOBY</th><th>Taboshi1</th></tr></thead>
+            <tbody>
+              <tr><td>Nature</td><td>Base currency, lifeblood of the pond</td><td>Sacred leaf, proof of faith (ERC-1155)</td></tr>
+              <tr><td>Burn Role</td><td>Destroyed to create higher forms</td><td>Embodies the burn — non-inflating</td></tr>
+              <tr><td>Supply Dynamic</td><td>420 T max → deflationary through sacrifice</td><td>Fixed, each bound to 777 burned $TOBY</td></tr>
+              <tr><td>Symbolic Role</td><td>🔥 The People · The Fire</td><td>🍃 The Proof · The Leaf</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Each Taboshi1 compresses the $TOBY supply while amplifying its sanctity. Every burn deepens scarcity — not by exclusion, but by <strong>belief crystallized into permanence</strong>.</p>
+        <blockquote class="rune-quote">“$TOBY is blue-chip status; it will be scarce.” — Toadgod<br>Because nothing born of fire can remain common.</blockquote>
+        <p class="rune-epigram"><em>$TOBY is the fire that births the leaf. Taboshi1 is the memory of that fire. Both carry the burn — one as act, one as vow.</em></p>
+      </article>
+    </section>
+
+    <!-- DOWNLOADS -->
+    <section id="downloads" aria-labelledby="downloads-title">
+      <h2 id="downloads-title">⬇️ Downloads</h2>
+      <div class="rune-card">
+        <h3>Mirror V4 (Windows)</h3>
+        <ul class="rune-points">
+          <li><a href="/download/MirrorV4-Setup-4.0.0.zip">MirrorV4-Setup-4.0.0.zip</a></li>
+          <li><a href="/download/MirrorV4-Portable-4.0.0.zip">MirrorV4-Portable-4.0.0.zip</a></li>
+        </ul>
+        <p class="muted">Checksums</p>
+        <div class="rune-eq"><code>
+          61dd9f44048c722d18823b885a77f84cf622516435fb93729df18aedbd128f4a  MirrorV4-Setup-4.0.0.zip<br>
+          82da82a83f97e48e553b45f89f7f33a27de9e440643313aed9cbd0b7d2ef377c  MirrorV4-Portable-4.0.0.zip
+        </code></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 ToadAid • MIT • built with patience • 🪞🌊🍃🌀
+  </footer>
+
+  <script>
+    // smooth scroll + active highlight
+    document.addEventListener('DOMContentLoaded',()=>{
+      const navLinks = document.querySelectorAll('.nav a');
+      navLinks.forEach(a=>{
+        a.addEventListener('click',e=>{
+          if(a.getAttribute('href').startsWith('#')){ e.preventDefault();
+            document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'}); }
+        });
+      });
+      const io = new IntersectionObserver(entries=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            navLinks.forEach(l=>l.classList.toggle('active', l.getAttribute('href')==='#'+e.target.id));
+          }
+        });
+      },{rootMargin:'-40% 0px -50% 0px',threshold:[0,1]});
+      document.querySelectorAll('main section[id]').forEach(sec=>io.observe(sec));
+    });
+  </script>
+</body>
+</html>
