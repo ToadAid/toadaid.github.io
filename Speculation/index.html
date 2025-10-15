@@ -40,21 +40,33 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html{scroll-behavior:smooth}
-  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
-body{
-  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,sans-serif;
-  background:var(--bg);
-  color:var(--ink);
-  line-height:1.6;
-  overflow-x:hidden;
-}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
 
-/* --- Speculation closing accent --- */
-#spec-closing{
-  box-shadow:0 0 0 3px #f6f9f6 inset;
-}
+  /* --- Speculation closing accent --- */
+  #spec-closing{ box-shadow:0 0 0 3px #f6f9f6 inset; }
 
-  /* ===== Header (emerald gradient, ripples) ===== */
+  /* Highlight section when navigated via anchor */
+  :target{ scroll-margin-top:90px; }
+  :target > h2,
+  :target > h3{
+    outline:0;
+    box-shadow:0 0 0 6px rgba(53,94,59,.08) inset;
+    border-radius:10px;
+  }
+
+  .card + .card{ margin-top:.9rem; }
+  @media (max-width:720px){
+    .grid{ gap:.8rem; }
+    .card{ padding:.9rem; }
+  }
+
+  /* ===== Header ===== */
   header{
     background:linear-gradient(180deg,#2e4c32,#3c6b46);
     color:#fff; padding:48px 20px; text-align:center;
@@ -65,79 +77,55 @@ body{
     background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.05"><path d="M30,30 Q50,10 70,30 T100,50 T70,70 T50,90 T30,70 T0,50 T30,30" fill="none" stroke="white" stroke-width="2"/></svg>');
     background-size:200px; opacity:0.1; z-index:0; pointer-events:none;
   }
-  .logo{font-size:3rem; margin-bottom:15px; animation:float 6s ease-in-out infinite; position:relative; z-index:2}
+  .logo{font-size:3rem;margin-bottom:15px;animation:float 6s ease-in-out infinite;position:relative;z-index:2}
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-  header h1{margin:0 0 6px; font-size:clamp(1.6rem,3.6vw,2.4rem); text-shadow:2px 2px 4px rgba(0,0,0,.2); position:relative; z-index:2}
-  header p{margin:0; opacity:.92; position:relative; z-index:2}
-
-  .pond-animation{ text-align:center; margin:20px 0; pointer-events:none; position:relative; z-index:1}
-  .ripple{ display:inline-block; width:20px; height:20px; border-radius:50%; background:var(--primary-light);
-           margin:0 5px; animation:ripple 2s infinite; opacity:.7 }
+  header h1{margin:0 0 6px;font-size:clamp(1.6rem,3.6vw,2.4rem);text-shadow:2px 2px 4px rgba(0,0,0,.2);position:relative;z-index:2}
+  header p{margin:0;opacity:.92;position:relative;z-index:2}
+  .pond-animation{text-align:center;margin:20px 0;pointer-events:none;position:relative;z-index:1}
+  .ripple{display:inline-block;width:20px;height:20px;border-radius:50%;background:var(--primary-light);margin:0 5px;animation:ripple 2s infinite;opacity:.7}
   .ripple:nth-child(2){animation-delay:.3s}
   .ripple:nth-child(3){animation-delay:.6s}
   @keyframes ripple{0%{transform:scale(1);opacity:.7}100%{transform:scale(3);opacity:0}}
 
-  /* Buttons + Chips */
-  .btn{
-    display:inline-flex;align-items:center;gap:.55rem;background:var(--gold);color:var(--gold-ink);
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:.55rem;background:var(--gold);color:var(--gold-ink);
     padding:.7rem 1.1rem;margin:.35rem;border:0;border-radius:12px;font-weight:800;
-    box-shadow:0 3px 8px var(--shadow-m);cursor:pointer;text-decoration:none;transition:transform .15s ease, box-shadow .15s ease
-  }
+    box-shadow:0 3px 8px var(--shadow-m);cursor:pointer;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
   .btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px var(--shadow-m)}
   .btn-dark{background:var(--chip);color:var(--chip-ink)}
   .btn-green{background:#2e6d4c;color:#fff}
   .btn-deep{background:#265c40;color:#fff}
   .btn-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}
   .btn-outline:hover{transform:translateY(-1px);box-shadow:0 6px 12px rgba(0,0,0,.2)}
-  .btn-v5{
-    background:linear-gradient(180deg,#3b4a6b,#2e3b58);
-    color:#ffffff;border:1px solid #24324c;box-shadow:0 3px 8px rgba(0,0,0,.25);
-    border-radius:14px;font-weight:700;transition:transform .15s ease, box-shadow .15s ease, background .25s ease;
-  }
-  .btn-v5:hover{background:linear-gradient(180deg,#43537b,#364466);transform:translateY(-1px);box-shadow:0 6px 12px rgba(0,0,0,.3)}
 
-  /* Sections & Layout */
+  /* Layout */
   section{padding:2rem 1rem;max-width:1000px;margin:auto}
   h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
   .intro{text-align:center;color:var(--muted);max-width:800px;margin:.2rem auto 1rem}
-
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:.6rem}
   .card{background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 2px 8px var(--shadow-s);border:1px solid rgba(0,0,0,.06);color:inherit}
   .muted{color:var(--muted)}
 
-  /* Equations / code chips */
-  .eq, .math, .codechip{
-    font-family: ui-monospace, Menlo, Consolas, "SF Mono", monospace;
-    background: #fffef3; border:1px dashed #e8deb4; color:#2b2b2b;
-    border-radius:10px; padding:.6rem .7rem; overflow-x:auto;
-  }
-
-  /* Tables */
+  /* Tables & equations */
   .table-wrap{overflow:auto}
   table{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--table-border)}
   thead th{background:var(--table-head);border-bottom:2px solid var(--table-border);padding:.55rem .6rem;text-align:left}
   td{border-top:1px solid var(--table-border);padding:.55rem .6rem}
+  .eq,.math,.codechip{font-family:ui-monospace,Menlo,Consolas,"SF Mono",monospace;background:#fffef3;border:1px dashed #e8deb4;color:#2b2b2b;border-radius:10px;padding:.6rem .7rem;overflow-x:auto}
 
-  /* Quotes & footer */
   blockquote{background:#fffbea;border-left:6px solid gold;padding:1rem;border-radius:10px;margin:1rem 0;font-style:italic}
   footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
   footer a{color:#ffd23f;font-weight:800}
-
-  /* Anchored headings offset for smooth scroll */
-  h2[id], h3[id]{scroll-margin-top:90px}
 </style>
 </head>
 <body>
 
-<!-- ===== HERO ===== -->
 <header id="top">
   <div class="logo">🪷</div>
   <h1>ToadAid · Mirror, Runes & the Garden</h1>
   <p>Open tools of Tobyworld — built with patience, not haste.</p>
-  <div class="pond-animation">
-    <span class="ripple"></span><span class="ripple"></span><span class="ripple"></span>
-  </div>
-  <div style="margin-top:.4rem; position:relative; z-index:2">
+  <div class="pond-animation"><span class="ripple"></span><span class="ripple"></span><span class="ripple"></span></div>
+  <div style="margin-top:.4rem;position:relative;z-index:2">
     <a class="btn" href="/download/">⬇️ Download (Windows)</a>
     <a class="btn btn-deep" href="/honors/mirror-v4.html">🪞 Mirror V4 Notes</a>
     <a class="btn btn-outline" href="/honors/mirror-v5.html">🛠️ Mirror V5 (Soon)</a>
@@ -146,9 +134,8 @@ body{
   </div>
 </header>
 
-<!-- ===== NAV TRAIL ===== -->
 <nav class="breadcrumb" style="max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem">
-  <a href="#top">↑ Top</a> · <a href="#mirror">Mirror</a> · <a href="#rune3">Rune 3</a> · <a href="#speculation">Speculation</a> · <a href="#downloads">Downloads</a>
+  <a href="/">← Home</a> · <a href="#top">↑ Top</a> · <a href="#mirror">Mirror</a> · <a href="#rune3">Rune 3</a> · <a href="#speculation">Speculation</a> · <a href="#downloads">Downloads</a>
 </nav>
 
 <!-- ===== MIRROR ===== -->
