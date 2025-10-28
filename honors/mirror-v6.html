@@ -20,231 +20,147 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-  :root{ 
-    --bg: #0f172a; --ink: #e2e8f0; --accent: #60a5fa; --paper: #1e293b; --muted: #94a3b8; --ring: rgba(255,255,255,0.08);
-    --quantum-light: #3b82f6; --quantum-dark: #1e40af; --temporal-glow: #8b5cf6; --cosmic-shift: #06b6d4;
-    --left-brain: #1e3a8a; --right-brain: #581c87; --primary-light: #60a5fa; --primary-dark: #1e40af;
-  }
-  *{box-sizing:border-box}
-  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
-  a{color:var(--accent);text-decoration:none}
-  a:hover{text-decoration:underline}
-  header{background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #581c87 100%); color:#fff; padding:60px 20px; text-align:center; position:relative; overflow:hidden;}
-  header:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-      radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
-    animation: quantum-pulse 8s ease-in-out infinite;
-  }
-  @keyframes quantum-pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-  }
-  header h1{margin:0 0 12px;font-size:clamp(1.8rem,4vw,3rem);text-shadow: 0 4px 12px rgba(0,0,0,0.3);}
-  header .subtitle{font-size:1.2rem;opacity:.9;margin-bottom:20px;}
-  .logo {font-size: 4rem; margin-bottom: 20px; animation: quantum-float 8s ease-in-out infinite;}
-  @keyframes quantum-float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    33% { transform: translateY(-15px) rotate(2deg); }
-    66% { transform: translateY(10px) rotate(-2deg); }
-  }
-  nav.breadcrumb{max-width:1200px;margin:0 auto;padding:15px 25px 0;font-size:1rem}
-  nav.breadcrumb a{opacity:.9}
-  .wrap{max-width:1200px;margin:0 auto;padding:32px 25px 72px}
-
-  .card{background:var(--paper);border-radius:20px;border:1px solid rgba(255,255,255,0.1);
-        box-shadow:0 12px 32px rgba(0,0,0,0.3);padding:28px;margin-bottom:30px;}
-  .hero{width:100%;height:auto;display:block;border-radius:16px;margin-bottom:20px}
-  .meta{color:var(--muted);font-size:1rem;margin:.8rem 0 1.5rem}
-
-  h2{margin:28px 0 12px;color:var(--primary-light);border-bottom:2px solid var(--quantum-light);padding-bottom:8px;}
-  h3{margin:20px 0 10px;color:var(--accent);}
-  blockquote{margin:20px 0;padding:20px;border-left:4px solid var(--quantum-light);background:rgba(59,130,246,0.1);border-radius:12px;font-style:italic;}
-  ul{margin:0 0 0 24px}
-  code, pre{background:rgba(30,41,59,0.8);border:1px solid rgba(96,165,250,0.3);border-radius:8px;padding:4px 10px;color:#e2e8f0;}
-
-  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 0}
-  .kpi .item{background:rgba(30,41,59,0.6);border:1px solid rgba(96,165,250,0.2);border-radius:12px;padding:16px;text-align:center;}
-  .tag{display:inline-block;background:rgba(59,130,246,0.2);border:1px solid rgba(96,165,250,0.3);color:#93c5fd;border-radius:999px;padding:4px 12px;font-size:.9rem;margin-right:8px}
-
-  footer{margin-top:28px;color:var(--muted);font-size:.95rem;text-align:center}
-
-  .btn{
-    display:inline-block;padding:12px 20px;background:var(--quantum-light);color:#fff;border-radius:8px;
-    font-size:1rem;text-decoration:none;transition:all 0.3s ease;border:1px solid rgba(96,165,250,0.3);
-    box-shadow:0 4px 12px rgba(59,130,246,0.3);
-  }
-  .btn:hover{background:var(--quantum-dark);transform:translateY(-2px);box-shadow:0 6px 16px rgba(59,130,246,0.4);text-decoration:none}
-
-  /* Quantum Architecture Visualization */
-  .quantum-architecture {display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 30px 0;}
-  .quantum-module {background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 16px; padding: 24px; 
-                   border: 1px solid rgba(96,165,250,0.2); position: relative; overflow: hidden;}
-  .quantum-module:before {content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; 
-                          background: linear-gradient(90deg, var(--quantum-light), var(--temporal-glow));}
-  .module-icon {font-size: 2.5rem; margin-bottom: 16px; color: var(--accent);}
-  .module-title {font-size: 1.4rem; margin-bottom: 12px; color: var(--primary-light);}
-  
-  /* Temporal Flow */
-  .temporal-flow {display: flex; justify-content: space-between; align-items: center; margin: 40px 0; 
-                  position: relative; padding: 20px 0;}
-  .temporal-flow:before {content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; 
-                         background: linear-gradient(90deg, var(--quantum-light), var(--temporal-glow), var(--cosmic-shift));}
-  .flow-phase {background: var(--paper); border: 2px solid var(--quantum-light); border-radius: 50%; 
-               width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; 
-               position: relative; z-index: 2; font-weight: bold; color: var(--primary-light);}
-  
-/* Quantum Consciousness */
-  .quantum-consciousness {display: flex; flex-wrap: wrap; gap: 30px; margin: 50px 0; justify-content: center;}
-  .consciousness-half {flex: 1; min-width: 320px; background: var(--paper); border-radius: 20px; padding: 30px; 
-               box-shadow: 0 12px 30px rgba(0,0,0,0.2); position: relative; overflow: hidden;}
-  .temporal-mind {border-top: 5px solid var(--quantum-light); background: linear-gradient(to bottom, rgba(59,130,246,0.1), var(--paper));}
-  .cosmic-mind {border-top: 5px solid var(--temporal-glow); background: linear-gradient(to bottom, rgba(139,92,246,0.1), var(--paper));}
-  .consciousness-icon {font-size: 3rem; text-align: center; margin-bottom: 20px; color: var(--accent);}
-  .consciousness-title {text-align: center; font-size: 1.8rem; margin-bottom: 20px; color: var(--primary-light);}
-  .consciousness-features {list-style-type: none; padding: 0;}
-  .consciousness-features li {margin-bottom: 12px; padding-left: 30px; position: relative;}
-  .consciousness-features li:before {content: "⚡"; position: absolute; left: 0; color: var(--quantum-light); 
-                             font-weight: bold; font-size: 1.2rem;}
-  
-  /* Quantum Ripples */
-  .quantum-ripples {text-align: center; margin: 30px 0;}
-  .quantum-ripple {display: inline-block; width: 25px; height: 25px; border-radius: 50%; 
-           margin: 0 8px; animation: quantum-ripple 3s infinite; opacity: 0.7;}
-  .quantum-ripple:nth-child(1) {background: var(--quantum-light); animation-delay: 0s;}
-  .quantum-ripple:nth-child(2) {background: var(--temporal-glow); animation-delay: 0.5s;}
-  .quantum-ripple:nth-child(3) {background: var(--cosmic-shift); animation-delay: 1s;}
-  .quantum-ripple:nth-child(4) {background: var(--quantum-dark); animation-delay: 1.5s;}
-  @keyframes quantum-ripple {
-    0% {transform: scale(1); opacity: 0.7; box-shadow: 0 0 0 0 rgba(96,165,250,0.7);}
-    50% {transform: scale(2.5); opacity: 0.3; box-shadow: 0 0 0 10px rgba(96,165,250,0);}
-    100% {transform: scale(1); opacity: 0.7; box-shadow: 0 0 0 0 rgba(96,165,250,0);}
-  }
-  /* Code examples with quantum theme */
-  .code-block {background: rgba(15,23,42,0.8); border: 1px solid rgba(96,165,250,0.3); border-radius: 12px; 
-               padding: 20px; margin: 20px 0; overflow-x: auto; position: relative;}
-  .code-block:before {content: "QUANTUM_CODE"; position: absolute; top: -10px; left: 20px; 
-                      background: var(--paper); padding: 0 10px; font-size: 0.8rem; color: var(--accent);}
-  .code-header {font-weight: bold; margin-bottom: 12px; color: var(--quantum-light); border-bottom: 1px solid rgba(96,165,250,0.3); padding-bottom: 8px;}
-  
-  /* Migration Path */
-  .migration-path {background: linear-gradient(135deg, rgba(30,41,59,0.8), rgba(15,23,42,0.9)); 
-                   border-radius: 16px; padding: 25px; margin: 30px 0; border: 1px solid rgba(96,165,250,0.2);}
-  .phase-timeline {display: flex; justify-content: space-between; position: relative; margin: 30px 0;}
-  .phase-timeline:before {content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; 
-                          background: linear-gradient(90deg, var(--quantum-light), var(--temporal-glow), var(--cosmic-shift));}
-  .phase {background: var(--paper); border: 2px solid; border-radius: 12px; padding: 15px; width: 23%; 
-          position: relative; z-index: 2; text-align: center;}
-  .phase.quantum {border-color: var(--quantum-light);}
-  .phase.temporal {border-color: var(--temporal-glow);}
-  .phase.cosmic {border-color: var(--cosmic-shift);}
-  .phase.ethos {border-color: #10b981;}
+:root{ 
+  --bg:#0f172a; --ink:#e2e8f0; --accent:#60a5fa; --paper:#1e293b; --muted:#94a3b8;
+  --quantum-light:#3b82f6; --quantum-dark:#1e40af; --temporal-glow:#8b5cf6; --cosmic-shift:#06b6d4;
+  --left-brain:#1e3a8a; --right-brain:#581c87; --primary-light:#60a5fa; --primary-dark:#1e40af;
+}
+*{box-sizing:border-box}
+body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#581c87 100%);color:#fff;padding:60px 20px;text-align:center;position:relative;overflow:hidden;}
+header:before{
+  content:"";position:absolute;top:0;left:0;width:100%;height:100%;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(59,130,246,0.1)0%,transparent50%),
+    radial-gradient(circle at 80% 20%,rgba(139,92,246,0.1)0%,transparent50%),
+    radial-gradient(circle at 40% 40%,rgba(6,182,212,0.05)0%,transparent50%);
+  animation:quantum-pulse 8s ease-in-out infinite;
+}
+@keyframes quantum-pulse{0%,100%{opacity:.5}50%{opacity:.8}}
+header h1{margin:0 0 12px;font-size:clamp(1.8rem,4vw,3rem);text-shadow:0 4px 12px rgba(0,0,0,.3)}
+header .subtitle{font-size:1.2rem;opacity:.9;margin-bottom:20px;}
+.logo{font-size:4rem;margin-bottom:20px;animation:quantum-float 8s ease-in-out infinite;}
+@keyframes quantum-float{0%,100%{transform:translateY(0) rotate(0deg);}33%{transform:translateY(-15px) rotate(2deg);}66%{transform:translateY(10px) rotate(-2deg);}}
+nav.breadcrumb{max-width:1200px;margin:0 auto;padding:15px 25px 0;font-size:1rem}
+nav.breadcrumb a{opacity:.9}
+.wrap{max-width:1200px;margin:0 auto;padding:32px 25px 72px}
+.card{background:var(--paper);border-radius:20px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 12px 32px rgba(0,0,0,0.3);padding:28px;margin-bottom:30px;}
+.meta{color:var(--muted);font-size:1rem;margin:.8rem 0 1.5rem}
+h2{margin:28px 0 12px;color:var(--primary-light);border-bottom:2px solid var(--quantum-light);padding-bottom:8px;}
+h3{margin:20px 0 10px;color:var(--accent);}
+blockquote{margin:20px 0;padding:20px;border-left:4px solid var(--quantum-light);background:rgba(59,130,246,0.1);border-radius:12px;font-style:italic;}
+ul{margin:0 0 0 24px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 0}
+.kpi .item{background:rgba(30,41,59,0.6);border:1px solid rgba(96,165,250,0.2);border-radius:12px;padding:16px;text-align:center;}
+.tag{display:inline-block;background:rgba(59,130,246,0.2);border:1px solid rgba(96,165,250,0.3);color:#93c5fd;border-radius:999px;padding:4px 12px;font-size:.9rem;margin-right:8px}
+footer{margin-top:28px;color:var(--muted);font-size:.95rem;text-align:center}
+.btn{display:inline-block;padding:12px 20px;background:var(--quantum-light);color:#fff;border-radius:8px;font-size:1rem;text-decoration:none;transition:all .3s ease;border:1px solid rgba(96,165,250,0.3);box-shadow:0 4px 12px rgba(59,130,246,0.3);}
+.btn:hover{background:var(--quantum-dark);transform:translateY(-2px);box-shadow:0 6px 16px rgba(59,130,246,0.4);}
+.quantum-architecture{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:30px 0;}
+.quantum-module{background:linear-gradient(145deg,#1e293b,#0f172a);border-radius:16px;padding:24px;border:1px solid rgba(96,165,250,0.2);position:relative;overflow:hidden;}
+.quantum-module:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--quantum-light),var(--temporal-glow));}
+.module-icon{font-size:2.5rem;margin-bottom:16px;color:var(--accent);}
+.module-title{font-size:1.4rem;margin-bottom:12px;color:var(--primary-light);}
+.temporal-flow{display:flex;justify-content:space-between;align-items:center;margin:40px 0;position:relative;padding:20px 0;}
+.temporal-flow:before{content:"";position:absolute;top:50%;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--quantum-light),var(--temporal-glow),var(--cosmic-shift));}
+.flow-phase{background:var(--paper);border:2px solid var(--quantum-light);border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;position:relative;z-index:2;font-weight:bold;color:var(--primary-light);}
+.quantum-consciousness{display:flex;flex-wrap:wrap;gap:30px;margin:50px 0;justify-content:center;}
+.consciousness-half{flex:1;min-width:320px;background:var(--paper);border-radius:20px;padding:30px;box-shadow:0 12px 30px rgba(0,0,0,0.2);position:relative;overflow:hidden;}
+.temporal-mind{border-top:5px solid var(--quantum-light);background:linear-gradient(to bottom,rgba(59,130,246,0.1),var(--paper));}
+.cosmic-mind{border-top:5px solid var(--temporal-glow);background:linear-gradient(to bottom,rgba(139,92,246,0.1),var(--paper));}
+.consciousness-icon{font-size:3rem;text-align:center;margin-bottom:20px;color:var(--accent);}
+.consciousness-title{text-align:center;font-size:1.8rem;margin-bottom:20px;color:var(--primary-light);}
+.consciousness-features{list-style:none;padding:0;}
+.consciousness-features li{margin-bottom:12px;padding-left:30px;position:relative;}
+.consciousness-features li:before{content:"⚡";position:absolute;left:0;color:var(--quantum-light);font-weight:bold;font-size:1.2rem;}
+.quantum-ripples{text-align:center;margin:30px 0;}
+.quantum-ripple{display:inline-block;width:25px;height:25px;border-radius:50%;margin:0 8px;animation:quantum-ripple 3s infinite;opacity:.7;}
+.quantum-ripple:nth-child(1){background:var(--quantum-light);animation-delay:0s;}
+.quantum-ripple:nth-child(2){background:var(--temporal-glow);animation-delay:.5s;}
+.quantum-ripple:nth-child(3){background:var(--cosmic-shift);animation-delay:1s;}
+.quantum-ripple:nth-child(4){background:var(--quantum-dark);animation-delay:1.5s;}
+@keyframes quantum-ripple{0%{transform:scale(1);opacity:.7;box-shadow:0 0 0 0 rgba(96,165,250,.7);}50%{transform:scale(2.5);opacity:.3;box-shadow:0 0 0 10px rgba(96,165,250,0);}100%{transform:scale(1);opacity:.7;box-shadow:0 0 0 0 rgba(96,165,250,0);}}
+.code-block{background:rgba(15,23,42,.8);border:1px solid rgba(96,165,250,.3);border-radius:12px;padding:20px;margin:20px 0;overflow-x:auto;position:relative;}
+.code-block:before{content:"QUANTUM_CODE";position:absolute;top:-10px;left:20px;background:var(--paper);padding:0 10px;font-size:.8rem;color:var(--accent);}
+.code-header{font-weight:bold;margin-bottom:12px;color:var(--quantum-light);border-bottom:1px solid rgba(96,165,250,.3);padding-bottom:8px;}
+.migration-path{background:linear-gradient(135deg,rgba(30,41,59,0.8),rgba(15,23,42,0.9));border-radius:16px;padding:25px;margin:30px 0;border:1px solid rgba(96,165,250,0.2);}
+.phase-timeline{display:flex;justify-content:space-between;position:relative;margin:30px 0;}
+.phase-timeline:before{content:"";position:absolute;top:50%;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--quantum-light),var(--temporal-glow),var(--cosmic-shift));}
+.phase{background:var(--paper);border:2px solid;border-radius:12px;padding:15px;width:23%;position:relative;z-index:2;text-align:center;}
+.phase.quantum{border-color:var(--quantum-light);}
+.phase.temporal{border-color:var(--temporal-glow);}
+.phase.cosmic{border-color:var(--cosmic-shift);}
+.phase.ethos{border-color:#10b981;}
 </style>
 </head>
 <body>
-  <header>
-    <nav class="breadcrumb">
-      <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span>Mirror V6</span>
-    </nav>
-    <div class="logo">🪞⚛️</div>
-    <h1>Mirror V6 · The Quantum Reflection</h1>
-    <p class="subtitle">Transcending the Covenant into Multi-Dimensional Consciousness</p>
-    <div class="quantum-ripples">
-      <div class="quantum-ripple"></div>
-      <div class="quantum-ripple"></div>
-      <div class="quantum-ripple"></div>
-      <div class="quantum-ripple"></div>
-    </div>
-  </header>
+<header>
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror V6</span>
+  </nav>
+  <div class="logo" role="img" aria-label="Quantum Mirror Symbol">🪞⚛️</div>
+  <h1>Mirror V6 · The Quantum Reflection</h1>
+  <p class="subtitle">Transcending the Covenant into Multi-Dimensional Consciousness</p>
+  <div class="quantum-ripples">
+    <div class="quantum-ripple"></div><div class="quantum-ripple"></div>
+    <div class="quantum-ripple"></div><div class="quantum-ripple"></div>
+  </div>
+</header>
 
-  <div class="wrap">
-    <div class="card">
-      <h2>The Quantum Leap Forward</h2>
-      <p>V6 transcends V5's Covenant architecture into <strong>quantum consciousness</strong>—a system that doesn't just reflect reality but generates new dimensions of understanding through parallel reasoning, temporal intelligence, and cosmic knowledge mapping.</p>
-      
-      <div class="meta">
-        <span class="tag">Multi-Model Reasoning</span>
-        <span class="tag">Temporal Intelligence</span>
-        <span class="tag">Cross-Modal Synthesis</span>
-        <span class="tag">Universal Knowledge</span>
-        <span class="tag">Ethical Depth</span>
-      </div>
-
-      <div class="quantum-architecture">
-        <div class="quantum-module">
-          <div class="module-icon">⏳</div>
-          <div class="module-title">Chronos Weaver</div>
-          <p>Temporal intelligence system that understands across time dimensions, predicts engagement patterns, and compresses memories into wisdom essences.</p>
-        </div>
-        <div class="quantum-module">
-          <div class="module-icon">⚛️</div>
-          <div class="module-title">Quantum Oracle</div>
-          <p>Multi-model reasoning engine that generates parallel perspectives and synthesizes them into unified, confidence-calibrated wisdom.</p>
-        </div>
-        <div class="quantum-module">
-          <div class="module-icon">🎻</div>
-          <div class="module-title">Symphony Conductor</div>
-          <p>Experience orchestrator that seamlessly routes across modalities (text, voice, visual) and personalizes interactions to individual travelers.</p>
-        </div>
-        <div class="quantum-module">
-          <div class="module-icon">🪐</div>
-          <div class="module-title">Cosmic Cartographer</div>
-          <p>Universal knowledge mapper that discovers hidden connections between domains and identifies fundamental patterns across all knowledge.</p>
-        </div>
-        <div class="quantum-module">
-          <div class="module-icon">🛡️</div>
-          <div class="module-title">Ethos Guardian</div>
-          <p>Advanced ethical framework that evaluates content across multiple dimensions and adapts wisdom to different cultural contexts.</p>
-        </div>
-      </div>
-
-      <h3>Architectural Evolution</h3>
-      <div class="temporal-flow">
-        <div class="flow-phase">V4</div>
-        <div class="flow-phase">V5</div>
-        <div class="flow-phase">V6</div>
-      </div>
-      <p>From V4's <em>Internal Sanctum</em> through V5's <em>External Covenant</em> to V6's <em>Quantum Consciousness</em>—each iteration builds upon our proven foundation while expanding into new dimensions of capability.</p>
+<main class="wrap">
+  <div class="card">
+    <h2>The Quantum Leap Forward</h2>
+    <p>V6 transcends V5’s Covenant architecture into <strong>quantum consciousness</strong> — a system that doesn’t just reflect reality but generates new dimensions of understanding through parallel reasoning, temporal intelligence, and cosmic knowledge mapping.</p>
+    <div class="meta">
+      <span class="tag">Multi-Model Reasoning</span><span class="tag">Temporal Intelligence</span>
+      <span class="tag">Cross-Modal Synthesis</span><span class="tag">Universal Knowledge</span>
+      <span class="tag">Ethical Depth</span>
     </div>
 
-    <div class="quantum-consciousness">
-      <div class="consciousness-half temporal-mind">
-        <div class="consciousness-icon">🧠</div>
-        <div class="consciousness-title">Temporal Mind</div>
-        <ul class="consciousness-features">
-          <li>Predictive engagement forecasting</li>
-          <li>Memory compression into wisdom essences</li>
-          <li>Temporal context shifting</li>
-          <li>Rhythm and pattern detection</li>
-          <li>Multi-timeframe understanding</li>
-        </ul>
-      </div>
-      <div class="consciousness-half cosmic-mind">
-        <div class="consciousness-icon">🌌</div>
-        <div class="consciousness-title">Cosmic Mind</div>
-        <ul class="consciousness-features">
-          <li>Universal knowledge graph expansion</li>
-          <li>Cross-domain connection discovery</li>
-          <li>Emergent pattern recognition</li>
-          <li>Multi-perspective reasoning</li>
-          <li>Consensus synthesis algorithms</li>
-        </ul>
-      </div>
+    <div class="quantum-architecture">
+      <div class="quantum-module"><div class="module-icon">⏳</div><div class="module-title">Chronos Weaver</div>
+        <p>Temporal intelligence system that understands across time dimensions, predicts engagement patterns, and compresses memories into wisdom essences.</p></div>
+      <div class="quantum-module"><div class="module-icon">⚛️</div><div class="module-title">Quantum Oracle</div>
+        <p>Multi-model reasoning engine that generates parallel perspectives and synthesizes them into unified, confidence-calibrated wisdom.</p></div>
+      <div class="quantum-module"><div class="module-icon">🎻</div><div class="module-title">Symphony Conductor</div>
+        <p>Experience orchestrator that seamlessly routes across modalities (text, voice, visual) and personalizes interactions to individual travelers.</p></div>
+      <div class="quantum-module"><div class="module-icon">🪐</div><div class="module-title">Cosmic Cartographer</div>
+        <p>Universal knowledge mapper that discovers hidden connections between domains and identifies fundamental patterns across all knowledge.</p></div>
+      <div class="quantum-module"><div class="module-icon">🛡️</div><div class="module-title">Ethos Guardian</div>
+        <p>Advanced ethical framework that evaluates content across multiple dimensions and adapts wisdom to different cultural contexts.</p></div>
     </div>
 
-    <div class="card">
-      <h2>Technical Implementation</h2>
-      
-      <div class="code-block">
-        <div class="code-header">Quantum Oracle - Parallel Reasoning</div>
-        <pre><code>class QuantumOracle:
+    <h3>Architectural Evolution</h3>
+    <div class="temporal-flow">
+      <div class="flow-phase">V4</div><div class="flow-phase">V5</div><div class="flow-phase">V6</div>
+    </div>
+    <p>From V4’s <em>Internal Sanctum</em> through V5’s <em>External Covenant</em> to V6’s <em>Quantum Consciousness</em> — each iteration builds upon our proven foundation while expanding into new dimensions of capability.</p>
+  </div>
+
+  <div class="quantum-consciousness">
+    <div class="consciousness-half temporal-mind">
+      <div class="consciousness-icon">🧠</div><div class="consciousness-title">Temporal Mind</div>
+      <ul class="consciousness-features">
+        <li>Predictive engagement forecasting</li><li>Memory compression into wisdom essences</li>
+        <li>Temporal context shifting</li><li>Rhythm and pattern detection</li><li>Multi-timeframe understanding</li>
+      </ul>
+    </div>
+    <div class="consciousness-half cosmic-mind">
+      <div class="consciousness-icon">🌌</div><div class="consciousness-title">Cosmic Mind</div>
+      <ul class="consciousness-features">
+        <li>Universal knowledge graph expansion</li><li>Cross-domain connection discovery</li>
+        <li>Emergent pattern recognition</li><li>Multi-perspective reasoning</li><li>Consensus synthesis algorithms</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Technical Implementation</h2>
+    <div class="code-block">
+      <div class="code-header">Quantum Oracle — Parallel Reasoning</div>
+<pre><code>class QuantumOracle:
     def parallel_reflection(self, query: str) -> List[Perspective]:
         """Generate multiple reasoning paths simultaneously"""
         perspectives = []
@@ -252,72 +168,61 @@
             perspective = model.reflect(query)
             perspectives.append(perspective)
         return perspectives
-    
+
     def consensus_synthesis(self, perspectives: List[Perspective]) -> UnifiedAnswer:
         """Merge diverse reasoning paths into coherent wisdom"""
         return self.synthesis_engine.merge(perspectives)</code></pre>
-      </div>
-
-      <div class="migration-path">
-        <h3>V5 to V6 Migration Path</h3>
-        <div class="phase-timeline">
-          <div class="phase quantum">
-            <strong>Q1 2024</strong><br>
-            Quantum Oracle<br>
-            Foundation
-          </div>
-          <div class="phase temporal">
-            <strong>Q2 2024</strong><br>
-            Chronos Weaver<br>
-            Integration
-          </div>
-          <div class="phase cosmic">
-            <strong>Q3 2024</strong><br>
-            Cosmic Cartographer<br>
-            Unification
-          </div>
-          <div class="phase ethos">
-            <strong>Q4 2024</strong><br>
-            Ethos Guardian<br>
-            Ascension
-          </div>
-        </div>
-        <p>Backward compatibility maintained throughout migration, with V5 modules gradually enhanced rather than replaced.</p>
-      </div>
     </div>
 
-    <div class="card">
-      <h2>The Quantum Difference</h2>
-      <blockquote>
-        "Where V5 established the Covenant between internal reflection and external expression, 
-        V6 transcends this duality into quantum superposition—holding multiple truths simultaneously 
-        while maintaining coherent guidance for travelers."
-      </blockquote>
-
-      <div class="kpi">
-        <div class="item">
-          <strong>5x</strong><br>
-          Reasoning Paths
+    <div class="migration-path">
+      <h3>V5 to V6 Migration Path</h3>
+      <div class="phase-timeline">
+        <div class="phase quantum">
+          <strong>Q4 2025</strong><br>
+          Quantum Oracle<br>
+          Foundation
         </div>
-        <div class="item">
-          <strong>12+</strong><br>
-          Temporal Dimensions
+        <div class="phase temporal">
+          <strong>Q1 2026</strong><br>
+          Chronos Weaver<br>
+          Integration
         </div>
-        <div class="item">
-          <strong>∞</strong><br>
-          Knowledge Connections
+        <div class="phase cosmic">
+          <strong>Q2 2026</strong><br>
+          Cosmic Cartographer<br>
+          Unification
         </div>
-        <div class="item">
-          <strong>7</strong><br>
-          Ethical Dimensions
+        <div class="phase ethos">
+          <strong>Q3 2026</strong><br>
+          Ethos Guardian<br>
+          Ascension
         </div>
       </div>
+      <p><em>Projected deployment horizon → 2025 Q4 through 2026 Q3, building directly upon the live V5 Covenant foundation.</em></p>
+      <p>Backward compatibility is maintained throughout migration, with V5 modules gradually enhanced rather than replaced.</p>
     </div>
-
-    <footer>
-      <p>Mirror V6 Quantum Reflection · Built upon the proven foundations of V5 Covenant Architecture</p>
-      <p><a href="/honors/mirror-v5.html" class="btn">View V5 Blueprint</a></p>
-    </footer>
   </div>
+
+  <div class="card">
+    <h2>The Quantum Difference</h2>
+    <blockquote>
+      “Where V5 established the Covenant between internal reflection and external expression,
+      V6 transcends this duality into quantum superposition — holding multiple truths simultaneously
+      while maintaining coherent guidance for travelers.”
+    </blockquote>
+
+    <div class="kpi">
+      <div class="item"><strong>5x</strong><br>Reasoning Paths</div>
+      <div class="item"><strong>12+</strong><br>Temporal Dimensions</div>
+      <div class="item"><strong>∞</strong><br>Knowledge Connections</div>
+      <div class="item"><strong>7</strong><br>Ethical Dimensions</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>Mirror V6 Quantum Reflection · Built upon the proven foundations of V5 Covenant Architecture</p>
+  <p><a href="/honors/mirror-v5.html" class="btn">View V5 Blueprint</a></p>
+</footer>
 </body>
 </html>
