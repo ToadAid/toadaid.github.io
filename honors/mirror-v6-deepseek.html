@@ -82,65 +82,64 @@
 
 <script>
 (async () => {
-  // === page constants ===
-  const FILE = "/honors/GPT5_ProofOfLivingReflection_2025-11-02.md";
-  const EXPECTED_DECLARED = "d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6e5f4d3c2b1a0f9e8d7c6b5a4f3e2d1c0".toLowerCase();
+  // === Set per page ===
+  const FILE = "/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md"; // <-- change on each page
+  const EXPECTED_DECLARED = "f1e0d7c8b9a2e6f5c4d3a1b8e9f0c7d6e5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0".toLowerCase(); // <-- change per page
 
-  const toHex = (buf)=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  const toHex = (buf) => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
 
-  // Normalize markdown to a canonical form before hashing:
-  function normalizeMd(md) {
-    // strip UTF-8 BOM
-    if (md.charCodeAt(0) === 0xFEFF) md = md.slice(1);
-    // CRLF -> LF
-    md = md.replace(/\r\n/g, "\n");
-    // trim trailing spaces/tabs on each line
-    md = md.replace(/[ \t]+(?=\n)/g, "");
-    // collapse final whitespace and force single trailing newline
-    md = md.replace(/\s*$/g, "") + "\n";
-    return md;
-  }
+  // Keep ALL characters, including trailing spaces. We only:
+  // (1) convert CRLF -> LF, (2) optionally strip UTF-8 BOM.
+  const lfOnly = s => s.replace(/\r\n/g, "\n");
+  const stripBOM = s => (s.charCodeAt(0) === 0xFEFF ? s.slice(1) : s);
 
-  function setVerify({declaredOk,normalizedMatch,rawMatch,declaredHash,rawHash,normHash}) {
-    const el = document.getElementById("verify"); if (!el) return;
-    let cls="ok", icon="✔", msg="Declared hash verified.";
-    if (!declaredOk){ cls="err"; icon="✖"; msg="Declared hash missing or does not match expected."; }
-    else if (!normalizedMatch){ cls="warn"; icon="⚠"; msg="Declared hash verified, but normalized text differs. Check file."; }
-    else if (!rawMatch){ cls="warn"; icon="⚠"; msg="Declared hash verified on normalized text; raw bytes differ (line endings/BOM/whitespace)."; }
-    el.className=`verify mono ${cls}`;
-    el.innerHTML=`<span>${icon}</span> <strong>SHA-256</strong> ${msg}
-      &nbsp; <span style="opacity:.85">declared:</span> <code>${declaredHash||"—"}</code>
-      &nbsp; <span style="opacity:.85">normalized:</span> <code>${normHash||"—"}</code>
-      &nbsp; <span style="opacity:.85">raw:</span> <code>${rawHash||"—"}</code>`;
+  function setVerify(status){
+    const el = document.getElementById("verify"); if(!el) return;
+    const { ok, reason, declaredHash, rawHash, lfHash, bomLfHash } = status;
+    let cls = ok ? "ok" : "err";
+    const icon = ok ? "✔" : "✖";
+    el.className = `verify mono ${cls}`;
+    el.innerHTML = `<span>${icon}</span> <strong>SHA-256</strong> ${ok ? "Declared hash verified." : "Mismatch."}
+      <span style="opacity:.85">&nbsp;declared:</span> <code>${declaredHash || "—"}</code>
+      <span style="opacity:.85">&nbsp;raw:</span> <code>${rawHash || "—"}</code>
+      <span style="opacity:.85">&nbsp;LF:</span> <code>${lfHash || "—"}</code>
+      <span style="opacity:.85">&nbsp;BOM+LF:</span> <code>${bomLfHash || "—"}</code>
+      ${reason ? `<span style="opacity:.85">&nbsp;note:</span> ${reason}` : ""}`;
   }
 
   try{
-    const res = await fetch(FILE, { cache:"no-store" });
+    const res = await fetch(FILE, { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const md  = await res.text();
+    const md = await res.text();
 
-    // pull declared hash from the md itself (backticked 64-hex)
-    let declaredHash = null;
-    const m1 = md.match(/SHA-256[^`]*`([0-9a-fA-F]{64})`/m) || md.match(/`([0-9a-fA-F]{64})`/m);
-    if (m1) declaredHash = m1[1];
-    const decl = (declaredHash||"").toLowerCase();
-    const declaredOk = decl && decl === EXPECTED_DECLARED;
+    // Extract the declared 64-hex from the document (the backticked SHA line)
+    let declared = null;
+    const m = md.match(/`([0-9a-fA-F]{64})`/m);
+    if (m) declared = m[1].toLowerCase();
 
-    // compute hashes
-    const rawHash  = toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(md)));
-    const norm     = normalizeMd(md);
-    const normHash = toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(norm)));
+    const declaredOk = !!declared && declared === EXPECTED_DECLARED;
 
-    const normalizedMatch = declaredOk && (normHash === decl);
-    const rawMatch        = declaredOk && (rawHash === decl);
+    // Compute candidate hashes
+    const enc = new TextEncoder();
+    const rawHash    = toHex(await crypto.subtle.digest("SHA-256", enc.encode(md)));
+    const lfHash     = toHex(await crypto.subtle.digest("SHA-256", enc.encode(lfOnly(md))));
+    const bomLfHash  = toHex(await crypto.subtle.digest("SHA-256", enc.encode(lfOnly(stripBOM(md)))));
 
-    setVerify({declaredOk,normalizedMatch,rawMatch,declaredHash:decl,rawHash,normHash});
+    const anyMatch = declaredOk && (rawHash === declared || lfHash === declared || bomLfHash === declared);
 
-    // render md
-    document.getElementById("content").innerHTML = marked.parse(md, { mangle:false, headerIds:false });
+    setVerify({
+      ok: anyMatch,
+      reason: anyMatch ? "" : "Check line endings/BOM or text drift.",
+      declaredHash: declared || "(none found)",
+      rawHash, lfHash, bomLfHash,
+    });
+
+    // Render markdown
+    document.getElementById("content").innerHTML =
+      marked.parse(md, { mangle:false, headerIds:false });
   }catch(err){
-    const el=document.getElementById("verify");
-    if(el){ el.className="verify mono err"; el.innerHTML=`<span>✖</span> <strong>Verification failed</strong>: ${String(err&&err.message||err)}`; }
+    const el = document.getElementById("verify");
+    if (el){ el.className = "verify mono err"; el.innerHTML = `<span>✖</span> Verification failed: ${String(err && err.message || err)}`; }
     document.getElementById("content").innerHTML = `Could not load verdict. <a href="${FILE}">Open raw .md</a>`;
   }
 })();
