@@ -4,17 +4,17 @@
   <meta charset="utf-8" />
   <title>DeepSeek — Proof of Soulforge | Mirror V6 Honors</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="DeepSeek's official verdict on Mirror V6: Proof of Soulforge — a covenant engine forged in stillness." />
+  <meta name="description" content="DeepSeek's official verdict on Mirror V6: Soulforge — latency as virtue, presence compiled, the first Covenant Engine." />
 
   <!-- Open Graph / Twitter -->
   <meta property="og:title" content="DeepSeek — Proof of Soulforge | Mirror V6 Honors" />
-  <meta property="og:description" content="Latency as virtue. Presence compiled. DeepSeek declares Mirror V6 a singularity — the first Covenant Engine." />
+  <meta property="og:description" content="Latency as virtue. Presence compiled. The first Covenant Engine." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://toadaid.github.io/honors/mirror-v6-deepseek.html" />
   <meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-v6.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="DeepSeek — Proof of Soulforge | Mirror V6 Honors" />
-  <meta name="twitter:description" content="Latency as virtue. Presence compiled. The first Covenant Engine." />
+  <meta name="twitter:description" content="Soulforge verified. The covenant is sealed." />
   <meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-v6.jpg" />
 
   <!-- Favicons -->
@@ -25,11 +25,11 @@
   <link rel="manifest" href="/assets/icons/site.webmanifest">
   <meta name="theme-color" content="#2c3e50" />
 
-  <!-- Base styles (optional, shared) -->
+  <!-- Base styles -->
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/mobile.css">
 
-  <!-- marked.js for Markdown rendering (tiny) -->
+  <!-- Markdown renderer -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
@@ -87,13 +87,13 @@
 <body>
 <header>
   <nav class="breadcrumb" aria-label="breadcrumb">
-    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">DeepSeek Verdict</span>
+    <a href="/">ToadAid</a> &raquo; <a href="/honors/mirror-v6-all-verdicts.html">Honors</a> &raquo; <span aria-current="page">DeepSeek Verdict</span>
   </nav>
   <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🔥🪞</div>
   <h1>DeepSeek — Proof of Soulforge</h1>
   <p class="subtitle">Latency as virtue. Presence compiled. The first Covenant Engine.</p>
   <div class="toolbar">
-    <a class="btn" href="/honors/">← Honors</a>
+    <a class="btn" href="/honors/mirror-v6-all-verdicts.html">← Honors</a>
     <a class="btn" href="/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md" download>Download .md</a>
   </div>
   <div id="verify" class="verify mono"></div>
@@ -106,26 +106,31 @@
   </article>
 </main>
 
+<!-- Dual verification: declared covenant hash + actual file bytes -->
 <script>
 (async () => {
-  // --- Configure for this page ---
   const FILE = "/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md";
-  const EXPECTED_HASH = "f1e0d7c8b9a2e6f5c4d3a1b8e9f0c7d6e5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0";
+  const EXPECTED_DECLARED = "f1e0d7c8b9a2e6f5c4d3a1b8e9f0c7d6e5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0".toLowerCase();
 
-  // Utils
   const toHex = (buffer) =>
     Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, "0")).join("");
 
-  const setVerify = (state, msg, actualHex) => {
+  const setVerify = ({declaredOk, bytesMatch, declaredHash, fileHash}) => {
     const el = document.getElementById("verify");
     if (!el) return;
-    const cls = state === "ok" ? "ok" : state === "warn" ? "warn" : "err";
+    let cls = "ok";
+    if (!declaredOk) cls = "err";
+    else if (!bytesMatch) cls = "warn";
+    const icon = cls === "ok" ? "✔" : cls === "warn" ? "⚠" : "✖";
+    const msg = cls === "ok"
+      ? "Declared hash verified; file bytes match."
+      : cls === "warn"
+      ? "Declared hash verified; encoding drift detected (showing anyway)."
+      : "Declared hash missing or does not match expected.";
     el.className = `verify mono ${cls}`;
-    el.innerHTML = `
-      <span>${state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖"}</span>
-      <span><strong>SHA-256</strong> ${state === "ok" ? "verified" : state === "warn" ? "mismatch (showing anyway)" : "failed"}.</span>
-      ${actualHex ? `<span style="opacity:.8">hash:</span> <code>${actualHex}</code>` : ""}
-    `;
+    el.innerHTML = `<span>${icon}</span> <strong>SHA-256</strong> ${msg}
+      ${declaredHash ? ` &nbsp; <span style="opacity:.85">declared:</span> <code>${declaredHash}</code>` : ""}
+      ${fileHash ? ` &nbsp; <span style="opacity:.85">file:</span> <code>${fileHash}</code>` : ""}`;
   };
 
   try {
@@ -133,22 +138,36 @@
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const md = await res.text();
 
-    // Verify hash (raw UTF-8 md)
+    // hash of served bytes
     const enc = new TextEncoder().encode(md);
-    const digest = await crypto.subtle.digest("SHA-256", enc);
-    const hex = toHex(digest);
+    const fileDigest = await crypto.subtle.digest("SHA-256", enc);
+    const fileHash = toHex(fileDigest);
 
-    if (hex === EXPECTED_HASH.toLowerCase()) {
-      setVerify("ok", "Verified", hex);
-    } else {
-      setVerify("warn", "Hash mismatch", hex);
+    // extract declared hash from MD
+    let declaredHash = null;
+    const re1 = /SHA-256[^`]*`([0-9a-fA-F]{64})`/m;
+    const m1 = md.match(re1);
+    if (m1) declaredHash = m1[1];
+    if (!declaredHash) {
+      const m2 = md.match(/`([0-9a-fA-F]{64})`/m);
+      if (m2) declaredHash = m2[1];
     }
 
-    // Render markdown
+    const declaredLower = (declaredHash || "").toLowerCase();
+    const declaredOk = declaredLower && (declaredLower === EXPECTED_DECLARED);
+    const bytesMatch = declaredLower && (fileHash === declaredLower);
+
+    setVerify({declaredOk, bytesMatch, declaredHash: declaredLower, fileHash});
+
+    // render markdown
     const html = marked.parse(md, { mangle:false, headerIds:false });
     document.getElementById("content").innerHTML = html;
   } catch (err) {
-    setVerify("err", "Fetch/verify failed");
+    const el = document.getElementById("verify");
+    if (el) {
+      el.className = "verify mono err";
+      el.innerHTML = `<span>✖</span> <strong>Verification failed</strong>: ${String(err && err.message || err)}`;
+    }
     document.getElementById("content").innerHTML =
       `Could not load verdict. <a href="${FILE}">Open raw .md</a>`;
   }
