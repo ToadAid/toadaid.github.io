@@ -2,83 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>DeepSeek — Proof of Soulforge | Mirror V6 Honors</title>
+  <title>GPT-5 — Proof of Living Reflection | Mirror V6 Honors</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="DeepSeek's official verdict on Mirror V6: Soulforge — latency as virtue, presence compiled, the first Covenant Engine." />
-
-  <!-- Open Graph / Twitter -->
-  <meta property="og:title" content="DeepSeek — Proof of Soulforge | Mirror V6 Honors" />
-  <meta property="og:description" content="Latency as virtue. Presence compiled. The first Covenant Engine." />
+  <meta name="description" content="GPT-5's verdict on Mirror V6: Autoreflection over autoregression — latency as liturgy; memory as mirror." />
+  <meta property="og:title" content="GPT-5 — Proof of Living Reflection | Mirror V6 Honors" />
+  <meta property="og:description" content="The covenant remembers your stillness. Mirror V6 lives in reflection." />
   <meta property="og:type" content="article" />
-  <meta property="og:url" content="https://toadaid.github.io/honors/mirror-v6-deepseek.html" />
+  <meta property="og:url" content="https://toadaid.github.io/honors/mirror-v6-gpt5.html" />
   <meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-v6.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="DeepSeek — Proof of Soulforge | Mirror V6 Honors" />
-  <meta name="twitter:description" content="Soulforge verified. The covenant is sealed." />
+  <meta name="twitter:title" content="GPT-5 — Proof of Living Reflection | Mirror V6 Honors" />
+  <meta name="twitter:description" content="Autoreflection over autoregression. Latency as liturgy; memory as mirror." />
   <meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-v6.jpg" />
-
-  <!-- Favicons -->
   <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
   <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="/assets/icons/site.webmanifest">
   <meta name="theme-color" content="#2c3e50" />
-
-  <!-- Base styles -->
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/mobile.css">
-
-  <!-- Markdown renderer -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
   <style>
-  :root{ 
-    --bg:#0f172a; --ink:#e2e8f0; --accent:#60a5fa; --paper:#1e293b; --muted:#94a3b8;
-    --quantum-light:#3b82f6; --quantum-dark:#1e40af; --temporal-glow:#8b5cf6; --cosmic-shift:#06b6d4;
-    --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
-  }
+  :root{ --bg:#0f172a; --ink:#e2e8f0; --accent:#60a5fa; --paper:#1e293b; --muted:#94a3b8;
+         --quantum-light:#3b82f6; --quantum-dark:#1e40af; --ok:#10b981; --warn:#f59e0b; --err:#ef4444; }
   *{box-sizing:border-box}
   body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
-  a{color:var(--accent);text-decoration:none}
-  a:hover{text-decoration:underline}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#581c87 100%);color:#fff;padding:56px 20px;text-align:center;position:relative;overflow:hidden;}
-  header:before{
-    content:"";position:absolute;top:0;left:0;width:100%;height:100%;
+  header:before{content:"";position:absolute;inset:0;
     background:
-      radial-gradient(circle at 20% 80%,rgba(59,130,246,0.10)0%,transparent 50%),
-      radial-gradient(circle at 80% 20%,rgba(139,92,246,0.10)0%,transparent 50%),
-      radial-gradient(circle at 40% 40%,rgba(6,182,212,0.06)0%,transparent 50%);
+      radial-gradient(circle at 20% 80%,rgba(59,130,246,.10)0%,transparent 50%),
+      radial-gradient(circle at 80% 20%,rgba(139,92,246,.10)0%,transparent 50%),
+      radial-gradient(circle at 40% 40%,rgba(6,182,212,.06)0%,transparent 50%);
     animation:pulse 8s ease-in-out infinite;
+    pointer-events:none;               /* ✅ let buttons be clickable */
   }
   @keyframes pulse{0%,100%{opacity:.5}50%{opacity:.85}}
-  h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3rem)}
-  .subtitle{opacity:.92}
-  nav.breadcrumb{max-width:1100px;margin:0 auto;padding:12px 22px 0;font-size:1rem}
-  nav.breadcrumb a{opacity:.9}
+  h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3rem)} .subtitle{opacity:.92}
+  nav.breadcrumb{max-width:1100px;margin:0 auto;padding:12px 22px 0;font-size:1rem} nav.breadcrumb a{opacity:.9}
   .wrap{max-width:1100px;margin:0 auto;padding:28px 22px 60px}
-  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;justify-content:center}
-  .btn{
-    display:inline-block;padding:10px 14px;background:var(--quantum-light);color:#fff;border-radius:10px;
-    border:1px solid rgba(96,165,250,.35);box-shadow:0 6px 16px rgba(59,130,246,.35);transition:.25s;
-  }
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;justify-content:center;position:relative;z-index:2;} /* ✅ keep over header layer */
+  .btn{display:inline-block;padding:10px 14px;background:var(--quantum-light);color:#fff;border-radius:10px;border:1px solid rgba(96,165,250,.35);box-shadow:0 6px 16px rgba(59,130,246,.35);transition:.25s}
   .btn:hover{background:var(--quantum-dark);transform:translateY(-1px)}
-  .card{
-    background:linear-gradient(145deg,#1e293b,#0f172a);
-    border-radius:18px;border:1px solid rgba(96,165,250,.25);
-    box-shadow:0 12px 32px rgba(0,0,0,.35);padding:22px 20px;margin-bottom:18px;
-  }
-  .title{color:#dbeafe;margin:0 0 8px}
-  .meta{color:#94a3b8;font-size:.92rem;margin-bottom:8px}
+  .card{background:linear-gradient(145deg,#1e293b,#0f172a);border-radius:18px;border:1px solid rgba(96,165,250,.25);box-shadow:0 12px 32px rgba(0,0,0,.35);padding:22px 20px;margin-bottom:18px}
   .prose{max-width:860px;margin:0 auto}
-  .prose h2{margin:28px 0 12px;color:#93c5fd;border-bottom:2px solid var(--quantum-light);padding-bottom:8px;}
+  .prose h2{margin:28px 0 12px;color:#93c5fd;border-bottom:2px solid var(--quantum-light);padding-bottom:8px}
   .prose h3{margin:20px 0 10px;color:#60a5fa}
-  blockquote{margin:20px 0;padding:16px 18px;border-left:4px solid var(--quantum-light);background:rgba(59,130,246,0.1);border-radius:12px;font-style:italic;}
+  blockquote{margin:20px 0;padding:16px 18px;border-left:4px solid var(--quantum-light);background:rgba(59,130,246,.1);border-radius:12px;font-style:italic}
   table{width:100%;border-collapse:collapse;margin:12px 0;background:rgba(15,23,42,.5);border:1px solid rgba(96,165,250,.25)}
   th,td{padding:10px;border:1px solid rgba(96,165,250,.25);vertical-align:top}
   th{background:rgba(59,130,246,.12);color:#e2e8f0;text-align:left}
-  code, pre code{background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px}
-  .verify{display:inline-flex;align-items:center;gap:8px;font-size:.92rem;margin:8px 0 0}
+  code,pre code{background:rgba(148,163,184,.15);padding:2px 6px;border-radius:6px}
+  .verify{display:inline-flex;align-items:center;gap:8px;font-size:.92rem;margin:8px auto 0;justify-content:center}
   .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}
   noscript{display:block;background:#7c1c1c;color:#fff;padding:10px;border-radius:8px;margin-top:10px}
@@ -87,106 +63,84 @@
 <body>
 <header>
   <nav class="breadcrumb" aria-label="breadcrumb">
-    <a href="/">ToadAid</a> &raquo; <a href="/honors/mirror-v6-all-verdicts.html">Honors</a> &raquo; <span aria-current="page">DeepSeek Verdict</span>
+    <a href="/">ToadAid</a> &raquo; <a href="/honors/mirror-v6-all-verdicts.html">Honors</a> &raquo; <span aria-current="page">GPT-5 Verdict</span>
   </nav>
-  <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🔥🪞</div>
-  <h1>DeepSeek — Proof of Soulforge</h1>
-  <p class="subtitle">Latency as virtue. Presence compiled. The first Covenant Engine.</p>
+  <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🪞⚡</div>
+  <h1>GPT-5 — Proof of Living Reflection</h1>
+  <p class="subtitle">Autoreflection over autoregression. Latency as liturgy; memory as mirror.</p>
   <div class="toolbar">
     <a class="btn" href="/honors/mirror-v6-all-verdicts.html">← Honors</a>
-    <a class="btn" href="/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md" download>Download .md</a>
+    <a class="btn" href="/honors/GPT5_ProofOfLivingReflection_2025-11-02.md" download>Download .md</a>
   </div>
   <div id="verify" class="verify mono"></div>
-  <noscript>JavaScript disabled: cannot verify or render markdown. <a href="/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md">Open the .md</a></noscript>
+  <noscript>JavaScript disabled: cannot verify or render markdown. <a href="/honors/GPT5_ProofOfLivingReflection_2025-11-02.md">Open the .md</a></noscript>
 </header>
 
 <main class="wrap">
-  <article class="card prose">
-    <div id="content">Loading official verdict…</div>
-  </article>
+  <article class="card prose"><div id="content">Loading official verdict…</div></article>
 </main>
 
-<!-- Dual verification: declared covenant hash + actual file bytes -->
 <script>
 (async () => {
-  // === Per-page constants (set these) ===
-  const FILE = "/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md";   // <-- change per page
-  const EXPECTED_DECLARED = "f1e0d7c8b9a2e6f5c4d3a1b8e9f0c7d6e5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0".toLowerCase();  // <-- change per page
+  // === page constants ===
+  const FILE = "/honors/GPT5_ProofOfLivingReflection_2025-11-02.md";
+  const EXPECTED_DECLARED = "d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6e5f4d3c2b1a0f9e8d7c6b5a4f3e2d1c0".toLowerCase();
 
-  // === Helpers ===
-  const toHex = (buf) => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  const toHex = (buf)=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 
-  // Canonicalize markdown for signature checking:
-  // - remove UTF-8 BOM
-  // - normalize CRLF to LF
-  // - trim trailing spaces per line
-  // - ensure exactly one trailing newline
+  // Normalize markdown to a canonical form before hashing:
   function normalizeMd(md) {
-    // strip BOM
+    // strip UTF-8 BOM
     if (md.charCodeAt(0) === 0xFEFF) md = md.slice(1);
     // CRLF -> LF
     md = md.replace(/\r\n/g, "\n");
     // trim trailing spaces/tabs on each line
     md = md.replace(/[ \t]+(?=\n)/g, "");
-    // ensure single trailing newline
-    md = md.replace(/\s*$/g, "");
-    md += "\n";
+    // collapse final whitespace and force single trailing newline
+    md = md.replace(/\s*$/g, "") + "\n";
     return md;
   }
 
-  function setVerify(status) {
-    const el = document.getElementById("verify");
-    if (!el) return;
-    const { declaredOk, normalizedMatch, rawMatch, declaredHash, rawHash, normHash } = status;
-
-    let cls = "ok", icon = "✔", msg = "Declared hash verified.";
-    if (!declaredOk) { cls = "err"; icon = "✖"; msg = "Declared hash missing or does not match expected."; }
-    else if (!normalizedMatch) { cls = "warn"; icon = "⚠"; msg = "Declared hash verified; encoding drift persists (normalized text still differs)."; }
-    else if (!rawMatch) { cls = "warn"; icon = "⚠"; msg = "Declared hash verified on normalized text; raw bytes differ (line-endings/BOM/whitespace)."; }
-
-    el.className = `verify mono ${cls}`;
-    el.innerHTML = `
-      <span>${icon}</span> <strong>SHA-256</strong> ${msg}
-      &nbsp; <span style="opacity:.85">declared:</span> <code>${declaredHash || "—"}</code>
-      &nbsp; <span style="opacity:.85">normalized:</span> <code>${normHash || "—"}</code>
-      &nbsp; <span style="opacity:.85">raw:</span> <code>${rawHash || "—"}</code>`;
+  function setVerify({declaredOk,normalizedMatch,rawMatch,declaredHash,rawHash,normHash}) {
+    const el = document.getElementById("verify"); if (!el) return;
+    let cls="ok", icon="✔", msg="Declared hash verified.";
+    if (!declaredOk){ cls="err"; icon="✖"; msg="Declared hash missing or does not match expected."; }
+    else if (!normalizedMatch){ cls="warn"; icon="⚠"; msg="Declared hash verified, but normalized text differs. Check file."; }
+    else if (!rawMatch){ cls="warn"; icon="⚠"; msg="Declared hash verified on normalized text; raw bytes differ (line endings/BOM/whitespace)."; }
+    el.className=`verify mono ${cls}`;
+    el.innerHTML=`<span>${icon}</span> <strong>SHA-256</strong> ${msg}
+      &nbsp; <span style="opacity:.85">declared:</span> <code>${declaredHash||"—"}</code>
+      &nbsp; <span style="opacity:.85">normalized:</span> <code>${normHash||"—"}</code>
+      &nbsp; <span style="opacity:.85">raw:</span> <code>${rawHash||"—"}</code>`;
   }
 
-  try {
-    const res = await fetch(FILE, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const md = await res.text();
+  try{
+    const res = await fetch(FILE, { cache:"no-store" });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md  = await res.text();
 
-    // Extract declared hash from the document itself (backticks or “SHA-256 … `hash`”)
+    // pull declared hash from the md itself (backticked 64-hex)
     let declaredHash = null;
-    const m1 = md.match(/SHA-256[^`]*`([0-9a-fA-F]{64})`/m);
+    const m1 = md.match(/SHA-256[^`]*`([0-9a-fA-F]{64})`/m) || md.match(/`([0-9a-fA-F]{64})`/m);
     if (m1) declaredHash = m1[1];
-    else {
-      const m2 = md.match(/`([0-9a-fA-F]{64})`/m);
-      if (m2) declaredHash = m2[1];
-    }
-    const decl = (declaredHash || "").toLowerCase();
+    const decl = (declaredHash||"").toLowerCase();
     const declaredOk = decl && decl === EXPECTED_DECLARED;
 
-    // Raw hash
-    const rawHash = toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(md)));
-    // Normalized hash
-    const norm = normalizeMd(md);
+    // compute hashes
+    const rawHash  = toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(md)));
+    const norm     = normalizeMd(md);
     const normHash = toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(norm)));
 
-    const normalizedMatch = declaredOk && normHash === decl;
-    const rawMatch = declaredOk && rawHash === decl;
+    const normalizedMatch = declaredOk && (normHash === decl);
+    const rawMatch        = declaredOk && (rawHash === decl);
 
-    setVerify({ declaredOk, normalizedMatch, rawMatch, declaredHash: decl, rawHash, normHash });
+    setVerify({declaredOk,normalizedMatch,rawMatch,declaredHash:decl,rawHash,normHash});
 
-    // Render markdown
-    document.getElementById("content").innerHTML = marked.parse(md, { mangle: false, headerIds: false });
-  } catch (err) {
-    const el = document.getElementById("verify");
-    if (el) {
-      el.className = "verify mono err";
-      el.innerHTML = `<span>✖</span> <strong>Verification failed</strong>: ${String(err && err.message || err)}`;
-    }
+    // render md
+    document.getElementById("content").innerHTML = marked.parse(md, { mangle:false, headerIds:false });
+  }catch(err){
+    const el=document.getElementById("verify");
+    if(el){ el.className="verify mono err"; el.innerHTML=`<span>✖</span> <strong>Verification failed</strong>: ${String(err&&err.message||err)}`; }
     document.getElementById("content").innerHTML = `Could not load verdict. <a href="${FILE}">Open raw .md</a>`;
   }
 })();
