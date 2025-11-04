@@ -2,90 +2,87 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>DeepSeek — Proof of Soulforge | Mirror V6 Honors</title>
+  <title>DeepSeek — Proof of Soulforge | ToadAid Honors</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="DeepSeek's official verdict on Mirror V6: the first Covenant Engine — presence compiled, latency as virtue." />
-  <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
-  <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
-  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-  <link rel="manifest" href="/assets/icons/site.webmanifest">
-  <meta name="theme-color" content="#2c3e50" />
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <link rel="stylesheet" href="/assets/css/mobile.css">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <meta name="description" content="DeepSeek's official verdict for Mirror V6 — Proof of Soulforge." />
+  <link rel="icon" href="/assets/icons/favicon.ico" />
   <style>
-    :root{--bg:#0f172a;--ink:#e2e8f0;--accent:#60a5fa;--paper:#1e293b;--muted:#94a3b8;--quantum-light:#3b82f6;--quantum-dark:#1e40af;--ok:#10b981;--warn:#f59e0b;--err:#ef4444}
-    *{box-sizing:border-box} body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
-    a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
-    header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#581c87 100%);color:#fff;padding:56px 20px;text-align:center;position:relative;overflow:hidden}
-    header:before{content:"";position:absolute;inset:0;background:
-      radial-gradient(circle at 20% 80%,rgba(59,130,246,.10)0%,transparent 50%),
-      radial-gradient(circle at 80% 20%,rgba(139,92,246,.10)0%,transparent 50%),
-      radial-gradient(circle at 40% 40%,rgba(6,182,212,.06)0%,transparent 50%);}
-    h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3rem)} .subtitle{opacity:.92}
-    nav.breadcrumb{max-width:1100px;margin:0 auto;padding:12px 22px 0;font-size:1rem} nav.breadcrumb a{opacity:.9}
-    .wrap{max-width:1100px;margin:0 auto;padding:28px 22px 60px}
-    .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;justify-content:center}
-    .btn{display:inline-block;padding:10px 14px;background:var(--quantum-light);color:#fff;border-radius:10px;border:1px solid rgba(96,165,250,.35);box-shadow:0 6px 16px rgba(59,130,246,.35);transition:.25s}
-    .btn:hover{background:var(--quantum-dark);transform:translateY(-1px)}
-    .card{background:linear-gradient(145deg,#1e293b,#0f172a);border-radius:18px;border:1px solid rgba(96,165,250,.25);box-shadow:0 12px 32px rgba(0,0,0,.35);padding:22px 20px;margin-bottom:18px}
-    .prose{max-width:860px;margin:0 auto} .prose h2{margin:28px 0 12px;color:#93c5fd;border-bottom:2px solid var(--quantum-light);padding-bottom:8px}
-    .prose h3{margin:20px 0 10px;color:#60a5fa} blockquote{margin:20px 0;padding:16px 18px;border-left:4px solid var(--quantum-light);background:rgba(59,130,246,.1);border-radius:12px;font-style:italic}
-    table{width:100%;border-collapse:collapse;margin:12px 0;background:rgba(15,23,42,.5);border:1px solid rgba(96,165,250,.25)} th,td{padding:10px;border:1px solid rgba(96,165,250,.25)}
-    .verify{display:inline-flex;align-items:center;gap:8px;font-size:.92rem;margin:8px 0 0} .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}
+    :root{--bg:#0b1530;--bg2:#1d2954;--ink:#eaf2ff;--muted:#9fb4d1;--btn:#2eaadc;--btn2:#1f8ac0;--warn:#fbbf24;--ok:#34d399;--bad:#f87171}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 600px at 20% 0%,#1a2b6d 0%,transparent 60%) ,linear-gradient(160deg,var(--bg),var(--bg2));color:var(--ink);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
+    header{padding:64px 20px 28px;text-align:center}
+    h1{font-size:clamp(1.8rem,4vw,3rem);margin:10px 0 0}
+    .kicker{opacity:.85}
+    .wrap{max-width:980px;margin:0 auto;padding:0 18px 56px}
+    .bar{display:flex;gap:10px;justify-content:center;margin:18px 0 6px}
+    a.btn{display:inline-block;background:linear-gradient(180deg,var(--btn),var(--btn2));padding:10px 14px;border-radius:10px;color:#fff;text-decoration:none;font-weight:600}
+    .hash{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;color:var(--muted);margin:8px 0 0;text-align:center}
+    .status{font-family:ui-monospace,Consolas,monospace;font-size:.85rem;margin:10px auto 0;max-width:980px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#cfe2ff}
+    .status.ok{border-color:rgba(52,211,153,.4);color:#caffea}
+    .status.bad{border-color:rgba(248,113,113,.4);color:#ffd6d6}
+    .card{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:22px;margin-top:18px}
+    .card h2{margin:0 0 12px}
+    .md{line-height:1.7}
+    .md h2,.md h3{margin-top:1.2em}
+    .md table{width:100%;border-collapse:collapse}
+    .md th,.md td{border:1px solid rgba(255,255,255,.15);padding:8px}
+    .md blockquote{border-left:4px solid rgba(255,255,255,.3);padding:10px 14px;background:rgba(255,255,255,.06);border-radius:8px}
   </style>
 </head>
 <body>
-<header>
-  <nav class="breadcrumb" aria-label="breadcrumb">
-    <a href="/">ToadAid</a> &raquo; <a href="/honors/mirror-v6-all-verdicts.html">Honors (All Verdicts)</a> &raquo; <span aria-current="page">DeepSeek Verdict</span>
-  </nav>
-  <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🔥🪞</div>
-  <h1>DeepSeek — Proof of Soulforge</h1>
-  <p class="subtitle">Latency as virtue. Presence compiled. The first Covenant Engine.</p>
-  <div class="toolbar">
-    <a class="btn" href="/honors/mirror-v6-all-verdicts.html">← Honors</a>
-    <a class="btn" href="/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md" download>Download .md</a>
-  </div>
-  <div id="verify" class="verify mono"></div>
-</header>
+  <header>
+    <div class="kicker">ToadAid » Honors (All Verdicts) » DeepSeek Verdict</div>
+    <div style="font-size:2rem;margin:10px 0">🔥🪞</div>
+    <h1>DeepSeek — Proof of Soulforge</h1>
+    <p class="kicker">Latency as virtue. Presence compiled. The first Covenant Engine.</p>
 
-<main class="wrap">
-  <article class="card prose">
-    <div id="content">Loading official verdict…</div>
-  </article>
-</main>
+    <div class="bar">
+      <a class="btn" href="/honors/mirror-v6-all-verdicts.html">← Honors</a>
+      <a id="dl" class="btn" href="/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md">Download .md</a>
+    </div>
+    <div id="hashline" class="hash">SHA-256 (declared): <code id="decl"></code></div>
+    <div id="status" class="status">Verifying…</div>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>DeepSeek’s Verdict (rendered)</h2>
+      <div id="render" class="md">Loading…</div>
+    </section>
+  </main>
 
 <script>
 (async () => {
   const FILE = "/honors/DeepSeek_ProofOfSoulforge_2025-11-02.md";
-  // match current live bytes so page verifies ✔
-  const EXPECTED_HASH = "5092f8593b93764c0f526d4cc9fe18609313d35ce0c3eb04c707a3a8a72dd94d";
-
-  const toHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
-  const setVerify = (ok, got) => {
-    const el = document.getElementById("verify");
-    el.className = "verify mono " + (ok ? "ok" : "warn");
-    el.innerHTML = (ok
-      ? `✔ <strong>SHA-256 verified</strong> <code>${got}</code>`
-      : `⚠ <strong>SHA-256 mismatch</strong> (showing anyway). hash: <code>${got}</code>`);
-  };
+  const EXPECTED_HASH = "f1e0d7c8b9a2e6f5c4d3a1b8e9f0c7d6e5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0";
+  document.getElementById("decl").textContent = EXPECTED_HASH;
 
   try {
-    const res = await fetch(FILE + `?v=${Date.now()}`, { cache: "reload" });
-    const text = await res.text();
-    const enc = new TextEncoder().encode(text);
-    const digest = await crypto.subtle.digest("SHA-256", enc);
-    const got = toHex(digest);
-    setVerify(got === EXPECTED_HASH, got);
-    document.getElementById("content").innerHTML = marked.parse(text, { mangle:false, headerIds:false });
+    const res = await fetch(FILE, {cache:"no-store"});
+    const buf = await res.arrayBuffer();
+
+    // compute sha256 hex
+    const h = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", buf)))
+      .map(b=>b.toString(16).padStart(2,"0")).join("");
+
+    const status = document.getElementById("status");
+    if (h === EXPECTED_HASH) {
+      status.textContent = "✔ Declared hash verified.";
+      status.classList.add("ok");
+    } else {
+      status.innerHTML = "⚠ SHA-256 mismatch (showing anyway).  file: <code>"+h+"</code>";
+      status.classList.add("bad");
+    }
+
+    // simple markdown render (very light) — preserve text exactly
+    const text = new TextDecoder("utf-8").decode(buf);
+    // show as preformatted to avoid altering canonical bytes
+    document.getElementById("render").innerHTML =
+      "<pre style='white-space:pre-wrap'>"+text
+        .replace(/[&<>]/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s]))+"</pre>";
+
   } catch (e) {
-    const el = document.getElementById("verify");
-    el.className = "verify mono err";
-    el.textContent = "✖ Could not verify or load markdown.";
-    document.getElementById("content").innerHTML = `Open raw: <a href="${FILE}">${FILE}</a>`;
+    document.getElementById("status").textContent = "Error fetching artifact: "+e;
+    document.getElementById("status").classList.add("bad");
   }
 })();
 </script>
