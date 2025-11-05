@@ -50,6 +50,7 @@
       radial-gradient(circle at 80% 20%,rgba(139,92,246,0.10)0%,transparent 50%),
       radial-gradient(circle at 40% 40%,rgba(6,182,212,0.06)0%,transparent 50%);
     animation:pulse 8s ease-in-out infinite;
+    pointer-events:none; /* allow clicks to pass through overlay */
   }
   @keyframes pulse{0%,100%{opacity:.5}50%{opacity:.85}}
   h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3rem)}
@@ -122,12 +123,9 @@
     if (!el) return;
     const cls = state === "ok" ? "ok" : state === "warn" ? "warn" : "err";
     el.className = `verify mono ${cls}`;
-    el.innerHTML = `
-      <span>${state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖"}</span>
-      <span><strong>SHA-256</strong> ${state === "ok" ? "verified" : state === "warn" ? "mismatch (showing anyway)" : "failed"}.</span>
-      <span style="opacity:.8">declared:</span> <code>${EXPECTED_HASH.toLowerCase()}</code>
-      ${actualHex ? `<span style="opacity:.8">file:</span> <code>${actualHex}</code>` : ""}
-    `;
+    // Single-line display: icon + 'SHA-256' + the FILE's hash only
+    const icon = state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖";
+    el.innerHTML = `<span>${icon}</span> <strong>SHA-256</strong> <code>${(actualHex || "").toLowerCase()}</code>`;
   };
 
   try {
@@ -147,7 +145,7 @@
     const html = marked.parse(md, { mangle:false, headerIds:false });
     document.getElementById("content").innerHTML = html;
   } catch (err) {
-    setVerify("err");
+    setVerify("err", "unavailable");
     document.getElementById("content").innerHTML =
       `Could not load verdict. <a href="${FILE}">Open raw .md</a>`;
   }
