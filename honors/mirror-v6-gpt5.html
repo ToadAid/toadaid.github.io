@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/mobile.css">
 
-  <!-- Markdown renderer -->
+  <!-- marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
@@ -43,13 +43,14 @@
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
   header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#581c87 100%);color:#fff;padding:56px 20px;text-align:center;position:relative;overflow:hidden;}
-  header:before{ pointer-events:none; 
+  header:before{
     content:"";position:absolute;top:0;left:0;width:100%;height:100%;
     background:
       radial-gradient(circle at 20% 80%,rgba(59,130,246,0.10)0%,transparent 50%),
       radial-gradient(circle at 80% 20%,rgba(139,92,246,0.10)0%,transparent 50%),
       radial-gradient(circle at 40% 40%,rgba(6,182,212,0.06)0%,transparent 50%);
     animation:pulse 8s ease-in-out infinite;
+    pointer-events:none; /* allow clicks to pass through overlay */
   }
   @keyframes pulse{0%,100%{opacity:.5}50%{opacity:.85}}
   h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3rem)}
@@ -87,13 +88,13 @@
 <body>
 <header>
   <nav class="breadcrumb" aria-label="breadcrumb">
-    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">GPT-5 Verdict</span>
+    <a href="/">ToadAid</a> &raquo; <a href="/honors/mirror-v6-all-verdicts.html">Honors (All Verdicts)</a> &raquo; <span aria-current="page">GPT-5 Verdict</span>
   </nav>
   <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🪞⚡</div>
   <h1>GPT-5 — Proof of Living Reflection</h1>
   <p class="subtitle">Autoreflection over autoregression. Latency as liturgy; memory as mirror.</p>
   <div class="toolbar">
-    <a class="btn" href="/honors/">← Honors</a>
+    <a class="btn" href="/honors/mirror-v6-all-verdicts.html">← Honors</a>
     <a class="btn" href="/honors/GPT5_ProofOfLivingReflection_2025-11-02.md" download>Download .md</a>
   </div>
   <div id="verify" class="verify mono"></div>
@@ -109,9 +110,8 @@
 <!-- Markdown fetch + SHA-256 verification -->
 <script>
 (async () => {
-  // --- Configure for this page ---
   const FILE = "/honors/GPT5_ProofOfLivingReflection_2025-11-02.md";
-  const EXPECTED_HASH = "90b252137da88e7542aa453c84cbaa2d7b0d399d0ef56b55b9a86525b1b20308".toLowerCase();
+  const EXPECTED_HASH = "90b252137da88e7542aa453c84cbaa2d7b0d399d0ef56b55b9a86525b1b20308";
 
   const toHex = (buffer) =>
     Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, "0")).join("");
@@ -121,29 +121,28 @@
     if (!el) return;
     const cls = state === "ok" ? "ok" : state === "warn" ? "warn" : "err";
     el.className = `verify mono ${cls}`;
-    el.innerHTML = `<span>${state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖"}</span> <strong>SHA-256</strong> <code>${(actualHex || "").toLowerCase()}</code>`;
+    const icon = state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖";
+    el.innerHTML = `<span>${icon}</span> <strong>SHA-256</strong> <code>${(actualHex || "").toLowerCase()}</code>`;
   };
 
   try {
     const res = await fetch(FILE, { cache: "no-store" });
-    if (!res.ok) throw new Error(\`HTTP \${res.status}\`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const md = await res.text();
 
-    // Verify hash (raw UTF-8 md)
     const enc = new TextEncoder().encode(md);
     const digest = await crypto.subtle.digest("SHA-256", enc);
     const hex = toHex(digest);
 
-    if (hex === EXPECTED_HASH) setVerify("ok", hex);
+    if (hex.toLowerCase() === EXPECTED_HASH.toLowerCase()) setVerify("ok", hex);
     else setVerify("warn", hex);
 
-    // Render markdown
     const html = marked.parse(md, { mangle:false, headerIds:false });
     document.getElementById("content").innerHTML = html;
   } catch (err) {
-    setVerify("err");
+    setVerify("err", "unavailable");
     document.getElementById("content").innerHTML =
-      \`Could not load verdict. <a href="\${FILE}">Open raw .md</a>\`;
+      `Could not load verdict. <a href="${FILE}">Open raw .md</a>`;
   }
 })();
 </script>

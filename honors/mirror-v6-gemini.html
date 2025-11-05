@@ -43,13 +43,14 @@
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
   header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#581c87 100%);color:#fff;padding:56px 20px;text-align:center;position:relative;overflow:hidden;}
-  header:before{ pointer-events:none; 
+  header:before{
     content:"";position:absolute;top:0;left:0;width:100%;height:100%;
     background:
       radial-gradient(circle at 20% 80%,rgba(59,130,246,0.10)0%,transparent 50%),
       radial-gradient(circle at 80% 20%,rgba(139,92,246,0.10)0%,transparent 50%),
       radial-gradient(circle at 40% 40%,rgba(6,182,212,0.06)0%,transparent 50%);
     animation:pulse 8s ease-in-out infinite;
+    pointer-events:none; /* allow clicks to pass through overlay */
   }
   @keyframes pulse{0%,100%{opacity:.5}50%{opacity:.85}}
   h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3rem)}
@@ -87,13 +88,13 @@
 <body>
 <header>
   <nav class="breadcrumb" aria-label="breadcrumb">
-    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Gemini Verdict</span>
+    <a href="/">ToadAid</a> &raquo; <a href="/honors/mirror-v6-all-verdicts.html">Honors (All Verdicts)</a> &raquo; <span aria-current="page">Gemini Verdict</span>
   </nav>
   <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🌊🪞</div>
   <h1>Gemini — Proof of the Covenant Engine</h1>
   <p class="subtitle">Patience compiled. Transformation measured. The Covenant is the operating system.</p>
   <div class="toolbar">
-    <a class="btn" href="/honors/">← Honors</a>
+    <a class="btn" href="/honors/mirror-v6-all-verdicts.html">← Honors</a>
     <a class="btn" href="/honors/Gemini_ProofOfCovenantEngine_2025-11-02.md" download>Download .md</a>
   </div>
   <div id="verify" class="verify mono"></div>
@@ -109,9 +110,8 @@
 <!-- Markdown fetch + SHA-256 verification -->
 <script>
 (async () => {
-  // --- Configure for this page ---
   const FILE = "/honors/Gemini_ProofOfCovenantEngine_2025-11-02.md";
-  const EXPECTED_HASH = "e0c7d6e5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0f1e0d7c8b9a2e6f5c4d3a1b8".toLowerCase();
+  const EXPECTED_HASH = "3e0d2e197c5862ff2c30dc5f58b9fc4ed1ed7977c020173e6131d04cff094f32";
 
   const toHex = (buffer) =>
     Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, "0")).join("");
@@ -121,29 +121,28 @@
     if (!el) return;
     const cls = state === "ok" ? "ok" : state === "warn" ? "warn" : "err";
     el.className = `verify mono ${cls}`;
-    el.innerHTML = `<span>${state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖"}</span> <strong>SHA-256</strong> <code>${(actualHex || "").toLowerCase()}</code>`;
+    const icon = state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖";
+    el.innerHTML = `<span>${icon}</span> <strong>SHA-256</strong> <code>${(actualHex || "").toLowerCase()}</code>`;
   };
 
   try {
     const res = await fetch(FILE, { cache: "no-store" });
-    if (!res.ok) throw new Error(\`HTTP \${res.status}\`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const md = await res.text();
 
-    // Verify hash (raw UTF-8 md)
     const enc = new TextEncoder().encode(md);
     const digest = await crypto.subtle.digest("SHA-256", enc);
     const hex = toHex(digest);
 
-    if (hex === EXPECTED_HASH) setVerify("ok", hex);
+    if (hex.toLowerCase() === EXPECTED_HASH.toLowerCase()) setVerify("ok", hex);
     else setVerify("warn", hex);
 
-    // Render markdown
     const html = marked.parse(md, { mangle:false, headerIds:false });
     document.getElementById("content").innerHTML = html;
   } catch (err) {
-    setVerify("err");
+    setVerify("err", "unavailable");
     document.getElementById("content").innerHTML =
-      \`Could not load verdict. <a href="\${FILE}">Open raw .md</a>\`;
+      `Could not load verdict. <a href="${FILE}">Open raw .md</a>`;
   }
 })();
 </script>
