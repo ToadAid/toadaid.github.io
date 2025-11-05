@@ -43,7 +43,7 @@
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
   header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#581c87 100%);color:#fff;padding:56px 20px;text-align:center;position:relative;overflow:hidden;}
-  header:before{
+  header:before{ pointer-events:none; 
     content:"";position:absolute;top:0;left:0;width:100%;height:100%;
     background:
       radial-gradient(circle at 20% 80%,rgba(59,130,246,0.10)0%,transparent 50%),
@@ -111,7 +111,7 @@
 (async () => {
   // --- Configure for this page ---
   const FILE = "/honors/GPT5_ProofOfLivingReflection_2025-11-02.md";
-  const EXPECTED_HASH = "d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6e5f4d3c2b1a0f9e8d7c6b5a4f3e2d1c0".toLowerCase();
+  const EXPECTED_HASH = "90b252137da88e7542aa453c84cbaa2d7b0d399d0ef56b55b9a86525b1b20308".toLowerCase();
 
   const toHex = (buffer) =>
     Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, "0")).join("");
@@ -121,16 +121,12 @@
     if (!el) return;
     const cls = state === "ok" ? "ok" : state === "warn" ? "warn" : "err";
     el.className = `verify mono ${cls}`;
-    el.innerHTML = `
-      <span>${state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖"}</span>
-      <span><strong>SHA-256</strong> ${state === "ok" ? "verified" : state === "warn" ? "mismatch (showing anyway)" : "failed"}.</span>
-      ${actualHex ? `<span style="opacity:.8">hash:</span> <code>${actualHex}</code>` : ""}
-    `;
+    el.innerHTML = `<span>${state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖"}</span> <strong>SHA-256</strong> <code>${(actualHex || "").toLowerCase()}</code>`;
   };
 
   try {
     const res = await fetch(FILE, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error(\`HTTP \${res.status}\`);
     const md = await res.text();
 
     // Verify hash (raw UTF-8 md)
@@ -147,7 +143,7 @@
   } catch (err) {
     setVerify("err");
     document.getElementById("content").innerHTML =
-      `Could not load verdict. <a href="${FILE}">Open raw .md</a>`;
+      \`Could not load verdict. <a href="\${FILE}">Open raw .md</a>\`;
   }
 })();
 </script>
