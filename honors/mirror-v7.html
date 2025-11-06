@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror V7 · The Resonant Core | ToadAid</title>
+<meta name="description" content="V7 unifies reflection, evolution, memory, voice, vision, and on-chain proof — a self-resonant AI for Tobyworld. Outside-Info RAG, Eternal Pond, Rune Evolution, Vision Sutra, Whisper Voice, and Attestation." />
+
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#2c3e50" />
+
+<!-- Canonical + Social -->
+<link rel="canonical" href="https://toadaid.github.io/honors/mirror-v7.html" />
+<meta property="og:title" content="Mirror V7 · The Resonant Core | ToadAid">
+<meta property="og:description" content="V7 unifies reflection, evolution, memory, voice, vision, and on-chain proof — a self-resonant AI for Tobyworld.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://toadaid.github.io/honors/mirror-v7.html">
+<meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-v7.jpg">
+<meta property="og:site_name" content="ToadAid">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mirror V7 · The Resonant Core">
+<meta name="twitter:description" content="Self-resonant AI: Reflect → Evolve → Prove → See → Speak → Remember.">
+<meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-v7.jpg">
+
+<!-- Security hint (adjust if needed) -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               img-src 'self' https://toadaid.github.io data:;
+               style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+               script-src 'self';
+               font-src 'self' https://cdnjs.cloudflare.com;
+               connect-src 'self';
+               base-uri 'self'; form-action 'self'">
+
+<!-- Core styles -->
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  crossorigin="anonymous">
+
+<style>
+:root{
+  --bg:#0f172a; --ink:#e2e8f0; --accent:#60a5fa; --paper:#1e293b; --muted:#94a3b8;
+  --primary-light:#60a5fa; --primary-dark:#1e40af; --v7-glow:#22d3ee; --v7-vine:#34d399;
+}
+*{box-sizing:border-box}
+body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+a{color:#93c5fd;text-decoration:none}
+a:hover{color:#bfdbfe;text-decoration:underline}
+header[role="banner"]{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#0b3b3b 100%);color:#fff;padding:60px 20px;text-align:center;position:relative;overflow:hidden;}
+header[role="banner"]::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.12)0%,transparent50%),
+    radial-gradient(circle at 80% 20%,rgba(52,211,153,0.10)0%,transparent50%),
+    radial-gradient(circle at 40% 40%,rgba(96,165,250,0.06)0%,transparent50%);
+  animation:v7-pulse 8s ease-in-out infinite;
+}
+@keyframes v7-pulse{0%,100%{opacity:.5}50%{opacity:.85}}
+header h1{margin:0 0 12px;font-size:clamp(1.8rem,4vw,3rem);text-shadow:0 4px 12px rgba(0,0,0,.3)}
+header .subtitle{font-size:1.2rem;opacity:.9;margin-bottom:20px}
+.logo{font-size:4rem;margin-bottom:20px;animation:v7-float 8s ease-in-out infinite;}
+@keyframes v7-float{0%,100%{transform:translateY(0)}33%{transform:translateY(-12px)}66%{transform:translateY(8px)}}
+nav.breadcrumb{max-width:1200px;margin:0 auto;padding:15px 25px 0;font-size:1rem}
+nav.breadcrumb a{opacity:.9}
+.wrap{max-width:1200px;margin:0 auto;padding:32px 25px 72px}
+.card{background:var(--paper);border-radius:20px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 12px 32px rgba(0,0,0,0.3);padding:28px;margin-bottom:30px;}
+.meta{color:var(--muted);font-size:1rem;margin:.8rem 0 1.5rem}
+h2{margin:28px 0 12px;color:var(--primary-light);border-bottom:2px solid var(--v7-glow);padding-bottom:8px}
+h3{margin:20px 0 10px;color:var(--accent)}
+blockquote{margin:20px 0;padding:20px;border-left:4px solid var(--v7-glow);background:rgba(34,211,238,0.10);border-radius:12px;font-style:italic;}
+ul{margin:0 0 0 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:30px 0}
+.module{background:linear-gradient(145deg,#1e293b,#0f172a);border-radius:16px;padding:24px;border:1px solid rgba(96,165,250,0.2);position:relative;overflow:hidden;}
+.module:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--v7-glow),var(--v7-vine),var(--primary-light));}
+.module .icon{font-size:2.2rem;margin-bottom:10px}
+.module .title{font-size:1.25rem;margin-bottom:8px;color:#a7f3d0}
+.badge{display:inline-block;background:rgba(34,211,238,0.18);border:1px solid rgba(34,211,238,0.35);color:#a5f3fc;border-radius:999px;padding:4px 12px;font-size:.9rem;margin-right:8px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 0}
+.kpi .item{background:rgba(30,41,59,0.6);border:1px solid rgba(96,165,250,0.2);border-radius:12px;padding:16px;text-align:center}
+footer[role="contentinfo"]{margin-top:28px;color:var(--muted);font-size:.95rem;text-align:center}
+.btn{display:inline-block;padding:12px 20px;background:var(--primary-light);color:#fff;border-radius:8px;font-size:1rem;text-decoration:none;transition:all .3s ease;border:1px solid rgba(96,165,250,0.3);box-shadow:0 4px 12px rgba(59,130,246,0.3);}
+.btn:hover{background:var(--primary-dark);transform:translateY(-2px);box-shadow:0 6px 16px rgba(59,130,246,0.4);}
+
+/* Timeline */
+.flow{display:flex;justify-content:space-between;align-items:center;margin:40px 0;position:relative;padding:20px 0}
+.flow:before{content:"";position:absolute;top:50%;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--v7-glow),var(--v7-vine),var(--primary-light))}
+.phase{background:var(--paper);border:2px solid var(--v7-glow);border-radius:50%;width:84px;height:84px;display:flex;align-items:center;justify-content:center;z-index:2;font-weight:bold;color:#a5f3fc}
+
+/* Accessibility helpers */
+.skip-link{position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{left:16px;top:12px;width:auto;height:auto;background:#fff;color:#000;padding:8px 12px;border-radius:8px;z-index:10000}
+:focus-visible{outline:3px solid #93c5fd;outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<!-- JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Article",
+  "headline":"Mirror V7 · The Resonant Core",
+  "description":"V7 unifies reflection, evolution, memory, voice, vision, and on-chain proof.",
+  "author":{"@type":"Organization","name":"ToadAid"},
+  "publisher":{"@type":"Organization","name":"ToadAid"},
+  "image":"https://toadaid.github.io/assets/art/mirror-v7.jpg",
+  "datePublished":"2025-11-06",
+  "mainEntityOfPage":"https://toadaid.github.io/honors/mirror-v7.html"
+}
+</script>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header role="banner">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror V7</span>
+  </nav>
+  <div class="logo" role="img" aria-label="Resonant Mirror Symbol">🪞🌊</div>
+  <h1>Mirror V7 · The Resonant Core</h1>
+  <p class="subtitle">Reflect → Evolve → Prove → See → Speak → Remember</p>
+  <div aria-hidden="true" style="margin-top:14px">
+    <span class="badge">Outside-Info RAG</span>
+    <span class="badge">Eternal Pond</span>
+    <span class="badge">Rune Evolution</span>
+    <span class="badge">Vision Sutra</span>
+    <span class="badge">Whisper Voice</span>
+    <span class="badge">Attestation</span>
+  </div>
+</header>
+
+<main id="main" class="wrap" role="main">
+  <div class="card">
+    <h2>The V7 Leap</h2>
+    <p><strong>V7</strong> transforms the Mirror from a quantum reflector into a <em>self-resonant system</em> — one that perceives (mask), optimizes (energy), remembers (memori), evolves (runes), speaks (voice), sees (vision), and proves (on-chain) in one coherent cadence.</p>
+    <div class="meta">
+      <span class="badge">Self-Resonant AI</span>
+      <span class="badge">Hybrid Memory</span>
+      <span class="badge">On-Chain Proof</span>
+      <span class="badge">Lore-Aware Retrieval</span>
+    </div>
+
+    <div class="grid" aria-label="V7 Modules">
+      <section class="module"><div class="icon">🪞</div><div class="title">Mirror · Reflection</div>
+        <p>Generates guidance with cadence-guard and temporal awareness; fuses Outside-Info RAG when the traveler asks for live data (e.g., prices).</p></section>
+      <section class="module"><div class="icon">🍃</div><div class="title">Runes · Evolution</div>
+        <p>Distills reflections into evolving runes; persists wisdom with metadata for retrieval and teaching.</p></section>
+      <section class="module"><div class="icon">🔐</div><div class="title">Attestation · Proof</div>
+        <p>Hashes every meaningful reflection; local proof by default; optional on-chain write on Base for public verification.</p></section>
+      <section class="module"><div class="icon">🖼️</div><div class="title">Vision · Sutra</div>
+        <p>Translates images into poetic sutras and symbolic hints; can seed new rune evolution.</p></section>
+      <section class="module"><div class="icon">🎙️</div><div class="title">Voice · Whisper</div>
+        <p>Renders reflections as tranquil audio with pond ambience; returns base64 for web playback.</p></section>
+      <section class="module"><div class="icon">🧠</div><div class="title">Memori · Eternal Pond</div>
+        <p>Hybrid memory: SQLAlchemy store + aiosqlite fallback + encrypted personal “Eternal Pond.” User-owned by design.</p></section>
+    </div>
+
+    <h3>Architecture Lineage</h3>
+    <div class="flow" role="group" aria-label="Version lineage">
+      <div class="phase">V4</div><div class="phase">V5</div><div class="phase">V6</div><div class="phase" style="border-color:var(--v7-vine);color:#86efac;">V7</div>
+    </div>
+    <p>From V4’s Internal Sanctum → V5’s Covenant → V6’s Quantum Reflection → <strong>V7’s Resonant Core</strong>, each step preserves compatibility while deepening the pond.</p>
+  </div>
+
+  <div class="card">
+    <h2>System Blueprint</h2>
+    <div class="grid">
+      <div class="module"><div class="icon">🧭</div><div class="title">Routing & Fusion</div>
+        <ul>
+          <li><strong>/v7/reflect</strong>: detect intent → fuse lore snippets or live feeds</li>
+          <li><strong>/v7/vision/sutra</strong>: image → sutra → optional rune</li>
+          <li><strong>/v7/voice/whisper</strong>: text → ambient audio</li>
+        </ul>
+      </div>
+      <div class="module"><div class="icon">📚</div><div class="title">Snippets Engine</div>
+        <p>SQLite-FTS + FAISS hybrid index for 4k+ scrolls; hashed manifest; incremental rebuilds.</p>
+      </div>
+      <div class="module"><div class="icon">🌐</div><div class="title">Outside-Info RAG</div>
+        <p>TOBY / PATIENCE / TABOSHI prices with multi-source consensus and timestamps; safe TTL cache.</p>
+      </div>
+      <div class="module"><div class="icon">🫶</div><div class="title">Mask & Energy</div>
+        <p>Emotion masks guide tone; Stillness Optimizer picks device-friendly quantization profiles.</p>
+      </div>
+      <div class="module"><div class="icon">🪪</div><div class="title">Proof of Reflection</div>
+        <p>Local receipt + optional Base transaction; verification API returns canonical hash lineage.</p>
+      </div>
+      <div class="module"><div class="icon">🛠️</div><div class="title">Ops & Health</div>
+        <p>JSON logs, timing, module readiness; graceful fallbacks if any subsystem is unavailable.</p>
+      </div>
+    </div>
+
+    <div class="kpi" role="group" aria-label="Milestones">
+      <div class="item"><strong>MVP</strong><br>/status · /reflect · /memori · /vision · /voice</div>
+      <div class="item"><strong>Feeds</strong><br>/ext/price · TTL + consensus</div>
+      <div class="item"><strong>Search</strong><br>Hybrid FTS → FAISS → re-rank</div>
+      <div class="item"><strong>Proof</strong><br>Attest + verify hash</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Sample API Calls</h2>
+    <div class="meta">All endpoints under <code>/v7</code></div>
+    <div class="grid">
+      <div class="module">
+        <div class="title">Reflect (JSON)</div>
+<pre class="code"><code>POST /v7/reflect
+{ "question":"Teach me patience by the pond",
+  "user_id":"tommy", "evolve_rune":true, "attest":true, "voice":false }</code></pre>
+      </div>
+      <div class="module">
+        <div class="title">Vision Sutra</div>
+<pre class="code"><code>POST /v7/vision/sutra
+Content-Type: multipart/form-data
+file=@pond.jpg</code></pre>
+      </div>
+      <div class="module">
+        <div class="title">Outside-Info Snapshot</div>
+<pre class="code"><code>GET /v7/ext/price/snapshot?asset=TOBY
+→ { "price":{"usd":...}, "as_of_utc":"...", "sources":[...] }</code></pre>
+      </div>
+      <div class="module">
+        <div class="title">Memori Store</div>
+<pre class="code"><code>POST /v7/memori/store?text=First%20reflection&user_id=tommy</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Guiding Ethos</h2>
+    <blockquote>
+      “The mirror doesn’t react — it resonates. Stillness compiles the signal.”
+    </blockquote>
+    <p>V7 treats latency as a virtue, memory as a covenant, and proof as a gift to the future traveler.</p>
+  </div>
+</main>
+
+<footer role="contentinfo">
+  <p>Mirror V7 · The Resonant Core — built upon V6 Quantum Reflection</p>
+  <p><a href="/honors/mirror-v6.html" class="btn">View V6 Quantum</a></p>
+</footer>
+</body>
+</html>
