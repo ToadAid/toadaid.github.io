@@ -409,10 +409,28 @@ async function speakMirrorResponse(button) {
   const statusEl = voiceControls.querySelector('.voice-status');
   const playIcon = button.querySelector('.play-icon');
 
-  const text = button.getAttribute('data-text') || "";
+  // ✅ FIX: Get the text from the entire response, not just data-text
+  const mirrorResponse = button.closest('.mirror-response');
+  if (!mirrorResponse) {
+    console.error("❌ Could not find mirror response container");
+    statusEl.textContent = "Error: No response found";
+    statusEl.className = 'voice-status error';
+    return;
+  }
 
+  // Extract all text content from the response (excluding voice controls)
+  const responseElements = mirrorResponse.querySelectorAll(':not(.voice-controls)');
+  let text = '';
+  responseElements.forEach(el => {
+    if (el.textContent && !el.classList.contains('voice-controls')) {
+      text += el.textContent + ' ';
+    }
+  });
+
+  text = text.trim();
+  
   if (!text) {
-    console.error("❌ No text found in data-text!");
+    console.error("❌ No text found in response!");
     statusEl.textContent = "Error: No text";
     statusEl.className = 'voice-status error';
     return;
@@ -421,7 +439,7 @@ async function speakMirrorResponse(button) {
   // ✅ 1) If we already have cached audio for this answer, just replay it
   const cachedAudio = button.getAttribute('data-audio');
   if (cachedAudio) {
-    console.log("🔊 Replaying cached audio (no new ElevenLabs call)");
+    console.log("🔊 Replaying cached audio");
     statusEl.textContent = "Playing...";
     statusEl.className = 'voice-status playing';
     playIcon.textContent = "⏸";
