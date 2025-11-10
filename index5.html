@@ -503,6 +503,16 @@ const ansDiv = document.getElementById('mirror-answer');
 
 function fillQuestion(q){ qInput.value=q; qInput.focus(); }
 
+/* ========== PERSISTENT USER IDENTITY ========== */
+function getStableUserId() {
+    let userId = localStorage.getItem('mirror_user_id');
+    if (!userId) {
+        userId = "web_" + Math.random().toString(36).substr(2, 12);
+        localStorage.setItem('mirror_user_id', userId);
+    }
+    return userId;
+}
+
 /* Off-ramp detection: accepts with/without emoji tail */
 const BOW_RX = /Traveler,\s*the reflection rests(?:\.[^\n]*)?(?:[\s\S]*?(?:🪞🌊🍃🌀))?/i;
 
@@ -812,7 +822,8 @@ async function askMirror(){
   setBusy(true);
   ansDiv.innerHTML = '<div style="text-align:center;padding:1.1rem">🌊 The pond grows still, awaiting reflection...</div>';
 
-  const payload = { question, user: "web_visitor_" + Date.now() };
+  // 🔥 FIXED: Use persistent user identity instead of changing timestamp
+  const payload = { question, user: getStableUserId() };
   const headers = { "Content-Type":"application/json", "Accept":"application/json" };
 
   const t0 = performance.now();
