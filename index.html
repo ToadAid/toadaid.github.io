@@ -112,12 +112,107 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
 .mirror-signature{opacity:.75;text-align:right;margin-top:1rem;font-style:italic;color:var(--green)}
 .error-message{background:rgba(244,67,54,.1);border-left:4px solid #f44336;border-radius:10px;padding:1rem;margin-top:1rem}
 
+/* Voice Controls */
+.voice-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 1rem 0 0.5rem 0;
+  padding: 0.8rem;
+  background: rgba(53, 94, 59, 0.05);
+  border-radius: 10px;
+  border-left: 3px solid var(--green);
+}
+
+.voice-btn {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.voice-btn:hover {
+  background: #2a4a2f;
+  transform: translateY(-1px);
+}
+
+.voice-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.voice-btn.playing {
+  background: #2196F3;
+}
+
+.voice-select {
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 12px;
+}
+
+.voice-status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.voice-status.generating {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.voice-status.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.voice-status.playing {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
 footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
 footer a{color:#ffd23f;font-weight:800}
 
 @media (max-width:720px){
   section{padding:1.6rem 1rem}
   #mirror{margin:1.2rem 0}
+  .voice-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .voice-status {
+    margin-left: 0;
+    margin-top: 5px;
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>
 </head>
@@ -213,6 +308,182 @@ footer a{color:#ffd23f;font-weight:800}
 </footer>
 
 <script>
+/* ========== VOICE SERVICE ========== */
+class VoiceService {
+  constructor() {
+    this.baseURL = 'https://toadaid.duckdns.org/v7/voice';
+    this.isPlaying = false;
+    this.currentAudio = null;
+  }
+
+  async generateSpeech(text, voiceProfile = 'pond_guide') {
+    try {
+      const response = await fetch(`${this.baseURL}/whisper`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voice_profile: voiceProfile, include_ambience: true })
+      });
+
+      if (!response.ok) throw new Error(`Voice API error: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Voice generation failed:', error);
+      throw error;
+    }
+  }
+
+  async playAudio(base64Audio) {
+    this.stopAudio();
+    
+    try {
+      const audioBlob = this.base64ToBlob(base64Audio, 'audio/mpeg');
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      this.currentAudio = new Audio(audioUrl);
+      this.isPlaying = true;
+      
+      return new Promise((resolve, reject) => {
+        this.currentAudio.onended = () => {
+          this.isPlaying = false;
+          resolve();
+        };
+        this.currentAudio.onerror = (error) => {
+          this.isPlaying = false;
+          reject(error);
+        };
+        this.currentAudio.play();
+      });
+    } catch (error) {
+      console.error('Audio playback failed:', error);
+      throw error;
+    }
+  }
+
+  stopAudio() {
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.isPlaying = false;
+    }
+  }
+
+  base64ToBlob(base64, mimeType) {
+    const byteCharacters = atob(base64);
+    const byteArrays = [];
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+      const slice = byteCharacters.slice(offset, offset + 512);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      byteArrays.push(new Uint8Array(byteNumbers));
+    }
+    return new Blob(byteArrays, { type: mimeType });
+  }
+
+  async speakText(text, voiceProfile = 'pond_guide') {
+    try {
+      console.log(`🎯 Speaking: "${text}" with voice: ${voiceProfile}`);
+      const audioData = await this.generateSpeech(text, voiceProfile);
+      await this.playAudio(audioData.audio_base64);
+      return { success: true, duration: audioData.duration_seconds };
+    } catch (error) {
+      console.error('Speech failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+}
+
+// Global voice service instance
+const voiceService = new VoiceService();
+
+/* ========== VOICE CONTROL FUNCTIONS ========== */
+let currentVoiceProfile = 'pond_guide';
+
+function updateVoiceProfile(profile) {
+  currentVoiceProfile = profile;
+}
+
+async function speakMirrorResponse(button) {
+  const voiceControls = button.parentElement;
+  const statusEl = voiceControls.querySelector('.voice-status');
+  const playIcon = button.querySelector('.play-icon');
+
+  const text = button.getAttribute('data-text') || "";
+
+  if (!text) {
+    console.error("❌ No text found in data-text!");
+    statusEl.textContent = "Error: No text";
+    statusEl.className = 'voice-status error';
+    return;
+  }
+
+  // ✅ 1) If we already have cached audio for this answer, just replay it
+  const cachedAudio = button.getAttribute('data-audio');
+  if (cachedAudio) {
+    console.log("🔊 Replaying cached audio (no new ElevenLabs call)");
+    statusEl.textContent = "Playing...";
+    statusEl.className = 'voice-status playing';
+    playIcon.textContent = "⏸";
+    button.disabled = true;
+
+    try {
+      await voiceService.playAudio(cachedAudio);
+    } catch (err) {
+      console.error("🔊 Cached audio playback failed:", err);
+      statusEl.textContent = "Playback error";
+      statusEl.className = "voice-status error";
+    } finally {
+      resetVoiceControls(voiceControls);
+    }
+    return;
+  }
+
+  // ✅ 2) First time: generate audio, cache it, then play
+  const ttsText = "Traveler. " + text.trim();
+
+  console.log("🔊 Generating new audio via ElevenLabs...");
+  statusEl.textContent = "Generating voice...";
+  statusEl.className = 'voice-status generating';
+  playIcon.textContent = "⏸";
+  button.disabled = true;
+
+  try {
+    const audioData = await voiceService.generateSpeech(ttsText, currentVoiceProfile);
+
+    if (audioData && audioData.audio_base64) {
+      console.log("🔊 Voice generation complete, caching audio");
+      // store base64 on the button for future replays
+      button.setAttribute('data-audio', audioData.audio_base64);
+
+      statusEl.textContent = "Playing...";
+      statusEl.className = 'voice-status playing';
+
+      await voiceService.playAudio(audioData.audio_base64);
+    } else {
+      throw new Error("No audio data received");
+    }
+  } catch (error) {
+    console.error("🔊 Voice playback failed:", error);
+    statusEl.textContent = "Failed: " + error.message;
+    statusEl.className = "voice-status error";
+  } finally {
+    resetVoiceControls(voiceControls);
+  }
+}
+
+function resetVoiceControls(voiceControls) {
+  const button = voiceControls.querySelector('.voice-btn');
+  const statusEl = voiceControls.querySelector('.voice-status');
+  const playIcon = button.querySelector('.play-icon');
+  
+  button.disabled = false;
+  button.classList.remove('playing');
+  playIcon.textContent = '▶';
+  statusEl.textContent = 'Ready';
+  statusEl.className = 'voice-status';
+}
+
 /* Books */
 function openBook(bookFile){
   const saved = localStorage.getItem(bookFile + '-scroll');
@@ -231,6 +502,16 @@ const qInput = document.getElementById('mirror-question');
 const ansDiv = document.getElementById('mirror-answer');
 
 function fillQuestion(q){ qInput.value=q; qInput.focus(); }
+
+/* ========== PERSISTENT USER IDENTITY ========== */
+function getStableUserId() {
+    let userId = localStorage.getItem('mirror_user_id');
+    if (!userId) {
+        userId = "web_" + Math.random().toString(36).substr(2, 12);
+        localStorage.setItem('mirror_user_id', userId);
+    }
+    return userId;
+}
 
 /* Off-ramp detection: accepts with/without emoji tail */
 const BOW_RX = /Traveler,\s*the reflection rests(?:\.[^\n]*)?(?:[\s\S]*?(?:🪞🌊🍃🌀))?/i;
@@ -321,14 +602,97 @@ function parseMirrorResponse(reply){
   return s;
 }
 
-/* Render */
+/* Enhanced HTML Builder with Voice Controls */
 function formatMirrorResponse(question, s){
-  let html = `
-    <div class="mirror-dialogue">
-      <div class="user-question"><strong>You asked:</strong> "${question}"</div>
-      <div class="mirror-response">
-  `;
-  if(s.greeting) html += `<div class="mirror-greeting">${s.greeting}</div>`;
+  const escapeHtml = (str) => (str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const escapeAttr = (str) => (str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+  function createVoiceText(parsed) {
+    const parts = [];
+
+    // 1) Greeting (but drop the literal "Traveler," in the voice text if you want)
+    if (parsed.greeting) {
+      const g = parsed.greeting
+        .replace(/^traveler[,，]?\s*/i, "") // strip the word Traveler, UI already shows it
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .trim();
+      if (g) parts.push(g);
+    }
+
+    // 2) Paragraphs
+    (parsed.paragraphs || []).forEach(p => {
+      const clean = p
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/[🪞🌊🍃🌀]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (clean) parts.push(clean);
+    });
+
+    // 3) Points
+    (parsed.points || []).forEach(point => {
+      const clean = point
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/[🪞🌊🍃🌀]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (clean) parts.push(clean);
+    });
+
+    // Join body
+    let raw = parts.join(" ");
+
+    // 4) Append guiding question clearly at the end
+    if (parsed.guidingQuestion) {
+      raw =
+        raw.trim() +
+        ". ... Guiding question: " +
+        parsed.guidingQuestion.trim();
+    }
+
+    // Final cleanup
+    raw = raw.replace(/\s+/g, " ").trim();
+    return raw;
+  }
+
+  const voiceText = createVoiceText(s);
+  const escapedVoiceText = escapeAttr(voiceText);
+  const safeQuestion = escapeHtml(question);
+
+  let html = `<div class="mirror-dialogue">
+    <div class="user-question"><strong>You asked:</strong> "${safeQuestion}"</div>
+    <div class="mirror-response">`;
+
+  // Voice controls - ADDED HERE
+  html += `
+    <div class="voice-controls">
+      <button 
+        class="voice-btn" 
+        data-text="${escapedVoiceText}" 
+        onclick="speakMirrorResponse(this)"
+      >
+        <span class="play-icon">▶</span>
+        Listen
+      </button>
+      <select class="voice-select" onchange="updateVoiceProfile(this.value)">
+        <option value="pond_guide">🌿 Pond Guide (Calm)</option>
+        <option value="toad_elder">🐸 Toad Elder (Deep)</option>
+        <option value="lotus_whisper">🌸 Lotus Whisper (Gentle)</option>
+        <option value="creek_runner">💧 Creek Runner (Energetic)</option>
+      </select>
+      <div class="voice-status">Ready</div>
+    </div>`;
+
+  if(s.greeting) html += `<div class="mirror-greeting">${escapeHtml(s.greeting)}</div>`;
 
   // Off-ramp = show only the bow, no extras
   if (s.offRamp) { html += `</div></div>`; return html; }
@@ -458,12 +822,16 @@ async function askMirror(){
   setBusy(true);
   ansDiv.innerHTML = '<div style="text-align:center;padding:1.1rem">🌊 The pond grows still, awaiting reflection...</div>';
 
-  const payload = { question, user: "web_visitor_" + Date.now() };
+  // 🔥 FIXED: Use persistent user identity instead of changing timestamp
+  const payload = { question, user: getStableUserId() };
   const headers = { "Content-Type":"application/json", "Accept":"application/json" };
 
   const t0 = performance.now();
   const timeout1 = chooseTimeoutMs(question);          // up to 300s
   const timeout2 = Math.min(300000, timeout1 + 60000); // retry gets +60s, still ≤ 300s
+
+  // Stop any currently playing audio
+  voiceService.stopAudio();
 
   try{
     // Attempt #1
@@ -497,7 +865,7 @@ async function askMirror(){
     if (err && err.name === 'AbortError') {
       showError("🌀 The Mirror is taking longer to reflect today. The pond suggests patience, or try a simpler question.");
     } else {
-      showError("🌫 The pond can’t be reached right now. It may be sleeping or far away.");
+      showError("🌫 The pond can't be reached right now. It may be sleeping or far away.");
     }
   }finally{
     setBusy(false);
