@@ -84,7 +84,7 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
 
 /* Seek Wisdom bar */
 .cta{
-  width:100%;padding:1rem 1.2rem;border=0;border-radius:12px;
+  width:100%;padding:1rem 1.2rem;border:0;border-radius:12px;
   background:linear-gradient(135deg,#6b5bd2,#7b4aa2);color:#fff;
   font:600 1.05rem/1 system-ui,-apple-system,"Segoe UI",sans-serif;
   display:flex;align-items:center;justify-content:center;gap:.6rem;text-align:center;
@@ -153,21 +153,6 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
   background: #2196F3;
 }
 
-.voice-btn.awaiting-interaction {
-  background: #ff9800 !important;
-  animation: pulse-orange 2s infinite;
-}
-
-.stop-btn {
-  background: #f44336;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 16px;
-  cursor: pointer;
-  font-size: 13px;
-}
-
 .voice-select {
   padding: 4px 8px;
   border-radius: 8px;
@@ -212,19 +197,10 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
   100% { opacity: 1; }
 }
 
-@keyframes pulse-orange {
-  0% { background-color: #ff9800; }
-  50% { background-color: #ff5722; }
-  100% { background-color: #ff9800; }
-}
+footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
+footer a{color:#ffd23f;font-weight:800}
 
-/* Mobile Responsive */
-@media (max-width: 980px){
-  .mirror-columns{flex-direction:column}
-  .right-col{flex:1 1 auto; position:static}
-}
-
-@media (max-width: 720px){
+@media (max-width:720px){
   section{padding:1.6rem 1rem}
   #mirror{margin:1.2rem 0}
   .voice-controls {
@@ -236,21 +212,6 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
     margin-top: 5px;
     width: 100%;
     text-align: center;
-  }
-  .voice-btn, .voice-select {
-    font-size: 12px;
-    padding: 5px 10px;
-  }
-}
-
-@media (max-width: 480px){
-  .voice-controls {
-    padding: 0.6rem;
-    gap: 8px;
-  }
-  .voice-btn, .voice-select {
-    font-size: 11px;
-    padding: 4px 8px;
   }
 }
 </style>
@@ -347,262 +308,196 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
 </footer>
 
 <script>
-/* ========== VOICE SERVICE WITH CACHE COORDINATION ========== */
+/* ========== VOICE SERVICE ========== */
+/* ========== VOICE SERVICE (binary + JSON safe) ========== */
 class VoiceService {
   constructor() {
     this.baseURL = 'https://toadaid.duckdns.org/v7/voice';
     this.isPlaying = false;
     this.currentAudio = null;
+    this.lastFormat = 'mp3';
   }
 
   async generateSpeech(text, voiceProfile = 'pond_guide') {
     try {
-      // Generate cache key (matching your Python hash logic)
-      const cacheKey = this.generateCacheKey(text, voiceProfile);
-      
-      // ✅ FIRST: Check browser cache
-      const browserCached = this.getCachedAudio(cacheKey);
-      if (browserCached) {
-        console.log("🔊 Browser cache HIT:", cacheKey);
-        return browserCached;
+      console.log('🪞 [Voice] Requesting TTS...', { text, voiceProfile });
+
+      const response = await fetch(`${this.baseURL}/whisper`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({
+          text,
+          voice_profile: voiceProfile,
+          include_ambience: true,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('🪞 [Voice] HTTP error', response.status);
+        throw new Error(`Voice API error: ${response.status}`);
       }
 
-      // ✅ SECOND: Check server cache status
-      console.log("🔊 Checking server cache...");
-      try {
-        const cacheStatus = await fetch(`${this.baseURL}/cache_status/${cacheKey}`);
-        if (cacheStatus.ok) {
-          const status = await cacheStatus.json();
-          if (status.cached) {
-            console.log("🔊 Server cache HIT, generating with cache...");
-            return await this.generateWithCache(text, voiceProfile, cacheKey);
-          }
-        }
-      } catch (cacheError) {
-        console.log("🔊 Server cache check failed, proceeding normally:", cacheError);
+      const contentType = response.headers.get('content-type') || '';
+      console.log('🪞 [Voice] content-type:', contentType);
+
+      // 🔹 CASE 1: Server returns raw audio (audio/mpeg, audio/wav, etc.)
+      if (contentType.startsWith('audio/')) {
+        console.log('🪞 [Voice] Detected raw audio response, converting to base64');
+
+        const blob = await response.blob();
+        console.log('🪞 [Voice] Raw audio blob size:', blob.size);
+
+        const arrayBuffer = await blob.arrayBuffer();
+        const base64 = this.arrayBufferToBase64(arrayBuffer);
+
+        const fmt =
+          contentType.includes('wav')  ? 'wav'  :
+          contentType.includes('ogg')  ? 'ogg'  :
+          contentType.includes('mpeg') ? 'mp3'  :
+          'mp3';
+
+        this.lastFormat = fmt;
+
+        return {
+          audio_base64: base64,
+          duration_seconds: 0,
+          format: fmt,
+        };
       }
 
-      // ✅ THIRD: Generate fresh audio with cache coordination
-      console.log("🔊 No cache found, generating fresh audio...");
-      return await this.generateWithCache(text, voiceProfile, cacheKey);
-      
+      // 🔹 CASE 2: Server returns JSON wrapper with base64
+      const data = await response.json();
+      console.log('🪞 [Voice] JSON response:', data);
+
+      const audioBase64 =
+        data.audio_base64 ||
+        data.audio ||
+        data.audio_b64 ||
+        null;
+
+      if (!audioBase64) {
+        throw new Error('No audio_base64 field in JSON response');
+      }
+
+      this.lastFormat = data.format || 'mp3';
+
+      return {
+        audio_base64: audioBase64,
+        duration_seconds: data.duration_seconds || 0,
+        format: this.lastFormat,
+      };
     } catch (error) {
-      console.error('Voice generation failed:', error);
+      console.error('🪞 [Voice] Voice generation failed:', error);
       throw error;
     }
   }
 
-  async generateWithCache(text, voiceProfile, cacheKey) {
-    const response = await fetch(`${this.baseURL}/generate_with_cache`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        text, 
-        voice_profile: voiceProfile, 
-        include_ambience: true,
-        cache_key: cacheKey
-      })
-    });
-
-    if (!response.ok) throw new Error(`Voice API error: ${response.status}`);
-    
-    const audioData = await response.json();
-    
-    // Cache in browser regardless of server cache status
-    this.cacheAudio(cacheKey, audioData);
-    
-    console.log(`🔊 Generated audio (server cache: ${audioData.cache_hit ? 'HIT' : 'MISS'})`);
-    return audioData;
-  }
-
-  // ✅ MATCHES YOUR PYTHON CACHE KEY LOGIC
-  generateCacheKey(text, voiceProfile) {
-    // Simple hash similar to your Python implementation
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-      const char = text.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+  arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
     }
-    return `voice_${voiceProfile}_${hash}`;
+    return btoa(binary);
   }
 
-  // ✅ BROWSER CACHE MANAGEMENT
-  cacheAudio(key, audioData) {
-    try {
-      const cacheData = {
-        audio_base64: audioData.audio_base64,
-        duration_seconds: audioData.duration_seconds,
-        metadata: audioData.metadata,
-        cache_key: audioData.cache_key,
-        timestamp: Date.now()
-      };
-      localStorage.setItem(key, JSON.stringify(cacheData));
-      console.log("🔊 Audio cached in browser:", key);
-    } catch (error) {
-      console.warn("🔊 Browser cache full, skipping cache:", error);
-    }
-  }
-
-  getCachedAudio(key) {
-    try {
-      const cached = localStorage.getItem(key);
-      if (cached) {
-        const data = JSON.parse(cached);
-        // Check if cache is fresh (24 hours)
-        if (Date.now() - data.timestamp < 24 * 60 * 60 * 1000) {
-          return data;
-        } else {
-          localStorage.removeItem(key);
-        }
-      }
-      return null;
-    } catch (error) {
-      console.error("🔊 Cache read error:", error);
-      return null;
-    }
-  }
-
-  async playAudio(base64Audio) {
+  async playAudio(base64Audio, formatHint = 'mp3') {
     this.stopAudio();
-    
-    console.log("🎵 Starting audio playback...");
-    
+
     try {
-      // ✅ Use data URL for maximum compatibility
-      const audioUrl = `data:audio/mpeg;base64,${base64Audio}`;
-      console.log("🎵 Audio URL created, length:", base64Audio.length);
-      
+      // Strip "data:audio/...;base64," prefix if present
+      const cleaned = base64Audio.replace(/^data:audio\/[a-zA-Z0-9+.-]+;base64,/, '');
+
+      const fmt = (this.lastFormat || formatHint || 'mp3').toLowerCase();
+      const mimeType =
+        fmt.includes('wav') ? 'audio/wav' :
+        fmt.includes('ogg') ? 'audio/ogg' :
+        'audio/mpeg';
+
+      const audioBlob = this.base64ToBlob(cleaned, mimeType);
+      console.log('🪞 [Voice] Blob size(bytes):', audioBlob.size, 'MIME:', mimeType);
+
+      if (!audioBlob.size) throw new Error('Empty audio blob');
+
+      const audioUrl = URL.createObjectURL(audioBlob);
       this.currentAudio = new Audio(audioUrl);
       this.isPlaying = true;
-      
-      // ✅ CRITICAL: Set volume before playing (helps with autoplay)
-      this.currentAudio.volume = 0.8;
-      
-      // ✅ Add user interaction requirement detection
-      let requiresUserInteraction = false;
-      
+
       return new Promise((resolve, reject) => {
-        // ✅ Enhanced event listeners for debugging
-        this.currentAudio.addEventListener('canplay', () => {
-          console.log("🎵 Audio can play - attempting playback...");
-        });
-        
-        this.currentAudio.addEventListener('loadstart', () => {
-          console.log("🎵 Audio load started");
-        });
-        
-        this.currentAudio.addEventListener('loadeddata', () => {
-          console.log("🎵 Audio data loaded");
-        });
-        
         this.currentAudio.onended = () => {
-          console.log("✅ Audio playback completed");
           this.isPlaying = false;
+          URL.revokeObjectURL(audioUrl);
           resolve();
         };
-        
-        this.currentAudio.onerror = (e) => {
-          console.error("🎵 Audio error event:", e);
-          console.error("🎵 Audio error details:", this.currentAudio.error);
+        this.currentAudio.onerror = (error) => {
+          console.error('🪞 [Voice] Audio playback error:', error);
           this.isPlaying = false;
-          reject(new Error(`Audio error: ${this.currentAudio.error?.message || 'Unknown'}`));
+          URL.revokeObjectURL(audioUrl);
+          reject(error);
         };
-        
-        // ✅ ATTEMPT PLAYBACK with comprehensive error handling
+
         const playPromise = this.currentAudio.play();
-        
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              console.log("✅ Audio playing successfully!");
-            })
-            .catch(error => {
-              console.error("❌ Audio play() rejected:", error);
-              this.isPlaying = false;
-              
-              // ✅ DETECT SPECIFIC ERROR TYPES
-              if (error.name === 'NotAllowedError') {
-                console.log("🔔 Browser requires user interaction");
-                requiresUserInteraction = true;
-                reject(new Error("🔔 Please tap the play button to start listening"));
-              } else if (error.name === 'NotSupportedError') {
-                reject(new Error("Audio format not supported"));
-              } else {
-                reject(new Error(`Playback failed: ${error.message}`));
-              }
-            });
+        if (playPromise && typeof playPromise.then === 'function') {
+          playPromise.catch((err) => {
+            console.error('🪞 [Voice] play() was rejected:', err);
+            reject(err);
+          });
         }
-        
-        // ✅ FALLBACK: If audio doesn't start within 2 seconds, assume user interaction needed
-        setTimeout(() => {
-          if (this.isPlaying && this.currentAudio.paused && !requiresUserInteraction) {
-            console.log("⏰ Audio playback timeout - may require user interaction");
-            this.stopAudio();
-            reject(new Error("Tap to play audio"));
-          }
-        }, 2000);
       });
-      
     } catch (error) {
-      console.error('🎵 Audio playback setup failed:', error);
-      this.isPlaying = false;
+      console.error('🪞 [Voice] Audio playback failed:', error);
       throw error;
     }
   }
 
   stopAudio() {
     if (this.currentAudio) {
-      this.currentAudio.pause();
-      this.currentAudio.currentTime = 0;
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+      } catch (_) {}
       this.isPlaying = false;
     }
   }
 
   base64ToBlob(base64, mimeType) {
-    const byteCharacters = atob(base64);
-    const byteArrays = [];
-    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-      const slice = byteCharacters.slice(offset, offset + 512);
-      const byteNumbers = new Array(slice.length);
-      for (let i = 0; i < slice.length; i++) {
-        byteNumbers[i] = slice.charCodeAt(i);
+    try {
+      const byteCharacters = atob(base64);
+      const byteArrays = [];
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+        byteArrays.push(new Uint8Array(byteNumbers));
       }
-      byteArrays.push(new Uint8Array(byteNumbers));
+      return new Blob(byteArrays, { type: mimeType });
+    } catch (err) {
+      console.error('🪞 [Voice] base64ToBlob error:', err);
+      return new Blob([], { type: mimeType });
     }
-    return new Blob(byteArrays, { type: mimeType });
   }
 
-  cleanupCache() {
+  async speakText(text, voiceProfile = 'pond_guide') {
     try {
-      const now = Date.now();
-      const keysToRemove = [];
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('voice_')) {
-          try {
-            const data = JSON.parse(localStorage.getItem(key));
-            if (now - data.timestamp > 24 * 60 * 60 * 1000) {
-              keysToRemove.push(key);
-            }
-          } catch (e) {
-            keysToRemove.push(key);
-          }
-        }
-      }
-      
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      if (keysToRemove.length > 0) {
-        console.log(`🔊 Cleaned ${keysToRemove.length} expired audio cache entries`);
-      }
+      console.log(`🪞 [Voice] Speaking: "${text}" with voice: ${voiceProfile}`);
+      const audioData = await this.generateSpeech(text, voiceProfile);
+      await this.playAudio(audioData.audio_base64, audioData.format);
+      return { success: true, duration: audioData.duration_seconds };
     } catch (error) {
-      console.error("🔊 Cache cleanup error:", error);
+      console.error('🪞 [Voice] Speech failed:', error);
+      return { success: false, error: error.message };
     }
   }
 }
 
-// ✅ SINGLE INSTANCE - REMOVED DUPLICATE
+// Global voice service instance
+const voiceService = new VoiceService();
+
+// Global voice service instance
 const voiceService = new VoiceService();
 
 /* ========== VOICE CONTROL FUNCTIONS ========== */
@@ -634,31 +529,13 @@ async function speakMirrorResponse(button) {
     statusEl.className = 'voice-status playing';
     playIcon.textContent = "⏸";
     button.disabled = true;
-    button.classList.add('playing');
 
     try {
       await voiceService.playAudio(cachedAudio);
-      console.log("✅ Cached audio playback successful");
     } catch (err) {
       console.error("🔊 Cached audio playback failed:", err);
-      
-      // ✅ SPECIFIC HANDLING FOR USER INTERACTION REQUIRED
-      if (err.message.includes("tap") || err.message.includes("user interaction")) {
-        statusEl.textContent = "Tap to play";
-        statusEl.className = "voice-status";
-        
-        // ✅ RESET BUTTON FOR USER TO RETRY
-        button.disabled = false;
-        button.classList.remove('playing');
-        playIcon.textContent = '▶';
-        
-        // ✅ SHOW CLEAR INSTRUCTION
-        showError("🔔 Tap the \"Listen\" button to hear the wisdom");
-        return;
-      } else {
-        statusEl.textContent = "Playback error";
-        statusEl.className = "voice-status error";
-      }
+      statusEl.textContent = "Playback error";
+      statusEl.className = "voice-status error";
     } finally {
       resetVoiceControls(voiceControls);
     }
@@ -673,7 +550,6 @@ async function speakMirrorResponse(button) {
   statusEl.className = 'voice-status generating';
   playIcon.textContent = "⏸";
   button.disabled = true;
-  button.classList.add('playing');
 
   try {
     const audioData = await voiceService.generateSpeech(ttsText, currentVoiceProfile);
@@ -687,30 +563,13 @@ async function speakMirrorResponse(button) {
       statusEl.className = 'voice-status playing';
 
       await voiceService.playAudio(audioData.audio_base64);
-      console.log("✅ New audio playback successful");
     } else {
       throw new Error("No audio data received");
     }
   } catch (error) {
     console.error("🔊 Voice playback failed:", error);
-    
-    // ✅ SPECIFIC HANDLING FOR USER INTERACTION REQUIRED
-    if (error.message.includes("tap") || error.message.includes("user interaction")) {
-      statusEl.textContent = "Tap to play";
-      statusEl.className = "voice-status";
-      
-      // ✅ KEEP THE BUTTON READY FOR USER TO TAP
-      button.disabled = false;
-      button.classList.remove('playing');
-      playIcon.textContent = '▶';
-      
-      // ✅ SHOW CLEAR INSTRUCTION
-      showError("🔔 Tap the \"Listen\" button to hear the wisdom");
-      return;
-    } else {
-      statusEl.textContent = "Failed: " + error.message;
-      statusEl.className = "voice-status error";
-    }
+    statusEl.textContent = "Failed: " + error.message;
+    statusEl.className = "voice-status error";
   } finally {
     resetVoiceControls(voiceControls);
   }
@@ -724,13 +583,7 @@ function resetVoiceControls(voiceControls) {
   button.disabled = false;
   button.classList.remove('playing');
   playIcon.textContent = '▶';
-  
-  // ✅ MOBILE FIX: Better status message for mobile
-  if (isMobileDevice()) {
-    statusEl.textContent = 'Tap to listen';
-  } else {
-    statusEl.textContent = 'Ready';
-  }
+  statusEl.textContent = 'Ready';
   statusEl.className = 'voice-status';
 }
 
@@ -939,7 +792,7 @@ function formatMirrorResponse(question, s){
         <option value="lotus_whisper">🌸 Lotus Whisper (Gentle)</option>
         <option value="creek_runner">💧 Creek Runner (Energetic)</option>
       </select>
-      <div class="voice-status">${isMobileDevice() ? 'Tap to listen' : 'Ready'}</div>
+      <div class="voice-status">Ready</div>
     </div>`;
 
   if(s.greeting) html += `<div class="mirror-greeting">${escapeHtml(s.greeting)}</div>`;
@@ -1126,11 +979,6 @@ async function askMirror(){
 /* Enter to send + focus on load */
 qInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); askMirror(); }});
 window.addEventListener('load', ()=>{ if(window.matchMedia('(pointer:fine)').matches) qInput.focus(); });
-
-// Clean old cache on load
-window.addEventListener('load', () => {
-  voiceService.cleanupCache();
-});
 </script>
 
 </body>
