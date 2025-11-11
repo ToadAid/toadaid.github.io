@@ -438,39 +438,62 @@ class VoiceService {
     this.stopAudio();
     
     try {
-      // ✅ USE DATA URL TO AVOID CORS BLOB ISSUES
+      console.log("🎵 Starting audio playback...");
+      
+      // ✅ ALWAYS use data URL for maximum compatibility
       const audioUrl = `data:audio/mpeg;base64,${base64Audio}`;
+      console.log("🎵 Audio URL created, length:", base64Audio.length);
       
       this.currentAudio = new Audio(audioUrl);
       this.isPlaying = true;
       
+      // ✅ Add comprehensive event listeners for debugging
+      this.currentAudio.addEventListener('loadstart', () => console.log("🎵 Audio load started"));
+      this.currentAudio.addEventListener('loadeddata', () => console.log("🎵 Audio data loaded"));
+      this.currentAudio.addEventListener('canplay', () => console.log("🎵 Audio can play"));
+      this.currentAudio.addEventListener('canplaythrough', () => console.log("🎵 Audio can play through"));
+      this.currentAudio.addEventListener('stalled', () => console.log("🎵 Audio stalled"));
+      this.currentAudio.addEventListener('suspend', () => console.log("🎵 Audio suspended"));
+      
       return new Promise((resolve, reject) => {
+        this.currentAudio.onended = () => {
+          console.log("🎵 Audio playback completed");
+          this.isPlaying = false;
+          resolve();
+        };
+        
+        this.currentAudio.onerror = (e) => {
+          console.error("🎵 Audio error event:", e);
+          console.error("🎵 Audio error details:", this.currentAudio.error);
+          this.isPlaying = false;
+          reject(new Error(`Audio error: ${this.currentAudio.error?.message || 'Unknown'}`));
+        };
+        
+        // ✅ Attempt to play with better error handling
         const playPromise = this.currentAudio.play();
         
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              console.log("🎵 Audio playing successfully");
+              console.log("✅ Audio playing successfully");
             })
             .catch(error => {
-              console.error("🎵 Audio play failed:", error);
+              console.error("❌ Audio play() rejected:", error);
               this.isPlaying = false;
-              reject(new Error("Tap again to play audio"));
+              
+              // ✅ User interaction error - provide clear message
+              if (error.name === 'NotAllowedError') {
+                reject(new Error("Please tap the play button to start listening"));
+              } else {
+                reject(new Error(`Playback failed: ${error.message}`));
+              }
             });
         }
-        
-        this.currentAudio.onended = () => {
-          this.isPlaying = false;
-          resolve();
-        };
-        
-        this.currentAudio.onerror = (error) => {
-          this.isPlaying = false;
-          reject(error);
-        };
       });
+      
     } catch (error) {
-      console.error('Audio playback failed:', error);
+      console.error('🎵 Audio playback setup failed:', error);
+      this.isPlaying = false;
       throw error;
     }
   }
