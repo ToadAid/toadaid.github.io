@@ -153,6 +153,21 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
   background: #2196F3;
 }
 
+.voice-btn.awaiting-interaction {
+  background: #ff9800 !important;
+  animation: pulse-orange 2s infinite;
+}
+
+.stop-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
 .voice-select {
   padding: 4px 8px;
   border-radius: 8px;
@@ -183,11 +198,6 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
   color: #0c5460;
 }
 
-.voice-status.mobile-tap {
-  background: #d4edda;
-  color: #155724;
-}
-
 .pulse-dot {
   width: 8px;
   height: 8px;
@@ -202,10 +212,19 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
   100% { opacity: 1; }
 }
 
-footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
-footer a{color:#ffd23f;font-weight:800}
+@keyframes pulse-orange {
+  0% { background-color: #ff9800; }
+  50% { background-color: #ff5722; }
+  100% { background-color: #ff9800; }
+}
 
-@media (max-width:720px){
+/* Mobile Responsive */
+@media (max-width: 980px){
+  .mirror-columns{flex-direction:column}
+  .right-col{flex:1 1 auto; position:static}
+}
+
+@media (max-width: 720px){
   section{padding:1.6rem 1rem}
   #mirror{margin:1.2rem 0}
   .voice-controls {
@@ -217,6 +236,21 @@ footer a{color:#ffd23f;font-weight:800}
     margin-top: 5px;
     width: 100%;
     text-align: center;
+  }
+  .voice-btn, .voice-select {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}
+
+@media (max-width: 480px){
+  .voice-controls {
+    padding: 0.6rem;
+    gap: 8px;
+  }
+  .voice-btn, .voice-select {
+    font-size: 11px;
+    padding: 4px 8px;
   }
 }
 </style>
@@ -437,27 +471,38 @@ class VoiceService {
   async playAudio(base64Audio) {
     this.stopAudio();
     
+    console.log("🎵 Starting audio playback...");
+    
     try {
-      console.log("🎵 Starting audio playback...");
-      
-      // ✅ ALWAYS use data URL for maximum compatibility
+      // ✅ Use data URL for maximum compatibility
       const audioUrl = `data:audio/mpeg;base64,${base64Audio}`;
       console.log("🎵 Audio URL created, length:", base64Audio.length);
       
       this.currentAudio = new Audio(audioUrl);
       this.isPlaying = true;
       
-      // ✅ Add comprehensive event listeners for debugging
-      this.currentAudio.addEventListener('loadstart', () => console.log("🎵 Audio load started"));
-      this.currentAudio.addEventListener('loadeddata', () => console.log("🎵 Audio data loaded"));
-      this.currentAudio.addEventListener('canplay', () => console.log("🎵 Audio can play"));
-      this.currentAudio.addEventListener('canplaythrough', () => console.log("🎵 Audio can play through"));
-      this.currentAudio.addEventListener('stalled', () => console.log("🎵 Audio stalled"));
-      this.currentAudio.addEventListener('suspend', () => console.log("🎵 Audio suspended"));
+      // ✅ CRITICAL: Set volume before playing (helps with autoplay)
+      this.currentAudio.volume = 0.8;
+      
+      // ✅ Add user interaction requirement detection
+      let requiresUserInteraction = false;
       
       return new Promise((resolve, reject) => {
+        // ✅ Enhanced event listeners for debugging
+        this.currentAudio.addEventListener('canplay', () => {
+          console.log("🎵 Audio can play - attempting playback...");
+        });
+        
+        this.currentAudio.addEventListener('loadstart', () => {
+          console.log("🎵 Audio load started");
+        });
+        
+        this.currentAudio.addEventListener('loadeddata', () => {
+          console.log("🎵 Audio data loaded");
+        });
+        
         this.currentAudio.onended = () => {
-          console.log("🎵 Audio playback completed");
+          console.log("✅ Audio playback completed");
           this.isPlaying = false;
           resolve();
         };
@@ -469,26 +514,39 @@ class VoiceService {
           reject(new Error(`Audio error: ${this.currentAudio.error?.message || 'Unknown'}`));
         };
         
-        // ✅ Attempt to play with better error handling
+        // ✅ ATTEMPT PLAYBACK with comprehensive error handling
         const playPromise = this.currentAudio.play();
         
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              console.log("✅ Audio playing successfully");
+              console.log("✅ Audio playing successfully!");
             })
             .catch(error => {
               console.error("❌ Audio play() rejected:", error);
               this.isPlaying = false;
               
-              // ✅ User interaction error - provide clear message
+              // ✅ DETECT SPECIFIC ERROR TYPES
               if (error.name === 'NotAllowedError') {
-                reject(new Error("Please tap the play button to start listening"));
+                console.log("🔔 Browser requires user interaction");
+                requiresUserInteraction = true;
+                reject(new Error("🔔 Please tap the play button to start listening"));
+              } else if (error.name === 'NotSupportedError') {
+                reject(new Error("Audio format not supported"));
               } else {
                 reject(new Error(`Playback failed: ${error.message}`));
               }
             });
         }
+        
+        // ✅ FALLBACK: If audio doesn't start within 2 seconds, assume user interaction needed
+        setTimeout(() => {
+          if (this.isPlaying && this.currentAudio.paused && !requiresUserInteraction) {
+            console.log("⏰ Audio playback timeout - may require user interaction");
+            this.stopAudio();
+            reject(new Error("Tap to play audio"));
+          }
+        }, 2000);
       });
       
     } catch (error) {
@@ -497,32 +555,6 @@ class VoiceService {
       throw error;
     }
   }
-
-  stopAudio() {
-    if (this.currentAudio) {
-      this.currentAudio.pause();
-      this.currentAudio.currentTime = 0;
-      this.isPlaying = false;
-    }
-  }
-
-  // Clean old cache entries
-  cleanupCache(maxAge = 24 * 60 * 60 * 1000) {
-    const now = Date.now();
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('voice_')) {
-        try {
-          const data = JSON.parse(localStorage.getItem(key));
-          if (now - data.timestamp > maxAge) {
-            localStorage.removeItem(key);
-          }
-        } catch (e) {
-          localStorage.removeItem(key);
-        }
-      }
-    });
-  }
-}
 
 // Global voice service instance
 const voiceService = new VoiceService();
@@ -539,10 +571,8 @@ async function speakMirrorResponse(button) {
   const statusEl = voiceControls.querySelector('.voice-status');
   const playIcon = button.querySelector('.play-icon');
 
-  // ✅ MOBILE FIX: Ensure button is in focus for user interaction
-  button.focus();
-
   const text = button.getAttribute('data-text') || "";
+
   if (!text) {
     console.error("❌ No text found in data-text!");
     statusEl.textContent = "Error: No text";
@@ -550,25 +580,35 @@ async function speakMirrorResponse(button) {
     return;
   }
 
-  // Generate cache key (matches Python logic)
-  const cacheKey = voiceService.generateCacheKey(text, currentVoiceProfile);
-
-  // Check browser cache first
-  const cached = voiceService.getCachedAudio(cacheKey);
-  if (cached) {
-    console.log("🔊 Playing from browser cache");
+  // ✅ 1) If we already have cached audio for this answer, just replay it
+  const cachedAudio = button.getAttribute('data-audio');
+  if (cachedAudio) {
+    console.log("🔊 Replaying cached audio (no new ElevenLabs call)");
     statusEl.textContent = "Playing...";
     statusEl.className = 'voice-status playing';
     playIcon.textContent = "⏸";
     button.disabled = true;
+    button.classList.add('playing');
 
     try {
-      await voiceService.playAudio(cached.audio_base64);
+      await voiceService.playAudio(cachedAudio);
+      console.log("✅ Cached audio playback successful");
     } catch (err) {
       console.error("🔊 Cached audio playback failed:", err);
-      if (err.message.includes('Tap again')) {
-        statusEl.textContent = "Tap again to play";
-        statusEl.className = "voice-status mobile-tap";
+      
+      // ✅ SPECIFIC HANDLING FOR USER INTERACTION REQUIRED
+      if (err.message.includes("tap") || err.message.includes("user interaction")) {
+        statusEl.textContent = "Tap to play";
+        statusEl.className = "voice-status";
+        
+        // ✅ RESET BUTTON FOR USER TO RETRY
+        button.disabled = false;
+        button.classList.remove('playing');
+        playIcon.textContent = '▶';
+        
+        // ✅ SHOW CLEAR INSTRUCTION
+        showLeft('<div class="mirror-dialogue"><div class="wisdom-paragraph" style="text-align:center;color:#d4af37;">🔔 Tap the "Listen" button to hear the wisdom</div></div>');
+        return;
       } else {
         statusEl.textContent = "Playback error";
         statusEl.className = "voice-status error";
@@ -579,29 +619,48 @@ async function speakMirrorResponse(button) {
     return;
   }
 
-  // Generate new audio with cache coordination
-  console.log("🔊 Generating new audio with cache coordination...");
-  statusEl.textContent = "Checking cache...";
+  // ✅ 2) First time: generate audio, cache it, then play
+  const ttsText = "Traveler. " + text.trim();
+
+  console.log("🔊 Generating new audio via ElevenLabs...");
+  statusEl.textContent = "Generating voice...";
   statusEl.className = 'voice-status generating';
   playIcon.textContent = "⏸";
   button.disabled = true;
+  button.classList.add('playing');
 
   try {
-    const ttsText = "Traveler. " + text.trim();
     const audioData = await voiceService.generateSpeech(ttsText, currentVoiceProfile);
 
     if (audioData && audioData.audio_base64) {
+      console.log("🔊 Voice generation complete, caching audio");
+      // store base64 on the button for future replays
+      button.setAttribute('data-audio', audioData.audio_base64);
+
       statusEl.textContent = "Playing...";
       statusEl.className = 'voice-status playing';
+
       await voiceService.playAudio(audioData.audio_base64);
+      console.log("✅ New audio playback successful");
     } else {
       throw new Error("No audio data received");
     }
   } catch (error) {
     console.error("🔊 Voice playback failed:", error);
-    if (error.message.includes('Tap again')) {
-      statusEl.textContent = "Tap again to play";
-      statusEl.className = "voice-status mobile-tap";
+    
+    // ✅ SPECIFIC HANDLING FOR USER INTERACTION REQUIRED
+    if (error.message.includes("tap") || error.message.includes("user interaction")) {
+      statusEl.textContent = "Tap to play";
+      statusEl.className = "voice-status";
+      
+      // ✅ KEEP THE BUTTON READY FOR USER TO TAP
+      button.disabled = false;
+      button.classList.remove('playing');
+      playIcon.textContent = '▶';
+      
+      // ✅ SHOW CLEAR INSTRUCTION
+      showLeft('<div class="mirror-dialogue"><div class="wisdom-paragraph" style="text-align:center;color:#d4af37;">🔔 Tap the "Listen" button to hear the wisdom</div></div>');
+      return;
     } else {
       statusEl.textContent = "Failed: " + error.message;
       statusEl.className = "voice-status error";
