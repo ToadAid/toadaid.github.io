@@ -308,187 +308,88 @@ footer a{color:#ffd23f;font-weight:800}
 </footer>
 
 <script>
-/* ========== VOICE SERVICE ========== */
-/* ========== VOICE SERVICE (binary + JSON safe) ========== */
+/* ========== VOICE SERVICE (from working local Mirror, baseURL pointed to duckdns) ========== */
 class VoiceService {
   constructor() {
+    // 👇 only change from local version
     this.baseURL = 'https://toadaid.duckdns.org/v7/voice';
     this.isPlaying = false;
     this.currentAudio = null;
-    this.lastFormat = 'mp3';
   }
 
   async generateSpeech(text, voiceProfile = 'pond_guide') {
     try {
-      console.log('🪞 [Voice] Requesting TTS...', { text, voiceProfile });
-
       const response = await fetch(`${this.baseURL}/whisper`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        cache: 'no-store',
-        body: JSON.stringify({
-          text,
-          voice_profile: voiceProfile,
-          include_ambience: true,
-        }),
+        body: JSON.stringify({ text, voice_profile: voiceProfile, include_ambience: true })
       });
 
-      if (!response.ok) {
-        console.error('🪞 [Voice] HTTP error', response.status);
-        throw new Error(`Voice API error: ${response.status}`);
-      }
-
-      const contentType = response.headers.get('content-type') || '';
-      console.log('🪞 [Voice] content-type:', contentType);
-
-      // 🔹 CASE 1: Server returns raw audio (audio/mpeg, audio/wav, etc.)
-      if (contentType.startsWith('audio/')) {
-        console.log('🪞 [Voice] Detected raw audio response, converting to base64');
-
-        const blob = await response.blob();
-        console.log('🪞 [Voice] Raw audio blob size:', blob.size);
-
-        const arrayBuffer = await blob.arrayBuffer();
-        const base64 = this.arrayBufferToBase64(arrayBuffer);
-
-        const fmt =
-          contentType.includes('wav')  ? 'wav'  :
-          contentType.includes('ogg')  ? 'ogg'  :
-          contentType.includes('mpeg') ? 'mp3'  :
-          'mp3';
-
-        this.lastFormat = fmt;
-
-        return {
-          audio_base64: base64,
-          duration_seconds: 0,
-          format: fmt,
-        };
-      }
-
-      // 🔹 CASE 2: Server returns JSON wrapper with base64
-      const data = await response.json();
-      console.log('🪞 [Voice] JSON response:', data);
-
-      const audioBase64 =
-        data.audio_base64 ||
-        data.audio ||
-        data.audio_b64 ||
-        null;
-
-      if (!audioBase64) {
-        throw new Error('No audio_base64 field in JSON response');
-      }
-
-      this.lastFormat = data.format || 'mp3';
-
-      return {
-        audio_base64: audioBase64,
-        duration_seconds: data.duration_seconds || 0,
-        format: this.lastFormat,
-      };
+      if (!response.ok) throw new Error(`Voice API error: ${response.status}`);
+      return await response.json();
     } catch (error) {
-      console.error('🪞 [Voice] Voice generation failed:', error);
+      console.error('Voice generation failed:', error);
       throw error;
     }
   }
 
-  arrayBufferToBase64(buffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  }
-
-  async playAudio(base64Audio, formatHint = 'mp3') {
+  async playAudio(base64Audio) {
     this.stopAudio();
-
+    
     try {
-      // Strip "data:audio/...;base64," prefix if present
-      const cleaned = base64Audio.replace(/^data:audio\/[a-zA-Z0-9+.-]+;base64,/, '');
-
-      const fmt = (this.lastFormat || formatHint || 'mp3').toLowerCase();
-      const mimeType =
-        fmt.includes('wav') ? 'audio/wav' :
-        fmt.includes('ogg') ? 'audio/ogg' :
-        'audio/mpeg';
-
-      const audioBlob = this.base64ToBlob(cleaned, mimeType);
-      console.log('🪞 [Voice] Blob size(bytes):', audioBlob.size, 'MIME:', mimeType);
-
-      if (!audioBlob.size) throw new Error('Empty audio blob');
-
+      const audioBlob = this.base64ToBlob(base64Audio, 'audio/mpeg');
       const audioUrl = URL.createObjectURL(audioBlob);
+      
       this.currentAudio = new Audio(audioUrl);
       this.isPlaying = true;
-
+      
       return new Promise((resolve, reject) => {
         this.currentAudio.onended = () => {
           this.isPlaying = false;
-          URL.revokeObjectURL(audioUrl);
           resolve();
         };
         this.currentAudio.onerror = (error) => {
-          console.error('🪞 [Voice] Audio playback error:', error);
           this.isPlaying = false;
-          URL.revokeObjectURL(audioUrl);
           reject(error);
         };
-
-        const playPromise = this.currentAudio.play();
-        if (playPromise && typeof playPromise.then === 'function') {
-          playPromise.catch((err) => {
-            console.error('🪞 [Voice] play() was rejected:', err);
-            reject(err);
-          });
-        }
+        this.currentAudio.play();
       });
     } catch (error) {
-      console.error('🪞 [Voice] Audio playback failed:', error);
+      console.error('Audio playback failed:', error);
       throw error;
     }
   }
 
   stopAudio() {
     if (this.currentAudio) {
-      try {
-        this.currentAudio.pause();
-        this.currentAudio.currentTime = 0;
-      } catch (_) {}
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
       this.isPlaying = false;
     }
   }
 
   base64ToBlob(base64, mimeType) {
-    try {
-      const byteCharacters = atob(base64);
-      const byteArrays = [];
-      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-        const slice = byteCharacters.slice(offset, offset + 512);
-        const byteNumbers = new Array(slice.length);
-        for (let i = 0; i < slice.length; i++) {
-          byteNumbers[i] = slice.charCodeAt(i);
-        }
-        byteArrays.push(new Uint8Array(byteNumbers));
+    const byteCharacters = atob(base64);
+    const byteArrays = [];
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+      const slice = byteCharacters.slice(offset, offset + 512);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
       }
-      return new Blob(byteArrays, { type: mimeType });
-    } catch (err) {
-      console.error('🪞 [Voice] base64ToBlob error:', err);
-      return new Blob([], { type: mimeType });
+      byteArrays.push(new Uint8Array(byteNumbers));
     }
+    return new Blob(byteArrays, { type: mimeType });
   }
 
   async speakText(text, voiceProfile = 'pond_guide') {
     try {
-      console.log(`🪞 [Voice] Speaking: "${text}" with voice: ${voiceProfile}`);
+      console.log(`🎯 Speaking: "${text}" with voice: ${voiceProfile}`);
       const audioData = await this.generateSpeech(text, voiceProfile);
-      await this.playAudio(audioData.audio_base64, audioData.format);
+      await this.playAudio(audioData.audio_base64);
       return { success: true, duration: audioData.duration_seconds };
     } catch (error) {
-      console.error('🪞 [Voice] Speech failed:', error);
+      console.error('Speech failed:', error);
       return { success: false, error: error.message };
     }
   }
@@ -497,10 +398,7 @@ class VoiceService {
 // Global voice service instance
 const voiceService = new VoiceService();
 
-// Global voice service instance
-const voiceService = new VoiceService();
-
-/* ========== VOICE CONTROL FUNCTIONS ========== */
+/* ========== VOICE CONTROL FUNCTIONS (from working local Mirror) ========== */
 let currentVoiceProfile = 'pond_guide';
 
 function updateVoiceProfile(profile) {
@@ -543,7 +441,7 @@ async function speakMirrorResponse(button) {
   }
 
   // ✅ 2) First time: generate audio, cache it, then play
-  const ttsText = "Traveler. " + text.trim();
+  const ttsText = "Traveler. " + text.trim();  // same prefix trick as local
 
   console.log("🔊 Generating new audio via ElevenLabs...");
   statusEl.textContent = "Generating voice...";
