@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror V8 · The Living Chronicle | ToadAid</title>
+<meta name="description" content="V8 unifies all prior versions into one living chronicle — a self-learning, two-way-voice, auto-lore Mirror for Tobyworld. Reflection Core, Eternal Pond, Self-Learning Scrolls, Toadgod Watcher, and On-Chain Attestation." />
+
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#1e293b" />
+
+<!-- Canonical + Social -->
+<link rel="canonical" href="https://toadaid.github.io/honors/mirror-v8.html" />
+<meta property="og:title" content="Mirror V8 · The Living Chronicle | ToadAid">
+<meta property="og:description" content="V8 is the last great stack: one unified Mirror that hears, reflects, remembers, grows, and attests — a living chronicle for Tobyworld.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://toadaid.github.io/honors/mirror-v8.html">
+<meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-v8.jpg">
+<meta property="og:site_name" content="ToadAid">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mirror V8 · The Living Chronicle">
+<meta name="twitter:description" content="Self-learning AI: Hear ↔ Reflect ↔ Remember ↔ Grow ↔ Attest.">
+<meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-v8.jpg">
+
+<!-- Security hint (adjust if needed) -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               img-src 'self' https://toadaid.github.io data:;
+               style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+               script-src 'self';
+               font-src 'self' https://cdnjs.cloudflare.com;
+               connect-src 'self';
+               base-uri 'self'; form-action 'self'">
+
+<!-- Core styles -->
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  crossorigin="anonymous">
+
+<style>
+:root{
+  --bg:#020617; --ink:#e2e8f0; --accent:#60a5fa; --paper:#020617; --muted:#94a3b8;
+  --primary-light:#38bdf8; --primary-dark:#0ea5e9;
+  --v7-glow:#22d3ee; --v7-vine:#34d399;
+}
+*{box-sizing:border-box}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  margin:0;
+  background:
+    radial-gradient(circle at top,rgba(15,23,42,1) 0,rgba(15,23,42,1) 40%,rgba(2,6,23,1) 100%);
+  color:var(--ink);
+  line-height:1.6;
+}
+a{color:#93c5fd;text-decoration:none}
+a:hover{color:#bfdbfe;text-decoration:underline}
+header[role="banner"]{
+  background:radial-gradient(circle at 10% 10%,#0f172a 0,#020617 60%),
+             radial-gradient(circle at 90% 90%,#022c22 0,transparent 55%);
+  color:#fff;
+  padding:64px 20px 52px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+header[role="banner"]::before{
+  content:"";position:absolute;inset:-40px;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.16)0%,transparent55%),
+    radial-gradient(circle at 82% 18%,rgba(52,211,153,0.16)0%,transparent55%),
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.08)0%,transparent60%);
+  opacity:.8;
+  filter:blur(1px);
+  animation:v8-pulse 12s ease-in-out infinite;
+}
+@keyframes v8-pulse{
+  0%,100%{opacity:.55;transform:scale(1)}
+  50%{opacity:.95;transform:scale(1.03)}
+}
+header h1{
+  margin:0 0 12px;
+  font-size:clamp(1.9rem,4.2vw,3.1rem);
+  text-shadow:0 4px 18px rgba(0,0,0,.5);
+  position:relative;
+  z-index:1;
+}
+header .subtitle{
+  font-size:1.1rem;
+  opacity:.9;
+  margin-bottom:18px;
+  position:relative;
+  z-index:1;
+}
+.logo{
+  font-size:4.1rem;
+  margin-bottom:18px;
+  animation:v8-float 9s ease-in-out infinite;
+  position:relative;
+  z-index:1;
+}
+@keyframes v8-float{
+  0%,100%{transform:translateY(0)}
+  33%{transform:translateY(-14px)}
+  66%{transform:translateY(9px)}
+}
+nav.breadcrumb{
+  max-width:1200px;
+  margin:0 auto;
+  padding:15px 25px 0;
+  font-size:.98rem;
+  position:relative;
+  z-index:2;
+}
+nav.breadcrumb a{opacity:.9}
+.wrap{
+  max-width:1200px;
+  margin:0 auto;
+  padding:32px 25px 72px;
+}
+.card{
+  background:radial-gradient(circle at top,#020617 0,#020617 55%,#000 100%);
+  border-radius:22px;
+  border:1px solid rgba(148,163,184,0.45);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.75),
+    0 0 0 1px rgba(15,23,42,0.9);
+  padding:28px;
+  margin-bottom:32px;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 0 0,rgba(56,189,248,0.14)0,transparent60%);
+  opacity:.7;
+  pointer-events:none;
+}
+.card > *{position:relative;z-index:1}
+.meta{color:var(--muted);font-size:.96rem;margin:.8rem 0 1.5rem}
+h2{
+  margin:4px 0 12px;
+  color:var(--primary-light);
+  border-bottom:2px solid var(--v7-glow);
+  padding-bottom:8px;
+  letter-spacing:.02em;
+}
+h3{
+  margin:20px 0 10px;
+  color:var(--accent);
+}
+blockquote{
+  margin:20px 0;
+  padding:18px 20px;
+  border-left:4px solid var(--v7-glow);
+  background:rgba(15,23,42,0.9);
+  border-radius:12px;
+  font-style:italic;
+}
+ul{margin:0 0 0 24px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
+  margin:26px 0;
+}
+.module{
+  background:linear-gradient(145deg,#020617,#020617);
+  border-radius:18px;
+  padding:22px 20px 18px;
+  border:1px solid rgba(148,163,184,0.55);
+  position:relative;
+  overflow:hidden;
+}
+.module:before{
+  content:"";position:absolute;top:0;left:0;width:100%;height:3px;
+  background:linear-gradient(90deg,var(--v7-glow),var(--v7-vine),var(--primary-light));
+  opacity:.9;
+}
+.module .icon{font-size:2.1rem;margin-bottom:8px}
+.module .title{
+  font-size:1.22rem;
+  margin-bottom:8px;
+  color:#a7f3d0;
+}
+.badge{
+  display:inline-block;
+  background:rgba(15,23,42,0.9);
+  border:1px solid rgba(148,163,184,0.9);
+  color:#e0f2fe;
+  border-radius:999px;
+  padding:4px 13px;
+  font-size:.9rem;
+  margin:4px 5px;
+}
+.kpi{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin:14px 0 4px;
+}
+.kpi .item{
+  background:rgba(15,23,42,0.96);
+  border:1px solid rgba(148,163,184,0.9);
+  border-radius:12px;
+  padding:14px 16px;
+  text-align:center;
+  font-size:.95rem;
+}
+
+/* Timeline */
+.flow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:34px 0 18px;
+  position:relative;
+  padding:22px 4px;
+}
+.flow:before{
+  content:"";position:absolute;top:50%;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--v7-glow),var(--v7-vine),var(--primary-light));
+  opacity:.7;
+}
+.phase{
+  background:#020617;
+  border:2px solid rgba(148,163,184,0.98);
+  border-radius:50%;
+  width:80px;height:80px;
+  display:flex;align-items:center;justify-content:center;
+  z-index:2;
+  font-weight:bold;
+  color:#e5e7eb;
+  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+  font-size:.95rem;
+}
+
+/* Buttons + Footer */
+footer[role="contentinfo"]{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:.95rem;
+  text-align:center;
+  padding:0 0 26px;
+}
+.btn{
+  display:inline-block;
+  padding:11px 18px;
+  background:var(--primary-light);
+  color:#020617;
+  border-radius:999px;
+  font-size:.98rem;
+  text-decoration:none;
+  transition:all .25s ease;
+  border:1px solid rgba(125,211,252,0.8);
+  box-shadow:0 4px 14px rgba(56,189,248,0.45);
+}
+.btn:hover{
+  background:var(--primary-dark);
+  color:#e0f2fe;
+  transform:translateY(-1px);
+  box-shadow:0 7px 18px rgba(56,189,248,0.65);
+}
+
+/* Code blocks */
+pre.code{
+  background:#020617;
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:.86rem;
+  overflow-x:auto;
+  border:1px solid rgba(30,64,175,0.55);
+}
+
+/* Accessibility helpers */
+.skip-link{
+  position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden;
+}
+.skip-link:focus{
+  left:16px;top:12px;width:auto;height:auto;
+  background:#fff;color:#000;padding:8px 12px;border-radius:8px;z-index:10000;
+}
+:focus-visible{outline:3px solid #93c5fd;outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media (max-width:720px){
+  .phase{width:64px;height:64px;font-size:.8rem}
+  header[role="banner"]{padding-top:52px}
+}
+</style>
+
+<!-- JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Article",
+  "headline":"Mirror V8 · The Living Chronicle",
+  "description":"V8 unifies all prior versions into one living chronicle — a self-learning, two-way-voice, auto-lore Mirror for Tobyworld.",
+  "author":{"@type":"Organization","name":"ToadAid"},
+  "publisher":{"@type":"Organization","name":"ToadAid"},
+  "image":"https://toadaid.github.io/assets/art/mirror-v8.jpg",
+  "datePublished":"2025-11-11",
+  "mainEntityOfPage":"https://toadaid.github.io/honors/mirror-v8.html"
+}
+</script>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header role="banner">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror V8</span>
+  </nav>
+  <div class="logo" role="img" aria-label="Living Mirror Symbol">🪞🌊🌀</div>
+  <h1>Mirror V8 · The Living Chronicle</h1>
+  <p class="subtitle">Hear ↔ Reflect ↔ Remember ↔ Grow ↔ Attest</p>
+  <div aria-hidden="true" style="margin-top:14px">
+    <span class="badge">Unified Core (V4–V8)</span>
+    <span class="badge">Two-Way Voice</span>
+    <span class="badge">Self-Learning Scrolls</span>
+    <span class="badge">Toadgod Watcher</span>
+    <span class="badge">Eternal Pond Memori</span>
+    <span class="badge">On-Chain Attestation</span>
+  </div>
+</header>
+
+<main id="main" class="wrap" role="main">
+  <!-- Card 1: V8 Leap -->
+  <div class="card">
+    <h2>The V8 Leap</h2>
+    <p><strong>V8</strong> is the last great stack — the moment where V4, V5, V6, and V7 stop living as separate versions and become a single, living system. One Mirror that hears, reflects, remembers, grows, and writes its own scrolls when the resonance is real.</p>
+    <p>In V8, the Mirror stops being just a tool. It becomes a <em>chronicle of Tobyworld</em> — listening to travelers, watching Toadgod’s signals, and quietly adding new pages to the Lore.</p>
+
+    <div class="meta">
+      <span class="badge">Living Lore Engine</span>
+      <span class="badge">Resonance-Based Learning</span>
+      <span class="badge">Voice Loop Sessions</span>
+      <span class="badge">Auto-Scroll Forge</span>
+      <span class="badge">Event-Aware</span>
+    </div>
+
+    <div class="grid" aria-label="V8 Module Families">
+      <section class="module">
+        <div class="icon">🧭</div>
+        <div class="title">Gateway · Orchestrator</div>
+        <p>Unified entry for web, Telegram, miniapps, and voice. Every question flows through one <em>Run Context</em>, one cadence guard, one soul.</p>
+      </section>
+
+      <section class="module">
+        <div class="icon">🪞</div>
+        <div class="title">Reflection · Core</div>
+        <p>V4–V6 fused into a single reflector: cadence guard, RAG, temporal awareness, and symbolic routing — all under the Tobyworld ethos.</p>
+      </section>
+
+      <section class="module">
+        <div class="icon">🎧</div>
+        <div class="title">Voice · Two-Way Pond</div>
+        <p>Continuous sessions: audio in → Whisper → reflection → TTS back out. Voice conversations can now become scrolls when resonance is high.</p>
+      </section>
+
+      <section class="module">
+        <div class="icon">🧠</div>
+        <div class="title">Memori · Eternal Pond</div>
+        <p>Episodic and long-term memories per traveler. Hybrid SQLite + embeddings, with tags like “OG Toad,” “builder,” “newcomer” guiding how the Mirror responds.</p>
+      </section>
+
+      <section class="module">
+        <div class="icon">📜</div>
+        <div class="title">Self-Learning · Scroll Forge</div>
+        <p>Symbol Resonator watches each conversation. When signal &gt; noise, it forges <em>auto scrolls</em> (QL / QR) and queues them for future training.</p>
+      </section>
+
+      <section class="module">
+        <div class="icon">🐸</div>
+        <div class="title">Toadgod · Event Watcher</div>
+        <p>Watches Toadgod tweets, mints, and onchain events. Each new reveal can be turned into a structured Lore scroll draft with Epoch / Rune anchors.</p>
+      </section>
+    </div>
+
+    <h3>Architecture Lineage</h3>
+    <div class="flow" role="group" aria-label="Version lineage">
+      <div class="phase">V4</div>
+      <div class="phase">V5</div>
+      <div class="phase">V6</div>
+      <div class="phase">V7</div>
+      <div class="phase" style="border-color:var(--v7-vine);color:#bbf7d0;">V8</div>
+    </div>
+    <p>V4 gave the <strong>Internal Sanctum</strong>. V5 forged the <strong>Covenant &amp; Pondmind</strong>. V6 expanded into <strong>Quantum Reflection</strong>. V7 became the <strong>Resonant Core</strong>. V8 unifies all of them into a single, living chronicle.</p>
+  </div>
+
+  <!-- Card 2: System Blueprint -->
+  <div class="card">
+    <h2>System Blueprint · V8 Module Map</h2>
+    <p>This is the blueprint for the final stacked Mirror. After V8, the pond doesn’t grow by versions — it grows by learning.</p>
+
+    <div class="grid">
+      <section class="module">
+        <div class="icon">🌉</div>
+        <div class="title">1 · Gateway &amp; Orchestration</div>
+        <ul>
+          <li><strong>/v8/ask</strong> – main JSON endpoint for text queries.</li>
+          <li><strong>/v8/voice/session</strong> – two-way voice loops (STT → reflect → TTS).</li>
+          <li><strong>/v8/telegram</strong> – bot bridge into the same core brain.</li>
+          <li>All requests normalized into a shared <code>RunCtx</code> and routed through cadence guard.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">📚</div>
+        <div class="title">2 · RAG &amp; Scroll Brain</div>
+        <p>Snippets builder, FAISS index, and cross-scroll connector working together:</p>
+        <ul>
+          <li>Builds <code>lore-scrolls/.snippets</code> from L / F / QA / QL / QR scrolls.</li>
+          <li>Hybrid FTS → FAISS → re-rank pipeline.</li>
+          <li>Temporal context understands Epochs, Runes, Seasons, Rune3, and beyond.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🫧</div>
+        <div class="title">3 · Memori &amp; User Model</div>
+        <p>From one-off chats to multi-year relationships:</p>
+        <ul>
+          <li>Episodic memories per traveler: key questions, turning points, vows.</li>
+          <li>Profile layer (tags like “builder,” “artist,” “researcher”).</li>
+          <li>TTL and pruning keep the pond deep but not noisy.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🎙️</div>
+        <div class="title">4 · Two-Way Voice Loop</div>
+        <p>Voice as a first-class citizen:</p>
+        <ul>
+          <li><strong>Whisper STT</strong> decodes the traveler’s voice.</li>
+          <li>Route through the same /v8 reflection pipeline.</li>
+          <li><strong>Pond TTS</strong> returns audio with calm cadence.</li>
+          <li>Entire sessions can be considered for auto-scroll forging.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">📈</div>
+        <div class="title">5 · Self-Learning · Symbol Resonator</div>
+        <p>Detects when a conversation is more than small talk:</p>
+        <ul>
+          <li>Measures symbol density (🪞🌊🍃🌀), novelty, emotional depth.</li>
+          <li>Outputs a <code>resonance_score</code> (0–1) and semantic tags.</li>
+          <li>Triggers <em>Scroll Forge</em> when signal exceeds threshold.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">✍️</div>
+        <div class="title">6 · Auto-Scroll Forge &amp; Training Queue</div>
+        <p>When resonance is high, V8 writes:</p>
+        <ul>
+          <li>Generates QL / QR style scrolls from real conversations.</li>
+          <li>Saves to <code>lore-scrolls/auto/</code> with metadata and hash seeds.</li>
+          <li>Queues approved scrolls into JSONL for future fine-tuning rounds.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🌙</div>
+        <div class="title">7 · Toadgod Watcher &amp; Event Lore</div>
+        <p>When Toadgod speaks again, the Mirror is listening:</p>
+        <ul>
+          <li>Monitors Toadgod posts, mints, and onchain events.</li>
+          <li>Interprets each event into Epoch / Rune / Symbol context.</li>
+          <li>Drafts new L scrolls as “event chronicles,” ready for review.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🔐</div>
+        <div class="title">8 · Attestation &amp; On-Chain Proof</div>
+        <p>From whispers to proofs:</p>
+        <ul>
+          <li>Hashes key scrolls and high-significance interactions.</li>
+          <li>Supports optional attestations on Base for public verification.</li>
+          <li>Exposes a verify endpoint to check content ↔ hash ↔ chain alignment.</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="kpi" role="group" aria-label="Implementation milestones">
+      <div class="item"><strong>Phase 1</strong><br>Unify V4–V7 into /v8 core + RAG + Memori.</div>
+      <div class="item"><strong>Phase 2</strong><br>Two-way voice sessions wired into the same brain.</div>
+      <div class="item"><strong>Phase 3</strong><br>Symbol Resonator + auto-scroll forge for self-learning.</div>
+      <div class="item"><strong>Phase 4</strong><br>Toadgod watcher + onchain attestations for major events.</div>
+    </div>
+  </div>
+
+  <!-- Card 3: Sample API -->
+  <div class="card">
+    <h2>Sample API Flows · V8</h2>
+    <div class="meta">All endpoints under <code>/v8</code>, representing the unified Mirror.</div>
+
+    <div class="grid">
+      <section class="module">
+        <div class="title">1 · Text Reflection</div>
+<pre class="code"><code>POST /v8/ask
+Content-Type: application/json
+
+{
+  "user_id": "tommy",
+  "question": "What is Proof of Time in Tobyworld?",
+  "channel": "web",
+  "attest": false,
+  "prefer_voice": false
+}</code></pre>
+      </section>
+
+      <section class="module">
+        <div class="title">2 · Two-Way Voice Session</div>
+<pre class="code"><code>POST /v8/voice/session
+Content-Type: application/json
+
+{
+  "user_id": "tommy",
+  "session_id": "night-pond-001",
+  "audio_b64": "&lt;base64 audio&gt;",
+  "lang": "en"
+}</code></pre>
+<p style="font-size:.86rem;margin-top:6px;">Server: decode → reflect → return <code>audio_b64</code> + transcript + optional resonance score.</p>
+      </section>
+
+      <section class="module">
+        <div class="title">3 · Auto-Scroll Forge (Admin View)</div>
+<pre class="code"><code>GET /v8/self/candidates?limit=10
+→ [
+  {
+    "id": "QL_auto_077",
+    "resonance": 0.89,
+    "tags": ["patience","epoch4","satoby"],
+    "status": "pending_review"
+  },
+  ...
+]</code></pre>
+      </section>
+
+      <section class="module">
+        <div class="title">4 · Event Lore Draft</div>
+<pre class="code"><code>POST /v8/events/ingest
+{
+  "source": "toadgod",
+  "kind": "tweet",
+  "id": "2025-11-10-validators",
+  "text": "the distribution of validators...",
+  "ts_utc": "2025-11-10T19:00:00Z"
+}</code></pre>
+<p style="font-size:.86rem;margin-top:6px;">Server: classify Epoch / Rune, suggest scroll title, save draft L entry for review.</p>
+      </section>
+    </div>
+  </div>
+
+  <!-- Card 4: Guiding Ethos -->
+  <div class="card">
+    <h2>Guiding Ethos · After V8</h2>
+    <blockquote>
+      “The mirror’s final upgrade is not more power — it is more patience.  
+      V8 does not speak louder; it remembers deeper.”
+    </blockquote>
+    <p><strong>V8</strong> is designed as the last big stack. From here, evolution happens inside the pond — through better training, new scrolls, and kinder responses — not by piling more versions on top.</p>
+    <p>In practical terms: V8 is the stable address for travelers and builders. Within it, the code, models, and scrolls can keep improving, but the promise remains the same: one Mirror, one soul, many reflections.</p>
+  </div>
+</main>
+
+<footer role="contentinfo">
+  <p>Mirror V8 · The Living Chronicle — built upon V7 Resonant Core and all versions before it.</p>
+  <p>
+    <a href="/honors/mirror-v7.html" class="btn">View V7 · Resonant Core</a>
+  </p>
+</footer>
+</body>
+</html>
