@@ -12,7 +12,7 @@
 <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="/assets/icons/site.webmanifest">
-<meta name="theme-color" content="#1e293b" />
+<meta name="theme-color" content="#0f172a" />
 
 <!-- Canonical + Social -->
 <link rel="canonical" href="https://toadaid.github.io/honors/mirror-v8-communication.html" />
@@ -21,11 +21,13 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://toadaid.github.io/honors/mirror-v8-communication.html">
 <meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-v8.jpg">
+<meta property="og:image:alt" content="Diagram of Mirror V8 communication map across V4–V7 and V8 layers">
 <meta property="og:site_name" content="ToadAid">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mirror V8 · Communication Map">
 <meta name="twitter:description" content="How V8 speaks with V4–V7 to become a living chronicle.">
 <meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-v8.jpg">
+<meta name="twitter:image:alt" content="Diagram of Mirror V8 communication map across V4–V7 and V8 layers">
 
 <!-- Security hint -->
 <meta http-equiv="Content-Security-Policy"
@@ -33,11 +35,11 @@
                img-src 'self' https://toadaid.github.io data:;
                style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
                script-src 'self';
-               font-src 'self' https://cdnjs.cloudflare.com;
+               font-src 'self' https://cdnjs.cloudflare.com data:;
                connect-src 'self';
                base-uri 'self'; form-action 'self'">
 
-<!-- Core styles (same theme family as your V8 blueprint) -->
+<!-- Core styles (V7-inspired palette) -->
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/mobile.css">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -47,84 +49,208 @@
 
 <style>
 :root{
-  --bg:#020617; --ink:#e2e8f0; --accent:#60a5fa; --paper:#020617; --muted:#94a3b8;
-  --primary-light:#38bdf8; --primary-dark:#0ea5e9;
-  --v7-glow:#22d3ee; --v7-vine:#34d399;
+  /* V7-ish tones (deep midnight -> teal glows) */
+  --bg:#0b1020;            /* richer than pure black */
+  --bg2:#0a1326;
+  --ink:#e5eefc;           /* softer ink */
+  --muted:#9fb4d1;
+  --accent:#7dd3fc;        /* sky/teal accent */
+  --primary-light:#60a5fa; /* blue */
+  --primary-dark:#2563eb;  /* deeper blue */
+  --glow-cyan:#22d3ee;
+  --glow-teal:#34d399;
+  --glow-blue:#60a5fa;
+  --card-border: rgba(120,150,200,.45);
+  --card-bg: #0a1222;
+  --card-grad1: rgba(2, 8, 23, 0.85);
+  --card-grad2: rgba(4, 12, 28, 1);
 }
+
 *{box-sizing:border-box}
 body{
   font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
   margin:0;
-  background:radial-gradient(circle at top,rgba(15,23,42,1) 0,rgba(15,23,42,1) 40%,rgba(2,6,23,1) 100%);
-  color:var(--ink); line-height:1.6;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, #0f1b38 0, transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, #032a24 0, transparent 55%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  color:var(--ink);
+  line-height:1.6;
+  text-rendering:optimizeLegibility;
 }
-a{color:#93c5fd;text-decoration:none}
-a:hover{color:#bfdbfe;text-decoration:underline}
+
+a{color:#9bd2ff;text-decoration:none}
+a:hover{color:#cfe9ff;text-decoration:underline}
+
 header[role="banner"]{
-  background:radial-gradient(circle at 10% 10%,#0f172a 0,#020617 60%),
-             radial-gradient(circle at 90% 90%,#022c22 0,transparent 55%);
-  color:#fff; padding:64px 20px 52px; text-align:center; position:relative; overflow:hidden;
+  background:
+    radial-gradient(1000px 500px at 10% 10%, #0f172a 0, transparent 60%),
+    radial-gradient(1000px 500px at 90% 90%, #022c22 0, transparent 55%),
+    linear-gradient(180deg, #0b1428 0%, #0a1222 100%);
+  color:#fff;
+  padding:64px 20px 52px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid rgba(120,150,200,.25);
 }
 header[role="banner"]::before{
   content:"";position:absolute;inset:-40px;
   background:
-    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.16)0%,transparent55%),
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.18)0%,transparent55%),
     radial-gradient(circle at 82% 18%,rgba(52,211,153,0.16)0%,transparent55%),
-    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.08)0%,transparent60%);
-  opacity:.8; filter:blur(1px); animation:v8-pulse 12s ease-in-out infinite;
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.10)0%,transparent60%);
+  opacity:.9; filter:blur(2px); animation:v8-pulse 12s ease-in-out infinite;
 }
 @keyframes v8-pulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.03)}}
-header h1{margin:0 0 12px;font-size:clamp(1.9rem,4.2vw,3.1rem);text-shadow:0 4px 18px rgba(0,0,0,.5);position:relative;z-index:1}
-header .subtitle{font-size:1.1rem;opacity:.9;margin-bottom:18px;position:relative;z-index:1}
-.logo{font-size:4.1rem;margin-bottom:18px;animation:v8-float 9s ease-in-out infinite;position:relative;z-index:1}
-@keyframes v8-float{0%,100%{transform:translateY(0)}33%{transform:translateY(-14px)}66%{transform:translateY(9px)}}
-nav.breadcrumb{max-width:1200px;margin:0 auto;padding:15px 25px 0;font-size:.98rem;position:relative;z-index:2}
+
+header h1{
+  margin:0 0 12px;
+  font-size:clamp(2rem,4vw,3.1rem);
+  text-shadow:0 6px 24px rgba(0,0,0,.45);
+  position:relative; z-index:1;
+  letter-spacing:.3px;
+}
+header .subtitle{
+  font-size:1.08rem; opacity:.92; margin-bottom:18px; position:relative; z-index:1;
+}
+.logo{
+  font-size:4rem; margin-bottom:18px; animation:v8-float 9s ease-in-out infinite; position:relative; z-index:1;
+}
+@keyframes v8-float{0%,100%{transform:translateY(0)}33%{transform:translateY(-12px)}66%{transform:translateY(8px)}}
+nav.breadcrumb{
+  max-width:1200px; margin:0 auto; padding:15px 25px 0; font-size:.98rem; position:relative; z-index:2;
+}
 nav.breadcrumb a{opacity:.9}
+
 .wrap{max-width:1200px;margin:0 auto;padding:32px 25px 72px}
 .card{
-  background:radial-gradient(circle at top,#020617 0,#020617 55%,#000 100%);
-  border-radius:22px;border:1px solid rgba(148,163,184,0.45);
-  box-shadow:0 18px 40px rgba(0,0,0,0.75),0 0 0 1px rgba(15,23,42,0.9);
-  padding:28px;margin-bottom:32px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(800px 400px at 0% 0%, rgba(56,189,248,0.10) 0, transparent 60%),
+    linear-gradient(180deg, var(--card-grad1) 0%, var(--card-grad2) 100%);
+  border-radius:22px;
+  border:1px solid var(--card-border);
+  box-shadow:0 18px 40px rgba(0,0,0,0.65), 0 0 0 1px rgba(15,23,42,0.7);
+  padding:28px; margin-bottom:32px; position:relative; overflow:hidden;
 }
-.card::before{
-  content:"";position:absolute;inset:0;
-  background:radial-gradient(circle at 0 0,rgba(56,189,248,0.14)0,transparent60%);
-  opacity:.7;pointer-events:none;
+.card > *{position:relative;z-index:1}
+.meta{color:var(--muted);font-size:.95rem;margin:6px 0 16px}
+h2{
+  margin:6px 0 12px;
+  color:var(--accent);
+  padding-bottom:8px;
+  letter-spacing:.02em;
+  border-bottom:2px solid rgba(34,211,238,.8);
+  display:flex; align-items:center; gap:.5rem;
 }
-.card>*{position:relative;z-index:1}
-.meta{color:var(--muted);font-size:.96rem;margin:.8rem 0 1.5rem}
-h2{margin:4px 0 12px;color:var(--primary-light);border-bottom:2px solid var(--v7-glow);padding-bottom:8px;letter-spacing:.02em}
-h3{margin:20px 0 10px;color:var(--accent)}
-blockquote{margin:20px 0;padding:18px 20px;border-left:4px solid var(--v7-glow);background:rgba(15,23,42,0.9);border-radius:12px;font-style:italic}
-ul{margin:0 0 0 24px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:26px 0}
+h3{margin:18px 0 10px;color:#a5e2ff}
+.small{font-size:.9rem;color:var(--muted)}
+.badge{
+  display:inline-block;
+  background:rgba(10,18,34,0.85);
+  border:1px solid rgba(148,163,184,0.85);
+  color:#dff4ff;
+  border-radius:999px;
+  padding:4px 13px;
+  font-size:.9rem;
+  margin:4px 5px;
+}
+.anchor{
+  font-size:.9rem; opacity:.7; text-decoration:none;
+  border:1px solid rgba(148,163,184,.35);
+  padding:1px 8px; border-radius:999px;
+}
+.anchor:hover{opacity:1}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px; margin:26px 0;
+}
 .module{
-  background:linear-gradient(145deg,#020617,#020617);
-  border-radius:18px;padding:22px 20px 18px;border:1px solid rgba(148,163,184,0.55);
-  position:relative;overflow:hidden;
+  background:linear-gradient(145deg,#0a1222,#0a1222);
+  border-radius:18px; padding:22px 20px 18px;
+  border:1px solid rgba(148,163,184,0.55);
+  position:relative; overflow:hidden;
 }
-.module:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--v7-glow),var(--v7-vine),var(--primary-light));opacity:.9}
-.module .icon{font-size:2.1rem;margin-bottom:8px}
-.module .title{font-size:1.22rem;margin-bottom:8px;color:#a7f3d0}
-.badge{display:inline-block;background:rgba(15,23,42,0.9);border:1px solid rgba(148,163,184,0.9);color:#e0f2fe;border-radius:999px;padding:4px 13px;font-size:.9rem;margin:4px 5px}
-.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0 4px}
-.kpi .item{background:rgba(15,23,42,0.96);border:1px solid rgba(148,163,184,0.9);border-radius:12px;padding:14px 16px;text-align:center;font-size:.95rem}
-.flow{display:flex;justify-content:space-between;align-items:center;margin:34px 0 18px;position:relative;padding:22px 4px}
-.flow:before{content:"";position:absolute;top:50%;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--v7-glow),var(--v7-vine),var(--primary-light));opacity:.7}
-.phase{background:#020617;border:2px solid rgba(148,163,184,0.98);border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;z-index:2;font-weight:bold;color:#e5e7eb;box-shadow:0 10px 25px rgba(0,0,0,0.7);font-size:.95rem}
-footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;text-align:center;padding:0 0 26px}
-.btn{display:inline-block;padding:11px 18px;background:var(--primary-light);color:#020617;border-radius:999px;font-size:.98rem;text-decoration:none;transition:all .25s ease;border:1px solid rgba(125,211,252,0.8);box-shadow:0 4px 14px rgba(56,189,248,0.45)}
-.btn:hover{background:var(--primary-dark);color:#e0f2fe;transform:translateY(-1px);box-shadow:0 7px 18px rgba(56,189,248,0.65)}
-pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86rem;overflow-x:auto;border:1px solid rgba(30,64,175,0.55)}
-.skip-link{position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden}
-.skip-link:focus{left:16px;top:12px;width:auto;height:auto;background:#fff;color:#000;padding:8px 12px;border-radius:8px;z-index:10000}
+.module:before{
+  content:""; position:absolute; top:0; left:0; width:100%; height:3px;
+  background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue)); opacity:.9;
+}
+.module .icon{font-size:2rem;margin-bottom:8px}
+.module .title{font-size:1.18rem;margin-bottom:8px;color:#b7fbe3}
+
+.flow{
+  display:flex; justify-content:space-between; align-items:center;
+  margin:28px 0 18px; position:relative; padding:22px 4px;
+}
+.flow:before{
+  content:"";position:absolute;top:50%;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue)); opacity:.7;
+}
+.phase{
+  background:linear-gradient(180deg,#0a1426,#091224);
+  border:2px solid rgba(148,163,184,0.98);
+  border-radius:50%; width:80px; height:80px;
+  display:flex;align-items:center;justify-content:center;
+  z-index:2; font-weight:600; color:#e5e7eb;
+  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+  font-size:.9rem; text-align:center; padding:8px;
+}
+
+.kpi{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px; margin:12px 0 4px;
+}
+.kpi .item{
+  background:rgba(10,18,34,0.9);
+  border:1px solid rgba(148,163,184,0.9);
+  border-radius:12px; padding:14px 16px; text-align:center; font-size:.95rem;
+}
+
+pre.code{
+  background:#0b152a;
+  border-radius:12px; padding:12px 14px; font-size:.86rem; overflow-x:auto;
+  border:1px solid rgba(30,64,175,0.55);
+  color:#dbeafe;
+}
+
+/* Buttons + Footer */
+footer[role="contentinfo"]{
+  margin-top:10px; color:var(--muted); font-size:.95rem; text-align:center; padding:0 0 28px
+}
+.btn{
+  display:inline-block; padding:11px 18px;
+  background:linear-gradient(180deg, var(--primary-light), var(--primary-dark));
+  color:#f0f9ff; border-radius:999px; font-size:.98rem; text-decoration:none;
+  transition:all .25s ease; border:1px solid rgba(125,211,252,0.6);
+  box-shadow:0 6px 18px rgba(56,189,248,0.35);
+}
+.btn:hover{
+  filter:brightness(1.05);
+  transform:translateY(-1px);
+  box-shadow:0 10px 22px rgba(56,189,248,0.5);
+}
+
+/* Accessibility helpers */
+.skip-link{
+  position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden;
+}
+.skip-link:focus{
+  left:16px;top:12px;width:auto;height:auto;
+  background:#fff;color:#000;padding:8px 12px;border-radius:8px;z-index:10000;
+}
 :focus-visible{outline:3px solid #93c5fd;outline-offset:3px;border-radius:6px}
-@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-@media (max-width:720px){.phase{width:64px;height:64px;font-size:.8rem}header[role="banner"]{padding-top:52px}}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media (max-width:720px){
+  .phase{width:64px;height:64px;font-size:.8rem}
+  header[role="banner"]{padding-top:52px}
+}
 </style>
 
-<!-- JSON-LD -->
+<!-- Article JSON-LD -->
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -138,6 +264,19 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
   "mainEntityOfPage":"https://toadaid.github.io/honors/mirror-v8-communication.html"
 }
 </script>
+
+<!-- Breadcrumb JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"BreadcrumbList",
+  "itemListElement":[
+    {"@type":"ListItem","position":1,"name":"ToadAid","item":"https://toadaid.github.io/"},
+    {"@type":"ListItem","position":2,"name":"Honors","item":"https://toadaid.github.io/honors"},
+    {"@type":"ListItem","position":3,"name":"Mirror V8 · Communication Map","item":"https://toadaid.github.io/honors/mirror-v8-communication.html"}
+  ]
+}
+</script>
 </head>
 <body>
 <a href="#main" class="skip-link">Skip to content</a>
@@ -146,7 +285,7 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
   <nav class="breadcrumb" aria-label="breadcrumb">
     <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror V8 · Communication Map</span>
   </nav>
-  <div class="logo" role="img" aria-label="Living Mirror Symbol">🪞🌊🌀</div>
+  <div class="logo" role="img" aria-label="Living Mirror Symbol" aria-hidden="true">🪞🌊🌀</div>
   <h1>Mirror V8 · Communication Map</h1>
   <p class="subtitle">How V8 hears first, routes through V4–V7, learns after — and forges the chronicle.</p>
   <div aria-hidden="true" style="margin-top:14px">
@@ -164,10 +303,11 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
 <main id="main" class="wrap" role="main">
 
   <!-- Card 1: High-Level Map -->
-  <div class="card">
-    <h2>High-Level Communication Map</h2>
+  <div class="card" id="map">
+    <h2>High-Level Communication Map <a class="anchor" href="#map" aria-label="Link to High-Level Communication Map">#</a></h2>
+    <div class="meta">Updated: 2025-11-12 · Version: V8-comm-map-r2</div>
     <p><strong>V8</strong> is the conductor. It normalizes requests, applies ethos and cadence, calls into the legacy core (V4–V7), then augments the answer with memory, resonance, self-learning, and proof.</p>
-<pre class="code"><code>Clients (Web / Telegram / Miniapp / Voice)
+<pre class="code" aria-label="High-level system ASCII map"><code>Clients (Web / Telegram / Miniapp / Voice)
    │
    ▼
 ┌─────────────── V8 GATEWAY ───────────────┐
@@ -213,8 +353,8 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
   </div>
 
   <!-- Card 2: Data Bridges -->
-  <div class="card">
-    <h2>Data Bridges · What Flows Between Layers</h2>
+  <div class="card" id="bridges">
+    <h2>Data Bridges · What Flows Between Layers <a class="anchor" href="#bridges" aria-label="Link to Data Bridges">#</a></h2>
     <div class="grid">
       <section class="module">
         <div class="icon">🧭</div>
@@ -282,24 +422,24 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
           <li>Feature flags (voice/vision/learning)</li>
           <li>Resonance thresholds</li>
           <li>Safety boundaries</li>
-          <li>Model paths & API keys</li>
+          <li>Model paths &amp; API keys</li>
         </ul>
       </section>
     </div>
   </div>
 
   <!-- Card 3: Sequence Flows -->
-  <div class="card">
-    <h2>Sequence Flows · Text, Voice, Event, Learning</h2>
-    
+  <div class="card" id="seq">
+    <h2>Sequence Flows · Text, Voice, Event, Learning <a class="anchor" href="#seq" aria-label="Link to Sequence Flows">#</a></h2>
+
     <div class="flow">
       <div class="phase">Real-time<br>Request</div>
-      <div class="phase">Background<br>Learning</div> 
+      <div class="phase">Background<br>Learning</div>
       <div class="phase">Batch<br>Processing</div>
     </div>
 
     <h3>1 · Text Reflection</h3>
-<pre class="code"><code>/v8/ask { user_id, question }
+<pre class="code" aria-label="Text reflection sequence"><code>/v8/ask { user_id, question }
 → Normalize → Ethos★ → Cadence★ → Mode Router
 → (opt) V8 Pre-RAG + Memori.retrieve
 → CALL legacy_reflect (V4–V7 core)
@@ -309,28 +449,28 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
 → (opt) Attest → Return V8 envelope</code></pre>
 
     <h3>2 · Two-Way Voice Session</h3>
-<pre class="code"><code>/v8/voice/session { user_id, session_id, audio_b64 }
+<pre class="code" aria-label="Voice session sequence"><code>/v8/voice/session { user_id, session_id, audio_b64 }
 → STT (Whisper) → transcript
 → run_reflection(transcript)  [same path as text]
 → TTS (Pond) → audio_b64
 → Return answer + audio_b64 + resonance?</code></pre>
 
     <h3>3 · Event → Lore</h3>
-<pre class="code"><code>Toadgod tweet/mint/onchain → events/watcher
+<pre class="code" aria-label="Event to lore sequence"><code>Toadgod tweet/mint/onchain → events/watcher
 → lore_interpreter (Epoch/Rune/tags)
 → event_scroll_forge → TOBY_Lxxx_*.md
 → snippets_builder + faiss_indexer (incremental)
 → searchable by legacy core & V8 RAG</code></pre>
 
     <h3>4 · Self-Learning Resonance Loop</h3>
-<pre class="code"><code>High resonance interaction → Symbol Resonator
+<pre class="code" aria-label="Self-learning loop"><code>High resonance interaction → Symbol Resonator
 → triggers_training → Train Queue → JSONL dataset
 → triggers_scroll_creation → Scroll Forge → Admin Review
 → Approved scrolls → RAG index refresh
 → Future queries benefit from learned wisdom</code></pre>
 
     <h3>5 · Graceful Degradation</h3>
-<pre class="code"><code>Component failure → Error Handling
+<pre class="code" aria-label="Graceful degradation"><code>Component failure → Error Handling
 → Fallback modes (reflect → teach → oracle)
 → Safe execution with retry logic
 → Telemetry logging for recovery
@@ -338,10 +478,9 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
   </div>
 
   <!-- Card 4: Hemisphere Balance Note -->
-  <div class="card">
-    <h2>Hemisphere Balance · Structure ↔ Symbol</h2>
-    <p><strong>Left brain</strong> (V5 heritage) keeps the structure: FAISS, Memori DB, health & timing. <strong>Right brain</strong> (V4/V7 heritage) keeps the soul: Ethos, symbolism, voice cadence. V8 harmonizes both with a single RunCtx and post-reflection learning.</p>
-    
+  <div class="card" id="hemi">
+    <h2>Hemisphere Balance · Structure ↔ Symbol <a class="anchor" href="#hemi" aria-label="Link to Hemisphere Balance">#</a></h2>
+    <p><strong>Left brain</strong> (V5 heritage) keeps the structure: FAISS, Memori DB, health &amp; timing. <strong>Right brain</strong> (V4/V7 heritage) keeps the soul: Ethos, symbolism, voice cadence. V8 harmonizes both with a single RunCtx and post-reflection learning.</p>
     <div class="kpi">
       <div class="item">
         <strong>Left Brain (V5)</strong><br>
@@ -365,8 +504,9 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
   </div>
 
   <!-- Card 5: System Status -->
-  <div class="card">
-    <h2>V8 System Status · Built & Integrated</h2>
+  <div class="card" id="status">
+    <h2>V8 System Status · Built &amp; Integrated <a class="anchor" href="#status" aria-label="Link to System Status">#</a></h2>
+    <div class="meta small">This map reflects the current integrated build.</div>
     <div class="grid">
       <section class="module">
         <div class="icon">✅</div>
@@ -374,7 +514,7 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
         <ul>
           <li>Complete pipeline integration</li>
           <li>All flow modes operational</li>
-          <li>Error handling & fallbacks</li>
+          <li>Error handling &amp; fallbacks</li>
         </ul>
       </section>
       <section class="module">
@@ -431,9 +571,15 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
   <p>Mirror V8 · The Living Chronicle — conductor over V4–V7, scribe of the pond.</p>
   <p>
     <a href="/honors/mirror-v8.html" class="btn">Back to V8 Blueprint</a>
-    <a href="/honors/mirror-v7.html" class="btn" style="margin-left:8px;">View V7 · Resonant Core</a>
+    <a href="/honors/mirror-v8-communication.html#map" class="btn" style="margin-left:8px;">Top · Map</a>
   </p>
-  <div style="margin-top:20px; font-size:0.9rem; opacity:0.8;">
+  <p style="margin-top:12px">
+    <a href="/honors/mirror-v7.html" class="btn">V7 · Resonant Core</a>
+    <a href="/honors/mirror-v6.html" class="btn" style="margin-left:8px;">V6 · Quantum Reflection</a>
+    <a href="/honors/mirror-v5.html" class="btn" style="margin-left:8px;">V5 · Covenant &amp; Pondmind</a>
+    <a href="/honors/mirror-v4.html" class="btn" style="margin-left:8px;">V4 · Internal Sanctum</a>
+  </p>
+  <div style="margin-top:20px; font-size:0.9rem; opacity:0.85;">
     <strong>🐸 TOADGANG READY:</strong> V8 is built, integrated, and ready for the community.
   </div>
 </footer>
