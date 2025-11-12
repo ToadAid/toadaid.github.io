@@ -1,0 +1,172 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tobyworld Mini App — Ask the Mirror (Base Ready)</title>
+<meta name="description" content="Ask the Mirror about the Tobyworld Lore — Base App mini-ready." /><!-- Quick config (no rebuild needed) --><meta name="mirror-api" content="https://toadaid.duckdns.org/ask" />
+<meta name="mirror-user-fallback" content="base-mini" /><link rel="icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#355e3b" />
+<style>
+  :root{ --bg:#f6f5f2; --card:#fff; --ink:#222326; --muted:#6b7280; --brand:#2f6d3a; --brand-strong:#275b30; --ring:#93c5aa; --border:#e5e7eb; --shadow:0 8px 24px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04); --radius:14px; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;color:var(--ink);background:var(--bg)}
+  header{background:linear-gradient(135deg,#315a37,#3e7a47);color:#fff;padding:42px 20px 56px;text-align:center}
+  header h1{margin:0 0 6px;font-size:clamp(22px,3vw,28px);font-weight:700}
+  header p{margin:0;opacity:.9;font-size:14px}
+  main{max-width:720px;margin:-36px auto 40px;padding:0 16px}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+  .row{display:grid;gap:12px}
+  label{text-align:left;font-size:13px;color:var(--muted)}
+  input[type="text"], textarea{width:100%;padding:14px 16px;font-size:16px;border:1px solid var(--border);border-radius:12px;background:#fafafa;transition:border-color .15s,box-shadow .15s,background .15s}
+  input:focus, textarea:focus{outline:none;border-color:var(--ring);background:#fff;box-shadow:0 0 0 4px rgba(147,197,170,.25)}
+  .actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  button{appearance:none;border:0;border-radius:12px;padding:12px 18px;background:var(--brand);color:#fff;font-weight:600;font-size:15px;cursor:pointer;transition:transform .04s,background .15s,box-shadow .15s;box-shadow:0 6px 14px rgba(47,109,58,.18)}
+  button:hover{background:var(--brand-strong)}
+  button:active{transform:translateY(1px)}
+  button[disabled]{opacity:.65;cursor:not-allowed;box-shadow:none}
+  pre{margin-top:16px;padding:18px;border:1px solid var(--border);border-radius:12px;background:#fff;text-align:left;white-space:pre-wrap}
+  .walletbar{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:-10px 0 14px 0}
+  .chip{font-size:12px;color:#fff;background:#2d5d39;border-radius:999px;padding:6px 10px}
+  .ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)}
+  .muted{color:var(--muted)}
+  .small{font-size:12px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="walletbar">
+      <div class="chip" id="chain-chip" style="display:none"></div>
+      <button class="ghost" id="connect-btn" style="display:none">Connect</button>
+    </div>
+    <h1>Ask the Mirror</h1>
+    <p>Ask anything about Tobyworld; the Mirror reflects the Lore.</p>
+  </header>  <main>
+    <section class="panel">
+      <div class="row">
+        <label for="mirror-question">Your question</label>
+        <!-- IDs preserved to match your working homepage -->
+        <input id="mirror-question" type="text" placeholder="Ask the Mirror…" />
+        <div class="actions">
+          <button id="mirror-ask-btn" onclick="askMirror()">Ask</button>
+          <button class="ghost" id="copy-btn" onclick="copyLast()" disabled>Copy</button>
+        </div>
+      </div>
+      <pre id="mirror-answer" style="display:none"></pre>
+      <p class="small muted" id="status"></p>
+    </section>
+  </main><script>
+// ===== Config =====
+const MIRROR_API = (document.querySelector('meta[name="mirror-api"]')?.content || 'https://toadaid.duckdns.org/ask').replace(/\/$/, '');
+const USER_FALLBACK = document.querySelector('meta[name="mirror-user-fallback"]')?.content || 'base-mini';
+
+// ===== DOM refs =====
+const qInput = document.getElementById('mirror-question');
+const askBtn = document.getElementById('mirror-ask-btn');
+const ansDiv = document.getElementById('mirror-answer');
+const copyBtn = document.getElementById('copy-btn');
+const statusEl = document.getElementById('status');
+const connectBtn = document.getElementById('connect-btn');
+const chainChip = document.getElementById('chain-chip');
+
+// ===== Wallet state =====
+const provider = window.ethereum || null; // EIP-1193
+let wallet = null;
+let chainId = null;
+let lastAnswer = '';
+
+function setStatus(msg){ statusEl.textContent = msg || ''; postHeightSoon(); }
+function short(addr){ return addr ? addr.slice(0,6)+"…"+addr.slice(-4) : ''; }
+function chainName(hex){ try{ const id = parseInt(hex,16); if(id===8453) return 'Base'; if(id===84532) return 'Base Sepolia'; return 'Chain '+id; }catch{ return 'Unknown'; } }
+
+function renderWallet(){
+  if(!provider){ connectBtn.style.display='none'; chainChip.style.display='none'; return; }
+  if(wallet){
+    chainChip.style.display='inline-block';
+    chainChip.textContent = chainName(chainId) + ' · ' + short(wallet);
+    connectBtn.style.display='none';
+  }else{
+    chainChip.style.display='none';
+    connectBtn.style.display='inline-block';
+  }
+}
+
+async function connect(){
+  if(!provider){ setStatus('Open inside Base App or a Web3 browser.'); return; }
+  try{
+    const accs = await provider.request({ method:'eth_requestAccounts' });
+    wallet = accs && accs[0] || null;
+    chainId = await provider.request({ method:'eth_chainId' });
+    renderWallet();
+    setStatus('Wallet connected.');
+  }catch(e){ setStatus(e?.message || 'Connect failed.'); }
+}
+
+// ===== Ask flow =====
+qInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askMirror(); } });
+
+async function askMirror(){
+  const question = (qInput.value || '').trim();
+  if(!question) return;
+  ansDiv.style.display='block';
+  ansDiv.textContent = '⏳ Seeking reflection...';
+  setStatus('Reflecting…');
+  postHeightSoon();
+
+  // Prefer wallet addr as user; fallback to static label
+  const user = wallet || USER_FALLBACK;
+
+  try{
+    const res = await fetch(MIRROR_API, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ user, question })
+    });
+    const data = await res.json().catch(()=>({}));
+    let reply = data.reply || data.answer || JSON.stringify(data);
+    reply = String(reply || '').replace(/\\n/g,'\n');
+    lastAnswer = reply;
+    ansDiv.innerHTML = `<strong>You asked:</strong> <i>${escapeHtml(question)}</i>\n\n${escapeHtml(reply)}`;
+    qInput.value=''; qInput.focus();
+    copyBtn.disabled = !reply;
+    setStatus('Reflected.');
+  }catch(err){
+    ansDiv.textContent = '⚠️ The Mirror is silent for now. Please try again later.';
+    setStatus('Request failed.');
+  }finally{
+    postHeightSoon();
+  }
+}
+
+function copyLast(){ if(!lastAnswer) return; navigator.clipboard.writeText(lastAnswer).then(()=>setStatus('Copied.')); }
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+
+/* ===== Base mini: autoresize for embedding ===== */
+function postHeight(){
+  try{
+    const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight);
+    window.parent.postMessage({ type:'mirror:height', height:h }, '*');
+  }catch(_){/* noop */}
+}
+function postHeightSoon(){ setTimeout(postHeight, 50); setTimeout(postHeight, 250); setTimeout(postHeight, 600); }
+window.addEventListener('load', postHeightSoon);
+window.addEventListener('resize', postHeightSoon);
+
+// Passive wallet detection
+(async()=>{
+  if(provider){
+    try{
+      const accs = await provider.request({ method:'eth_accounts' });
+      if(accs && accs[0]) wallet = accs[0];
+      chainId = await provider.request({ method:'eth_chainId' });
+    }catch(_){}
+  }
+  renderWallet();
+})();
+
+// Events
+connectBtn?.addEventListener('click', connect);
+</script></body>
+</html>
