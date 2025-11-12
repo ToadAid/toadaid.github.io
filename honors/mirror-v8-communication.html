@@ -156,6 +156,8 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
     <span class="badge">Toadgod Watcher</span>
     <span class="badge">Eternal Pond Memori</span>
     <span class="badge">On-Chain Attestation</span>
+    <span class="badge">Vector Memory</span>
+    <span class="badge">Resonance Scoring</span>
   </div>
 </header>
 
@@ -206,6 +208,7 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
       <span class="badge">Bridge First</span>
       <span class="badge">Reuse Legacy Wisdom</span>
       <span class="badge">Learn After Reflect</span>
+      <span class="badge">Vector Memory System</span>
     </div>
   </div>
 
@@ -236,6 +239,7 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
         <ul>
           <li><code>retrieve(user, q)</code> → episodic + long-term cues</li>
           <li><code>store(user, text, tags, importance)</code></li>
+          <li>Vector embeddings for semantic search</li>
         </ul>
       </section>
       <section class="module">
@@ -262,12 +266,38 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
           <li>(opt) attest on Base → verify endpoint</li>
         </ul>
       </section>
+      <section class="module">
+        <div class="icon">📊</div>
+        <div class="title">V8 ↔ Ops Monitoring</div>
+        <ul>
+          <li>Health checks across all components</li>
+          <li>Telemetry → interaction analytics</li>
+          <li>Performance metrics → system tuning</li>
+        </ul>
+      </section>
+      <section class="module">
+        <div class="icon">⚙️</div>
+        <div class="title">V8 Config → All Layers</div>
+        <ul>
+          <li>Feature flags (voice/vision/learning)</li>
+          <li>Resonance thresholds</li>
+          <li>Safety boundaries</li>
+          <li>Model paths & API keys</li>
+        </ul>
+      </section>
     </div>
   </div>
 
   <!-- Card 3: Sequence Flows -->
   <div class="card">
-    <h2>Sequence Flows · Text, Voice, Event</h2>
+    <h2>Sequence Flows · Text, Voice, Event, Learning</h2>
+    
+    <div class="flow">
+      <div class="phase">Real-time<br>Request</div>
+      <div class="phase">Background<br>Learning</div> 
+      <div class="phase">Batch<br>Processing</div>
+    </div>
+
     <h3>1 · Text Reflection</h3>
 <pre class="code"><code>/v8/ask { user_id, question }
 → Normalize → Ethos★ → Cadence★ → Mode Router
@@ -291,12 +321,108 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
 → event_scroll_forge → TOBY_Lxxx_*.md
 → snippets_builder + faiss_indexer (incremental)
 → searchable by legacy core & V8 RAG</code></pre>
+
+    <h3>4 · Self-Learning Resonance Loop</h3>
+<pre class="code"><code>High resonance interaction → Symbol Resonator
+→ triggers_training → Train Queue → JSONL dataset
+→ triggers_scroll_creation → Scroll Forge → Admin Review
+→ Approved scrolls → RAG index refresh
+→ Future queries benefit from learned wisdom</code></pre>
+
+    <h3>5 · Graceful Degradation</h3>
+<pre class="code"><code>Component failure → Error Handling
+→ Fallback modes (reflect → teach → oracle)
+→ Safe execution with retry logic
+→ Telemetry logging for recovery
+→ Health monitor alerts</code></pre>
   </div>
 
   <!-- Card 4: Hemisphere Balance Note -->
   <div class="card">
     <h2>Hemisphere Balance · Structure ↔ Symbol</h2>
     <p><strong>Left brain</strong> (V5 heritage) keeps the structure: FAISS, Memori DB, health & timing. <strong>Right brain</strong> (V4/V7 heritage) keeps the soul: Ethos, symbolism, voice cadence. V8 harmonizes both with a single RunCtx and post-reflection learning.</p>
+    
+    <div class="kpi">
+      <div class="item">
+        <strong>Left Brain (V5)</strong><br>
+        Vector Embeddings<br>
+        Structured Queries<br>
+        Performance Metrics
+      </div>
+      <div class="item">
+        <strong>Right Brain (V4/V7)</strong><br>
+        Resonance Scoring<br>
+        Symbolic Patterns<br>
+        Emotional Connection
+      </div>
+      <div class="item">
+        <strong>V8 Harmony</strong><br>
+        Unified Context<br>
+        Learning Loops<br>
+        Chronicle Forging
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5: System Status -->
+  <div class="card">
+    <h2>V8 System Status · Built & Integrated</h2>
+    <div class="grid">
+      <section class="module">
+        <div class="icon">✅</div>
+        <div class="title">Core Orchestrator</div>
+        <ul>
+          <li>Complete pipeline integration</li>
+          <li>All flow modes operational</li>
+          <li>Error handling & fallbacks</li>
+        </ul>
+      </section>
+      <section class="module">
+        <div class="icon">✅</div>
+        <div class="title">Memory System</div>
+        <ul>
+          <li>Vector embeddings storage</li>
+          <li>Hemisphere analysis</li>
+          <li>User profile tracking</li>
+        </ul>
+      </section>
+      <section class="module">
+        <div class="icon">✅</div>
+        <div class="title">Self-Learning</div>
+        <ul>
+          <li>Resonance scoring</li>
+          <li>Scroll generation</li>
+          <li>Training queue management</li>
+        </ul>
+      </section>
+      <section class="module">
+        <div class="icon">✅</div>
+        <div class="title">Safety Systems</div>
+        <ul>
+          <li>Ethos Guardian (TG4L)</li>
+          <li>Cadence Guard (timing)</li>
+          <li>Request normalization</li>
+        </ul>
+      </section>
+      <section class="module">
+        <div class="icon">✅</div>
+        <div class="title">API Gateway</div>
+        <ul>
+          <li>All endpoints operational</li>
+          <li>Health monitoring</li>
+          <li>Telemetry analytics</li>
+        </ul>
+      </section>
+      <section class="module">
+        <div class="icon">✅</div>
+        <div class="title">Testing Suite</div>
+        <ul>
+          <li>Integration tests</li>
+          <li>Performance validation</li>
+          <li>Error scenario coverage</li>
+        </ul>
+      </section>
+    </div>
   </div>
 
 </main>
@@ -307,6 +433,9 @@ pre.code{background:#020617;border-radius:12px;padding:12px 14px;font-size:.86re
     <a href="/honors/mirror-v8.html" class="btn">Back to V8 Blueprint</a>
     <a href="/honors/mirror-v7.html" class="btn" style="margin-left:8px;">View V7 · Resonant Core</a>
   </p>
+  <div style="margin-top:20px; font-size:0.9rem; opacity:0.8;">
+    <strong>🐸 TOADGANG READY:</strong> V8 is built, integrated, and ready for the community.
+  </div>
 </footer>
 </body>
 </html>
