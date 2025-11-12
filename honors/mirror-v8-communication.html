@@ -310,40 +310,40 @@ footer[role="contentinfo"]{
 <pre class="code" aria-label="High-level system ASCII map"><code>Clients (Web / Telegram / Miniapp / Voice)
    │
    ▼
-┌─────────────── V8 GATEWAY ─────┐
-│  /v8/ask   /v8/voice/session  /v8/events   │
-│  ─► Request Normalizer                    │
-│  ─► Ethos Guardian ★                     │
-│  ─► Cadence Guard ★                      │
-│  ─► Mode Router                           │
-└───────────────┬────────────┘
+┌─────────────── V8 GATEWAY ──────────────┐
+│  /v8/ask   /v8/voice/session  /v8/events                 │
+│  ─► Request Normalizer                                  │
+│  ─► Ethos Guardian ★                                   │
+│  ─► Cadence Guard ★                                    │
+│  ─► Mode Router                                         │
+└───────────────┬─────────────────────┘
                 │
                 ▼
-┌───────────── V8 ORCHESTRATOR ─ ──┐
-│ run_reflection(ctx):                      │
-│  • (opt) V8 Pre-RAG + Memori.retrieve     │
-│  • CALL legacy_reflect (V4–V7 core)       │
-│  • Post: Memori.store, Symbol Resonator,  │
-│         Scroll Forge, (opt) Attestation   │
-└───────────────┬───────────┘
+┌───────────── V8 ORCHESTRATOR ────────────┐
+│ run_reflection(ctx):                                    │
+│  • (opt) V8 Pre-RAG + Memori.retrieve                   │
+│  • CALL legacy_reflect (V4–V7 core)                     │
+│  • Post: Memori.store, Symbol Resonator,                │
+│         Scroll Forge, (opt) Attestation                 │
+└───────────────┬────────────────────┘
                 │
                 ▼
-┌───────────── V4–V7 LEGACY CORE ──┐
-│ V4: Base Reflector/guide                  │
-│ V5: Memori adapters / retrieval           │
-│ V6: Temporal/Epoch alignment              │
-│ V7: Voice (TTS), Vision Sutra, Resonance  │
-└───────────────────────────┘
+┌───────────── V4–V7 LEGACY CORE ───────────┐
+│ V4: Base Reflector/guide                                │
+│ V5: Memori adapters / retrieval                         │
+│ V6: Temporal/Epoch alignment                            │
+│ V7: Voice (TTS), Vision Sutra, Resonance                │
+└────────────────────────────────────┘
                 ▲
                 │ legacy_result (text + meta)
                 │
-┌───────────── V8 AUGMENTATION ─ ──┐
-│ Memori.store / retrieve                   │
-│ Symbol Resonator → resonance_score        │
-│ Scroll Forge → QL/QR_auto → RAG refresh  │
-│ (opt) Attestation (hash → Base)           │
-│ Voice wrap / Vision fuse                  │
-└───────────────────────────┘</code></pre>
+┌───────────── V8 AUGMENTATION ─────────────┐
+│ Memori.store / retrieve                                  │
+│ Symbol Resonator → resonance_score                      │
+│ Scroll Forge → QL/QR_auto → RAG refresh                 │
+│ (opt) Attestation (hash → Base)                         │
+│ Voice wrap / Vision fuse                                 │
+└─────────────────────────────────────┘</code></pre>
     <div class="meta">
       <span class="badge">Bridge First</span>
       <span class="badge">Reuse Legacy Wisdom</span>
