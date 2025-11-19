@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tobyworld Mini App — Ask the Mirror</title>
+<meta name="description" content="Ask the Mirror about the Tobyworld Lore." />
+<link rel="icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#355e3b" />
+
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#fff; --ink:#222326;
+    --muted:#6b7280; --brand:#2f6d3a; --brand-strong:#275b30;
+    --ring:#93c5aa; --border:#e5e7eb; --shadow:0 8px 24px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;color:var(--ink);background:var(--bg)}
+  header{background:linear-gradient(135deg,#315a37,#3e7a47);color:#fff;padding:42px 20px 56px;text-align:center}
+  header h1{margin:0 0 6px;font-size:clamp(22px,3vw,28px);font-weight:700}
+  header p{margin:0;opacity:.9;font-size:14px}
+  main{max-width:720px;margin:-36px auto 40px;padding:0 16px}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:32px}
+  .row{display:grid;gap:12px}
+  label{text-align:left;font-size:13px;color:var(--muted)}
+  input[type="text"], input[type="file"]{
+    width:100%;padding:14px 16px;font-size:16px;border:1px solid var(--border);
+    border-radius:12px;background:#fafafa;transition:border-color .15s,box-shadow .15s,background .15s
+  }
+  input:focus{outline:none;border-color:var(--ring);background:#fff;box-shadow:0 0 0 4px rgba(147,197,170,.25)}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+  button{
+    appearance:none;border:0;border-radius:12px;padding:12px 18px;background:var(--brand);
+    color:#fff;font-weight:600;font-size:15px;cursor:pointer;transition:transform .04s,background .15s,box-shadow .15s;
+    box-shadow:0 6px 14px rgba(47,109,58,.18)
+  }
+  button:hover{background:var(--brand-strong)}
+  button:active{transform:translateY(1px)}
+  button[disabled]{opacity:.65;cursor:not-allowed;box-shadow:none}
+  pre{
+    margin-top:16px;padding:18px;border:1px solid var(--border);border-radius:12px;
+    background:#fff;text-align:left;white-space:pre-wrap
+  }
+  img.preview{
+    margin-top:14px;max-width:100%;border-radius:12px;border:1px solid var(--border)
+  }
+</style>
+</head>
+
+<body>
+<header>
+  <h1>Ask the Mirror</h1>
+  <p>Ask anything about Tobyworld; the Mirror reflects the Lore.</p>
+</header>
+
+<main>
+
+  <!-- =============== TEXT QUESTION PANEL =============== -->
+  <section class="panel">
+    <div class="row">
+      <label for="mirror-question">Your question</label>
+      <input id="mirror-question" type="text" placeholder="Ask the Mirror…" />
+      <div class="actions">
+        <button id="mirror-ask-btn" onclick="askMirror()">Ask</button>
+      </div>
+    </div>
+    <pre id="mirror-answer" style="display:none"></pre>
+  </section>
+
+
+  <!-- =============== VISION SUTRA PANEL =============== -->
+  <section class="panel">
+    <h3 style="margin-top:0;margin-bottom:12px;font-size:18px;">Vision Sutra — Image Reflection 👁️🪞</h3>
+
+    <label for="vision-file">Upload Image</label>
+    <input id="vision-file" type="file" accept="image/*" />
+
+    <img id="vision-preview" class="preview" style="display:none" />
+
+    <div class="actions">
+      <button id="vision-btn" onclick="sendVision()">Analyze Image</button>
+    </div>
+
+    <pre id="vision-answer" style="display:none"></pre>
+  </section>
+
+</main>
+
+
+<script>
+const MIRROR_API = "https://toadaid.duckdns.org/ask";
+const VISION_API = "https://toadaid.duckdns.org/v8/vision/analyze";
+
+const qInput = document.getElementById('mirror-question');
+const ansDiv = document.getElementById('mirror-answer');
+const askBtn = document.getElementById('mirror-ask-btn');
+
+const visionInput = document.getElementById("vision-file");
+const visionPreview = document.getElementById("vision-preview");
+const visionAns = document.getElementById("vision-answer");
+
+let lastVisionBase64 = null;
+
+/* ENTER to submit text question */
+qInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    askMirror();
+  }
+});
+
+/* IMAGE LOADED → convert to base64 */
+visionInput.addEventListener("change", () => {
+  const file = visionInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = reader.result;
+    visionPreview.src = dataUrl;
+    visionPreview.style.display = "block";
+
+    // extract actual base64
+    lastVisionBase64 = dataUrl.split(",")[1];
+    visionAns.style.display = "block";
+    visionAns.textContent = "Image loaded. Ready to analyze.";
+  };
+  reader.readAsDataURL(file);
+});
+
+
+/* =============== TEXT ASK =============== */
+async function askMirror() {
+  const question = (qInput.value || "").trim();
+  if (!question) return;
+
+  ansDiv.style.display = 'block';
+  ansDiv.textContent = "⏳ Seeking reflection...";
+
+  try {
+    const res = await fetch(MIRROR_API, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question })
+    });
+
+    const data = await res.json();
+    let reply = data.reply || data.answer || JSON.stringify(data);
+    reply = String(reply).replace(/\\n/g, "\n");
+
+    ansDiv.innerHTML =
+      `<strong>You asked:</strong> <i>${escapeHtml(question)}</i>\n\n${reply}`;
+    qInput.value = "";
+  } catch (err) {
+    ansDiv.textContent = "⚠️ The Mirror is silent for now.";
+  }
+}
+
+
+/* =============== VISION ASK =============== */
+async function sendVision() {
+  if (!lastVisionBase64) {
+    visionAns.style.display = 'block';
+    visionAns.textContent = "⚠️ No image selected.";
+    return;
+  }
+
+  visionAns.style.display = 'block';
+  visionAns.textContent = "👁️ Reflecting on image...";
+
+  try {
+    const res = await fetch(VISION_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: "web_user",
+        image_data: lastVisionBase64
+      })
+    });
+
+    const data = await res.json();
+    visionAns.textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    visionAns.textContent = "⚠️ Vision Sutra is quiet.";
+  }
+}
+
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[c]));
+}
+</script>
+
+</body>
+</html>
