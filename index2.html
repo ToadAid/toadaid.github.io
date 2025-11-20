@@ -1030,13 +1030,29 @@ async function analyzeVisionImage(){
     }
 
     const data = await res.json();
-    const tReply = (data && data.data && data.data.response) ?
-      data.data.response :
-      JSON.stringify(data, null, 2);
+
+    // 🔍 Try multiple shapes before falling back to JSON
+    let tReply = '';
+
+    if (data && data.data && typeof data.data.response === 'string') {
+      // Normal V8 Vision Sutra shape
+      tReply = data.data.response;
+    } else if (typeof data.response === 'string') {
+      // Flat shape: { response: "..." }
+      tReply = data.response;
+    } else if (typeof data.answer === 'string') {
+      // Some endpoints use `answer`
+      tReply = data.answer;
+    } else if (typeof data.reply === 'string') {
+      tReply = data.reply;
+    } else {
+      // Last resort: show raw JSON (debug)
+      tReply = JSON.stringify(data, null, 2);
+    }
 
     const cleaned = cleanMirrorResponse(tReply);
-    const parsed = parseMirrorResponse(cleaned);
-    const html = formatMirrorResponse('[Image Reflection]', parsed);
+    const parsed  = parseMirrorResponse(cleaned);
+    const html    = formatMirrorResponse('[Image Reflection]', parsed);
 
     ansDiv.innerHTML = '';
     await typewriterEffect(html);
