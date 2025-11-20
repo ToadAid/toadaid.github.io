@@ -663,19 +663,53 @@ function parseMirrorResponse(reply){
   const lines = reply.split('\n').filter(Boolean);
   const s = { greeting:'', points:[], guidingQuestion:'', symbols:'', paragraphs:[], offRamp:false };
   let inGreeting = true;
+  let firstContentSeen = false;
 
-  for(const raw of lines){
+  for (const raw of lines) {
     const line = raw.trim();
+    if (!line) continue;
 
-    if(/^traveler[,，]?/i.test(line)){ s.greeting = line; inGreeting = false; continue; }
+    // If we see a classic Traveler greeting, treat it as greeting.
+    if (/^traveler[,，]?/i.test(line)) {
+      s.greeting = line;
+      inGreeting = false;
+      firstContentSeen = true;
+      continue;
+    }
 
-    if(/[🪞🌊🍃🌀]/.test(line) && line.length<=16){ s.symbols = line; continue; }
+    // Symbols line
+    if (/[🪞🌊🍃🌀]/.test(line) && line.length <= 16) {
+      s.symbols = line;
+      continue;
+    }
 
-    if(/^guiding\s*question\s*:/i.test(line)){ s.guidingQuestion = line; continue; }
+    // Guiding Question
+    if (/^guiding\s*question\s*:/i.test(line)) {
+      s.guidingQuestion = line;
+      firstContentSeen = true;
+      inGreeting = false;
+      continue;
+    }
 
-    if(/\*\*(.*?)\*\*/.test(line)){ s.points.push(line); continue; }
+    // Bold points (e.g. **Reflection Resonance** ...)
+    if (/\*\*(.*?)\*\*/.test(line)) {
+      s.points.push(line);
+      firstContentSeen = true;
+      inGreeting = false;
+      continue;
+    }
 
-    if(!inGreeting) s.paragraphs.push(line);
+    // If there's no explicit Traveler greeting, treat the first content line as narrative.
+    if (!firstContentSeen) {
+      s.paragraphs.push(line);
+      firstContentSeen = true;
+      inGreeting = false;
+      continue;
+    }
+
+    if (!inGreeting) {
+      s.paragraphs.push(line);
+    }
   }
   return s;
 }
