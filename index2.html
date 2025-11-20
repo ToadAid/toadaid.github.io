@@ -238,7 +238,21 @@ h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
   color: #6b7280;
   margin-bottom: 0.2rem;
 }
+.vision-preview-wrapper {
+  margin: 0.4rem 0 0.8rem;
+  display: flex;
+  justify-content: center;
+}
 
+#vision-preview {
+  max-width: 220px;
+  max-height: 160px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px var(--shadow-s);
+  object-fit: contain;
+  display: none;
+}
+  
 /* Footer */
 footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
 footer a{color:#ffd23f;font-weight:800}
@@ -317,11 +331,19 @@ footer a{color:#ffd23f;font-weight:800}
     <p style="text-align:center;margin-bottom:0.8rem;color:#4b5563">
       Upload a Tobyworld image, rune, or card. The Mirror will read the scene and return a reflection.
     </p>
+
     <div class="vision-row">
       <input id="vision-image" type="file" accept="image/*" />
       <button id="vision-ask-btn" class="btn btn-deep" onclick="analyzeVisionImage()">✨ Analyze Image</button>
     </div>
+
     <div id="vision-selected" class="vision-selected"></div>
+
+    <!-- 🔍 Thumbnail preview -->
+    <div class="vision-preview-wrapper">
+      <img id="vision-preview" alt="Selected image preview" />
+    </div>
+
     <div id="vision-status" class="vision-status"></div>
     <div id="vision-answer"></div>
   </div>
@@ -563,6 +585,7 @@ const visionBtn = document.getElementById('vision-ask-btn');
 const visionSelected = document.getElementById('vision-selected');
 const visionStatus = document.getElementById('vision-status');
 const visionAnswer = document.getElementById('vision-answer');
+const visionPreview = document.getElementById('vision-preview');
 
 let visionBase64 = null;
 
@@ -927,8 +950,13 @@ visionInput.addEventListener('change', () => {
 
   if (!file) {
     visionSelected.textContent = '';
+    if (visionPreview) {
+      visionPreview.src = '';
+      visionPreview.style.display = 'none';
+    }
     return;
   }
+
   visionSelected.textContent = `Selected: ${file.name}`;
 
   const reader = new FileReader();
@@ -936,6 +964,12 @@ visionInput.addEventListener('change', () => {
     const result = reader.result || '';
     const parts = String(result).split(',');
     visionBase64 = parts.length > 1 ? parts[1] : parts[0];
+
+    // 🔍 Show thumbnail
+    if (visionPreview) {
+      visionPreview.src = result;
+      visionPreview.style.display = 'block';
+    }
   };
   reader.readAsDataURL(file);
 });
@@ -959,10 +993,16 @@ async function analyzeVisionImage() {
   visionBtn.disabled = true;
 
   try {
-    // Ensure base64 ready
+    // Ensure base64 is ready (in case user clicks very fast)
     if (!visionBase64) {
       visionStatus.textContent = 'Preparing image…';
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
+    if (!visionBase64) {
+      visionStatus.textContent = 'Could not read the image. Please try again.';
+      visionStatus.className = 'vision-status error';
+      return;
     }
 
     const payload = {
@@ -984,7 +1024,10 @@ async function analyzeVisionImage() {
     }
 
     const data = await res.json();
+
+    // 🔧 Support both {answer: "..."} and {data: {answer: "..."}} shapes
     let reply =
+      (data && (data.response || data.answer || data.reply)) ||
       (data && data.data && (data.data.response || data.data.answer || data.data.reply)) ||
       "The eye of Toby opened, but no clear image emerged.";
 
