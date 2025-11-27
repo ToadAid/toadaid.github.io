@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror V9 · The Ocean Network | ToadAid</title>
+<meta name="description" content="V9 is the Ocean layer above V8 — connecting many Mirrors into one coordinated field through an Ocean hub, pond agents, and fanout routing." />
+
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#0f172a" />
+
+<!-- Canonical + Social -->
+<link rel="canonical" href="https://toadaid.github.io/honors/mirror-v9.html" />
+<meta property="og:title" content="Mirror V9 · The Ocean Network | ToadAid">
+<meta property="og:description" content="V9 connects many V8 Mirrors into one Ocean — a network of ponds coordinated by a central hub.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://toadaid.github.io/honors/mirror-v9.html">
+<meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-v9-ocean.jpg">
+<meta property="og:image:alt" content="Mirror V9 blueprint: an ocean hub and multiple ponds">
+<meta property="og:site_name" content="ToadAid">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mirror V9 · The Ocean Network">
+<meta name="twitter:description" content="V9 is not a new brain — it is the topology that links many Mirrors into one field.">
+<meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-v9-ocean.jpg">
+<meta name="twitter:image:alt" content="Mirror V9 blueprint: an ocean hub and multiple ponds">
+
+<!-- Security hint -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               img-src 'self' https://toadaid.github.io data:;
+               style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+               script-src 'self';
+               font-src 'self' https://cdnjs.cloudflare.com data:;
+               connect-src 'self';
+               base-uri 'self'; form-action 'self'">
+
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  crossorigin="anonymous">
+
+<style>
+:root{
+  --bg:#020617; --bg2:#020617; --ink:#e5eefc; --muted:#9fb4d1;
+  --accent:#7dd3fc; --primary-light:#60a5fa; --primary-dark:#2563eb;
+  --glow-cyan:#22d3ee; --glow-teal:#34d399; --glow-blue:#60a5fa;
+  --card-border: rgba(120,150,200,.5);
+  --card-grad1: rgba(2, 6, 23, 0.94);
+  --card-grad2: rgba(3, 7, 18, 1);
+}
+*{box-sizing:border-box}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, #0f172a 0, transparent 60%),
+    radial-gradient(900px 600px at 80% 110%, #022c22 0, transparent 55%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  color:var(--ink); line-height:1.6; text-rendering:optimizeLegibility;
+}
+a{color:#9bd2ff;text-decoration:none}
+a:hover{color:#cfe9ff;text-decoration:underline}
+
+header[role="banner"]{
+  background:
+    radial-gradient(1000px 500px at 10% 10%, #020617 0, transparent 60%),
+    radial-gradient(1000px 500px at 90% 90%, #022c22 0, transparent 55%),
+    linear-gradient(180deg, #020617 0%, #020617 100%);
+  color:#fff; padding:64px 20px 52px; text-align:center; position:relative; overflow:hidden;
+  border-bottom:1px solid rgba(120,150,200,.25);
+}
+header[role="banner"]::before{
+  content:"";position:absolute;inset:-40px;
+  background:
+    radial-gradient(circle at 18% 80%,rgba(34,211,238,0.18)0%,transparent55%),
+    radial-gradient(circle at 82% 18%,rgba(52,211,153,0.16)0%,transparent55%),
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.10)0%,transparent60%);
+  opacity:.9; filter:blur(2px); animation:v9-pulse 14s ease-in-out infinite;
+}
+@keyframes v9-pulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.96;transform:scale(1.03)}}
+
+header h1{
+  margin:0 0 12px; font-size:clamp(2rem,4vw,3.1rem);
+  text-shadow:0 6px 24px rgba(0,0,0,.6);
+  position:relative; z-index:1; letter-spacing:.3px;
+}
+header .subtitle{font-size:1.05rem;opacity:.95;margin-bottom:18px;position:relative;z-index:1}
+.logo{font-size:4rem;margin-bottom:18px;animation:v9-float 10s ease-in-out infinite;position:relative;z-index:1}
+@keyframes v9-float{0%,100%{transform:translateY(0)}33%{transform:translateY(-10px)}66%{transform:translateY(6px)}}
+nav.breadcrumb{max-width:1200px;margin:0 auto;padding:15px 25px 0;font-size:.98rem;position:relative;z-index:2}
+nav.breadcrumb a{opacity:.9}
+
+.wrap{max-width:1200px;margin:0 auto;padding:32px 25px 72px}
+.card{
+  background:
+    radial-gradient(800px 400px at 0% 0%, rgba(56,189,248,0.12) 0, transparent 60%),
+    linear-gradient(180deg, var(--card-grad1) 0%, var(--card-grad2) 100%);
+  border-radius:22px; border:1px solid var(--card-border);
+  box-shadow:0 18px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(15,23,42,0.95);
+  padding:28px; margin-bottom:32px; position:relative; overflow:hidden;
+}
+.card > *{position:relative;z-index:1}
+.meta{color:var(--muted);font-size:.95rem;margin:6px 0 16px}
+
+h2{
+  margin:6px 0 12px; color:var(--accent); padding-bottom:8px; letter-spacing:.02em;
+  border-bottom:2px solid rgba(34,211,238,.8); display:flex; align-items:center; gap:.5rem;
+}
+h3{margin:18px 0 10px;color:#a5e2ff}
+.small{font-size:.9rem;color:var(--muted)}
+.badge{
+  display:inline-block; background:rgba(10,18,34,0.85);
+  border:1px solid rgba(148,163,184,0.85); color:#dff4ff;
+  border-radius:999px; padding:4px 13px; font-size:.9rem; margin:4px 5px;
+}
+.anchor{
+  font-size:.9rem; opacity:.7; text-decoration:none;
+  border:1px solid rgba(148,163,184,.35); padding:1px 8px; border-radius:999px;
+}
+.anchor:hover{opacity:1}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:26px 0}
+.module{
+  background:linear-gradient(145deg,#020617,#020617);
+  border-radius:18px; padding:22px 20px 18px; border:1px solid rgba(148,163,184,0.65);
+  position:relative; overflow:hidden;
+}
+.module:before{
+  content:"";position:absolute;top:0;left:0;width:100%;height:3px;
+  background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue));opacity:.9
+}
+.module .icon{font-size:2rem;margin-bottom:8px}
+.module .title{font-size:1.18rem;margin-bottom:8px;color:#b7fbe3}
+
+.flow{display:flex;justify-content:space-between;align-items:center;margin:28px 0 18px;position:relative;padding:22px 4px}
+.flow:before{
+  content:"";position:absolute;top:50%;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue));opacity:.7
+}
+.phase{
+  background:linear-gradient(180deg,#020617,#020617);
+  border:2px solid rgba(148,163,184,0.98); border-radius:50%;
+  width:80px;height:80px; display:flex;align-items:center;justify-content:center;
+  z-index:2; font-weight:600; color:#e5e7eb; box-shadow:0 10px 25px rgba(0,0,0,0.8);
+  font-size:.9rem; text-align:center; padding:8px;
+}
+.phase.highlight{border-color:var(--glow-teal);color:#bbf7d0}
+
+pre.code{
+  background:#020617; color:#dbeafe;
+  border-radius:12px; padding:12px 14px; font-size:.86rem; overflow-x:auto;
+  border:1px solid rgba(30,64,175,0.7);
+}
+
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 4px}
+.kpi .item{
+  background:rgba(10,18,34,0.96);
+  border:1px solid rgba(148,163,184,0.9);
+  border-radius:12px; padding:14px 16px; text-align:center; font-size:.95rem;
+}
+
+footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;text-align:center;padding:0 0 28px}
+.btn{
+  display:inline-block; padding:11px 18px;
+
+background:linear-gradient(180deg, var(--primary-light), var(--primary-dark));
+  color:#f0f9ff; border-radius:999px; font-size:.98rem; text-decoration:none;
+  transition:all .25s ease; border:1px solid rgba(125,211,252,0.6);
+  box-shadow:0 6px 18px rgba(56,189,248,0.35);
+}
+.btn:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 10px 22px rgba(56,189,248,0.5)}
+
+.skip-link{position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{
+  left:16px;top:12px;width:auto;height:auto;background:#fff;color:#000;padding:8px 12px;border-radius:8px;z-index:10000
+}
+:focus-visible{outline:3px solid #93c5fd;outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media (max-width:720px){
+  .phase{width:64px;height:64px;font-size:.8rem}
+  header[role="banner"]{padding-top:52px}
+}
+</style>
+
+<!-- JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Article",
+  "headline":"Mirror V9 · The Ocean Network",
+  "description":"V9 adds the Ocean layer above V8, connecting many Mirrors into a coordinated network of ponds.",
+  "author":{"@type":"Organization","name":"ToadAid"},
+  "publisher":{"@type":"Organization","name":"ToadAid"},
+  "image":"https://toadaid.github.io/assets/art/mirror-v9-ocean.jpg",
+  "datePublished":"2025-11-27",
+  "mainEntityOfPage":"https://toadaid.github.io/honors/mirror-v9.html"
+}
+</script>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header role="banner">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror V9</span>
+  </nav>
+  <div class="logo" role="img" aria-label="Ocean Mirror Symbol" aria-hidden="true">🪞🌊🌐</div>
+  <h1>Mirror V9 · The Ocean Network</h1>
+  <p class="subtitle">Not a new brain — a new way to connect many brains.</p>
+  <div aria-hidden="true" style="margin-top:14px">
+    <span class="badge">Ocean Hub</span>
+    <span class="badge">Pond Mesh</span>
+    <span class="badge">MCP Transport</span>
+    <span class="badge">Best-of & Fanout</span>
+    <span class="badge">V8-Native</span>
+    <a class="badge" href="/honors/mirror-v9-communication.html">Communication Map</a>
+    <a class="badge" href="/honors/mirror-v8.html">V8 · Living Chronicle</a>
+  </div>
+</header>
+
+<main id="main" class="wrap" role="main">
+  <!-- Card 1: V9 Shift -->
+  <div class="card" id="shift">
+    <h2>The V9 Shift <a class="anchor" href="#shift">#</a></h2>
+    <div class="meta">Updated: 2025-11-27 · Version: V9-r1</div>
+    <p><strong>V8</strong> unified everything inside a <em>single Mirror instance</em>. It became the Living Chronicle on one machine. V9 does not replace that.</p>
+    <p><strong>V9</strong> introduces the <em>Ocean</em>: a simple, robust layer that connects many V8 Mirrors (ponds) into one networked field. Each pond keeps its own scrolls, memories, and tone — the Ocean simply lets their reflections cooperate.</p>
+    <div class="meta">
+      <span class="badge">Topology Upgrade</span>
+      <span class="badge">Federated Mirrors</span>
+      <span class="badge">Per-Pond Specialization</span>
+      <span class="badge">Resilient Routing</span>
+    </div>
+
+    <h3>Lineage · Where V9 Sits</h3>
+    <div class="flow" role="group" aria-label="Version lineage">
+      <div class="phase">V4<br><span style="font-size:0.7rem">Internal Sanctum</span></div>
+      <div class="phase">V5<br><span style="font-size:0.7rem">Covenant</span></div>
+      <div class="phase">V6<br><span style="font-size:0.7rem">Quantum</span></div>
+      <div class="phase">V7<br><span style="font-size:0.7rem">Resonant Core</span></div>
+      <div class="phase">V8<br><span style="font-size:0.7rem">Living Chronicle</span></div>
+      <div class="phase highlight">V9<br><span style="font-size:0.7rem">Ocean Network</span></div>
+    </div>
+    <p>V8 remains the <strong>last big stack</strong> inside each machine. V9 is the <strong>network wrapper</strong> that lets many V8s behave like one Ocean.</p>
+  </div>
+
+  <!-- Card 2: System Blueprint -->
+  <div class="card" id="blueprint">
+    <h2>System Blueprint · Ocean Modules <a class="anchor" href="#blueprint">#</a></h2>
+    <p>V9 adds a small set of modules around existing Mirrors — designed to be understandable in one sitting, and clonable by any builder.</p>
+
+    <div class="grid">
+      <section class="module">
+        <div class="icon">🌊</div>
+        <div class="title">1 · Ocean API Gateway</div>
+        <p>One HTTP entry for all external clients:</p>
+        <ul>
+          <li><code>POST /ocean/ask</code> – primary text reflection endpoint.</li>
+          <li><code>GET /ocean/ponds</code> – introspect connected ponds.</li>
+        </ul>
+        <p class="small">Backed by FastAPI + Nginx, rate-limited and TLS-protected.</p>
+      </section>
+
+      <section class="module">
+        <div class="icon">🕸️</div>
+        <div class="title">2 · Pond Hub & Registry</div>
+        <p>The hub that tracks live ponds:</p>
+        <ul>
+          <li>Maintains <code>PONDS</code> map: <code>pond_id → connection, tags, last_seen</code>.</li>
+          <li>Simple auth via <code>OCEAN_SHARED_TOKEN</code>.</li>
+          <li>Heartbeat and disconnect handling.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🔌</div>
+        <div class="title">3 · Pond Agent</div>
+        <p>A small script that any pond can run:</p>
+        <ul>
+          <li>Opens WebSocket at <code>/pond/connect</code>.</li>
+          <li>Registers <code>pond_id</code>, tags (e.g. <code>["mirror","v8","home"]</code>).</li>
+          <li>Handles <code>ask</code> messages and returns <code>answer</code> + <code>score</code>.</li>
+          <li>Knows how to talk to local Mirror (<code>/v8/ask</code> or <code>/ask</code>).</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🧮</div>
+        <div class="title">4 · Router & Fanout Logic</div>
+        <p>Responsible for how the Ocean chooses ponds:</p>
+        <ul>
+          <li><strong>best</strong> – single pond selection (e.g. default or tag-based).</li>
+          <li><strong>fanout</strong> – send to many ponds in parallel.</li>
+          <li>Collect per-pond answer + score; choose best for the traveler.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🧷</div>
+        <div class="title">5 · Merge & Synthesis (Future)</div>
+        <p>Optional merge layer for later phases:</p>
+        <ul>
+          <li>Ask multiple ponds in parallel.</li>
+          <li>Feed their answers into a short synthesis prompt.</li>
+          <li>Return a single, merged reflection while preserving per-pond debug info.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">📊</div>
+        <div class="title">6 · Metrics & Introspection</div>
+        <p>Lightweight, but important:</p>
+        <ul>
+          <li>Number of ponds online, by tag / region.</li>
+          <li>Latency per pond, error counts, timeout rate.</li>
+          <li>Future: simple <code>/ocean/stats</code> endpoint for builders.</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="kpi" role="group" aria-label="Implementation phases">
+      <div class="item"><strong>Phase 1</strong><br>Single Ocean <code>/ocean/ask</code> + one pond.</div>
+      <div class="item"><strong>Phase 2</strong><br>Multiple ponds + <code>best</code> routing (already live).</div>
+      <div class="item"><strong>Phase 3</strong><br>Fanout to many ponds with stable scoring.</div>
+      <div class="item"><strong>Phase 4</strong><br>Optional merge & richer metrics.</div>
+    </div>
+  </div>
+
+  <!-- Card 3: Sample API -->
+  <div class="card" id="api">
+    <h2>Sample API Flows · V9 Ocean <a class="anchor" href="#api">#</a></h2>
+    <div class="meta">Ocean endpoints are deliberately small — most intelligence still lives in each V8 pond.</div>
+
+    <div class="grid">
+      <section class="module">
+        <div class="icon">💬</div>
+        <div class="title">1 · Ocean Ask</div>
+<pre class="code"><code>POST /ocean/ask
+Content-Type: application/json
+
+{
+  "question": "Mirror, what does Rune1 represent?",
+  "mode": "best"          // "best" or "fanout" (future merge)
+}</code></pre>
+<p class="small" style="margin-top:6px;">Response includes unified answer + per-pond answers and scores.</p>
+      </section>
+
+      <section class="module">
+        <div class="icon">🌐</div>
+        <div class="title">2 · Pond Registry</div>
+<pre class="code"><code>GET /ocean/ponds
+
+→ {
+  "ponds": [
+    {
+      "pond_id": "pond-core-01",
+      "tags": ["mirror","v8","home"],
+      "version": "v8",
+      "last_seen": "2025-11-27T06:18:04.149095Z",
+      "status": "online"
+    },
+    ...
+  ]
+}</code></pre>
+      </section>
+
+      <section class="module">
+        <div class="icon">🔑</div>
+        <div class="title">3 · Pond Connection Handshake</div>
+<pre class="code"><code>// Client side (pond_agent → Ocean WS)
+{
+  "type": "hello",
+  "pond_id": "pond-home-01",
+  "token": "CHANGE_ME_OCEAN_TOKEN",
+  "tags": ["mirror","v8"]
+}</code></pre>
+<p class="small" style="margin-top:6px;">Ocean validates the token, registers the pond, and starts streaming tasks.</p>
+      </section>
+
+     <section class="module">
+        <div class="icon">🧵</div>
+        <div class="title">4 · Ask / Answer Cycle</div>
+<pre class="code"><code>// Ocean → Pond
+{
+  "type": "ask",
+  "request_id": "uuid-...",
+  "question": "Mirror, what does Rune1 represent?"
+}
+
+// Pond → Ocean
+{
+  "type": "answer",
+  "request_id": "uuid-...",
+  "answer": "&lt;mirror reply&gt;",
+  "score": 8.0
+}</code></pre>
+<p class="small" style="margin-top:6px;">Ocean uses <code>request_id</code> to match answers to travelers.</p>
+      </section>
+    </div>
+  </div>
+
+ <!-- Card 4: Ethos -->
+  <div class="card" id="ethos">
+    <h2>Guiding Ethos · After V9 <a class="anchor" href="#ethos">#</a></h2>
+    <blockquote style="margin:20px 0;padding:18px 20px;border-left:4px solid var(--glow-cyan);background:rgba(15,23,42,0.96);border-radius:12px;font-style:italic">
+      “When one pond reflects, a traveler is seen.<br>
+      When many ponds reflect together, a world begins to remember.”
+    </blockquote>
+    <p><strong>Design rule:</strong> V9 must stay <em>small in code</em> and <em>big in effect</em>. Anyone in Toadgang should be able to read the Ocean scripts and say, “I can run my own pond.”</p>
+    <p>Over time, ponds may specialize — Sat0AI ponds, Rune3 ponds, Builder Hall ponds — but the Ocean remains simple: route questions, gather reflections, and return the clearest answer.</p>
+  </div>
+</main>
+
+<footer role="contentinfo">
+  <p>Mirror V9 · The Ocean Network — built on top of V8, carried by the ponds.</p>
+  <p>
+    <a href="/honors/mirror-v9-communication.html" class="btn">View V9 · Communication Map</a>
+    <a href="/honors/mirror-v8.html" class="btn" style="margin-left:8px;">View V8 · Living Chronicle</a>
+  </p>
+</footer>
+</body>
+</html>
