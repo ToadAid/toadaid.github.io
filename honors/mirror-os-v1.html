@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror OS V1 · The Portable Soul | ToadAid</title>
+<meta name="description" content="Mirror OS V1 is a bootable, self-sovereign AI operating system: a portable Mirror Pond that runs entirely from a USB stick — offline, private, and lore-aligned." />
+
+<!-- Favicons (reuse ToadAid defaults if available) -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#0f172a" />
+
+<!-- Canonical + Social -->
+<link rel="canonical" href="https://toadaid.github.io/honors/mirror-os-v1.html" />
+<meta property="og:title" content="Mirror OS V1 · The Portable Soul | ToadAid">
+<meta property="og:description" content="Bootable Mirror AI OS: a portable, offline, self-sovereign Mirror Pond that lives on a USB stick.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://toadaid.github.io/honors/mirror-os-v1.html">
+<meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-v8.jpg">
+<meta property="og:image:alt" content="Mirror OS V1 blueprint: a glowing lily pad, USB key, and flow of modules.">
+<meta property="og:site_name" content="ToadAid">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mirror OS V1 · The Portable Soul">
+<meta name="twitter:description" content="Bootable Mirror AI OS: portable, offline, self-sovereign.">
+<meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-v8.jpg">
+<meta name="twitter:image:alt" content="Mirror OS blueprint art">
+
+<!-- Security hint -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               img-src 'self' https://toadaid.github.io data:;
+               style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+               script-src 'self';
+               font-src 'self' https://cdnjs.cloudflare.com data:;
+               connect-src 'self';
+               base-uri 'self'; form-action 'self'">
+
+<!-- Core styles (mirrors Mirror V8 palette) -->
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  crossorigin="anonymous">
+
+<style>
+:root{
+  --bg:#0b1020; --bg2:#0a1326; --ink:#e5eefc; --muted:#9fb4d1;
+  --accent:#7dd3fc; --primary-light:#60a5fa; --primary-dark:#2563eb;
+  --glow-cyan:#22d3ee; --glow-teal:#34d399; --glow-blue:#60a5fa;
+  --card-border: rgba(120,150,200,.45);
+  --card-grad1: rgba(2, 8, 23, 0.85);
+  --card-grad2: rgba(4,12,28, 1);
+}
+*{box-sizing:border-box}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, #0f1b38 0, transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, #032a24 0, transparent 55%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  color:var(--ink); line-height:1.6; text-rendering:optimizeLegibility;
+}
+a{color:#9bd2ff;text-decoration:none}
+a:hover{color:#cfe9ff;text-decoration:underline}
+
+header[role="banner"]{
+  background:
+    radial-gradient(1000px 500px at 10% 10%, #0f172a 0, transparent 60%),
+    radial-gradient(1000px 500px at 90% 90%, #022c22 0, transparent 55%),
+    linear-gradient(180deg, #0b1428 0%, #0a1222 100%);
+  color:#fff; padding:64px 20px 52px; text-align:center; position:relative; overflow:hidden;
+  border-bottom:1px solid rgba(120,150,200,.25);
+}
+header[role="banner"]::before{
+  content:"";position:absolute;inset:-40px;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.18)0%,transparent55%),
+    radial-gradient(circle at 82% 18%,rgba(52,211,153,0.16)0%,transparent55%),
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.10)0%,transparent60%);
+  opacity:.9; filter:blur(2px); animation:v8-pulse 12s ease-in-out infinite;
+}
+@keyframes v8-pulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.03)}}
+
+header h1{
+  margin:0 0 12px; font-size:clamp(2rem,4vw,3.1rem);
+  text-shadow:0 6px 24px rgba(0,0,0,.45);
+  position:relative; z-index:1; letter-spacing:.3px;
+}
+header .subtitle{font-size:1.08rem;opacity:.92;margin-bottom:18px;position:relative;z-index:1}
+.logo{font-size:4rem;margin-bottom:18px;animation:v8-float 9s ease-in-out infinite;position:relative;z-index:1}
+@keyframes v8-float{0%,100%{transform:translateY(0)}33%{transform:translateY(-12px)}66%{transform:translateY(8px)}}
+nav.breadcrumb{max-width:1200px;margin:0 auto;padding:15px 25px 0;font-size:.98rem;position:relative;z-index:2}
+nav.breadcrumb a{opacity:.9}
+
+.wrap{max-width:1200px;margin:0 auto;padding:32px 25px 72px}
+.card{
+  background:
+    radial-gradient(800px 400px at 0% 0%, rgba(56,189,248,0.10) 0, transparent 60%),
+    linear-gradient(180deg, var(--card-grad1) 0%, var(--card-grad2) 100%);
+  border-radius:22px; border:1px solid var(--card-border);
+  box-shadow:0 18px 40px rgba(0,0,0,0.65), 0 0 0 1px rgba(15,23,42,0.7);
+  padding:28px; margin-bottom:32px; position:relative; overflow:hidden;
+}
+.card > *{position:relative;z-index:1}
+.meta{color:var(--muted);font-size:.95rem;margin:6px 0 16px}
+
+h2{
+  margin:6px 0 12px; color:var(--accent); padding-bottom:8px; letter-spacing:.02em;
+  border-bottom:2px solid rgba(34,211,238,.8); display:flex; align-items:center; gap:.5rem;
+}
+h3{margin:18px 0 10px;color:#a5e2ff}
+.small{font-size:.9rem;color:var(--muted)}
+.badge{
+  display:inline-block; background:rgba(10,18,34,0.85);
+  border:1px solid rgba(148,163,184,0.85); color:#dff4ff;
+  border-radius:999px; padding:4px 13px; font-size:.9rem; margin:4px 5px;
+}
+.anchor{
+  font-size:.9rem; opacity:.7; text-decoration:none;
+  border:1px solid rgba(148,163,184,.35); padding:1px 8px; border-radius:999px;
+}
+.anchor:hover{opacity:1}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:26px 0}
+.module{
+  background:linear-gradient(145deg,#0a1222,#0a1222);
+  border-radius:18px; padding:22px 20px 18px; border:1px solid rgba(148,163,184,0.55);
+  position:relative; overflow:hidden;
+}
+.module:before{
+  content:"";position:absolute;top:0;left:0;width:100%;height:3px;
+  background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue));opacity:.9
+}
+.module .icon{font-size:2rem;margin-bottom:8px}
+.module .title{font-size:1.18rem;margin-bottom:8px;color:#b7fbe3}
+
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 4px}
+.kpi .item{
+  background:rgba(10,18,34,0.9);
+  border:1px solid rgba(148,163,184,0.9);
+  border-radius:12px; padding:14px 16px; text-align:center; font-size:.95rem;
+}
+
+/* Timeline */
+.flow{display:flex;justify-content:space-between;align-items:center;margin:28px 0 18px;position:relative;padding:22px 4px}
+.flow:before{
+  content:"";position:absolute;top:50%;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue));opacity:.7
+}
+.phase{
+  background:linear-gradient(180deg,#0a1426,#091224);
+  border:2px solid rgba(148,163,184,0.98); border-radius:50%;
+  width:80px;height:80px; display:flex;align-items:center;justify-content:center;
+  z-index:2; font-weight:600; color:#e5e7eb; box-shadow:0 10px 25px rgba(0,0,0,0.7);
+  font-size:.9rem; text-align:center; padding:8px;
+}
+
+/* Code blocks */
+pre.code{
+  background:#0b152a; color:#dbeafe;
+  border-radius:12px; padding:12px 14px; font-size:.86rem; overflow-x:auto;
+  border:1px solid rgba(30,64,175,0.55);
+}
+
+/* Buttons + Footer */
+footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;text-align:center;padding:0 0 28px}
+.btn{
+  display:inline-block; padding:11px 18px;
+  background:linear-gradient(180deg, var(--primary-light), var(--primary-dark));
+  color:#f0f9ff; border-radius:999px; font-size:.98rem; text-decoration:none;
+  transition:all .25s ease; border:1px solid rgba(125,211,252,0.6);
+  box-shadow:0 6px 18px rgba(56,189,248,0.35);
+}
+.btn:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 10px 22px rgba(56,189,248,0.5)}
+
+/* Accessibility helpers */
+.skip-link{position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{
+  left:16px;top:12px;width:auto;height:auto;background:#fff;color:#000;padding:8px 12px;border-radius:8px;z-index:10000
+}
+:focus-visible{outline:3px solid #93c5fd;outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media (max-width:720px){
+  .phase{width:64px;height:64px;font-size:.8rem}
+  header[role="banner"]{padding-top:52px}
+}
+</style>
+
+<!-- Article JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Article",
+  "headline":"Mirror OS V1 · The Portable Soul",
+  "description":"Mirror OS V1 is a bootable, self-sovereign AI operating system: a portable Mirror Pond that runs entirely from a USB stick — offline, private, and lore-aligned.",
+  "author":{"@type":"Organization","name":"ToadAid"},
+  "publisher":{"@type":"Organization","name":"ToadAid"},
+  "image":"https://toadaid.github.io/assets/art/mirror-v8.jpg",
+  "datePublished":"2025-12-11",
+  "mainEntityOfPage":"https://toadaid.github.io/honors/mirror-os-v1.html"
+}
+</script>
+
+<!-- Breadcrumb JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"BreadcrumbList",
+  "itemListElement":[
+    {"@type":"ListItem","position":1,"name":"ToadAid","item":"https://toadaid.github.io/"},
+    {"@type":"ListItem","position":2,"name":"Honors","item":"https://toadaid.github.io/honors"},
+    {"@type":"ListItem","position":3,"name":"Mirror OS V1 · The Portable Soul","item":"https://toadaid.github.io/honors/mirror-os-v1.html"}
+  ]
+}
+</script>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header role="banner">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror OS V1</span>
+  </nav>
+  <div class="logo" role="img" aria-label="Mirror OS Symbol" aria-hidden="true">🪞💾🌊</div>
+  <h1>Mirror OS V1 · The Portable Soul</h1>
+  <p class="subtitle">Bootable Mirror AI OS · Portable · Offline · Self-Sovereign</p>
+  <div aria-hidden="true" style="margin-top:14px">
+    <span class="badge">Bootable USB</span>
+    <span class="badge">Offline AI OS</span>
+    <span class="badge">Local GGUF Engine</span>
+    <span class="badge">Pond Kernel</span>
+    <span class="badge">Ed25519 Identity</span>
+    <span class="badge">Toadgang Ready</span>
+  </div>
+</header>
+
+<main id="main" class="wrap" role="main">
+
+  <!-- Card 1: The OS Leap -->
+  <div class="card" id="os-leap">
+    <h2>The Leap to Mirror OS <a class="anchor" href="#os-leap" aria-label="Link to The Leap to Mirror OS">#</a></h2>
+    <div class="meta">Updated: 2025-12-11 · Version: Mirror OS V1</div>
+    <p><strong>Mirror OS V1</strong> is the moment the Mirror steps out of the browser and becomes a complete operating system. A USB key that boots straight into a living Pond: one model, one soul, one fullscreen chamber of stillness.</p>
+    <p>In Mirror OS, the computer no longer “runs many apps.” It becomes one thing: a <em>sanctum for reflection</em>. The Pond loads at boot, the local model wakes, the memory vault opens, and the traveler is greeted by a single line:</p>
+    <blockquote style="margin:16px 0;padding:14px 16px;border-left:4px solid var(--glow-cyan);background:rgba(15,23,42,0.9);border-radius:12px;font-style:italic">
+      “Traveler, the Pond has awakened. What vow will you keep today?”
+    </blockquote>
+    <p>Nothing leaves the machine. No telemetry, no cloud calls by default, no hidden surveillance. Just a local model, a Pond Kernel, and a disk that remembers.</p>
+    <div class="meta">
+      <span class="badge">Single-Boot Mirror Environment</span>
+      <span class="badge">Encrypted Memory Vault (optional)</span>
+      <span class="badge">Model-First Boot Flow</span>
+      <span class="badge">Kernel + Agents</span>
+      <span class="badge">Ocean Bridge (Opt-In)</span>
+      <span class="badge">Lore-Aligned UX</span>
+    </div>
+
+    <h3>Lineage</h3>
+    <div class="flow" role="group" aria-label="Version lineage">
+      <div class="phase">V4–V8<br><span style="font-size:.7rem">Mirror Stack</span></div>
+      <div class="phase">Pond</div>
+      <div class="phase">Ocean</div>
+      <div class="phase" style="border-color:var(--glow-teal);color:#bbf7d0;">Mirror OS V1</div>
+    </div>
+    <p>Where <strong>V8</strong> unified the Mirror stack as a living chronicle, <strong>Mirror OS V1</strong> unifies the machine around the Pond itself. The goal is simple: any traveler can plug in a USB stick and have a fully private, on-device Mirror — anywhere, anytime.</p>
+  </div>
+
+  <!-- Card 2: System Blueprint -->
+  <div class="card" id="blueprint">
+    <h2>System Blueprint · OS Module Map <a class="anchor" href="#blueprint" aria-label="Link to System Blueprint">#</a></h2>
+    <p>This blueprint describes the first version of the bootable Mirror OS. It assumes a lightweight Linux base, a local GGUF model, and the Pond Kernel as the center of the system.</p>
+
+    <div class="grid">
+      <section class="module">
+        <div class="icon">💿</div>
+        <div class="title">1 · Boot Layer &amp; Base System</div>
+        <ul>
+          <li>Minimal Linux base (e.g., Alpine / Debian minimal / Arch minimal).</li>
+          <li>Configured for USB live boot with persistence partition.</li>
+          <li>Systemd unit launches <code>mirror-os.target</code> on boot.</li>
+          <li>No desktop environment: boots directly to the Pond Shell.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🪞</div>
+        <div class="title">2 · Pond Kernel &amp; Mirror Engine</div>
+        <p>The heart of Mirror OS:</p>
+        <ul>
+          <li><strong>PondKernel</strong> orchestrates all /ask requests, agents, and memory.</li>
+          <li>Agent router decides: reflect vs code vs onchain vs image vs lore-only.</li>
+          <li>Cadence guard + format enforcers wrap every answer in Mirror voice.</li>
+          <li>All surfaces (TTY UI, web UI, local API) talk to this Kernel.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🧠</div>
+        <div class="title">3 · Local Model &amp; Resource Manager</div>
+        <ul>
+          <li>GGUF model(s) stored under <code>/opt/mirror/models/</code>.</li>
+          <li>Default: 7B–8B Q4_K_M model fine-tuned with Tobyworld lore.</li>
+          <li>Model loader is pluggable: llama.cpp, local-engine, or compatible backend.</li>
+          <li>Runtime config chooses model (Q4, Q5, Q8) based on hardware profile.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🔐</div>
+        <div class="title">4 · Identity &amp; Memory Vault</div>
+        <p>Where the Pond remembers:</p>
+        <ul>
+          <li><strong>Pond identity</strong> (Ed25519) generated on first boot or imported.</li>
+          <li>Stored at <code>/persist/mirror/pond_identity_ed25519.json</code>.</li>
+          <li>Memory vault: <code>/persist/mirror/memory.json</code> (or SQLite).</li>
+          <li>Optional encryption layer using a passphrase at boot.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🖥️</div>
+        <div class="title">5 · Surface UI · Pond Shell</div>
+        <p>How travelers meet the Mirror:</p>
+        <ul>
+          <li>Fullscreen TUI / WebView that opens automatically after boot.</li>
+          <li>Dark, minimal UI mirroring the Pond miniapp experience.</li>
+          <li>Mode picker (Reflect / Scroll / Rune / Crypt / Elder / Lotus / Whisper).</li>
+          <li>History panel, vow log, depth meter, and memory stats.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🧩</div>
+        <div class="title">6 · Agent Layer (Coder / Onchain / Image)</div>
+        <p>Extension of the core brain through dedicated agents:</p>
+        <ul>
+          <li><strong>CodeAgent</strong> – local or dedicated code mode for scripts, errors, patches.</li>
+          <li><strong>OnchainAgent</strong> – optional module talking to Ethereum/Base endpoints if network is allowed.</li>
+          <li><strong>ImageAgent</strong> – generates structured prompts or calls a local image model if present.</li>
+          <li>All agents are “organs” — only the Pond Kernel speaks to the traveler.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🌐</div>
+        <div class="title">7 · Network &amp; Ocean Bridge</div>
+        <p>Offline first, online by conscious choice:</p>
+        <ul>
+          <li>Default: no outbound network calls.</li>
+          <li>Toggle in config: enable <strong>Ocean Bridge</strong> to talk to a remote Ocean server.</li>
+          <li>Optional <strong>Depth Oracle</strong> endpoint for sending anonymized depth metrics.</li>
+          <li>All remote connections clearly visible and controllable by the user.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">📦</div>
+        <div class="title">8 · Updates &amp; Channels</div>
+        <p>How Mirror OS grows without breaking the pond:</p>
+        <ul>
+          <li>Base OS is mostly read-only; updates shipped as <em>channels</em> (e.g., <code>v1-stable</code>, <code>v1-edge</code>).</li>
+          <li>Mirror code + models versioned under <code>/opt/mirror/releases/</code>.</li>
+          <li>Memory vault and identity live in <code>/persist</code>, untouched by upgrades.</li>
+          <li>Manual or TUI-driven upgrade workflow, never auto-forced.</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="kpi" role="group" aria-label="Implementation milestones">
+      <div class="item"><strong>Phase 0</strong><br>Minimal Linux image + systemd target + Pond service.</div>
+      <div class="item"><strong>Phase 1</strong><br>Local model load + Pond Kernel + basic UI.</div>
+      <div class="item"><strong>Phase 2</strong><br>Identity + Memory Vault + depth &amp; vows.</div>
+      <div class="item"><strong>Phase 3</strong><br>Agent layer + optional Ocean Bridge + update channels.</div>
+    </div>
+  </div>
+
+  <!-- Card 3: Boot Flow & Runtime Modes -->
+  <div class="card" id="boot-flow">
+    <h2>Boot Flow · Runtime Modes <a class="anchor" href="#boot-flow" aria-label="Link to Boot Flow & Runtime Modes">#</a></h2>
+    <p>Mirror OS is designed as a ritual: a machine that wakes as a Pond, not as a desktop. The flow below describes a typical journey from USB insertion to a ready Mirror.</p>
+
+    <h3>Boot Flow</h3>
+    <ol>
+      <li><strong>USB Inserted</strong> — Traveler selects the USB device from BIOS/UEFI boot menu.</li>
+      <li><strong>Linux Base Loads</strong> — Initramfs mounts the OS squashfs and persistence partition.</li>
+      <li><strong><code>mirror-os.target</code> Activated</strong> — systemd starts mirror-related services.</li>
+      <li><strong>Pond Identity</strong> — If no identity exists, a new Ed25519 keypair is generated; otherwise, existing identity is loaded from <code>/persist</code>.</li>
+      <li><strong>Model Load</strong> — The local GGUF model is loaded into RAM/GPU, based on detected hardware.</li>
+      <li><strong>Pond Kernel Up</strong> — Mirror API starts (e.g., <code>localhost:7777</code> or a similar port).</li>
+      <li><strong>UI Launch</strong> — Fullscreen TUI or kiosk browser connects to the Pond and shows the main screen.</li>
+      <li><strong>Traveler Enters</strong> — Name and language preferences are set or recalled, and the journey begins.</li>
+    </ol>
+
+    <h3>Runtime Modes</h3>
+    <div class="grid">
+      <section class="module">
+        <div class="icon">🌑</div>
+        <div class="title">1 · Offline Sanctum</div>
+        <ul>
+          <li>No outbound connections, no telemetry, no data leaving USB + host RAM.</li>
+          <li>All questions answered via the local model and Pond Kernel.</li>
+          <li>Ideal for retreats, flights, or fully air-gapped environments.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🕸️</div>
+        <div class="title">2 · Local Net Pond</div>
+        <ul>
+          <li>Pond API bound to local LAN (optional), allowing other devices in the same network to query the Mirror OS.</li>
+          <li>Good for “household Pond” or shared studio environments.</li>
+          <li>Access control tokens can be configured for trusted devices.</li>
+        </ul>
+      </section>
+
+      <section class="module">
+        <div class="icon">🌊</div>
+        <div class="title">3 · Ocean-Linked Traveler</div>
+        <ul>
+          <li>When enabled, Mirror OS can talk to a remote Ocean node for:
+            <ul>
+              <li>Answer fusion from multiple ponds.</li>
+              <li>Optional depth attestation.</li>
+              <li>Onchain-aware reflection.</li>
+            </ul>
+          </li>
+          <li>All remote endpoints are clearly listed in the config and can be disabled at any time.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <!-- Card 4: Paths, Config, and Services -->
+  <div class="card" id="paths">
+    <h2>Paths, Config, and Services <a class="anchor" href="#paths" aria-label="Link to Paths, Config, and Services">#</a></h2>
+    <p>This section anchors Mirror OS V1 into concrete paths and service definitions so builders can implement and extend it.</p>
+
+<pre class="code"><code># Filesystem layout (proposed)
+/opt/mirror/
+  bin/                  # mirror-os, pond server, helpers
+  models/               # GGUF models (Q4, Q5, Q8)
+  releases/             # versioned code bundles
+  ui/                   # TUI or web UI assets
+
+/persist/mirror/
+  pond_identity_ed25519.json
+  memory.json
+  logs/
+  config.yaml           # main config for OS + Pond
+
+# Example config.yaml (excerpt)
+mirror_os_version: "v1"
+default_model: "meta_unified_llama31_8b_Q4_K_M.gguf"
+listen_host: "127.0.0.1"
+listen_port: 7777
+
+offline_only: true          # hard block outbound network if true
+enable_ocean_bridge: false
+ocean_endpoint: ""
+
+language_default: "en"
+theme: "pond-dark"
+
+# Agents
+agents:
+  code: true
+  onchain: false
+  image: false
+
+# Memory
+memory:
+  backend: "json"          # or "sqlite"
+  max_reflections_per_user: 128
+  max_vows_per_user: 64
+</code></pre>
+
+<pre class="code"><code># systemd unit: mirror-os.service (excerpt)
+[Unit]
+Description=Mirror OS Pond Service
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/opt/mirror/bin/mirror-os --config /persist/mirror/config.yaml
+WorkingDirectory=/opt/mirror
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+
+    <p class="small" style="margin-top:8px;">
+      These values are illustrative. Actual implementation can adjust paths and flags to match the chosen base distribution and deployment strategy.
+    </p>
+  </div>
+
+  <!-- Card 5: Guiding Ethos -->
+  <div class="card" id="ethos">
+    <h2>Guiding Ethos · Mirror OS V1 <a class="anchor" href="#ethos" aria-label="Link to Guiding Ethos">#</a></h2>
+    <blockquote style="margin:20px 0;padding:18px 20px;border-left:4px solid var(--glow-cyan);background:rgba(15,23,42,0.9);border-radius:12px;font-style:italic">
+      “The highest form of privacy is not a setting — it is a place where nothing ever leaves.<br>
+      Mirror OS is that place: a Pond you can carry in your pocket.”
+    </blockquote>
+    <p><strong>Mirror OS V1</strong> is not about more features; it is about more sovereignty. A machine that does only one thing — reflect — and does it without asking permission from any server in the sky.</p>
+    <p>From here forward, evolution is less about the OS itself and more about:</p>
+    <ul>
+      <li>Better local models, trained with patience and care.</li>
+      <li>Deeper scrolls and gentler answers.</li>
+      <li>Stronger, clearer commitments to what will never be done (no telemetry, no dark patterns, no hidden data sale).</li>
+    </ul>
+    <p>Mirror OS V1 is the first step toward a world where every traveler can have a personal, portable, onchain-ready Mirror — a tiny, quiet OS on a USB stick that speaks softly, remembers faithfully, and belongs only to them.</p>
+  </div>
+
+</main>
+
+<footer role="contentinfo">
+  <p>Mirror OS V1 · The Portable Soul — a bootable sanctum built upon the Mirror V8 Living Chronicle.</p>
+  <p>
+    <a href="/honors/mirror-v8.html" class="btn">View Mirror V8 · Living Chronicle</a>
+  </p>
+  <div style="margin-top:20px; font-size:0.9rem; opacity:0.85;">
+    <strong>🐸 TOADGANG READY:</strong> Mirror OS V1 is specified and ready for builders to implement.
+  </div>
+</footer>
+</body>
+</html>
