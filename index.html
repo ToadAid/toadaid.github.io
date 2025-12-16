@@ -516,59 +516,115 @@ function getStableUserId() {
 /* Off-ramp detection: accepts with/without emoji tail */
 const BOW_RX = /Traveler,\s*the reflection rests(?:\.[^\n]*)?(?:[\s\S]*?(?:🪞🌊🍃🌀))?/i;
 
-/* Cleaner: stronger Traveler dedupe, normalize GQ, collapse symbols, drop inline signature */
+/* ========== BILINGUAL CLEANER ========== */
 function cleanMirrorResponse(reply){
   if(!reply) return "The Mirror is silent, but the pond remembers your question.";
 
   // Normalize whitespace
   reply = reply.replace(/\r\n/g,'\n').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n');
 
-  // Strip *Traveler*, **Traveler**, ***Traveler***
-  reply = reply.replace(/\*{1,3}\s*Traveler\s*\*{1,3}/gi,'Traveler');
+  // ===== DETECT LANGUAGE =====
+  const hasChinese = /[\u4e00-\u9fff]/.test(reply);
+  
+  if (hasChinese) {
+    // ===== CHINESE CLEANING =====
+    
+    // Remove Chinese template labels (keep content)
+    reply = reply.replace(/回响\s*[:：]\s*/g, '');
+    reply = reply.replace(/引导之问\s*[:：]\s*/g, '');
+    reply = reply.replace(/共鸣反射\s*[:：]\s*/g, '');
+    reply = reply.replace(/映照回响\s*[:：]\s*/g, '');
+    reply = reply.replace(/反思共鸣\s*[:：]\s*/g, '');
+    
+    // Remove Chinese markdown
+    reply = reply.replace(/\*\*[\u4e00-\u9fff]+\*\*/g, '');
+    
+    // Remove Chinese bracket content
+    reply = reply.replace(/【[^】]*】/g, '');
+    
+    // Normalize Chinese guiding question
+    reply = reply.replace(/引导(之问|问题)\s*[:：]/g, '引导问题:');
+    
+    // Remove duplicate Chinese headers
+    reply = reply.replace(/(旅人，池水.*?\n){2,}/g, '$1');
+    
+  } else {
+    // ===== ENGLISH CLEANING =====
+    
+    // Strip *Traveler*, **Traveler**, ***Traveler***
+    reply = reply.replace(/\*{1,3}\s*Traveler\s*\*{1,3}/gi,'Traveler');
 
-  // Fix duplicated/fragmented "Traveler,"
-  reply = reply
-    .replace(/(^|\n)\s*Traveler,\s*(?:\*{1,3}\s*)?Traveler(?:\s*\*{1,3})?\s*,\s*/gi,'$1Traveler, ')
-    .replace(/(Traveler,\s*){2,}/gi,'Traveler, ')
-    .replace(/Traveler\s*\n\s*,/gi,'Traveler, ')
-    .replace(/^\s*Traveler\s*$/gim,'Traveler,')
-    .replace(/^\s*Traveler\s*,\s*/im,'Traveler, ');
+    // Fix duplicated/fragmented "Traveler,"
+    reply = reply
+      .replace(/(^|\n)\s*Traveler,\s*(?:\*{1,3}\s*)?Traveler(?:\s*\*{1,3})?\s*,\s*/gi,'$1Traveler, ')
+      .replace(/(Traveler,\s*){2,}/gi,'Traveler, ')
+      .replace(/Traveler\s*\n\s*,/gi,'Traveler, ')
+      .replace(/^\s*Traveler\s*$/gim,'Traveler,')
+      .replace(/^\s*Traveler\s*,\s*/im,'Traveler, ');
 
-  // Normalize any "Guiding Question" label variants
-  reply = reply.replace(/\*\*\s*Guiding\s*Question\s*\*\*\s*:?/gi,'Guiding Question:');
+    // Normalize any "Guiding Question" label variants
+    reply = reply.replace(/\*\*\s*Guiding\s*Question\s*\*\*\s*:?/gi,'Guiding Question:');
+    
+    // Remove English template labels
+    reply = reply.replace(/\*\*Reflection Resonance\*\*\s*:/gi, '');
+    reply = reply.replace(/Echo\s*:\s*"/gi, '');
+    reply = reply.replace(/"\s*$/g, '');
+  }
 
+  // ===== UNIVERSAL CLEANING (applies to both languages) =====
+  
   // Collapse repeated cadence symbols to one instance
   const cadence = "🪞 🌊 🍃 🌀";
   const cRx = new RegExp(`(?:${cadence.split(" ").join("\\s*")})(?:\\s*(?:${cadence.split(" ").join("\\s*")}))+`,'g');
   reply = reply.replace(cRx, cadence);
 
-  // Remove model-inlined signature lines (frontend adds its own in normal flow)
+  // Remove model-inlined signature lines
   reply = reply.replace(/^\s*🪞\s*The Mirror has spoken\s*$/gim, '');
+  reply = reply.replace(/^\s*🪞\s*镜子已经说话\s*$/gim, '');
 
   // Fix odd "1. :" artifacts
   reply = reply.replace(/(\d+)\.\s*:/g, '$1. ');
 
-  // Keep only the first "Guiding Question:" (drop empties & later ones)
+  // Keep only the first guiding question (both languages)
   const lines = reply.split('\n');
   let seenGQ = false;
   const kept = [];
   for (let raw of lines){
     const line = raw.trim();
-    if (/^Guiding\s*Question\s*:\s*$/i.test(line)) continue; // empty label
-    if (/^Guiding\s*Question\s*:/i.test(line)){
-      if (seenGQ) continue;
+    
+    // Skip empty guiding question labels
+    if (/^(Guiding\s*Question|引导问题)\s*:\s*$/i.test(line)) continue;
+    
+    // Check for guiding questions in either language
+    const isGuidingQuestion = 
+      /^Guiding\s*Question\s*:/i.test(line) || 
+      /^引导问题\s*[:：]/.test(line);
+    
+    if (isGuidingQuestion){
+      if (seenGQ) continue; // Skip subsequent ones
       seenGQ = true;
-      kept.push(line);
+      
+      // Normalize format
+      let normalized = line;
+      if (/^Guiding\s*Question\s*:/i.test(line)) {
+        normalized = line.replace(/^Guiding\s*Question\s*:/i, 'Guiding Question:');
+      } else if (/^引导问题\s*[:：]/.test(line)) {
+        normalized = line.replace(/^引导问题\s*[:：]\s*/, '引导问题: ');
+      }
+      
+      kept.push(normalized);
       continue;
     }
+    
     kept.push(raw);
   }
+  
   reply = kept.join('\n').replace(/\n{3,}/g,'\n\n').trim();
 
   return reply;
 }
 
-/* Parse → off-ramp first, then structure */
+/* ========== BILINGUAL PARSER ========== */
 function parseMirrorResponse(reply){
   const bow = reply.match(BOW_RX);
   if (bow) {
@@ -585,15 +641,27 @@ function parseMirrorResponse(reply){
   const lines = reply.split('\n').filter(Boolean);
   const s = { greeting:'', points:[], guidingQuestion:'', symbols:'', paragraphs:[], offRamp:false };
   let inGreeting = true;
+  
+  // Detect language for greeting pattern
+  const hasChinese = /[\u4e00-\u9fff]/.test(reply);
+  const greetingPattern = hasChinese ? /^旅人[,，]?/ : /^traveler[,，]?/i;
 
   for(const raw of lines){
     const line = raw.trim();
 
-    if(/^traveler[,，]?/i.test(line)){ s.greeting = line; inGreeting = false; continue; }
+    if(greetingPattern.test(line)){ 
+      s.greeting = line; 
+      inGreeting = false; 
+      continue; 
+    }
 
     if(/[🪞🌊🍃🌀]/.test(line) && line.length<=16){ s.symbols = line; continue; }
 
-    if(/^guiding\s*question\s*:/i.test(line)){ s.guidingQuestion = line; continue; }
+    // Handle both English and Chinese guiding questions
+    if(/^guiding\s*question\s*:/i.test(line) || /^引导问题\s*[:：]/.test(line)){ 
+      s.guidingQuestion = line; 
+      continue; 
+    }
 
     if(/\*\*(.*?)\*\*/.test(line)){ s.points.push(line); continue; }
 
@@ -623,6 +691,7 @@ function formatMirrorResponse(question, s){
     if (parsed.greeting) {
       const g = parsed.greeting
         .replace(/^traveler[,，]?\s*/i, "") // strip the word Traveler, UI already shows it
+        .replace(/^旅人[,，]?\s*/, "") // strip Chinese "旅人" too
         .replace(/\*\*(.*?)\*\*/g, "$1")
         .trim();
       if (g) parts.push(g);
@@ -653,10 +722,10 @@ function formatMirrorResponse(question, s){
 
     // 4) Append guiding question clearly at the end
     if (parsed.guidingQuestion) {
-      raw =
-        raw.trim() +
-        ". ... Guiding question: " +
-        parsed.guidingQuestion.trim();
+      const gqText = parsed.guidingQuestion
+        .replace(/^Guiding Question:\s*/i, "")
+        .replace(/^引导问题:\s*/, "");
+      raw = raw.trim() + ". ... Guiding question: " + gqText.trim();
     }
 
     // Final cleanup
@@ -708,9 +777,22 @@ function formatMirrorResponse(question, s){
       html += `<div class="wisdom-paragraph">${point}</div>`;
     }
   });
-  if(s.guidingQuestion) html += `<div class="guiding-question">${s.guidingQuestion.replace(/guiding\s*question\s*[:：]/i,'<strong>Guiding Question:</strong>')}</div>`;
+  
+  // Handle both English and Chinese guiding questions
+  if(s.guidingQuestion) {
+    const displayGQ = s.guidingQuestion
+      .replace(/^Guiding Question:\s*/i, '<strong>Guiding Question:</strong> ')
+      .replace(/^引导问题:\s*/, '<strong>引导问题:</strong> ');
+    html += `<div class="guiding-question">${displayGQ}</div>`;
+  }
+  
   if(s.symbols) html += `<div class="symbols-line">${s.symbols}</div>`;
-  html += `<div class="mirror-signature">🪞 The Mirror has spoken</div></div></div>`;
+  
+  // Add appropriate signature based on language
+  const hasChinese = /[\u4e00-\u9fff]/.test(safeQuestion);
+  const signature = hasChinese ? '🪞 镜子已经说话' : '🪞 The Mirror has spoken';
+  html += `<div class="mirror-signature">${signature}</div></div></div>`;
+  
   return html;
 }
 
@@ -822,8 +904,15 @@ async function askMirror(){
   setBusy(true);
   ansDiv.innerHTML = '<div style="text-align:center;padding:1.1rem">🌊 The pond grows still, awaiting reflection...</div>';
 
-  // 🔥 FIXED: Use persistent user identity instead of changing timestamp
-  const payload = { question, user: getStableUserId() };
+  // Detect language for better backend handling
+  const hasChinese = /[\u4e00-\u9fff]/.test(question);
+  const languageHint = hasChinese ? 'zh' : 'en';
+  
+  const payload = { 
+    question, 
+    user: getStableUserId(),
+    lang: languageHint  // Send language hint to backend
+  };
   const headers = { "Content-Type":"application/json", "Accept":"application/json" };
 
   const t0 = performance.now();
