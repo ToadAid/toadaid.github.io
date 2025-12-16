@@ -535,7 +535,7 @@ function cleanMirrorResponse(reply){
     reply = reply.replace(/共鸣反射\s*[:：]\s*/g, '');
     reply = reply.replace(/映照回响\s*[:：]\s*/g, '');
     reply = reply.replace(/反思共鸣\s*[:：]\s*/g, '');
-    
+    reply = reply.replace(/回声共振\s*（[^）]*）\s*[:：]\s*/g, '');
     // Remove Chinese markdown
     reply = reply.replace(/\*\*[\u4e00-\u9fff]+\*\*/g, '');
     
