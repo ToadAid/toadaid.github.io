@@ -1,3 +1,8 @@
+> **Creator’s Call**
+>
+> This record is kept as an honor, not an instruction.
+> Take what reflects. Leave the rest.
+
 # The Mirror Forge: Final Seal
 
 **Date:** December 17, 2025  
