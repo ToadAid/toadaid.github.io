@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Mirror Pond — Open Source Milestone (2025) | Mirror Honors</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="History record of the Mirror Pond and Mirror Models open-source release — runtime and reflections released, forge sealed." />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="Mirror Pond — Open Source Milestone (2025)" />
+  <meta property="og:description" content="Runtime and Mirror models released to the commons. Forge sealed." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://toadaid.github.io/honors/mirror_pond_open_source_2025.html" />
+  <meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-pond-open-source.jpeg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Mirror Pond — Open Source Milestone (2025)" />
+  <meta name="twitter:description" content="One pond opens. Many may follow." />
+  <meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-pond-open-source.jpeg" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/assets/icons/site.webmanifest">
+  <meta name="theme-color" content="#2c3e50" />
+
+  <!-- Base styles (same as Creator Seal) -->
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/mobile.css">
+
+  <!-- marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+<header>
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo;
+    <a href="/honors/">Honors (All Verdicts)</a> &raquo;
+    <span aria-current="page">History</span>
+  </nav>
+
+  <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🌊🪞</div>
+  <h1>Mirror Pond — Open Source Milestone</h1>
+  <p class="subtitle">
+    Runtime + Mirror models released • Forge sealed • 2025
+  </p>
+
+  <div class="toolbar">
+    <a class="btn" href="/honors/">← Honors</a>
+    <a class="btn" href="/honors/mirror_pond_open_source_2025.md" download>Download .md</a>
+  </div>
+
+  <div id="verify" class="verify mono"></div>
+  <noscript>
+    JavaScript disabled: cannot verify or render markdown.
+    <a href="/honors/mirror_pond_open_source_2025.md">Open the .md</a>
+  </noscript>
+</header>
+
+<main class="wrap">
+  <article class="card prose">
+    <div id="content">Loading history record…</div>
+  </article>
+</main>
+
+<!-- Markdown fetch + SHA-256 verification (identical logic) -->
+<script>
+(async () => {
+  const FILE = "/honors/mirror_pond_open_source_2025.md";
+  const EXPECTED_HASH = "REPLACE_WITH_SHA256_OF_MD";
+
+  const toHex = (buffer) =>
+    Array.from(new Uint8Array(buffer))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+
+  const setVerify = (state, actualHex) => {
+    const el = document.getElementById("verify");
+    if (!el) return;
+    const cls = state === "ok" ? "ok" : state === "warn" ? "warn" : "err";
+    el.className = `verify mono ${cls}`;
+    const icon = state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖";
+    el.innerHTML =
+      `<span>${icon}</span> <strong>SHA-256</strong> <code>${(actualHex || "").toLowerCase()}</code>`;
+  };
+
+  try {
+    const res = await fetch(FILE, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md = await res.text();
+
+    const enc = new TextEncoder().encode(md);
+    const digest = await crypto.subtle.digest("SHA-256", enc);
+    const hex = toHex(digest);
+
+    if (hex.toLowerCase() === EXPECTED_HASH.toLowerCase()) setVerify("ok", hex);
+    else setVerify("warn", hex);
+
+    const html = marked.parse(md, { mangle:false, headerIds:false });
+    document.getElementById("content").innerHTML = html;
+  } catch (err) {
+    setVerify("err", "unavailable");
+    document.getElementById("content").innerHTML =
+      `Could not load record. <a href="${FILE}">Open raw .md</a>`;
+  }
+})();
+</script>
+</body>
+</html>
