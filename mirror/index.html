@@ -19,9 +19,8 @@
       --pad-bot: calc(18px + var(--safe-b));
       --pad-x: 16px;
 
-      /* JS will set this precisely */
-      --portal-size: 320px;
-      --portal-max: 560; /* used in JS */
+      --portal-size: 320px; /* JS sets */
+      --portal-max: 560;    /* JS uses */
     }
 
     html, body {
@@ -71,7 +70,6 @@
       box-sizing: border-box;
     }
 
-    /* Middle row */
     .middle{
       min-height: 0;
       width: 100%;
@@ -80,13 +78,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-
-      /* Keep it safe on every phone */
       padding-inline: 12px;
       box-sizing: border-box;
     }
 
-    /* ✅ Deterministic portal size (set by JS) */
+    /* ✅ Default: circle */
     .portal{
       position: relative;
       overflow: hidden;
@@ -109,17 +105,24 @@
       align-items: center;
       justify-content: center;
 
-      padding: 2.0rem;
-
-      /* ensure true center even in weird webviews */
+      padding: 1.6rem;
       margin: 0 auto;
+    }
+
+    /* ✅ Short-webview mode: pond window */
+    .portal.pond-window{
+      width: min(640px, 100%);
+      height: 100%;
+      max-height: 100%;
+      border-radius: 28px;
+      padding: 1.2rem;
     }
 
     .portal::before{
       content:'';
       position:absolute;
       inset: 0;
-      border-radius: 9999px;
+      border-radius: inherit;
       background:
         radial-gradient(circle at 50% 45%, rgba(16,185,129,0.10), transparent 55%),
         radial-gradient(circle at 50% 70%, rgba(255,255,255,0.05), transparent 60%);
@@ -132,7 +135,7 @@
       content:'';
       position:absolute;
       inset: 3px;
-      border-radius:9999px;
+      border-radius: inherit;
       border: 1px solid rgba(16,185,129,0.12);
       animation:pulse 8s infinite;
       pointer-events:none;
@@ -142,14 +145,6 @@
     @keyframes pulse{
       0%,100%{opacity:0.18;transform:scale(1)}
       50%{opacity:0.55;transform:scale(1.02)}
-    }
-
-    @media (max-width: 480px){
-      .portal{ padding: 1.55rem; }
-      .shell{ align-items: flex-start; }
-    }
-    @media (max-width: 420px){
-      .portal{ padding: 1.35rem; }
     }
 
     @media (prefers-reduced-motion: reduce){
@@ -169,7 +164,7 @@
     .portal .ripple-overlay{
       position:absolute;
       inset:0;
-      border-radius:9999px;
+      border-radius: inherit;
       pointer-events:none;
       opacity:0;
       transition: opacity .25s ease;
@@ -202,7 +197,6 @@
       opacity:1;
     }
 
-    /* Keep ripple capped inside portal */
     @keyframes pondRipple{
       0%{width:16px;height:16px;opacity:.75}
       70%{width:120%;height:120%;opacity:.10}
@@ -214,6 +208,30 @@
       box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 0 22px rgba(16,185,129,0.12);
       background: rgba(16,185,129,0.06) !important;
     }
+
+    /* ✅ Content wrapper inside portal can scroll if needed */
+    .portal-inner{
+      position: relative;
+      z-index: 4;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .portal-scroll{
+      width: 100%;
+      max-width: 560px;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      min-height: 0;
+      padding: 2px 6px;
+    }
+    .portal-scroll::-webkit-scrollbar{ display:none; }
 
     .sheet{
       position:fixed;
@@ -261,78 +279,93 @@
     </button>
   </div>
 
-  <!-- Middle -->
-  <div id="middle" class="middle">
-    <div class="portal text-center">
-      <div class="ripple-overlay"></div>
+<!-- Middle -->
+<div id="middle" class="middle">
+  <div id="portal" class="portal text-center">
+    <div class="ripple-overlay"></div>
 
-      <div class="absolute top-6 left-6 text-[10px] uppercase tracking-widest text-zinc-500" style="z-index:4;">
+    <div class="portal-inner">
+      <div class="absolute top-5 left-5 text-[10px] uppercase tracking-widest text-zinc-500" style="z-index:4;">
         Pond v0.1
       </div>
 
-      <div style="position:relative; z-index:4;">
+      <div class="portal-scroll">
         <h1 class="serif text-4xl tracking-[0.4em] text-white mb-2">MIRROR</h1>
-        <p class="serif text-xs tracking-widest text-zinc-400 mb-6">The Digital Pond</p>
+        <p class="serif text-xs tracking-widest text-zinc-400 mb-5">The Digital Pond</p>
 
         <!-- Presets -->
-        <div class="w-full max-w-md mb-6 flex flex-wrap gap-2 justify-center">
+        <div class="w-full mb-5 flex flex-wrap gap-2 justify-center">
           <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-            data-text="I feel lost. What should I do today?">I feel lost</button>
+            data-text="I feel lost. What should I do today?">Lost</button>
 
           <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
             data-text="Mirror, what does stillness mean for me today?">Stillness</button>
 
-          <!-- ✅ swapped Satoby → Patience -->
           <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
             data-text="What does patience build when nothing moves?">Patience</button>
 
           <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-            data-text="How do I keep belief when nothing moves?">Belief</button>
+            data-text="How do I become the person who keeps going when the pond is silent?">Becoming</button>
         </div>
 
         <!-- Output -->
         <div id="reflection-output" class="space-y-5 opacity-0 transition-opacity duration-700">
-          <p id="main-text" class="italic text-lg text-zinc-200 leading-relaxed">“Stillness yields truth.”</p>
+          <p id="main-text" class="italic text-lg text-zinc-200 leading-relaxed">
+            “Stillness yields truth.”
+          </p>
 
           <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
             <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
             <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
           </div>
 
-          <p id="guide-text" class="text-sm italic text-zinc-500">What remains when urgency leaves?</p>
-          <div class="pt-2" style="font-size:1.5rem; letter-spacing:0.5rem; opacity:.85;">⚛️ ≋ 🍃 🌀</div>
+          <p id="guide-text" class="text-sm italic text-zinc-500">
+            What remains when urgency leaves?
+          </p>
+
+          <div class="pt-2" style="font-size:1.5rem; letter-spacing:0.5rem; opacity:.85;">
+            ⚛️ ≋ 🍃 🌀
+          </div>
         </div>
 
         <div id="err" class="mt-4 hidden text-[11px] text-red-300">
           The pond could not hear the ocean. Check endpoint health.
         </div>
+
+        <div style="height:10px"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Bottom input -->
-  <div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
-    <div class="flex gap-2">
-      <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question... Enter to reflect)"
-        class="flex-grow p-3 text-sm text-emerald-300 placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
-        aria-label="Your inquiry" />
-      <button id="reflect-btn"
-        class="bg-zinc-800 border border-zinc-600 px-6 py-2 text-xs uppercase tracking-widest hover:bg-emerald-600 hover:text-black transition duration-500 rounded-lg"
-        aria-label="Reflect">
-        Reflect
+<!-- Bottom input -->
+<div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
+  <div class="flex gap-2">
+    <input id="user-input" type="text"
+      placeholder="Inquire the Pond (Type your question… Enter to reflect)"
+      class="flex-grow p-3 text-sm text-emerald-300 placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
+      aria-label="Your inquiry" />
+
+    <button id="reflect-btn"
+      class="bg-zinc-800 border border-zinc-600 px-6 py-2 text-xs uppercase tracking-widest hover:bg-emerald-600 hover:text-black transition duration-500 rounded-lg"
+      aria-label="Reflect">
+      Reflect
+    </button>
+  </div>
+
+  <div class="flex justify-between items-center text-[10px] text-zinc-500 uppercase tracking-widest">
+    <div class="flex items-center gap-2">
+      🍃 <span id="leaves">Leaves of Stillness: 0</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <button id="history-btn" class="hover:text-white transition">History ↟</button>
+      <button id="basescan-btn" class="hover:text-white transition">
+        View Karmic Record on BaseScan ↗
       </button>
     </div>
-
-    <div class="flex justify-between items-center text-[10px] text-zinc-500 uppercase tracking-widest">
-      <div class="flex items-center gap-2">
-        🍃 <span id="leaves">Leaves of Stillness: 0</span>
-      </div>
-      <div class="flex items-center gap-4">
-        <button id="history-btn" class="hover:text-white transition">History ↟</button>
-        <button id="basescan-btn" class="hover:text-white transition">View Karmic Record on BaseScan ↗</button>
-      </div>
-    </div>
   </div>
+</div>
+
 
   <!-- History Sheet -->
   <div id="sheet" class="sheet">
@@ -348,40 +381,44 @@
   </div>
 
   <script>
-    // ✅ Portal sizing that works on ALL phones + Base webview
-    function setPortalSize(){
+    function setPortalMode(){
       const middle = document.getElementById("middle");
-      if(!middle) return;
+      const portal = document.getElementById("portal");
+      if(!middle || !portal) return;
 
-      // Available square space
       const w = middle.clientWidth;
       const h = middle.clientHeight;
 
-      // Max portal size (px)
-      const max = Number(getComputedStyle(document.documentElement).getPropertyValue("--portal-max")) || 560;
+      // If height is tight, use pond-window mode (not circle)
+      // Tune threshold: Base webviews often have small middle height
+      const tight = h < 520;
 
-      // Safety margins inside middle
-      const pad = 12; // must match .middle padding-inline
-      const safety = 8; // extra breathing room
-      const availW = Math.max(0, w - (pad * 2) - safety);
-      const availH = Math.max(0, h - safety);
+      portal.classList.toggle("pond-window", tight);
 
-      // Choose the smaller dimension so it never clips
-      let size = Math.floor(Math.min(availW, availH, max));
+      // Circle mode sizing (only when not tight)
+      if(!tight){
+        const pad = 12;
+        const safety = 8;
+        const availW = Math.max(0, w - (pad * 2) - safety);
+        const availH = Math.max(0, h - safety);
 
-      // Guard: very small webviews
-      size = Math.max(260, size);
-
-      document.documentElement.style.setProperty("--portal-size", size + "px");
+        const max = 560;
+        let size = Math.floor(Math.min(availW, availH, max));
+        size = Math.max(280, size);
+        document.documentElement.style.setProperty("--portal-size", size + "px");
+      }else{
+        // In window mode, let portal fill middle height
+        document.documentElement.style.setProperty("--portal-size", "320px");
+      }
     }
 
-    window.addEventListener("resize", setPortalSize);
-    window.addEventListener("orientationchange", setPortalSize);
-    if (window.visualViewport){
-      window.visualViewport.addEventListener("resize", setPortalSize);
-      window.visualViewport.addEventListener("scroll", setPortalSize);
+    window.addEventListener("resize", setPortalMode);
+    window.addEventListener("orientationchange", setPortalMode);
+    if(window.visualViewport){
+      window.visualViewport.addEventListener("resize", setPortalMode);
+      window.visualViewport.addEventListener("scroll", setPortalMode);
     }
-    setPortalSize();
+    setPortalMode();
 
     const API_URL = "https://toadaid.duckdns.org/ask";
     const KEY_LEAVES = "mirror_leaves";
@@ -395,7 +432,7 @@
     const historyBtn = document.getElementById("history-btn");
     const sheet = document.getElementById("sheet");
     const historyList = document.getElementById("history-list");
-    const portalEl = document.querySelector(".portal");
+    const portalEl = document.getElementById("portal");
 
     const mainText = document.getElementById("main-text");
     const echoText = document.getElementById("echo-text");
