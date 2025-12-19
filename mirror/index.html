@@ -15,13 +15,9 @@
       --safe-l: env(safe-area-inset-left);
       --safe-r: env(safe-area-inset-right);
 
-      --app-vh: 1vh;
-
       --pad-top: calc(14px + var(--safe-t));
       --pad-bot: calc(18px + var(--safe-b));
       --pad-x: 16px;
-
-      --portal-max: 640px;
     }
 
     html, body {
@@ -30,7 +26,7 @@
       background-color: #030303;
       color: #d1d1d1;
       font-family: 'Inter', sans-serif;
-      overflow: hidden;
+      overflow: hidden; /* keep page locked; we will scroll inside portal */
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
@@ -75,17 +71,16 @@
       justify-content: center;
     }
 
+    /* ✅ Portal container (non-scroll). */
     .portal{
       position: relative;
-      overflow: hidden;
+      overflow: hidden;            /* hide edges; scroll happens inside .portal-scroll */
       box-sizing: border-box;
 
       width: 100%;
       max-width: min(720px, calc(100vw - 32px));
-      max-height: min(760px, calc(100% - 8px));
-      height: auto;
-
-      margin: 0 auto;
+      max-height: calc(100% - 8px); /* important: keep inside middle slot */
+      height: 100%;
 
       border-radius: 26px;
       border: 1px solid rgba(255,255,255,0.10);
@@ -96,9 +91,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-
-      padding: 1.6rem;
     }
 
     .portal::after{
@@ -117,7 +109,7 @@
     }
 
     @media (max-width: 480px){
-      .portal{ padding: 1.25rem; border-radius: 22px; }
+      .portal{ border-radius: 22px; }
       .portal::after{ inset: 7px; border-radius: 18px; }
     }
 
@@ -128,6 +120,35 @@
       .answer-text{ transition: none !important; }
     }
 
+    /* ✅ Scroll area inside portal (THIS enables swipe up/down) */
+    .portal-scroll{
+      width: 100%;
+      flex: 1;
+      min-height: 0;                  /* critical: allow flex child to shrink */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* iOS momentum */
+      overscroll-behavior: contain;
+      touch-action: pan-y;            /* allow vertical swipe */
+      padding: 1.3rem 1.2rem 1.1rem;
+    }
+
+    /* subtle top/bottom fade so scroll feels premium */
+    .portal-fade-top, .portal-fade-bot{
+      position: absolute;
+      left: 0; right: 0;
+      height: 24px;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .portal-fade-top{
+      top: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.90), rgba(0,0,0,0));
+    }
+    .portal-fade-bot{
+      bottom: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.90), rgba(0,0,0,0));
+    }
+
     .manual-text { font-size: 0.7rem; color:#888; line-height:1.4; }
 
     input{
@@ -136,6 +157,7 @@
       border-radius: 12px;
     }
 
+    /* Listening ripple */
     .portal .ripple-overlay{
       position:absolute;
       inset:0;
@@ -144,6 +166,7 @@
       opacity:0;
       transition: opacity .25s ease;
       background: radial-gradient(circle at 50% 45%, rgba(16,185,129,0.10), transparent 55%);
+      z-index: 2;
     }
 
     .portal .ripple-overlay::before,
@@ -206,6 +229,7 @@
 
     #reflect-btn:active{ transform: translateY(1px); }
 
+    /* ✅ Tap-to-expand inside answer area */
     .answer-wrap{
       width: 100%;
       max-width: 560px;
@@ -215,9 +239,8 @@
 
     .answer-text{
       display: block;
-      max-height: 8.2em;
+      max-height: 8.2em; /* default clamp */
       overflow: hidden;
-
       transition: max-height 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
     }
 
@@ -234,16 +257,16 @@
     .answer-wrap.expandable{ cursor: pointer; }
 
     .answer-wrap.expanded .answer-text{
-      max-height: 2000px; 
+      max-height: 2000px; /* expand fully */
     }
     .answer-wrap.expanded::after{ display:none; }
-
   </style>
 </head>
 
 <body>
   <div class="water-bg"></div>
 
+  <!-- Top bar -->
   <div class="shell w-full z-10">
     <button id="manual-toggle"
       class="manual-text max-w-xs uppercase tracking-tighter text-left hover:text-zinc-200 transition"
@@ -265,50 +288,62 @@
     </div>
   </div>
 
+  <!-- Middle -->
   <div class="middle">
     <div class="portal text-center">
       <div class="ripple-overlay"></div>
+      <div class="portal-fade-top"></div>
+      <div class="portal-fade-bot"></div>
 
-      <h1 class="="serif text-4xl tracking-[0.4em] text-white mt-2 mb-2">MIRROR</h1>
-      <p class="serif text-xs tracking-widest text-zinc-400 mb-5">The Digital Pond</p>
+      <!-- ✅ Scrollable content -->
+      <div class="portal-scroll">
+        <h1 class="serif text-3xl tracking-[0.32em] text-white mt-1 mb-2">MIRROR</h1>
+        <p class="serif text-xs tracking-widest text-zinc-400 mb-5">The Digital Pond</p>
 
-      <div class="w-full max-w-md mb-5 flex flex-wrap gap-2 justify-center">
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-          data-text="I feel lost. What should I do today?">Lost</button>
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-          data-text="Mirror, what does stillness mean for me today?">Stillness</button>
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-          data-text="How do I hold patience when nothing moves?">Patience</button>
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-          data-text="What am I becoming, beneath the surface?">Becoming</button>
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-          data-text="In Rune 3, what is the still-water garden teaching me?">Rune3</button>
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-          data-text="Explain: ‘Toby is the people, and the people is Toby.’">Toby = The People</button>
-      </div>
-
-      <div id="reflection-output" class="space-y-5 opacity-0 transition-opacity duration-700">
-        <div id="answer-wrap" class="answer-wrap">
-          <p id="main-text" class="answer-text italic text-lg text-zinc-200 leading-relaxed">
-            “Stillness yields truth.”
-          </p>
+        <!-- Presets -->
+        <div class="w-full max-w-md mb-5 flex flex-wrap gap-2 justify-center mx-auto">
+          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+            data-text="I feel lost. What should I do today?">Lost</button>
+          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+            data-text="Mirror, what does stillness mean for me today?">Stillness</button>
+          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+            data-text="How do I hold patience when nothing moves?">Patience</button>
+          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+            data-text="What am I becoming, beneath the surface?">Becoming</button>
+          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+            data-text="In Rune 3, what is the still-water garden teaching me?">Rune3</button>
+          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+            data-text="Explain: ‘Toby is the people, and the people is Toby.’">Toby = The People</button>
         </div>
 
-        <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
-          <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
-          <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
+        <!-- Output -->
+        <div id="reflection-output" class="space-y-5 opacity-0 transition-opacity duration-700 max-w-[560px] mx-auto">
+          <div id="answer-wrap" class="answer-wrap">
+            <p id="main-text" class="answer-text italic text-lg text-zinc-200 leading-relaxed">
+              “Stillness yields truth.”
+            </p>
+          </div>
+
+          <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
+            <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
+            <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
+          </div>
+
+          <p id="guide-text" class="text-sm italic text-zinc-500">What remains when urgency leaves?</p>
+          <div class="pt-1" style="font-size:1.4rem; letter-spacing:0.45rem; opacity:.85;">⚛️ ≋ 🍃 🌀</div>
         </div>
 
-        <p id="guide-text" class="text-sm italic text-zinc-500">What remains when urgency leaves?</p>
-        <div class="pt-1" style="font-size:1.4rem; letter-spacing:0.45rem; opacity:.85;">⚛️ ≋ 🍃 🌀</div>
-      </div>
+        <div id="err" class="mt-4 hidden text-[11px] text-red-300">
+          The pond could not hear the ocean. Check endpoint health.
+        </div>
 
-      <div id="err" class="mt-4 hidden text-[11px] text-red-300">
-        The pond could not hear the ocean. Check endpoint health.
+        <!-- little spacer so bottom fade never eats last line -->
+        <div style="height: 22px;"></div>
       </div>
     </div>
   </div>
 
+  <!-- Bottom input -->
   <div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
     <div class="flex gap-2">
       <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question... Enter to reflect)"
@@ -332,6 +367,7 @@
     </div>
   </div>
 
+  <!-- History Sheet -->
   <div id="sheet" class="sheet">
     <div class="sheet-handle"></div>
     <div class="px-5 pb-4 flex items-center justify-between">
@@ -345,18 +381,6 @@
   </div>
 
   <script>
-    function setAppVh(){
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--app-vh', `${vh}px`);
-    }
-    window.addEventListener('resize', setAppVh);
-    window.addEventListener('orientationchange', setAppVh);
-    if(window.visualViewport){
-      window.visualViewport.addEventListener('resize', setAppVh);
-      window.visualViewport.addEventListener('scroll', setAppVh);
-    }
-    setAppVh();
-
     const API_URL = "https://toadaid.duckdns.org/ask";
     const KEY_LEAVES = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
@@ -370,6 +394,7 @@
     const sheet = document.getElementById("sheet");
     const historyList = document.getElementById("history-list");
     const portalEl = document.querySelector(".portal");
+    const portalScroll = document.querySelector(".portal-scroll");
 
     const mainText = document.getElementById("main-text");
     const echoText = document.getElementById("echo-text");
@@ -511,7 +536,6 @@
 
     function applyClampIfNeeded(){
       answerWrap.classList.remove("clamped", "expanded", "expandable");
-
       requestAnimationFrame(() => {
         const el = mainText;
         const tooTall = el.scrollHeight > el.clientHeight + 2;
@@ -521,9 +545,14 @@
       });
     }
 
+    // Tap-to-expand/collapse (only when clamped)
     answerWrap.addEventListener("click", () => {
       if(!answerWrap.classList.contains("clamped")) return;
       answerWrap.classList.toggle("expanded");
+      // after expanding, ensure user can swipe smoothly
+      requestAnimationFrame(() => {
+        portalScroll.scrollTop = portalScroll.scrollTop; // no-op to settle
+      });
     });
 
     async function processInquiry(qOverride){
@@ -556,6 +585,12 @@
         input.value = "";
 
         applyClampIfNeeded();
+
+        // ✅ auto-scroll a bit so long answers feel discoverable
+        requestAnimationFrame(() => {
+          portalScroll.scrollTo({ top: 9999, behavior: "smooth" });
+          setTimeout(() => portalScroll.scrollTo({ top: 0, behavior: "smooth" }), 380);
+        });
 
       }catch(e){
         const out = localFallback(q);
