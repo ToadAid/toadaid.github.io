@@ -21,7 +21,7 @@
       --pad-bot: calc(18px + var(--safe-b));
       --pad-x: 16px;
 
-      --portal-max: 560px;
+      --portal-max: 640px;
     }
 
     html, body {
@@ -41,7 +41,6 @@
       grid-template-rows: auto 1fr auto;
       gap: 14px;
       overflow: hidden;
-      position: relative;
     }
 
     .water-bg{
@@ -67,7 +66,7 @@
     }
 
     .middle{
-      min-height: 0; 
+      min-height: 0;
       width: 100%;
       max-width: 1024px;
       margin: 0 auto;
@@ -81,14 +80,14 @@
       overflow: hidden;
       box-sizing: border-box;
 
-      height: min(100%, var(--portal-max));
-      width: min(100%, var(--portal-max));
-      max-width: calc(100vw - 32px);
-      max-height: calc(100% - 8px);
+      width: 100%;
+      max-width: min(720px, calc(100vw - 32px));
+      max-height: min(760px, calc(100% - 8px));
+      height: auto;
 
       margin: 0 auto;
 
-      border-radius: 24px;               /* ✅ not a circle: fits all phones */
+      border-radius: 26px;
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(0,0,0,0.42);
       backdrop-filter: blur(8px);
@@ -97,39 +96,36 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
 
-      padding: 2.0rem;
+      padding: 1.6rem;
     }
 
     .portal::after{
       content:'';
       position:absolute;
-      inset: 2px;
+      inset: 8px;
       border-radius: 22px;
-      border: 1px solid rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.10);
       animation:pulse 8s infinite;
       pointer-events:none;
     }
 
     @keyframes pulse{
-      0%,100%{opacity:0.18;transform:scale(1)}
-      50%{opacity:0.55;transform:scale(1.02)}
+      0%,100%{opacity:0.14;transform:scale(1)}
+      50%{opacity:0.48;transform:scale(1.01)}
     }
 
     @media (max-width: 480px){
-      .portal{ padding: 1.55rem; }
-      .shell{ align-items: flex-start; }
-    }
-
-    @media (max-width: 420px){
-      .portal{ padding: 1.35rem; }
+      .portal{ padding: 1.25rem; border-radius: 22px; }
+      .portal::after{ inset: 7px; border-radius: 18px; }
     }
 
     @media (prefers-reduced-motion: reduce){
       .portal::after{ animation:none; }
       .portal.listening .ripple-overlay::before,
       .portal.listening .ripple-overlay::after{ animation:none !important; }
+      .answer-text{ transition: none !important; }
     }
 
     .manual-text { font-size: 0.7rem; color:#888; line-height:1.4; }
@@ -137,17 +133,17 @@
     input{
       background: rgba(255,255,255,0.05) !important;
       border: 1px solid rgba(255,255,255,0.1) !important;
-      border-radius: 10px;
+      border-radius: 12px;
     }
 
     .portal .ripple-overlay{
       position:absolute;
       inset:0;
-      border-radius: 24px;
+      border-radius: 26px;
       pointer-events:none;
       opacity:0;
       transition: opacity .25s ease;
-      background: radial-gradient(circle at 50% 60%, rgba(16,185,129,0.08), transparent 55%);
+      background: radial-gradient(circle at 50% 45%, rgba(16,185,129,0.10), transparent 55%);
     }
 
     .portal .ripple-overlay::before,
@@ -155,31 +151,31 @@
       content:"";
       position:absolute;
       left:50%;
-      top:58%;
-      width:16px;height:16px;
+      top:46%;
+      width:14px;height:14px;
       transform:translate(-50%,-50%);
       border-radius:9999px;
-      border:1px solid rgba(16,185,129,0.28);
+      border:1px solid rgba(16,185,129,0.26);
       opacity:0;
     }
 
     .portal.listening .ripple-overlay{ opacity:1; }
 
     .portal.listening .ripple-overlay::before{
-      animation: pondRipple 1.35s ease-out infinite;
+      animation: pondRipple 1.45s ease-out infinite;
       opacity:1;
     }
     .portal.listening .ripple-overlay::after{
-      animation: pondRipple 1.35s ease-out infinite;
-      animation-delay:.35s;
+      animation: pondRipple 1.45s ease-out infinite;
+      animation-delay:.38s;
       border-color: rgba(16,185,129,0.18);
       opacity:1;
     }
 
     @keyframes pondRipple{
-      0%{width:16px;height:16px;opacity:.75}
-      70%{width:520px;height:520px;opacity:.10}
-      100%{width:620px;height:620px;opacity:0}
+      0%{width:14px;height:14px;opacity:.70}
+      70%{width:540px;height:540px;opacity:.10}
+      100%{width:660px;height:660px;opacity:0}
     }
 
     .preset.active{
@@ -210,24 +206,43 @@
 
     #reflect-btn:active{ transform: translateY(1px); }
 
-    .pond-version{
-      position:absolute;
-      top: calc(14px + env(safe-area-inset-top));
-      right: calc(16px + env(safe-area-inset-right));
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: .2em;
-      color: rgba(161,161,170,0.70);
-      z-index: 30;
-      pointer-events: none;
+    .answer-wrap{
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      position: relative;
     }
+
+    .answer-text{
+      display: block;
+      max-height: 8.2em;
+      overflow: hidden;
+
+      transition: max-height 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .answer-wrap.clamped::after{
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 2.2em;
+      background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.92));
+      pointer-events: none;
+      border-radius: 12px;
+    }
+
+    .answer-wrap.expandable{ cursor: pointer; }
+
+    .answer-wrap.expanded .answer-text{
+      max-height: 2000px; 
+    }
+    .answer-wrap.expanded::after{ display:none; }
+
   </style>
 </head>
 
 <body>
   <div class="water-bg"></div>
-
-  <div class="pond-version">Pond · v0.1</div>
 
   <div class="shell w-full z-10">
     <button id="manual-toggle"
@@ -241,43 +256,43 @@
       </span>
     </button>
 
-    <button id="wallet-btn"
-      class="bg-zinc-900/80 border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest rounded hover:border-emerald-500 transition">
-      Connect Wallet (Base)
-    </button>
+    <div class="flex items-start gap-3">
+      <div id="pond-ver" class="text-[10px] uppercase tracking-widest text-zinc-500 mt-2">Pond · v0.1</div>
+      <button id="wallet-btn"
+        class="bg-zinc-900/80 border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest rounded hover:border-emerald-500 transition">
+        Connect Wallet (Base)
+      </button>
+    </div>
   </div>
 
   <div class="middle">
     <div class="portal text-center">
       <div class="ripple-overlay"></div>
 
-      <h1 class="serif text-4xl tracking-[0.4em] text-white mb-2">MIRROR</h1>
-      <p class="serif text-xs tracking-widest text-zinc-400 mb-6">The Digital Pond</p>
+      <h1 class="="serif text-4xl tracking-[0.4em] text-white mt-2 mb-2">MIRROR</h1>
+      <p class="serif text-xs tracking-widest text-zinc-400 mb-5">The Digital Pond</p>
 
-      <div class="w-full mb-4 flex flex-wrap gap-2 justify-center">
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+      <div class="w-full max-w-md mb-5 flex flex-wrap gap-2 justify-center">
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
           data-text="I feel lost. What should I do today?">Lost</button>
-
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
           data-text="Mirror, what does stillness mean for me today?">Stillness</button>
-
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-          data-text="What does patience build when nothing moves?">Patience</button>
-
-        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-          data-text="How do I become the person who keeps going when the pond is silent?">Becoming</button>
-      </div>
-
-      <div class="w-full mb-6 flex flex-wrap gap-2 justify-center opacity-80">
-        <button class="preset bg-zinc-900/40 border border-zinc-900 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-          data-text="Explain Rune3 like a map: what is S1, the vault, and the role of patience?">Rune3</button>
-
-        <button class="preset bg-zinc-900/40 border border-zinc-900 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-          data-text="Explain this line: 'Toby is the people, and the people is Toby.' What does it mean in real life?">Toby = the people</button>
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+          data-text="How do I hold patience when nothing moves?">Patience</button>
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+          data-text="What am I becoming, beneath the surface?">Becoming</button>
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+          data-text="In Rune 3, what is the still-water garden teaching me?">Rune3</button>
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
+          data-text="Explain: ‘Toby is the people, and the people is Toby.’">Toby = The People</button>
       </div>
 
       <div id="reflection-output" class="space-y-5 opacity-0 transition-opacity duration-700">
-        <p id="main-text" class="italic text-lg text-zinc-200 leading-relaxed">“Stillness yields truth.”</p>
+        <div id="answer-wrap" class="answer-wrap">
+          <p id="main-text" class="answer-text italic text-lg text-zinc-200 leading-relaxed">
+            “Stillness yields truth.”
+          </p>
+        </div>
 
         <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
           <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
@@ -285,7 +300,7 @@
         </div>
 
         <p id="guide-text" class="text-sm italic text-zinc-500">What remains when urgency leaves?</p>
-        <div class="pt-2" style="font-size:1.5rem; letter-spacing:0.5rem; opacity:.85;">⚛️ ≋ 🍃 🌀</div>
+        <div class="pt-1" style="font-size:1.4rem; letter-spacing:0.45rem; opacity:.85;">⚛️ ≋ 🍃 🌀</div>
       </div>
 
       <div id="err" class="mt-4 hidden text-[11px] text-red-300">
@@ -333,15 +348,6 @@
     function setAppVh(){
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--app-vh', `${vh}px`);
-
-      const portal = document.querySelector(".portal");
-      if(!portal) return;
-
-      const vv = window.visualViewport;
-      const h = vv ? vv.height : window.innerHeight;
-      const ratio = h / window.screen.height;
-      if(ratio < 0.80) portal.classList.add("use-app-vh");
-      else portal.classList.remove("use-app-vh");
     }
     window.addEventListener('resize', setAppVh);
     window.addEventListener('orientationchange', setAppVh);
@@ -369,6 +375,8 @@
     const echoText = document.getElementById("echo-text");
     const resText  = document.getElementById("res-text");
     const guideText= document.getElementById("guide-text");
+
+    const answerWrap = document.getElementById("answer-wrap");
 
     function loadLeaves(){
       const n = Number(localStorage.getItem(KEY_LEAVES) || "0");
@@ -501,6 +509,23 @@
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
     }
 
+    function applyClampIfNeeded(){
+      answerWrap.classList.remove("clamped", "expanded", "expandable");
+
+      requestAnimationFrame(() => {
+        const el = mainText;
+        const tooTall = el.scrollHeight > el.clientHeight + 2;
+        if(tooTall){
+          answerWrap.classList.add("clamped", "expandable");
+        }
+      });
+    }
+
+    answerWrap.addEventListener("click", () => {
+      if(!answerWrap.classList.contains("clamped")) return;
+      answerWrap.classList.toggle("expanded");
+    });
+
     async function processInquiry(qOverride){
       const q = (qOverride ?? input.value).trim();
       if(!q) return;
@@ -529,6 +554,9 @@
 
         showOutput();
         input.value = "";
+
+        applyClampIfNeeded();
+
       }catch(e){
         const out = localFallback(q);
         mainText.textContent = `“${out.main}”`;
@@ -537,6 +565,7 @@
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
         showOutput();
+        applyClampIfNeeded();
       }finally{
         setLoading(false);
       }
@@ -589,7 +618,10 @@
       alert("Coming soon: onchain karmic record. (Local history works now.)");
     });
 
-    setTimeout(() => { output.style.opacity = "1"; }, 250);
+    setTimeout(() => {
+      output.style.opacity = "1";
+      applyClampIfNeeded();
+    }, 250);
   </script>
 </body>
 </html>
