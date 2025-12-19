@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- viewport-fit=cover enables safe-area insets inside app webviews -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Mirror | The Digital Pond</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -15,10 +16,15 @@
       --safe-l: env(safe-area-inset-left);
       --safe-r: env(safe-area-inset-right);
 
+      /* JS sets this to 1% of innerHeight */
+      --app-vh: 1vh;
+
+      /* App chrome padding */
       --pad-top: calc(14px + var(--safe-t));
       --pad-bot: calc(18px + var(--safe-b));
       --pad-x: 16px;
 
+      /* Portal caps */
       --portal-max: 560px;
     }
 
@@ -28,13 +34,12 @@
       background-color: #030303;
       color: #d1d1d1;
       font-family: 'Inter', sans-serif;
-
       overflow: hidden;
-
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
 
+    /* ✅ PERFECT: 3-row grid (top / middle / bottom) */
     body{
       padding: var(--pad-top) calc(var(--pad-x) + var(--safe-r)) var(--pad-bot) calc(var(--pad-x) + var(--safe-l));
       display: grid;
@@ -43,6 +48,7 @@
       overflow: hidden;
     }
 
+    /* Pure black pond */
     .water-bg{
       position: fixed;
       inset: 0;
@@ -65,29 +71,30 @@
       gap: 14px;
     }
 
+    /* ✅ Middle row owns remaining space, portal must fit inside it */
     .middle{
-      min-height: 0;
+      min-height: 0; /* critical for shrink */
       width: 100%;
       max-width: 1024px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: center;
-
-      padding-inline: 12px;
-      box-sizing: border-box;
     }
 
+    /* ✅ PERFECT: portal sized by available middle height, not vh */
     .portal{
       position: relative;
       overflow: hidden;
       box-sizing: border-box;
 
+      /* fit in middle slot */
       height: min(100%, var(--portal-max));
       aspect-ratio: 1 / 1;
       width: auto;
 
-      max-width: 100%;
+      /* also cap by available width */
+      max-width: calc(100vw - 32px);
       max-height: calc(100% - 8px);
 
       margin: 0 auto;
@@ -96,10 +103,7 @@
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(0,0,0,0.42);
       backdrop-filter: blur(8px);
-
-      box-shadow:
-        0 0 24px rgba(0,0,0,0.85),
-        inset 0 0 48px rgba(16,185,129,0.06);
+      box-shadow: 0 0 100px rgba(0,0,0,0.8);
 
       display: flex;
       flex-direction: column;
@@ -109,22 +113,11 @@
       padding: 2.0rem;
     }
 
-    .portal::before{
-      content:'';
-      position:absolute;
-      inset: 0;
-      border-radius: 9999px;
-      background:
-        radial-gradient(circle at 50% 45%, rgba(16,185,129,0.10), transparent 55%),
-        radial-gradient(circle at 50% 70%, rgba(255,255,255,0.05), transparent 60%);
-      pointer-events:none;
-      opacity: .9;
-    }
-
+    /* Ring stays INSIDE so it never looks clipped */
     .portal::after{
       content:'';
       position:absolute;
-      inset: 3px; 
+      inset: 2px;
       border-radius:9999px;
       border: 1px solid rgba(16,185,129,0.12);
       animation:pulse 8s infinite;
@@ -140,6 +133,7 @@
       .portal{ padding: 1.55rem; }
       .shell{ align-items: flex-start; }
     }
+
     @media (max-width: 420px){
       .portal{ padding: 1.35rem; }
     }
@@ -158,6 +152,7 @@
       border-radius: 10px;
     }
 
+    /* Listening ripple */
     .portal .ripple-overlay{
       position:absolute;
       inset:0;
@@ -166,7 +161,6 @@
       opacity:0;
       transition: opacity .25s ease;
       background: radial-gradient(circle at 50% 60%, rgba(16,185,129,0.08), transparent 55%);
-      z-index: 2;
     }
 
     .portal .ripple-overlay::before,
@@ -234,6 +228,7 @@
 <body>
   <div class="water-bg"></div>
 
+  <!-- Top bar -->
   <div class="shell w-full z-10">
     <button id="manual-toggle"
       class="manual-text max-w-xs uppercase tracking-tighter text-left hover:text-zinc-200 transition"
@@ -252,48 +247,50 @@
     </button>
   </div>
 
+  <!-- Middle (portal must fit here) -->
   <div class="middle">
     <div class="portal text-center">
       <div class="ripple-overlay"></div>
 
-      <div class="absolute top-6 left-6 text-[10px] uppercase tracking-widest text-zinc-500" style="z-index:3;">
+      <div class="absolute top-6 left-6 text-[10px] uppercase tracking-widest text-zinc-500">
         Pond v0.1
       </div>
 
-      <div style="position:relative; z-index:3;">
-        <h1 class="serif text-4xl tracking-[0.4em] text-white mb-2">MIRROR</h1>
-        <p class="serif text-xs tracking-widest text-zinc-400 mb-6">The Digital Pond</p>
+      <h1 class="serif text-4xl tracking-[0.4em] text-white mb-2">MIRROR</h1>
+      <p class="serif text-xs tracking-widest text-zinc-400 mb-6">The Digital Pond</p>
 
-        <div class="w-full max-w-md mb-6 flex flex-wrap gap-2 justify-center">
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-            data-text="I feel lost. What should I do today?">I feel lost</button>
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-            data-text="Mirror, what does stillness mean for me today?">Stillness</button>
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-            data-text="Explain Satoby to a beginner.">Satoby</button>
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-            data-text="How do I keep belief when nothing moves?">Belief</button>
+      <!-- Presets -->
+      <div class="w-full max-w-md mb-6 flex flex-wrap gap-2 justify-center">
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+          data-text="I feel lost. What should I do today?">I feel lost</button>
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+          data-text="Mirror, what does stillness mean for me today?">Stillness</button>
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+          data-text="Explain Satoby to a beginner.">Satoby</button>
+        <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+          data-text="How do I keep belief when nothing moves?">Belief</button>
+      </div>
+
+      <!-- Output -->
+      <div id="reflection-output" class="space-y-5 opacity-0 transition-opacity duration-700">
+        <p id="main-text" class="italic text-lg text-zinc-200 leading-relaxed">“Stillness yields truth.”</p>
+
+        <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
+          <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
+          <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
         </div>
 
-        <div id="reflection-output" class="space-y-5 opacity-0 transition-opacity duration-700">
-          <p id="main-text" class="italic text-lg text-zinc-200 leading-relaxed">“Stillness yields truth.”</p>
+        <p id="guide-text" class="text-sm italic text-zinc-500">What remains when urgency leaves?</p>
+        <div class="pt-2" style="font-size:1.5rem; letter-spacing:0.5rem; opacity:.85;">⚛️ ≋ 🍃 🌀</div>
+      </div>
 
-          <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
-            <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
-            <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
-          </div>
-
-          <p id="guide-text" class="text-sm italic text-zinc-500">What remains when urgency leaves?</p>
-          <div class="pt-2" style="font-size:1.5rem; letter-spacing:0.5rem; opacity:.85;">⚛️ ≋ 🍃 🌀</div>
-        </div>
-
-        <div id="err" class="mt-4 hidden text-[11px] text-red-300">
-          The pond could not hear the ocean. Check endpoint health.
-        </div>
+      <div id="err" class="mt-4 hidden text-[11px] text-red-300">
+        The pond could not hear the ocean. Check endpoint health.
       </div>
     </div>
   </div>
 
+  <!-- Bottom input -->
   <div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
     <div class="flex gap-2">
       <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question... Enter to reflect)"
@@ -317,6 +314,7 @@
     </div>
   </div>
 
+  <!-- History Sheet -->
   <div id="sheet" class="sheet">
     <div class="sheet-handle"></div>
     <div class="px-5 pb-4 flex items-center justify-between">
@@ -330,6 +328,28 @@
   </div>
 
   <script>
+    // Viewport helper (used for edge-case webviews/keyboard)
+    function setAppVh(){
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--app-vh', `${vh}px`);
+
+      const portal = document.querySelector(".portal");
+      if(!portal) return;
+
+      const vv = window.visualViewport;
+      const h = vv ? vv.height : window.innerHeight;
+      const ratio = h / window.screen.height;
+      if(ratio < 0.80) portal.classList.add("use-app-vh");
+      else portal.classList.remove("use-app-vh");
+    }
+    window.addEventListener('resize', setAppVh);
+    window.addEventListener('orientationchange', setAppVh);
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', setAppVh);
+      window.visualViewport.addEventListener('scroll', setAppVh);
+    }
+    setAppVh();
+
     const API_URL = "https://toadaid.duckdns.org/ask";
     const KEY_LEAVES = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
