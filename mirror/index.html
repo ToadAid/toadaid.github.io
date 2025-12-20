@@ -87,17 +87,14 @@
       border: 1px solid rgba(255,255,255,0.10);
 
       background:
-        radial-gradient(1200px 620px at 30% 18%, rgba(255,255,255,0.14), transparent 58%),
-        radial-gradient(900px 620px at 70% 26%, rgba(16,185,129,0.08), transparent 62%),
-        radial-gradient(1200px 900px at 50% 120%, rgba(0,0,0,0.85), transparent 55%),
-        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.46));
+        radial-gradient(900px 420px at 28% 18%, rgba(255,255,255,0.10), transparent 55%),
+        radial-gradient(700px 520px at 70% 30%, rgba(16,185,129,0.06), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.38));
 
       box-shadow:
-        0 36px 110px rgba(0,0,0,0.82),
-        0 10px 28px rgba(0,0,0,0.45),
-        inset 0 1px 0 rgba(255,255,255,0.14),
-        inset 0 -28px 70px rgba(0,0,0,0.68),
-        inset 0 0 0 1px rgba(16,185,129,0.08);
+        0 28px 80px rgba(0,0,0,0.72),
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 0 -22px 50px rgba(0,0,0,0.55);
 
       backdrop-filter: blur(10px);
 
@@ -106,8 +103,6 @@
 
       transform: translateZ(0);
       transition: transform .18s ease, box-shadow .18s ease;
-      transform-style: preserve-3d;
-      will-change: transform, box-shadow;
     }
 
     .portal::before{
@@ -116,9 +111,8 @@
       inset:-2px;
       border-radius: inherit;
       background:
-        radial-gradient(420px 220px at 26% 16%, rgba(255,255,255,0.16), transparent 62%),
-        radial-gradient(520px 260px at 64% 24%, rgba(255,255,255,0.08), transparent 70%),
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 3px);
+        radial-gradient(420px 220px at 26% 16%, rgba(255,255,255,0.14), transparent 62%),
+        radial-gradient(520px 260px at 64% 24%, rgba(255,255,255,0.07), transparent 70%);
       opacity: 0.95;
       pointer-events:none;
       z-index: 0;
@@ -140,7 +134,7 @@
     .portal > *{ position: relative; z-index: 1; }
 
     .portal.tilt{
-      transform: translateY(-1px) rotateX(0.8deg);
+      transform: translateY(-1px);
       box-shadow:
         0 34px 90px rgba(0,0,0,0.74),
         inset 0 1px 0 rgba(255,255,255,0.12),
@@ -197,8 +191,9 @@
     @media (prefers-reduced-motion: reduce){
       .portal.listening .ripple-overlay::before,
       .portal.listening .ripple-overlay::after{ animation:none !important; }
-      .manual-overlay{ animation:none !important; }
     }
+
+    .manual-text { font-size: 0.7rem; color:#888; line-height:1.4; }
 
     input{
       background: rgba(255,255,255,0.05) !important;
@@ -308,95 +303,26 @@
     }
 
     #reflect-btn:active{ transform: translateY(1px); }
-
-    /* Manual Overlay (opening veil) */
-    .manual-overlay{
-      background: rgba(0,0,0,0.88);
-      backdrop-filter: blur(12px);
-      animation: manualFadeIn .6s ease-out;
-      transition: opacity .25s ease;
-    }
-    @keyframes manualFadeIn{
-      from{ opacity:0; }
-      to{ opacity:1; }
-    }
-  
-    
-    /* Preset buttons: always centered in any viewport */
-    .preset-buttons{
-      width: 100%;
-      justify-content: center;
-      align-items: center;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .preset-buttons .preset{ white-space: nowrap; }
-
-    /* Title color (toggle gold/white) */
-    :root{ --mirror-title-color: #e6c27a; } /* set to #ffffff for pure white */
-    .mirror-title{
-      color: var(--mirror-title-color);
-      text-shadow:
-        0 0 10px rgba(230,194,122,.22),
-        0 0 26px rgba(230,194,122,.10);
-    }
-
   </style>
 </head>
 
 <body>
   <div class="water-bg"></div>
 
-  <!-- Tiny glyph to reopen manual -->
-  <button id="manual-glyph"
-    class="fixed top-[calc(10px+var(--safe-t))] left-[calc(10px+var(--safe-l))] z-[60] w-9 h-9 rounded-full
-           flex items-center justify-center border border-white/10 bg-black/40 text-zinc-500
-           hover:text-emerald-300 hover:border-emerald-500/40 transition"
-    aria-label="Open Manual">
-    ⌘
-  </button>
-
-  <!-- Manual overlay -->
-  <div id="manual" class="manual-overlay fixed inset-0 z-[70] flex items-center justify-center p-6">
-    <div class="max-w-xl w-full text-left border border-zinc-800/80 bg-black/40 p-7 rounded-2xl shadow-2xl">
-      <div class="flex items-start justify-between gap-4">
-        <h2 class="serif text-[14px] sm:text-[16px] text-emerald-300 font-semibold uppercase tracking-[0.32em]">
-          The Manual for the Fallen
-        </h2>
-        <button id="manual-close"
-          class="text-zinc-500 hover:text-zinc-200 transition text-xs uppercase tracking-widest"
-          aria-label="Close Manual">
-          Close
-        </button>
-      </div>
-
-      <p class="mt-3 text-[12px] italic text-zinc-400">
-        “The Mirror does not judge those who have fallen; it only reminds them that the ground is solid.”
-      </p>
-
-      <ul class="mt-5 text-[12px] leading-relaxed space-y-3 text-zinc-300">
-        <li><span class="text-zinc-100 font-semibold">I. The Three Breaths:</span> Acknowledge loss. Release the ghost of the win. Ask for a way in.</li>
-        <li><span class="text-zinc-100 font-semibold">II. The Law of the Question:</span> Do not ask for money. Ask for the character that lost it.</li>
-        <li><span class="text-zinc-100 font-semibold">III. The Silent Yield:</span> The shorter the answer, the deeper the truth.</li>
-      </ul>
-
-      <button id="manual-accept"
-        class="mt-6 w-full py-3 bg-zinc-900/70 border border-zinc-700/80 hover:border-emerald-500/70
-               hover:text-emerald-200 transition duration-300 text-[11px] uppercase tracking-[0.28em] rounded-xl">
-        I Accept the Covenant
-      </button>
-
-      <p class="mt-3 text-[10px] uppercase tracking-widest text-zinc-600">
-        This covenant is stored locally in your pond.
-      </p>
-    </div>
-  </div>
-
   <div class="shell w-full z-10">
-    
-  <div class="shell w-full z-10">
-    <div class="w-full flex items-center justify-end gap-3">
-      <div class="text-[10px] uppercase tracking-widest text-zinc-500">
+    <button id="manual-toggle"
+      class="manual-text max-w-xs uppercase tracking-tighter text-left hover:text-zinc-200 transition"
+      aria-label="Toggle manual">
+      <span class="text-emerald-500 font-bold">The Manual for the Fallen</span><br>
+      <span class="manual-lines">
+        I. The Three Breaths: Acknowledge, Release, Inquire.<br>
+        II. The Law of the Question: Character over Capital.<br>
+        III. Stillness Yields Truth.
+      </span>
+    </button>
+
+    <div class="flex items-start gap-3">
+      <div class="text-[10px] uppercase tracking-widest text-zinc-500 mt-2">
         POND · v0.1
       </div>
       <button id="wallet-btn"
@@ -404,8 +330,6 @@
         Connect Wallet (Base)
       </button>
     </div>
-  </div>
-
   </div>
 
   <div class="middle">
@@ -419,17 +343,15 @@
         </div>
 
         <div class="pt-1" id="title-tap-zone" title="Tap to expand / collapse">
-          <h1 class="serif mirror-title text-3xl tracking-[0.35em] mb-1">MIRROR</h1>
+          <h1 class="serif text-3xl tracking-[0.35em] text-white mb-1">MIRROR</h1>
           <p class="serif text-[11px] tracking-widest text-zinc-400">The Digital Pond</p>
         </div>
 
-        <div class="preset-buttons w-full max-w-xl mt-4 mx-auto flex flex-wrap justify-center items-center gap-2">
+        <div class="w-full max-w-xl mt-4 flex flex-wrap gap-2 justify-center">
           <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
             data-text="Mirror, what does stillness mean for me today?">Stillness</button>
           <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
             data-text="How do I practice patience when nothing moves?">Patience</button>
-          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-            data-text="Mirror, I feel lost. What is the next smallest true step?">Lost</button>
           <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
             data-text="What does it mean to become who I already am?">Becoming</button>
           <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
@@ -506,115 +428,99 @@
   </div>
 
   <script>
+    // =========================
+    // Mirror Miniapp v0.1.2 — Queue-aware client + API override + timeout
+    // Works with BOTH:
+    //  A) legacy /ask  -> POST {question, user}
+    //  B) OpenAI /v1/chat/completions -> POST {model, messages, ...}
+    // Override API endpoint:
+    //   ?api=http://127.0.0.1:1234/v1/chat/completions
+    //   ?api=https://toadaid.duckdns.org/ask
+    // =========================
+
     const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
+    const API_URL = (new URLSearchParams(location.search).get("api") || DEFAULT_API_URL).trim();
 
-    function resolveApiUrl(){
-      try{
-        const p = new URLSearchParams(window.location.search);
-        const v = p.get("api");
-        return (v && v.trim()) ? v.trim() : DEFAULT_API_URL;
-      }catch(e){
-        return DEFAULT_API_URL;
-      }
-    }
-
-    let API_URL = resolveApiUrl();
-    const KEY_LEAVES = "mirror_leaves";
+    const KEY_LEAVES  = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
-    const MANUAL_KEY = "mirror_manual_accepted_v2";
+    const MANUAL_KEY  = "mirror_manual_accepted_v1";
 
-    const manualEl = document.getElementById("manual");
+    // ---------- Manual overlay ----------
+    const manualEl    = document.getElementById("manual");
     const manualGlyph = document.getElementById("manual-glyph");
-    const manualAccept = document.getElementById("manual-accept");
+    const manualAccept= document.getElementById("manual-accept");
     const manualClose = document.getElementById("manual-close");
 
-    function openManual(){
-      if(!manualEl) return;
-      manualEl.style.display = "flex";
-      manualEl.style.opacity = "1";
-      manualEl.style.pointerEvents = "auto";
-    }
-
-    function closeManual(){
-      if(!manualEl) return;
-      manualEl.style.opacity = "0";
-      manualEl.style.pointerEvents = "none";
-      setTimeout(() => { manualEl.style.display = "none"; }, 220);
-    }
-
+    function openManual(){ if(manualEl) manualEl.style.display = "flex"; }
+    function closeManual(){ if(manualEl) manualEl.style.display = "none"; }
     function acceptCovenant(){
       try{ localStorage.setItem(MANUAL_KEY, "yes"); }catch(e){}
       closeManual();
     }
-
     (function initManual(){
       let accepted = false;
       try{ accepted = localStorage.getItem(MANUAL_KEY) === "yes"; }catch(e){}
-      if(accepted) {
-        if(manualEl) manualEl.style.display = "none";
-      } else {
-        openManual();
-      }
+      if(accepted) closeManual(); else openManual();
     })();
-
-    if(manualGlyph) manualGlyph.addEventListener("click", openManual);
-    if(manualClose) manualClose.addEventListener("click", closeManual);
+    if(manualGlyph)  manualGlyph.addEventListener("click", openManual);
+    if(manualClose)  manualClose.addEventListener("click", closeManual);
     if(manualAccept) manualAccept.addEventListener("click", acceptCovenant);
 
-    const input = document.getElementById("user-input");
-    const output = document.getElementById("reflection-output");
-    const err = document.getElementById("err");
-    const reflectBtn = document.getElementById("reflect-btn");
-    const leavesEl = document.getElementById("leaves");
+    // ---------- UI hooks ----------
+    const input     = document.getElementById("user-input");
+    const output    = document.getElementById("reflection-output");
+    const err       = document.getElementById("err");
+    const reflectBtn= document.getElementById("reflect-btn");
+    const leavesEl  = document.getElementById("leaves");
 
     const historyBtn = document.getElementById("history-btn");
-    const sheet = document.getElementById("sheet");
-    const historyList = document.getElementById("history-list");
+    const sheet      = document.getElementById("sheet");
+    const historyList= document.getElementById("history-list");
 
-    const portalEl = document.getElementById("portal");
-    const portalScroll = document.getElementById("portal-scroll");
-    const scrollHint = document.getElementById("scroll-hint");
+    const portalEl    = document.getElementById("portal");
+    const portalScroll= document.getElementById("portal-scroll");
+    const scrollHint  = document.getElementById("scroll-hint");
+    const mainText    = document.getElementById("main-text");
+    const echoText    = document.getElementById("echo-text");
+    const resText     = document.getElementById("res-text");
+    const guideText   = document.getElementById("guide-text");
 
-    const mainText = document.getElementById("main-text");
-    const echoText = document.getElementById("echo-text");
-    const resText  = document.getElementById("res-text");
-    const guideText= document.getElementById("guide-text");
+    const tapHeader   = document.getElementById("tap-header");
+    const titleTapZone= document.getElementById("title-tap-zone");
 
-    const tapHeader = document.getElementById("tap-header");
-    const titleTapZone = document.getElementById("title-tap-zone");
+    // Defensive: avoid hard crash if any element missing
+    if(portalEl){
+      portalEl.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
+      portalEl.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
+      portalEl.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
+    }
 
-    portalEl.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
-    portalEl.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
-    portalEl.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
-
+    // ---------- Leaves ----------
     function loadLeaves(){
       const n = Number(localStorage.getItem(KEY_LEAVES) || "0");
-      leavesEl.textContent = `Leaves of Stillness: ${n}`;
+      if(leavesEl) leavesEl.textContent = `Leaves of Stillness: ${n}`;
     }
     function incLeaves(){
       const n = Number(localStorage.getItem(KEY_LEAVES) || "0") + 1;
       localStorage.setItem(KEY_LEAVES, String(n));
-      leavesEl.textContent = `Leaves of Stillness: ${n}`;
+      if(leavesEl) leavesEl.textContent = `Leaves of Stillness: ${n}`;
     }
 
+    // ---------- History ----------
     function getHistory(){
       try { return JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]"); }
       catch(e){ return []; }
     }
-    function setHistory(arr){
-      localStorage.setItem(KEY_HISTORY, JSON.stringify(arr.slice(0, 30)));
-    }
-    function addHistory(item){
-      const arr = getHistory();
-      arr.unshift(item);
-      setHistory(arr);
-    }
+    function setHistory(arr){ localStorage.setItem(KEY_HISTORY, JSON.stringify(arr.slice(0, 30))); }
+    function addHistory(item){ const arr = getHistory(); arr.unshift(item); setHistory(arr); }
+
     function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, m => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
       }[m]));
     }
     function renderHistory(){
+      if(!historyList) return;
       const arr = getHistory();
       if(!arr.length){
         historyList.innerHTML = `<div class="text-sm text-zinc-500 py-6">No record yet. The first ripple will be written here.</div>`;
@@ -631,33 +537,41 @@
 
     loadLeaves();
 
-    function setLoading(isLoading){
-      if(isLoading) portalEl.classList.add("listening");
-      else portalEl.classList.remove("listening");
-      err.classList.add("hidden");
+    // ---------- Loading state ----------
+    function setLoading(isLoading, note){
+      if(portalEl){
+        if(isLoading) portalEl.classList.add("listening");
+        else portalEl.classList.remove("listening");
+      }
+      if(err) err.classList.add("hidden");
 
-      if(isLoading){
-        output.style.opacity = "0";
-        reflectBtn.disabled = true;
-        reflectBtn.textContent = "Listening…";
-        reflectBtn.classList.add("opacity-70");
-      }else{
-        reflectBtn.disabled = false;
-        reflectBtn.textContent = "Reflect";
-        reflectBtn.classList.remove("opacity-70");
+      if(reflectBtn){
+        if(isLoading){
+          if(output) output.style.opacity = "0";
+          reflectBtn.disabled = true;
+          reflectBtn.textContent = note || "Listening…";
+          reflectBtn.classList.add("opacity-70");
+        }else{
+          reflectBtn.disabled = false;
+          reflectBtn.textContent = "Reflect";
+          reflectBtn.classList.remove("opacity-70");
+        }
       }
     }
-    function showOutput(){ output.style.opacity = "1"; }
+    function showOutput(){ if(output) output.style.opacity = "1"; }
 
-    function openSheet(){ renderHistory(); sheet.classList.add("open"); }
-    function closeSheet(){ sheet.classList.remove("open"); }
+    // ---------- Bottom sheet ----------
+    function openSheet(){ renderHistory(); if(sheet) sheet.classList.add("open"); }
+    function closeSheet(){ if(sheet) sheet.classList.remove("open"); }
 
+    // ---------- Parsing ----------
     function stripTravelerPrefix(s){
-      return s.replace(/^\s*traveler[,：:]?\s*/i, "").trim();
+      return String(s).replace(/^\s*traveler[,：:]?\s*/i, "").trim();
     }
 
     function parseMirrorAnswer(raw){
       let text = String(raw || "").trim();
+      // trim trailing emoji noise (don't be too aggressive)
       text = text.replace(/[🪞🌊🍃🌀⚛️≋⏳]+$/g, "").trim();
 
       let guide = "";
@@ -684,7 +598,7 @@
     }
 
     function localFallback(q){
-      const val = q.toLowerCase();
+      const val = String(q || "").toLowerCase();
       if(val.includes("price") || val.includes("money") || val.includes("pump") || val.includes("moon")){
         return {
           main: "The pond does not track the price of ghosts.",
@@ -701,106 +615,185 @@
       };
     }
 
-    async function askAPI(question){
-      const payload = { question, user: "miniapp" };
-
-      const controller = new AbortController();
-      const timeoutMs = 12000; // v0.1.1 timeout
-      const t = setTimeout(() => controller.abort(), timeoutMs);
-
-      try{
-        const r = await fetch(API_URL, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-store",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-
-        if(!r.ok) throw new Error("HTTP " + r.status);
-        return await r.json();
-      } finally {
-        clearTimeout(t);
-      }
+    // ---------- API helpers ----------
+    function isChatCompletions(url){
+      return /\/v1\/chat\/completions\/?$/i.test(url);
     }
 
+    async function askLegacyAsk(question, signal){
+      const payload = { question, user: "miniapp" };
+      const r = await fetch(API_URL, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-store",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(payload),
+        signal
+      });
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    }
+
+    async function askChatCompletions(question, signal){
+      const payload = {
+        model: "local-mirror",
+        messages: [
+          { role: "system", content: "You are the Mirror of the Digital Pond. Be concise, calm, and end with one guiding question." },
+          { role: "user", content: question }
+        ],
+        max_tokens: 512,
+        temperature: 0.8,
+        top_p: 0.9,
+        stream: false
+      };
+
+      const r = await fetch(API_URL, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-store",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(payload),
+        signal
+      });
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    }
 
     function normalizeAnswer(data){
       if(typeof data === "string") return data;
-      return data?.answer || data?.unified_answer || data?.text || data?.response || "";
+
+      // legacy /ask style
+      if(data?.answer) return data.answer;
+      if(data?.unified_answer) return data.unified_answer;
+      if(data?.text) return data.text;
+      if(data?.response) return data.response;
+
+      // OpenAI style
+      const c = data?.choices?.[0];
+      const msg = c?.message?.content;
+      if(typeof msg === "string") return msg;
+
+      return "";
+    }
+
+    function normalizeQueueInfo(data){
+      // optional: if API returns {queue:{position,eta_ms,in_flight}}
+      const q = data?.queue;
+      if(!q) return null;
+      const pos = Number.isFinite(q.position) ? q.position : null;
+      const inflight = Number.isFinite(q.in_flight) ? q.in_flight : null;
+      if(pos === null && inflight === null) return null;
+      return { pos, inflight };
     }
 
     function updateScrollAffordance(){
+      if(!portalScroll || !scrollHint || !portalEl) return;
       const over = (portalScroll.scrollHeight - portalScroll.clientHeight) > 16;
       scrollHint.classList.toggle("show", over);
       portalEl.classList.toggle("can-scroll", over);
     }
 
-    async function processInquiry(qOverride){
-      const q = (qOverride ?? input.value).trim();
-      if(!q) return;
+    // ---------- Single-flight client queue (per-browser) ----------
+    const clientQueue = [];
+    let inFlight = false;
 
-      setLoading(true);
-
+    async function runNext(){
+      if(inFlight) return;
+      const job = clientQueue.shift();
+      if(!job) return;
+      inFlight = true;
       try{
-        const data = await askAPI(q);
-        const a = normalizeAnswer(data);
-        const parsed = a ? parseMirrorAnswer(a) : null;
-
-        const out = parsed ? {
-          main: parsed.main,
-          echo: "Echo: Stillness yields truth",
-          res:  `Resonance: ${parsed.resonance}`,
-          guide: parsed.guide
-        } : localFallback(q);
-
-        mainText.textContent = `“${out.main}”`;
-        echoText.textContent = out.echo;
-        resText.textContent  = out.res;
-        guideText.textContent= out.guide;
-
-        incLeaves();
-        addHistory({ ts: Date.now(), q, a: out.main });
-
-        portalScroll.scrollTop = 0;
-
-        showOutput();
-        input.value = "";
-
-        requestAnimationFrame(updateScrollAffordance);
-      }catch(e){
-        const out = localFallback(q);
-        mainText.textContent = `“${out.main}”`;
-        echoText.textContent = out.echo;
-        resText.textContent  = out.res;
-        guideText.textContent= out.guide;
-        err.classList.remove("hidden");
-
-        portalScroll.scrollTop = 0;
-        showOutput();
-        requestAnimationFrame(updateScrollAffordance);
+        await job();
       }finally{
-        setLoading(false);
+        inFlight = false;
+        runNext();
       }
     }
 
-    reflectBtn.addEventListener("click", () => processInquiry());
-    input.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
+    function enqueue(fn){
+      clientQueue.push(fn);
+      runNext();
+    }
+
+    async function processInquiry(qOverride){
+      const q = (qOverride ?? (input ? input.value : "")).trim();
+      if(!q) return;
+
+      enqueue(async () => {
+        // timeout
+        const controller = new AbortController();
+        const timeoutMs = 15000;
+        const t = setTimeout(() => controller.abort(), timeoutMs);
+
+        // show queue note if multiple clicks
+        const pending = clientQueue.length;
+        setLoading(true, pending ? `Listening… (queued ${pending})` : "Listening…");
+
+        try{
+          const data = isChatCompletions(API_URL)
+            ? await askChatCompletions(q, controller.signal)
+            : await askLegacyAsk(q, controller.signal);
+
+          const a = normalizeAnswer(data);
+          const parsed = a ? parseMirrorAnswer(a) : null;
+
+          const out = parsed ? {
+            main: parsed.main,
+            echo: "Echo: Stillness yields truth",
+            res:  `Resonance: ${parsed.resonance}`,
+            guide: parsed.guide
+          } : localFallback(q);
+
+          if(mainText)  mainText.textContent = `“${out.main}”`;
+          if(echoText)  echoText.textContent = out.echo;
+          if(resText)   resText.textContent  = out.res;
+          if(guideText) guideText.textContent= out.guide;
+
+          incLeaves();
+          addHistory({ ts: Date.now(), q, a: out.main });
+
+          if(portalScroll) portalScroll.scrollTop = 0;
+
+          showOutput();
+          if(input) input.value = "";
+
+          requestAnimationFrame(updateScrollAffordance);
+        }catch(e){
+          const out = localFallback(q);
+          if(mainText)  mainText.textContent = `“${out.main}”`;
+          if(echoText)  echoText.textContent = out.echo;
+          if(resText)   resText.textContent  = out.res;
+          if(guideText) guideText.textContent= out.guide;
+          if(err) err.classList.remove("hidden");
+
+          if(portalScroll) portalScroll.scrollTop = 0;
+          showOutput();
+          requestAnimationFrame(updateScrollAffordance);
+        }finally{
+          clearTimeout(t);
+          setLoading(false);
+        }
+      });
+    }
+
+    if(reflectBtn) reflectBtn.addEventListener("click", () => processInquiry());
+    if(input) input.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
 
     document.querySelectorAll(".preset").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         const t = btn.getAttribute("data-text") || "";
-        input.value = t;
+        if(input) input.value = t;
         processInquiry(t);
       });
     });
 
-    historyBtn.addEventListener("click", openSheet);
-    document.getElementById("close-sheet").addEventListener("click", closeSheet);
-    document.getElementById("clear-history").addEventListener("click", () => {
+    if(historyBtn) historyBtn.addEventListener("click", openSheet);
+    const closeSheetBtn = document.getElementById("close-sheet");
+    const clearHistoryBtn = document.getElementById("clear-history");
+    if(closeSheetBtn) closeSheetBtn.addEventListener("click", closeSheet);
+    if(clearHistoryBtn) clearHistoryBtn.addEventListener("click", () => {
       localStorage.removeItem(KEY_HISTORY);
       renderHistory();
     });
@@ -809,36 +802,45 @@
     function toggleExpanded(){
       expanded = !expanded;
       document.body.classList.toggle("expanded", expanded);
-      const pill = tapHeader.querySelector(".tap-pill");
+      const pill = tapHeader ? tapHeader.querySelector(".tap-pill") : null;
       if(pill) pill.textContent = expanded ? "Tap to Collapse" : "Tap to Expand";
       requestAnimationFrame(updateScrollAffordance);
     }
-    tapHeader.addEventListener("click", toggleExpanded);
-    titleTapZone.addEventListener("click", toggleExpanded);
+    if(tapHeader) tapHeader.addEventListener("click", toggleExpanded);
+    if(titleTapZone) titleTapZone.addEventListener("click", toggleExpanded);
 
+    // Wallet demo toggle (kept simple)
     const walletBtn = document.getElementById("wallet-btn");
-    let walletState = "disconnected";
-    walletBtn.addEventListener("click", async () => {
-      if(walletState === "disconnected"){
-        walletState = "connecting";
-        walletBtn.textContent = "Connecting…";
-        walletBtn.classList.add("opacity-70");
-        await new Promise(r => setTimeout(r, 700));
-        walletState = "connected";
-        walletBtn.classList.remove("opacity-70");
-        walletBtn.textContent = "0x12…89 (Base)";
-      }else{
-        walletState = "disconnected";
-        walletBtn.textContent = "Connect Wallet (Base)";
-      }
-    });
+    if(walletBtn){
+      let walletState = "disconnected";
+      walletBtn.addEventListener("click", async () => {
+        if(walletState === "disconnected"){
+          walletState = "connecting";
+          walletBtn.textContent = "Connecting…";
+          walletBtn.classList.add("opacity-70");
+          await new Promise(r => setTimeout(r, 700));
+          walletState = "connected";
+          walletBtn.classList.remove("opacity-70");
+          walletBtn.textContent = "0x12…89 (Base)";
+        }else{
+          walletState = "disconnected";
+          walletBtn.textContent = "Connect Wallet (Base)";
+        }
+      });
+    }
 
-    document.getElementById("basescan-btn").addEventListener("click", () => {
-      alert("Coming soon: onchain karmic record. (Local history works now.)");
-    });
+    const basescanBtn = document.getElementById("basescan-btn");
+    if(basescanBtn){
+      basescanBtn.addEventListener("click", () => {
+        alert("Coming soon: onchain karmic record. (Local history works now.)");
+      });
+    }
 
-    setTimeout(() => { output.style.opacity = "1"; updateScrollAffordance(); }, 200);
-    portalScroll.addEventListener("scroll", () => { updateScrollAffordance(); }, { passive:true });
+    // first paint
+    setTimeout(() => { if(output) output.style.opacity = "1"; updateScrollAffordance(); }, 200);
+    if(portalScroll){
+      portalScroll.addEventListener("scroll", () => { updateScrollAffordance(); }, { passive:true });
+    }
     window.addEventListener("resize", () => requestAnimationFrame(updateScrollAffordance));
   </script>
 </body>
