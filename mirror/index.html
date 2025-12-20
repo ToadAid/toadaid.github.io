@@ -519,6 +519,27 @@
     }
 
     let API_URL = resolveApiUrl();
+    // --- API mode detection ---
+    function isOpenAIChatCompletions(url){
+      try{ return String(url || "").includes("/v1/chat/completions"); }catch(e){ return false; }
+    }
+
+    // Allow runtime overrides:
+    //   ?api=http(s)://HOST/ask
+    //   ?api=http(s)://HOST/v1/chat/completions
+    //   ?timeout=45000
+    function resolveTimeoutMs(){
+      try{
+        const p = new URLSearchParams(window.location.search);
+        const v = p.get("timeout");
+        const n = v ? Number(v) : NaN;
+        if(Number.isFinite(n) && n >= 3000 && n <= 180000) return Math.floor(n);
+      }catch(e){}
+      return 45000; // v0.1.2 default
+    }
+
+    const TIMEOUT_MS = resolveTimeoutMs();
+
     const KEY_LEAVES = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
     const MANUAL_KEY = "mirror_manual_accepted_v2";
@@ -702,13 +723,46 @@
     }
 
     async function askAPI(question){
-      const payload = { question, user: "miniapp" };
-
       const controller = new AbortController();
-      const timeoutMs = 12000; // v0.1.1 timeout
-      const t = setTimeout(() => controller.abort(), timeoutMs);
+      const t = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
       try{
+        // --- OpenAI /v1/chat/completions mode ---
+        if(isOpenAIChatCompletions(API_URL)){
+          const payload = {
+            model: "local-mirror",
+            messages: [
+              { role: "system", content: "You are the Mirror. Answer with calm, reflective tone. Include 'Reflection Resonance:' and end with one 'Guiding Question:'." },
+              { role: "user", content: question }
+            ],
+            max_tokens: 512,
+            temperature: 0.75,
+            top_p: 0.9,
+            stream: false,
+            stop: ["</s>", "<|endoftext|>", "USER:", "###"]
+          };
+
+          const r = await fetch(API_URL, {
+            method: "POST",
+            mode: "cors",
+            cache: "no-store",
+            headers: { "Content-Type":"application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          });
+
+          if(r.status === 429){
+            // Queue busy — let caller retry with backoff
+            const err = new Error("QUEUE_BUSY");
+            err.code = 429;
+            throw err;
+          }
+          if(!r.ok) throw new Error("HTTP " + r.status);
+          return await r.json();
+        }
+
+        // --- Legacy /ask mode ---
+        const payload = { question, user: "miniapp" };
         const r = await fetch(API_URL, {
           method: "POST",
           mode: "cors",
@@ -718,6 +772,11 @@
           signal: controller.signal
         });
 
+        if(r.status === 429){
+          const err = new Error("QUEUE_BUSY");
+          err.code = 429;
+          throw err;
+        }
         if(!r.ok) throw new Error("HTTP " + r.status);
         return await r.json();
       } finally {
@@ -728,6 +787,12 @@
 
     function normalizeAnswer(data){
       if(typeof data === "string") return data;
+
+      // OpenAI schema
+      const openai = data?.choices?.[0]?.message?.content;
+      if(openai) return openai;
+
+      // legacy /ask schema (your miniapp)
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
     }
 
@@ -744,42 +809,73 @@
       setLoading(true);
 
       try{
-        const data = await askAPI(q);
-        const a = normalizeAnswer(data);
-        const parsed = a ? parseMirrorAnswer(a) : null;
 
-        const out = parsed ? {
-          main: parsed.main,
-          echo: "Echo: Stillness yields truth",
-          res:  `Resonance: ${parsed.resonance}`,
-          guide: parsed.guide
-        } : localFallback(q);
+      const maxAttempts = 4;
+      let attempt = 0;
 
-        mainText.textContent = `“${out.main}”`;
-        echoText.textContent = out.echo;
-        resText.textContent  = out.res;
-        guideText.textContent= out.guide;
+      while(true){
+        attempt += 1;
 
-        incLeaves();
-        addHistory({ ts: Date.now(), q, a: out.main });
+        try{
+          const data = await askAPI(q);
+          const a = normalizeAnswer(data);
+          const parsed = a ? parseMirrorAnswer(a) : null;
 
-        portalScroll.scrollTop = 0;
+          const out = parsed ? {
+            main: parsed.main,
+            echo: "Echo: Stillness yields truth",
+            res:  `Resonance: ${parsed.resonance}`,
+            guide: parsed.guide
+          } : localFallback(q);
 
-        showOutput();
-        input.value = "";
+          mainText.textContent = `“${out.main}”`;
+          echoText.textContent = out.echo;
+          resText.textContent  = out.res;
+          guideText.textContent= out.guide;
 
-        requestAnimationFrame(updateScrollAffordance);
-      }catch(e){
-        const out = localFallback(q);
-        mainText.textContent = `“${out.main}”`;
-        echoText.textContent = out.echo;
-        resText.textContent  = out.res;
-        guideText.textContent= out.guide;
-        err.classList.remove("hidden");
+          incLeaves();
+          addHistory({ ts: Date.now(), q, a: out.main });
 
-        portalScroll.scrollTop = 0;
-        showOutput();
-        requestAnimationFrame(updateScrollAffordance);
+          portalScroll.scrollTop = 0;
+
+          showOutput();
+          input.value = "";
+
+          requestAnimationFrame(updateScrollAffordance);
+          break; // success
+        }catch(e){
+          const isQueue = (e && (e.code === 429 || String(e.message||"") === "QUEUE_BUSY"));
+          const isAbort = (e && String(e.name||"") === "AbortError");
+
+          if((isQueue || isAbort) && attempt < maxAttempts){
+            // Stay in listening state; show a gentle queue notice.
+            mainText.textContent = `“The pond is busy… waiting in line (${attempt}/${maxAttempts})”`;
+            echoText.textContent = "Echo: Hold your breath.";
+            resText.textContent  = "Resonance: Patience in motion.";
+            guideText.textContent= "What changes when you allow time to work for you?";
+            showOutput();
+
+            // Exponential backoff (0.6s, 1.2s, 2.4s…)
+            const delay = Math.min(600 * Math.pow(2, attempt-1), 3500);
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          }
+
+          // Final fallback
+          const out = localFallback(q);
+          mainText.textContent = `“${out.main}”`;
+          echoText.textContent = out.echo;
+          resText.textContent  = out.res;
+          guideText.textContent= out.guide;
+          err.classList.remove("hidden");
+
+          portalScroll.scrollTop = 0;
+          showOutput();
+          requestAnimationFrame(updateScrollAffordance);
+          break;
+        }
+      }
+
       }finally{
         setLoading(false);
       }
