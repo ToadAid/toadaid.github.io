@@ -465,6 +465,10 @@
           The pond could not hear the ocean. Check endpoint health.
         </div>
 
+        <div id="queue" class="mt-2 hidden text-[10px] uppercase tracking-[0.24em] text-zinc-500">
+          The pond is listening to another traveler…
+        </div>
+
         <div style="height: 26px;"></div>
       </div>
     </div>
@@ -506,7 +510,7 @@
   </div>
 
   <script>
-    const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
+const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
 
     function resolveApiUrl(){
       try{
@@ -519,6 +523,54 @@
     }
 
     let API_URL = resolveApiUrl();
+
+    // v0.1.2 — queue-aware pond (wait-in-line)
+    function resolveHealthUrl(){
+      try{
+        const u = new URL(API_URL, window.location.href);
+        u.pathname = "/health";
+        u.search = "";
+        u.hash = "";
+        return u.toString();
+      }catch(e){
+        return null;
+      }
+    }
+
+    const HEALTH_URL = resolveHealthUrl();
+
+    async function waitForPondReady(maxWaitMs = 20000, pollMs = 800){
+      if(!HEALTH_URL) return true;
+
+      const start = Date.now();
+      while(true){
+        try{
+          const controller = new AbortController();
+          const t = setTimeout(() => controller.abort(), 2000);
+          let r;
+          try{
+            r = await fetch(HEALTH_URL, { method: "GET", cache: "no-store", mode: "cors", signal: controller.signal });
+          } finally {
+            clearTimeout(t);
+          }
+
+          if(r.ok){
+            const j = await r.json();
+            if(j && typeof j.queue_locked === "boolean"){
+              if(j.queue_locked === false) return true;
+            }else{
+              return true;
+            }
+          }
+        }catch(e){
+          // ignore and keep waiting briefly
+        }
+
+        if(Date.now() - start > maxWaitMs) return false;
+        await new Promise(res => setTimeout(res, pollMs));
+      }
+    }
+
     const KEY_LEAVES = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
     const MANUAL_KEY = "mirror_manual_accepted_v2";
@@ -564,6 +616,7 @@
     const input = document.getElementById("user-input");
     const output = document.getElementById("reflection-output");
     const err = document.getElementById("err");
+    const queueEl = document.getElementById("queue");
     const reflectBtn = document.getElementById("reflect-btn");
     const leavesEl = document.getElementById("leaves");
 
@@ -631,15 +684,21 @@
 
     loadLeaves();
 
-    function setLoading(isLoading){
-      if(isLoading) portalEl.classList.add("listening");
-      else portalEl.classList.remove("listening");
-      err.classList.add("hidden");
+    function setLoading(state){
+      // state: false | "waiting" | "listening"
+      const waiting = (state === "waiting");
+      const listening = (state === "listening");
 
-      if(isLoading){
+      if(listening) portalEl.classList.add("listening");
+      else portalEl.classList.remove("listening");
+
+      err.classList.add("hidden");
+      if(queueEl) queueEl.classList.toggle("hidden", !waiting);
+
+      if(state){
         output.style.opacity = "0";
         reflectBtn.disabled = true;
-        reflectBtn.textContent = "Listening…";
+        reflectBtn.textContent = waiting ? "Waiting…" : "Listening…";
         reflectBtn.classList.add("opacity-70");
       }else{
         reflectBtn.disabled = false;
@@ -741,7 +800,26 @@
       const q = (qOverride ?? input.value).trim();
       if(!q) return;
 
-      setLoading(true);
+      // v0.1.2 — if pond is busy, wait in line (calmly)
+      setLoading("waiting");
+      const ready = await waitForPondReady(20000, 800);
+      if(!ready){
+        const out = localFallback(q);
+        mainText.textContent = `“${out.main}”`;
+        echoText.textContent = out.echo;
+        resText.textContent  = out.res;
+        guideText.textContent= out.guide;
+        err.classList.remove("hidden");
+        if(queueEl) queueEl.classList.add("hidden");
+        portalScroll.scrollTop = 0;
+        showOutput();
+        input.value = "";
+        requestAnimationFrame(updateScrollAffordance);
+        setLoading(false);
+        return;
+      }
+
+      setLoading("listening");
 
       try{
         const data = await askAPI(q);
