@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Mirror | The Digital Pond</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400&display=swap');
 
@@ -20,6 +19,9 @@
       --pad-x: 16px;
 
       --portal-radius: 28px;
+
+      /* title: set to #ffffff for white */
+      --mirror-title-color: #e6c27a;
     }
 
     html, body {
@@ -73,6 +75,7 @@
       justify-content: center;
     }
 
+    /* More 3D portal */
     .portal{
       position: relative;
       overflow: hidden;
@@ -84,7 +87,7 @@
       margin: 0 auto;
 
       border-radius: var(--portal-radius);
-      border: 1px solid rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.11);
 
       background:
         radial-gradient(1200px 620px at 30% 18%, rgba(255,255,255,0.14), transparent 58%),
@@ -105,9 +108,9 @@
       flex-direction: column;
 
       transform: translateZ(0);
-      transition: transform .18s ease, box-shadow .18s ease;
       transform-style: preserve-3d;
       will-change: transform, box-shadow;
+      transition: transform .18s ease, box-shadow .18s ease;
     }
 
     .portal::before{
@@ -142,9 +145,11 @@
     .portal.tilt{
       transform: translateY(-1px) rotateX(0.8deg);
       box-shadow:
-        0 34px 90px rgba(0,0,0,0.74),
-        inset 0 1px 0 rgba(255,255,255,0.12),
-        inset 0 -22px 52px rgba(0,0,0,0.56);
+        0 40px 120px rgba(0,0,0,0.86),
+        0 12px 34px rgba(0,0,0,0.52),
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        inset 0 -28px 70px rgba(0,0,0,0.70),
+        inset 0 0 0 1px rgba(16,185,129,0.10);
     }
 
     .ripple-overlay{
@@ -309,38 +314,24 @@
 
     #reflect-btn:active{ transform: translateY(1px); }
 
-    /* Manual Overlay (opening veil) */
     .manual-overlay{
       background: rgba(0,0,0,0.88);
       backdrop-filter: blur(12px);
       animation: manualFadeIn .6s ease-out;
       transition: opacity .25s ease;
     }
-    @keyframes manualFadeIn{
-      from{ opacity:0; }
-      to{ opacity:1; }
-    }
-  
-    
-    /* Preset buttons: always centered in any viewport */
-    .preset-buttons{
-      width: 100%;
-      justify-content: center;
-      align-items: center;
-      margin-left: auto;
-      margin-right: auto;
-    }
+    @keyframes manualFadeIn{ from{ opacity:0; } to{ opacity:1; } }
+
+    /* Preset buttons: always centered */
+    .preset-buttons{ width: 100%; justify-content: center; align-items: center; margin-left: auto; margin-right: auto; }
     .preset-buttons .preset{ white-space: nowrap; }
 
-    /* Title color (toggle gold/white) */
-    :root{ --mirror-title-color: #e6c27a; } /* set to #ffffff for pure white */
     .mirror-title{
       color: var(--mirror-title-color);
       text-shadow:
         0 0 10px rgba(230,194,122,.22),
         0 0 26px rgba(230,194,122,.10);
     }
-
   </style>
 </head>
 
@@ -352,20 +343,16 @@
     class="fixed top-[calc(10px+var(--safe-t))] left-[calc(10px+var(--safe-l))] z-[60] w-9 h-9 rounded-full
            flex items-center justify-center border border-white/10 bg-black/40 text-zinc-500
            hover:text-emerald-300 hover:border-emerald-500/40 transition"
-    aria-label="Open Manual">
-    ⌘
-  </button>
+    aria-label="Open Manual">⌘</button>
 
-  <!-- Manual overlay -->
+  <!-- Manual overlay (shows first open until accepted) -->
   <div id="manual" class="manual-overlay fixed inset-0 z-[70] flex items-center justify-center p-6">
     <div class="max-w-xl w-full text-left border border-zinc-800/80 bg-black/40 p-7 rounded-2xl shadow-2xl">
       <div class="flex items-start justify-between gap-4">
         <h2 class="serif text-[14px] sm:text-[16px] text-emerald-300 font-semibold uppercase tracking-[0.32em]">
           The Manual for the Fallen
         </h2>
-        <button id="manual-close"
-          class="text-zinc-500 hover:text-zinc-200 transition text-xs uppercase tracking-widest"
-          aria-label="Close Manual">
+        <button id="manual-close" class="text-zinc-500 hover:text-zinc-200 transition text-xs uppercase tracking-widest" aria-label="Close Manual">
           Close
         </button>
       </div>
@@ -381,8 +368,7 @@
       </ul>
 
       <button id="manual-accept"
-        class="mt-6 w-full py-3 bg-zinc-900/70 border border-zinc-700/80 hover:border-emerald-500/70
-               hover:text-emerald-200 transition duration-300 text-[11px] uppercase tracking-[0.28em] rounded-xl">
+        class="mt-6 w-full py-3 bg-zinc-900/70 border border-zinc-700/80 hover:border-emerald-500/70 hover:text-emerald-200 transition duration-300 text-[11px] uppercase tracking-[0.28em] rounded-xl">
         I Accept the Covenant
       </button>
 
@@ -392,8 +378,7 @@
     </div>
   </div>
 
-  <div class="shell w-full z-10">
-    
+  <!-- TOP BAR (right aligned) -->
   <div class="shell w-full z-10">
     <div class="w-full flex items-center justify-end gap-3">
       <div class="text-[10px] uppercase tracking-widest text-zinc-500">
@@ -404,8 +389,6 @@
         Connect Wallet (Base)
       </button>
     </div>
-  </div>
-
   </div>
 
   <div class="middle">
@@ -443,32 +426,26 @@
         </div>
 
         <div id="reflection-output" class="space-y-4 opacity-0 transition-opacity duration-500 mt-6">
-          <p id="main-text" class="italic text-[18px] text-zinc-200 leading-relaxed">
-            “Stillness yields truth.”
-          </p>
+          <p id="main-text" class="italic text-[18px] text-zinc-200 leading-relaxed">“Stillness yields truth.”</p>
 
           <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
             <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
             <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
           </div>
 
-          <p id="guide-text" class="text-[13px] italic text-zinc-500">
-            What remains when urgency leaves?
-          </p>
+          <p id="guide-text" class="text-[13px] italic text-zinc-500">What remains when urgency leaves?</p>
 
-          <div class="pt-1" style="font-size:1.35rem; letter-spacing:0.45rem; opacity:.90;">
-            ⏳ ≋ 🍃 🪞
-          </div>
+          <div class="pt-1" style="font-size:1.35rem; letter-spacing:0.45rem; opacity:.90;">⏳ ≋ 🍃 🪞</div>
         </div>
 
         <div id="err" class="mt-3 hidden text-[11px] text-zinc-500">
           The pond could not hear the ocean. Try again in a moment.
         </div>
+
         <button id="retry-btn" class="mt-3 hidden px-4 py-2 rounded-full border border-white/10 bg-zinc-900/40
           text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:border-emerald-500/40 hover:text-emerald-200 transition">
           Try again
         </button>
-
 
         <div id="queue" class="sr-only" aria-live="polite">The pond is listening to another traveler…</div>
 
@@ -477,6 +454,7 @@
     </div>
   </div>
 
+  <!-- BOTTOM BAR -->
   <div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
     <div class="flex gap-2">
       <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question… Enter to reflect)"
@@ -484,16 +462,12 @@
         aria-label="Your inquiry" />
       <button id="reflect-btn"
         class="bg-zinc-800 border border-zinc-600 px-6 py-2 text-xs uppercase tracking-widest hover:bg-emerald-600 hover:text-black transition duration-500 rounded-lg"
-        aria-label="Reflect">
-        Reflect
-      </button>
+        aria-label="Reflect">Reflect</button>
       <div id="busy-dot" class="hidden self-center w-2.5 h-2.5 rounded-full border border-white/10 bg-emerald-500/20 shadow-[0_0_18px_rgba(16,185,129,0.25)]"></div>
     </div>
 
     <div class="flex justify-between items-center text-[10px] text-zinc-500 uppercase tracking-widest">
-      <div class="flex items-center gap-2">
-        🍃 <span id="leaves">Leaves of Stillness: 0</span>
-      </div>
+      <div class="flex items-center gap-2">🍃 <span id="leaves">Leaves of Stillness: 0</span></div>
       <div class="flex items-center gap-4">
         <button id="history-btn" class="hover:text-white transition">History ↟</button>
         <button id="basescan-btn" class="hover:text-white transition">View Karmic Record on BaseScan ↗</button>
@@ -501,27 +475,31 @@
     </div>
   </div>
 
+  <!-- HISTORY SHEET -->
   <div id="sheet" class="sheet">
     <div class="sheet-handle"></div>
     <div class="px-5 pb-4 flex items-center justify-between">
       <div class="text-xs uppercase tracking-widest text-zinc-400">Karmic Record (Local)</div>
       <div class="flex gap-3">
-        <button id="clear-history" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-zinc-500 transition">Clear</button>
+        <button id="clear-history" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-red-300 transition">Clear</button>
         <button id="close-sheet" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition">Close</button>
       </div>
     </div>
     <div id="history-list" class="px-5 overflow-auto" style="height: calc(75% - 64px);"></div>
   </div>
 
-  
+  <!-- TOAST -->
   <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-[calc(14px+var(--safe-b))] z-[80] hidden
         px-4 py-2 rounded-full border border-white/10 bg-black/70 text-[10px] uppercase tracking-[0.24em] text-zinc-300
-        backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.6)]">
-    Coming soon.
-  </div>
+        backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.6)]">Coming soon.</div>
 
   <script>
-const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
+    // --- API routing ---
+    // Default points to OpenAI-style endpoint. Override at runtime:
+    //   ?api=https://toadaid.duckdns.org/v1/chat/completions
+    // or for local testing:
+    //   ?api=http://127.0.0.1:1234/v1/chat/completions
+    const DEFAULT_API_URL = "https://toadaid.duckdns.org/v1/chat/completions";
 
     function resolveApiUrl(){
       try{
@@ -532,10 +510,8 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
         return DEFAULT_API_URL;
       }
     }
+    const API_URL = resolveApiUrl();
 
-    let API_URL = resolveApiUrl();
-
-    // v0.1.2 — queue-aware pond (wait-in-line)
     function resolveHealthUrl(){
       try{
         const u = new URL(API_URL, window.location.href);
@@ -547,45 +523,39 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
         return null;
       }
     }
-
     const HEALTH_URL = resolveHealthUrl();
 
     async function waitForPondReady(maxWaitMs = 20000, pollMs = 800){
       if(!HEALTH_URL) return true;
-
       const start = Date.now();
       while(true){
         try{
           const controller = new AbortController();
           const t = setTimeout(() => controller.abort(), 2000);
-          let r;
           try{
-            r = await fetch(HEALTH_URL, { method: "GET", cache: "no-store", mode: "cors", signal: controller.signal });
-          } finally {
-            clearTimeout(t);
-          }
-
-          if(r.ok){
-            const j = await r.json();
-            if(j && typeof j.queue_locked === "boolean"){
-              if(j.queue_locked === false) return true;
-            }else{
-              return true;
+            const r = await fetch(HEALTH_URL, { method:"GET", cache:"no-store", mode:"cors", signal: controller.signal });
+            if(r.ok){
+              const j = await r.json();
+              // if server exposes queue_locked, honor it
+              if(j && typeof j.queue_locked === "boolean"){
+                if(j.queue_locked === false) return true;
+              }else{
+                return true;
+              }
             }
-          }
-        }catch(e){
-          // ignore and keep waiting briefly
-        }
-
+          } finally { clearTimeout(t); }
+        }catch(e){}
         if(Date.now() - start > maxWaitMs) return false;
         await new Promise(res => setTimeout(res, pollMs));
       }
     }
 
+    // --- Local storage keys ---
     const KEY_LEAVES = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
     const MANUAL_KEY = "mirror_manual_accepted_v2";
 
+    // --- Manual overlay ---
     const manualEl = document.getElementById("manual");
     const manualGlyph = document.getElementById("manual-glyph");
     const manualAccept = document.getElementById("manual-accept");
@@ -597,39 +567,32 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
       manualEl.style.opacity = "1";
       manualEl.style.pointerEvents = "auto";
     }
-
     function closeManual(){
       if(!manualEl) return;
       manualEl.style.opacity = "0";
       manualEl.style.pointerEvents = "none";
       setTimeout(() => { manualEl.style.display = "none"; }, 220);
     }
-
     function acceptCovenant(){
       try{ localStorage.setItem(MANUAL_KEY, "yes"); }catch(e){}
       closeManual();
     }
-
     (function initManual(){
       let accepted = false;
       try{ accepted = localStorage.getItem(MANUAL_KEY) === "yes"; }catch(e){}
-      if(accepted) {
-        if(manualEl) manualEl.style.display = "none";
-      } else {
-        openManual();
-      }
+      if(accepted){ if(manualEl) manualEl.style.display = "none"; }
+      else openManual();
     })();
-
     if(manualGlyph) manualGlyph.addEventListener("click", openManual);
     if(manualClose) manualClose.addEventListener("click", closeManual);
     if(manualAccept) manualAccept.addEventListener("click", acceptCovenant);
 
+    // --- DOM ---
     const input = document.getElementById("user-input");
     const output = document.getElementById("reflection-output");
     const err = document.getElementById("err");
-    const queueEl = document.getElementById("queue");
     const reflectBtn = document.getElementById("reflect-btn");
-    let retryBtnEl;
+    const retryBtn = document.getElementById("retry-btn");
     const leavesEl = document.getElementById("leaves");
 
     const historyBtn = document.getElementById("history-btn");
@@ -645,10 +608,10 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
     const resText  = document.getElementById("res-text");
     const guideText= document.getElementById("guide-text");
 
-    let lastQuestion = "";
-
     const tapHeader = document.getElementById("tap-header");
     const titleTapZone = document.getElementById("title-tap-zone");
+
+    let lastQuestion = "";
 
     portalEl.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
     portalEl.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
@@ -695,28 +658,24 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
         </div>
       `).join("");
     }
-
     loadLeaves();
 
     function setLoading(state){
       // state: false | "waiting" | "listening"
       const waiting = (state === "waiting");
       const listening = (state === "listening");
+      const busy = waiting || listening;
 
-      // Ripple-only waiting: no textual noise inside the portal
-      if(listening || waiting) portalEl.classList.add("listening");
+      if(busy) portalEl.classList.add("listening");
       else portalEl.classList.remove("listening");
 
-      // Busy dot near the Reflect button
-      const busy = (waiting || listening);
       const bd = document.getElementById("busy-dot");
       if(bd) bd.classList.toggle("hidden", !busy);
 
       err.classList.add("hidden");
-      retryBtnEl = document.getElementById("retry-btn");
-if(retryBtn) retryBtn.classList.add("hidden");
+      retryBtn.classList.add("hidden");
 
-      if(state){
+      if(busy){
         output.style.opacity = "0";
         reflectBtn.disabled = true;
         reflectBtn.classList.add("opacity-70");
@@ -793,41 +752,30 @@ if(retryBtn) retryBtn.classList.add("hidden");
         stream: false
       };
 
-      async function once(){
-        const controller = new AbortController();
-        const t = setTimeout(() => controller.abort(), 12000);
-        try{
-          const r = await fetch(API_URL, {
-            method: "POST",
-            mode: "cors",
-            cache: "no-store",
-            headers: { "Content-Type":"application/json" },
-            body: JSON.stringify(payload),
-            signal: controller.signal
-          });
-          if(!r.ok) throw new Error("HTTP " + r.status);
-          return await r.json();
-        } finally {
-          clearTimeout(t);
-        }
-      }
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 15000);
 
       try{
-        return await once();
-      }catch(e){
-        await new Promise(res => setTimeout(res, 400));
-        return await once();
+        const r = await fetch(API_URL, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-store",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        return await r.json();
+      } finally {
+        clearTimeout(t);
       }
     }
 
-
     function normalizeAnswer(data){
       if(typeof data === "string") return data;
-      // OpenAI schema
       const c = data?.choices?.[0];
       const msg = c?.message?.content;
       if(msg) return msg;
-      // fallback fields
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
     }
 
@@ -839,10 +787,9 @@ if(retryBtn) retryBtn.classList.add("hidden");
 
     async function processInquiry(qOverride){
       const q = (qOverride ?? input.value).trim();
-      lastQuestion = q;
       if(!q) return;
+      lastQuestion = q;
 
-      // v0.1.2 — if pond is busy, wait in line (calmly)
       setLoading("waiting");
       const ready = await waitForPondReady(20000, 800);
       if(!ready){
@@ -852,11 +799,7 @@ if(retryBtn) retryBtn.classList.add("hidden");
         resText.textContent  = out.res;
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
-        retryBtnEl = document.getElementById("retry-btn");
-if(retryBtn) retryBtn.classList.remove("hidden");
-        retryBtnEl = document.getElementById("retry-btn");
-if(retryBtn) retryBtn.classList.remove("hidden");
-        if(queueEl) queueEl.classList.add("hidden");
+        retryBtn.classList.remove("hidden");
         portalScroll.scrollTop = 0;
         showOutput();
         input.value = "";
@@ -888,7 +831,6 @@ if(retryBtn) retryBtn.classList.remove("hidden");
         addHistory({ ts: Date.now(), q, a: out.main });
 
         portalScroll.scrollTop = 0;
-
         showOutput();
         input.value = "";
 
@@ -900,9 +842,7 @@ if(retryBtn) retryBtn.classList.remove("hidden");
         resText.textContent  = out.res;
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
-        retryBtnEl = document.getElementById("retry-btn");
-if(retryBtn) retryBtn.classList.remove("hidden");
-
+        retryBtn.classList.remove("hidden");
         portalScroll.scrollTop = 0;
         showOutput();
         requestAnimationFrame(updateScrollAffordance);
@@ -912,16 +852,9 @@ if(retryBtn) retryBtn.classList.remove("hidden");
     }
 
     reflectBtn.addEventListener("click", () => processInquiry());
-
-    
-    retryBtnEl = document.getElementById("retry-btn");
-if(retryBtnEl){
-      retryBtnEl.addEventListener("click", () => {
-        if(lastQuestion) processInquiry(lastQuestion);
-      });
-    }
-
     input.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
+
+    retryBtn.addEventListener("click", () => { if(lastQuestion) processInquiry(lastQuestion); });
 
     document.querySelectorAll(".preset").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -955,7 +888,6 @@ if(retryBtnEl){
     tapHeader.addEventListener("click", toggleExpanded);
     titleTapZone.addEventListener("click", toggleExpanded);
 
-    
     function showToast(msg){
       const t = document.getElementById("toast");
       if(!t) return;
