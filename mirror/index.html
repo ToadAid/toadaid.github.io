@@ -309,6 +309,7 @@
 
     #reflect-btn:active{ transform: translateY(1px); }
 
+    /* Manual Overlay (opening veil) */
     .manual-overlay{
       background: rgba(0,0,0,0.88);
       backdrop-filter: blur(12px);
@@ -321,6 +322,7 @@
     }
   
     
+    /* Preset buttons: always centered in any viewport */
     .preset-buttons{
       width: 100%;
       justify-content: center;
@@ -330,7 +332,8 @@
     }
     .preset-buttons .preset{ white-space: nowrap; }
 
-    :root{ --mirror-title-color: #e6c27a; }
+    /* Title color (toggle gold/white) */
+    :root{ --mirror-title-color: #e6c27a; } /* set to #ffffff for pure white */
     .mirror-title{
       color: var(--mirror-title-color);
       text-shadow:
@@ -344,6 +347,7 @@
 <body>
   <div class="water-bg"></div>
 
+  <!-- Tiny glyph to reopen manual -->
   <button id="manual-glyph"
     class="fixed top-[calc(10px+var(--safe-t))] left-[calc(10px+var(--safe-l))] z-[60] w-9 h-9 rounded-full
            flex items-center justify-center border border-white/10 bg-black/40 text-zinc-500
@@ -352,6 +356,7 @@
     ⌘
   </button>
 
+  <!-- Manual overlay -->
   <div id="manual" class="manual-overlay fixed inset-0 z-[70] flex items-center justify-center p-6">
     <div class="max-w-xl w-full text-left border border-zinc-800/80 bg-black/40 p-7 rounded-2xl shadow-2xl">
       <div class="flex items-start justify-between gap-4">
@@ -501,7 +506,19 @@
   </div>
 
   <script>
-    const API_URL = "https://toadaid.duckdns.org/ask";
+    const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
+
+    function resolveApiUrl(){
+      try{
+        const p = new URLSearchParams(window.location.search);
+        const v = p.get("api");
+        return (v && v.trim()) ? v.trim() : DEFAULT_API_URL;
+      }catch(e){
+        return DEFAULT_API_URL;
+      }
+    }
+
+    let API_URL = resolveApiUrl();
     const KEY_LEAVES = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
     const MANUAL_KEY = "mirror_manual_accepted_v2";
@@ -686,16 +703,28 @@
 
     async function askAPI(question){
       const payload = { question, user: "miniapp" };
-      const r = await fetch(API_URL, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-store",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify(payload)
-      });
-      if(!r.ok) throw new Error("HTTP " + r.status);
-      return await r.json();
+
+      const controller = new AbortController();
+      const timeoutMs = 12000; // v0.1.1 timeout
+      const t = setTimeout(() => controller.abort(), timeoutMs);
+
+      try{
+        const r = await fetch(API_URL, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-store",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        return await r.json();
+      } finally {
+        clearTimeout(t);
+      }
     }
+
 
     function normalizeAnswer(data){
       if(typeof data === "string") return data;
