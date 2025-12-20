@@ -461,9 +461,14 @@
           </div>
         </div>
 
-        <div id="err" class="mt-3 hidden text-[11px] text-red-300">
-          The pond could not hear the ocean. Check endpoint health.
+        <div id="err" class="mt-3 hidden text-[11px] text-zinc-500">
+          The pond could not hear the ocean. Try again in a moment.
         </div>
+        <button id="retry-btn" class="mt-3 hidden px-4 py-2 rounded-full border border-white/10 bg-zinc-900/40
+          text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:border-emerald-500/40 hover:text-emerald-200 transition">
+          Try again
+        </button>
+
 
         <div id="queue" class="sr-only" aria-live="polite">The pond is listening to another traveler…</div>
 
@@ -482,6 +487,7 @@
         aria-label="Reflect">
         Reflect
       </button>
+      <div id="busy-dot" class="hidden self-center w-2.5 h-2.5 rounded-full border border-white/10 bg-emerald-500/20 shadow-[0_0_18px_rgba(16,185,129,0.25)]"></div>
     </div>
 
     <div class="flex justify-between items-center text-[10px] text-zinc-500 uppercase tracking-widest">
@@ -500,11 +506,18 @@
     <div class="px-5 pb-4 flex items-center justify-between">
       <div class="text-xs uppercase tracking-widest text-zinc-400">Karmic Record (Local)</div>
       <div class="flex gap-3">
-        <button id="clear-history" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-red-300 transition">Clear</button>
+        <button id="clear-history" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-zinc-500 transition">Clear</button>
         <button id="close-sheet" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition">Close</button>
       </div>
     </div>
     <div id="history-list" class="px-5 overflow-auto" style="height: calc(75% - 64px);"></div>
+  </div>
+
+  
+  <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-[calc(14px+var(--safe-b))] z-[80] hidden
+        px-4 py-2 rounded-full border border-white/10 bg-black/70 text-[10px] uppercase tracking-[0.24em] text-zinc-300
+        backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.6)]">
+    Coming soon.
   </div>
 
   <script>
@@ -616,6 +629,7 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
     const err = document.getElementById("err");
     const queueEl = document.getElementById("queue");
     const reflectBtn = document.getElementById("reflect-btn");
+    let retryBtnEl;
     const leavesEl = document.getElementById("leaves");
 
     const historyBtn = document.getElementById("history-btn");
@@ -630,6 +644,8 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
     const echoText = document.getElementById("echo-text");
     const resText  = document.getElementById("res-text");
     const guideText= document.getElementById("guide-text");
+
+    let lastQuestion = "";
 
     const tapHeader = document.getElementById("tap-header");
     const titleTapZone = document.getElementById("title-tap-zone");
@@ -691,7 +707,14 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
       if(listening || waiting) portalEl.classList.add("listening");
       else portalEl.classList.remove("listening");
 
+      // Busy dot near the Reflect button
+      const busy = (waiting || listening);
+      const bd = document.getElementById("busy-dot");
+      if(bd) bd.classList.toggle("hidden", !busy);
+
       err.classList.add("hidden");
+      retryBtnEl = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.classList.add("hidden");
 
       if(state){
         output.style.opacity = "0";
@@ -759,24 +782,31 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
     async function askAPI(question){
       const payload = { question, user: "miniapp" };
 
-      const controller = new AbortController();
-      const timeoutMs = 12000; // v0.1.1 timeout
-      const t = setTimeout(() => controller.abort(), timeoutMs);
+      async function once(){
+        const controller = new AbortController();
+        const t = setTimeout(() => controller.abort(), 12000); // 12s mirror timeout
+        try{
+          const r = await fetch(API_URL, {
+            method: "POST",
+            mode: "cors",
+            cache: "no-store",
+            headers: { "Content-Type":"application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          });
+          if(!r.ok) throw new Error("HTTP " + r.status);
+          return await r.json();
+        } finally {
+          clearTimeout(t);
+        }
+      }
 
+      // One calm retry (often fixes transient mobile/CORS hiccups)
       try{
-        const r = await fetch(API_URL, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-store",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-
-        if(!r.ok) throw new Error("HTTP " + r.status);
-        return await r.json();
-      } finally {
-        clearTimeout(t);
+        return await once();
+      }catch(e){
+        await new Promise(res => setTimeout(res, 400));
+        return await once();
       }
     }
 
@@ -794,6 +824,7 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
 
     async function processInquiry(qOverride){
       const q = (qOverride ?? input.value).trim();
+      lastQuestion = q;
       if(!q) return;
 
       // v0.1.2 — if pond is busy, wait in line (calmly)
@@ -806,6 +837,10 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
         resText.textContent  = out.res;
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
+        retryBtnEl = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.classList.remove("hidden");
+        retryBtnEl = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.classList.remove("hidden");
         if(queueEl) queueEl.classList.add("hidden");
         portalScroll.scrollTop = 0;
         showOutput();
@@ -850,6 +885,8 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
         resText.textContent  = out.res;
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
+        retryBtnEl = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.classList.remove("hidden");
 
         portalScroll.scrollTop = 0;
         showOutput();
@@ -860,6 +897,15 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
     }
 
     reflectBtn.addEventListener("click", () => processInquiry());
+
+    
+    retryBtnEl = document.getElementById("retry-btn");
+if(retryBtnEl){
+      retryBtnEl.addEventListener("click", () => {
+        if(lastQuestion) processInquiry(lastQuestion);
+      });
+    }
+
     input.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
 
     document.querySelectorAll(".preset").forEach(btn => {
@@ -880,7 +926,11 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
     });
 
     let expanded = false;
+    let _expandLock = 0;
     function toggleExpanded(){
+      const now = Date.now();
+      if(now - _expandLock < 250) return;
+      _expandLock = now;
       expanded = !expanded;
       document.body.classList.toggle("expanded", expanded);
       const pill = tapHeader.querySelector(".tap-pill");
@@ -889,6 +939,16 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
     }
     tapHeader.addEventListener("click", toggleExpanded);
     titleTapZone.addEventListener("click", toggleExpanded);
+
+    
+    function showToast(msg){
+      const t = document.getElementById("toast");
+      if(!t) return;
+      t.textContent = msg || "Coming soon.";
+      t.classList.remove("hidden");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => t.classList.add("hidden"), 1800);
+    }
 
     const walletBtn = document.getElementById("wallet-btn");
     let walletState = "disconnected";
@@ -908,7 +968,7 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
     });
 
     document.getElementById("basescan-btn").addEventListener("click", () => {
-      alert("Coming soon: onchain karmic record. (Local history works now.)");
+      showToast("Onchain record coming soon.");
     });
 
     setTimeout(() => { output.style.opacity = "1"; updateScrollAffordance(); }, 200);
