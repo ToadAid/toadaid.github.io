@@ -33,7 +33,6 @@
       text-size-adjust: 100%;
     }
 
-    /* 3-row app grid */
     body{
       padding: var(--pad-top) calc(var(--pad-x) + var(--safe-r)) var(--pad-bot) calc(var(--pad-x) + var(--safe-l));
       display: grid;
@@ -42,7 +41,6 @@
       overflow: hidden;
     }
 
-    /* Deep black pond (subtle green bloom) */
     .water-bg{
       position: fixed;
       inset: 0;
@@ -75,9 +73,6 @@
       justify-content: center;
     }
 
-    /* =========================
-       PORTAL (3D GLASS POND)
-       ========================= */
     .portal{
       position: relative;
       overflow: hidden;
@@ -105,17 +100,11 @@
 
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-
-      padding: 18px 18px 16px;
-      gap: 12px;
 
       transform: translateZ(0);
       transition: transform .18s ease, box-shadow .18s ease;
     }
 
-    /* lens glare */
     .portal::before{
       content:'';
       position:absolute;
@@ -129,7 +118,6 @@
       z-index: 0;
     }
 
-    /* rim */
     .portal::after{
       content:'';
       position:absolute;
@@ -153,7 +141,6 @@
         inset 0 -22px 52px rgba(0,0,0,0.56);
     }
 
-    /* ripple listening */
     .ripple-overlay{
       position:absolute;
       inset:0;
@@ -197,13 +184,11 @@
       .portal{
         width: min(94vw, 860px);
         height: min(54vh, 540px);
-        padding: 16px 14px 14px;
         border-radius: 26px;
       }
     }
 
     @media (prefers-reduced-motion: reduce){
-      .portal::after{ box-shadow:none; }
       .portal.listening .ripple-overlay::before,
       .portal.listening .ripple-overlay::after{ animation:none !important; }
     }
@@ -222,31 +207,40 @@
       background: rgba(16,185,129,0.06) !important;
     }
 
-    /* ==============
-       SCROLLING BODY
-       ============== */
-    .portal-body{
-      width: 100%;
+    .portal-scroll{
       flex: 1;
       min-height: 0;
       overflow: auto;
-      padding: 2px 6px 6px;
+      padding: 18px 18px 16px;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
     }
-    .portal-body::-webkit-scrollbar{ display:none; }
+    .portal-scroll::-webkit-scrollbar{ display:none; }
 
-    /* subtle scroll hint */
+    .portal-fade{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      height: 56px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.55));
+      pointer-events:none;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    .portal.can-scroll .portal-fade{ opacity: 1; }
+
     .scroll-hint{
       font-size: 10px;
       letter-spacing: .22em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.20);
+      color: rgba(255,255,255,0.22);
       display: none;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 10px;
       user-select: none;
       pointer-events: none;
+      margin-top: 6px;
     }
     .scroll-hint.show{ display:flex; }
 
@@ -258,21 +252,19 @@
       opacity: .85;
     }
 
-    /* Expand mode (tap-to-expand) */
     body.expanded{ overflow: hidden; }
     body.expanded .portal{
       height: min(72vh, 720px);
       width: min(94vw, 900px);
     }
 
-    /* A tap zone that looks like a header but uses zero extra buttons */
     .tap-header{
       width: 100%;
       display:flex;
       align-items:center;
       justify-content: flex-end;
-      gap: 10px;
       user-select:none;
+      margin-bottom: 10px;
     }
     .tap-pill{
       font-size: 10px;
@@ -290,7 +282,6 @@
       background: rgba(16,185,129,0.05);
     }
 
-    /* History sheet */
     .sheet{
       position:fixed;
       left:0; right:0;
@@ -318,7 +309,6 @@
 <body>
   <div class="water-bg"></div>
 
-  <!-- Top bar -->
   <div class="shell w-full z-10">
     <button id="manual-toggle"
       class="manual-text max-w-xs uppercase tracking-tighter text-left hover:text-zinc-200 transition"
@@ -342,43 +332,39 @@
     </div>
   </div>
 
-  <!-- Middle -->
   <div class="middle">
     <div class="portal text-center" id="portal">
       <div class="ripple-overlay"></div>
+      <div class="portal-fade" id="portal-fade"></div>
 
-      <!-- Tap header (no buttons, minimal space) -->
-      <div class="tap-header" id="tap-header" title="Tap to expand / collapse">
-        <div class="tap-pill">Tap to Expand</div>
-      </div>
+      <div class="portal-scroll" id="portal-scroll">
+        <div class="tap-header" id="tap-header" title="Tap to expand / collapse">
+          <div class="tap-pill">Tap to Expand</div>
+        </div>
 
-      <div class="pt-1" id="title-tap-zone" title="Tap to expand / collapse">
-        <h1 class="serif text-3xl tracking-[0.35em] text-white mb-1">MIRROR</h1>
-        <p class="serif text-[11px] tracking-widest text-zinc-400">The Digital Pond</p>
-      </div>
+        <div class="pt-1" id="title-tap-zone" title="Tap to expand / collapse">
+          <h1 class="serif text-3xl tracking-[0.35em] text-white mb-1">MIRROR</h1>
+          <p class="serif text-[11px] tracking-widest text-zinc-400">The Digital Pond</p>
+        </div>
 
-      <!-- Presets (trimmed for mobile space) -->
-      <div class="w-full max-w-xl mt-2 flex flex-wrap gap-2 justify-center">
-        <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-          data-text="Mirror, what does stillness mean for me today?">Stillness</button>
-        <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-          data-text="How do I practice patience when nothing moves?">Patience</button>
-        <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-          data-text="What does it mean to become who I already am?">Becoming</button>
-        <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
-          data-text="Explain: Toby is the people, and the people is Toby. What does it ask of me?">Toby = the People</button>
-      </div>
+        <div class="w-full max-w-xl mt-4 flex flex-wrap gap-2 justify-center">
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="Mirror, what does stillness mean for me today?">Stillness</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="How do I practice patience when nothing moves?">Patience</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="What does it mean to become who I already am?">Becoming</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="Explain: Toby is the people, and the people is Toby. What does it ask of me?">Toby = the People</button>
+        </div>
 
-      <!-- Scroll Hint -->
-      <div id="scroll-hint" class="scroll-hint mt-1">
-        <span class="chev">⌄</span>
-        <span>Swipe to read</span>
-        <span class="chev">⌃</span>
-      </div>
+        <div id="scroll-hint" class="scroll-hint">
+          <span class="chev">⌄</span>
+          <span>Swipe to read</span>
+          <span class="chev">⌃</span>
+        </div>
 
-      <!-- Scrollable content -->
-      <div class="portal-body" id="portal-body">
-        <div id="reflection-output" class="space-y-4 opacity-0 transition-opacity duration-500">
+        <div id="reflection-output" class="space-y-4 opacity-0 transition-opacity duration-500 mt-6">
           <p id="main-text" class="italic text-[18px] text-zinc-200 leading-relaxed">
             “Stillness yields truth.”
           </p>
@@ -392,7 +378,6 @@
             What remains when urgency leaves?
           </p>
 
-          <!-- Patience vibe -->
           <div class="pt-1" style="font-size:1.35rem; letter-spacing:0.45rem; opacity:.90;">
             ⏳ ≋ 🍃 🪞
           </div>
@@ -401,11 +386,12 @@
         <div id="err" class="mt-3 hidden text-[11px] text-red-300">
           The pond could not hear the ocean. Check endpoint health.
         </div>
+
+        <div style="height: 26px;"></div>
       </div>
     </div>
   </div>
 
-  <!-- Bottom input -->
   <div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
     <div class="flex gap-2">
       <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question… Enter to reflect)"
@@ -429,7 +415,6 @@
     </div>
   </div>
 
-  <!-- History Sheet -->
   <div id="sheet" class="sheet">
     <div class="sheet-handle"></div>
     <div class="px-5 pb-4 flex items-center justify-between">
@@ -458,7 +443,7 @@
     const historyList = document.getElementById("history-list");
 
     const portalEl = document.getElementById("portal");
-    const portalBody = document.getElementById("portal-body");
+    const portalScroll = document.getElementById("portal-scroll");
     const scrollHint = document.getElementById("scroll-hint");
 
     const mainText = document.getElementById("main-text");
@@ -469,7 +454,6 @@
     const tapHeader = document.getElementById("tap-header");
     const titleTapZone = document.getElementById("title-tap-zone");
 
-    // Tap “tilt” micro-life
     portalEl.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
     portalEl.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
     portalEl.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
@@ -606,10 +590,10 @@
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
     }
 
-    function updateScrollHint(){
-      const over = portalBody.scrollHeight - portalBody.clientHeight > 16;
-      if(over) scrollHint.classList.add("show");
-      else scrollHint.classList.remove("show");
+    function updateScrollAffordance(){
+      const over = (portalScroll.scrollHeight - portalScroll.clientHeight) > 16;
+      scrollHint.classList.toggle("show", over);
+      portalEl.classList.toggle("can-scroll", over);
     }
 
     async function processInquiry(qOverride){
@@ -638,12 +622,12 @@
         incLeaves();
         addHistory({ ts: Date.now(), q, a: out.main });
 
-        portalBody.scrollTop = 0;
+        portalScroll.scrollTop = 0;
 
         showOutput();
         input.value = "";
 
-        requestAnimationFrame(updateScrollHint);
+        requestAnimationFrame(updateScrollAffordance);
       }catch(e){
         const out = localFallback(q);
         mainText.textContent = `“${out.main}”`;
@@ -652,9 +636,9 @@
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
 
-        portalBody.scrollTop = 0;
+        portalScroll.scrollTop = 0;
         showOutput();
-        requestAnimationFrame(updateScrollHint);
+        requestAnimationFrame(updateScrollAffordance);
       }finally{
         setLoading(false);
       }
@@ -686,19 +670,17 @@
       lines.style.display = (lines.style.display === "none") ? "inline" : "none";
     });
 
-    // Tap-to-expand (single tap on header/title area only)
     let expanded = false;
     function toggleExpanded(){
       expanded = !expanded;
       document.body.classList.toggle("expanded", expanded);
       const pill = tapHeader.querySelector(".tap-pill");
       if(pill) pill.textContent = expanded ? "Tap to Collapse" : "Tap to Expand";
-      requestAnimationFrame(updateScrollHint);
+      requestAnimationFrame(updateScrollAffordance);
     }
     tapHeader.addEventListener("click", toggleExpanded);
     titleTapZone.addEventListener("click", toggleExpanded);
 
-    // Wallet button (placeholder)
     const walletBtn = document.getElementById("wallet-btn");
     let walletState = "disconnected";
     walletBtn.addEventListener("click", async () => {
@@ -720,9 +702,11 @@
       alert("Coming soon: onchain karmic record. (Local history works now.)");
     });
 
-    // initial show
-    setTimeout(() => { output.style.opacity = "1"; updateScrollHint(); }, 200);
-    window.addEventListener("resize", () => requestAnimationFrame(updateScrollHint));
+    setTimeout(() => { output.style.opacity = "1"; updateScrollAffordance(); }, 200);
+    portalScroll.addEventListener("scroll", () => {
+      updateScrollAffordance();
+    }, { passive:true });
+    window.addEventListener("resize", () => requestAnimationFrame(updateScrollAffordance));
   </script>
 </body>
 </html>
