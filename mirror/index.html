@@ -19,16 +19,13 @@
       --pad-bot: calc(18px + var(--safe-b));
       --pad-x: 16px;
 
-      --shell-max: 1024px;
-
-      --card-max: 720px;
-      --card-min: 520px;
+      --portal-radius: 28px;
     }
 
     html, body {
       height: 100%;
       margin: 0;
-      background-color: #030303;
+      background: #030303;
       color: #d1d1d1;
       font-family: 'Inter', sans-serif;
       overflow: hidden;
@@ -58,7 +55,7 @@
 
     .shell{
       width: 100%;
-      max-width: var(--shell-max);
+      max-width: 1024px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
@@ -69,36 +66,11 @@
     .middle{
       min-height: 0;
       width: 100%;
-      max-width: var(--shell-max);
+      max-width: 1024px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .manual-text { font-size: 0.7rem; color:#888; line-height:1.4; }
-
-    .top-right{
-      display:flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 8px;
-      margin-top: 2px;
-    }
-
-    .pond-tag{
-      font-size: 10px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.30);
-      user-select:none;
-      white-space: nowrap;
-    }
-
-    input{
-      background: rgba(255,255,255,0.05) !important;
-      border: 1px solid rgba(255,255,255,0.1) !important;
-      border-radius: 10px;
     }
 
     .portal{
@@ -106,199 +78,85 @@
       overflow: hidden;
       box-sizing: border-box;
 
-      width: min(100%, var(--card-max));
-      height: min(100%, var(--card-max));
-      min-height: var(--card-min);
+      width: min(92vw, 860px);
+      height: min(56vh, 540px);
       max-height: 100%;
+      margin: 0 auto;
 
-      border-radius: 32px;
+      border-radius: var(--portal-radius);
       border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.42);
+
+      background:
+        radial-gradient(1200px 620px at 30% 18%, rgba(255,255,255,0.14), transparent 58%),
+        radial-gradient(900px 620px at 70% 26%, rgba(16,185,129,0.08), transparent 62%),
+        radial-gradient(1200px 900px at 50% 120%, rgba(0,0,0,0.85), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.46));
+
+      box-shadow:
+        0 36px 110px rgba(0,0,0,0.82),
+        0 10px 28px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        inset 0 -28px 70px rgba(0,0,0,0.68),
+        inset 0 0 0 1px rgba(16,185,129,0.08);
+
       backdrop-filter: blur(10px);
-      box-shadow: 0 0 120px rgba(0,0,0,0.78);
 
       display: flex;
       flex-direction: column;
-      padding: 18px;
+
+      transform: translateZ(0);
+      transition: transform .18s ease, box-shadow .18s ease;
+      transform-style: preserve-3d;
+      will-change: transform, box-shadow;
+    }
+
+    .portal::before{
+      content:'';
+      position:absolute;
+      inset:-2px;
+      border-radius: inherit;
+      background:
+        radial-gradient(420px 220px at 26% 16%, rgba(255,255,255,0.16), transparent 62%),
+        radial-gradient(520px 260px at 64% 24%, rgba(255,255,255,0.08), transparent 70%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 3px);
+      opacity: 0.95;
+      pointer-events:none;
+      z-index: 0;
     }
 
     .portal::after{
       content:'';
       position:absolute;
-      inset: 2px;
-      border-radius: 30px;
-      border: 1px solid rgba(16,185,129,0.12);
-      animation:pulse 8s infinite;
+      inset: 6px;
+      border-radius: inherit;
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow:
+        0 0 0 1px rgba(16,185,129,0.10),
+        0 0 28px rgba(16,185,129,0.08);
       pointer-events:none;
+      z-index: 0;
     }
 
-    @keyframes pulse{
-      0%,100%{opacity:0.18;transform:scale(1)}
-      50%{opacity:0.55;transform:scale(1.01)}
-    }
+    .portal > *{ position: relative; z-index: 1; }
 
-    .tap-header{
-      width: 100%;
-      display:flex;
-      align-items:center;
-      justify-content: flex-end;
-      user-select:none;
-      margin-bottom: 10px;
-    }
-
-    .tap-pill{
-      font-size: 10px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: rgba(16,185,129,0.65);
-      border: 1px solid rgba(16,185,129,0.28);
-      padding: 8px 12px;
-      border-radius: 9999px;
-      background: rgba(16,185,129,0.06);
-    }
-
-    .portal-scroll{
-      flex: 1;
-      min-height: 0;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 6px 10px 16px;
-      mask-image: linear-gradient(to bottom, transparent 0px, black 16px, black calc(100% - 18px), transparent 100%);
-    }
-
-    .portal, .portal-scroll{
-      touch-action: pan-y;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .title-wrap{
-      text-align:center;
-      padding-top: 4px;
-    }
-    .title-tap-zone{
-      display:inline-block;
-      padding: 10px 6px;
-      cursor: pointer;
-    }
-
-    .portal h1{
-      font-size: 40px;
-      letter-spacing: 0.36em;
-      color: #fff;
-      margin: 0 0 6px;
-    }
-    .subtitle{
-      font-size: 12px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.45);
-      margin: 0 0 16px;
-    }
-
-    .preset-row{
-      width: 100%;
-      display:flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 14px;
-    }
-
-    .preset{
-      background: rgba(10,10,10,0.55);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.78);
-      padding: 10px 16px;
-      border-radius: 9999px;
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      transition: 160ms ease;
-      user-select:none;
-      white-space: nowrap;
-    }
-    .preset:hover{ border-color: rgba(16,185,129,0.55); }
-    .preset.active{
-      border-color: rgba(16,185,129,0.65) !important;
-      box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 0 22px rgba(16,185,129,0.12);
-      background: rgba(16,185,129,0.06) !important;
-      color: rgba(255,255,255,0.92);
-    }
-
-    .affordance{
-      margin: 8px auto 10px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      color: rgba(255,255,255,0.28);
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      user-select:none;
-    }
-    .chev{
-      width: 26px;
-      height: 26px;
-      border-radius: 9999px;
-      border: 1px solid rgba(255,255,255,0.10);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: rgba(255,255,255,0.35);
-      background: rgba(0,0,0,0.25);
-    }
-
-    #reflection-output{
-      text-align:center;
-      padding: 4px 6px 0;
-      opacity: 1;
-    }
-
-    #main-text{
-      font-style: italic;
-      font-size: 22px;
-      line-height: 1.8;
-      color: rgba(255,255,255,0.85);
-      margin: 0 0 16px;
-    }
-
-    .mini-lines{
-      font-size: 10px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
-    #echo-text{ color: rgba(16,185,129,0.82); margin:0 0 8px; }
-    #res-text{ color: rgba(255,255,255,0.42); margin:0; }
-
-    #guide-text{
-      font-size: 14px;
-      font-style: italic;
-      color: rgba(255,255,255,0.30);
-      margin: 0 0 8px;
-      line-height: 1.7;
-    }
-
-    .sigils{
-      font-size: 22px;
-      letter-spacing: 0.55rem;
-      opacity: .85;
-      padding-bottom: 6px;
+    .portal.tilt{
+      transform: translateY(-1px) rotateX(0.8deg);
+      box-shadow:
+        0 34px 90px rgba(0,0,0,0.74),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -22px 52px rgba(0,0,0,0.56);
     }
 
     .ripple-overlay{
       position:absolute;
       inset:0;
+      border-radius: inherit;
       pointer-events:none;
       opacity:0;
       transition: opacity .25s ease;
       background: radial-gradient(circle at 50% 60%, rgba(16,185,129,0.08), transparent 55%);
+      z-index: 0;
     }
-    .portal.listening .ripple-overlay{ opacity:1; }
-
     .ripple-overlay::before,
     .ripple-overlay::after{
       content:"";
@@ -311,6 +169,7 @@
       border:1px solid rgba(16,185,129,0.28);
       opacity:0;
     }
+    .portal.listening .ripple-overlay{ opacity:1; }
     .portal.listening .ripple-overlay::before{
       animation: pondRipple 1.35s ease-out infinite;
       opacity:1;
@@ -321,21 +180,112 @@
       border-color: rgba(16,185,129,0.18);
       opacity:1;
     }
-
     @keyframes pondRipple{
       0%{width:16px;height:16px;opacity:.75}
       70%{width:520px;height:520px;opacity:.10}
       100%{width:620px;height:620px;opacity:0}
     }
 
-    .portal.expanded{
-      height: 100%;
-      width: min(100%, var(--card-max));
-      max-height: 100%;
+    @media (max-width: 480px){
+      .portal{
+        width: min(94vw, 860px);
+        height: min(54vh, 540px);
+        border-radius: 26px;
+      }
     }
-    .portal.expanded .tap-pill{ color: rgba(16,185,129,0.50); }
 
-    #reflect-btn:active{ transform: translateY(1px); }
+    @media (prefers-reduced-motion: reduce){
+      .portal.listening .ripple-overlay::before,
+      .portal.listening .ripple-overlay::after{ animation:none !important; }
+      .manual-overlay{ animation:none !important; }
+    }
+
+    input{
+      background: rgba(255,255,255,0.05) !important;
+      border: 1px solid rgba(255,255,255,0.12) !important;
+      border-radius: 12px;
+    }
+
+    .preset.active{
+      border-color: rgba(16,185,129,0.65) !important;
+      box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 0 22px rgba(16,185,129,0.12);
+      background: rgba(16,185,129,0.06) !important;
+    }
+
+    .portal-scroll{
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 18px 18px 16px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .portal-scroll::-webkit-scrollbar{ display:none; }
+
+    .portal-fade{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      height: 56px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.55));
+      pointer-events:none;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    .portal.can-scroll .portal-fade{ opacity: 1; }
+
+    .scroll-hint{
+      font-size: 10px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.22);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      user-select: none;
+      pointer-events: none;
+      margin-top: 6px;
+    }
+    .scroll-hint.show{ display:flex; }
+
+    .chev{
+      width: 18px; height: 18px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      display:flex; align-items:center; justify-content:center;
+      opacity: .85;
+    }
+
+    body.expanded{ overflow: hidden; }
+    body.expanded .portal{
+      height: min(72vh, 720px);
+      width: min(94vw, 900px);
+    }
+
+    .tap-header{
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content: flex-end;
+      user-select:none;
+      margin-bottom: 10px;
+    }
+    .tap-pill{
+      font-size: 10px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.32);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 6px 10px;
+      border-radius: 9999px;
+    }
+    body.expanded .tap-pill{
+      color: rgba(255,255,255,0.62);
+      border-color: rgba(16,185,129,0.30);
+      box-shadow: 0 0 18px rgba(16,185,129,0.10);
+      background: rgba(16,185,129,0.05);
+    }
 
     .sheet{
       position:fixed;
@@ -357,45 +307,93 @@
       margin: 10px auto;
     }
 
-    @media (max-width: 520px){
-      .portal{
-        width: 100%;
-        min-height: 0;
-        height: 100%;
-        border-radius: 28px;
-        padding: 14px;
-      }
-      .portal::after{ border-radius: 26px; }
-      .portal h1{ font-size: 34px; letter-spacing: 0.32em; }
-      #main-text{ font-size: 20px; }
-      .preset{ padding: 10px 14px; }
+    #reflect-btn:active{ transform: translateY(1px); }
+
+    .manual-overlay{
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(12px);
+      animation: manualFadeIn .6s ease-out;
+      transition: opacity .25s ease;
+    }
+    @keyframes manualFadeIn{
+      from{ opacity:0; }
+      to{ opacity:1; }
+    }
+  
+    
+    .preset-buttons{
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .preset-buttons .preset{ white-space: nowrap; }
+
+    :root{ --mirror-title-color: #e6c27a; }
+    .mirror-title{
+      color: var(--mirror-title-color);
+      text-shadow:
+        0 0 10px rgba(230,194,122,.22),
+        0 0 26px rgba(230,194,122,.10);
     }
 
-    @media (prefers-reduced-motion: reduce){
-      .portal::after{ animation:none; }
-      .portal.listening .ripple-overlay::before,
-      .portal.listening .ripple-overlay::after{ animation:none !important; }
-    }
   </style>
 </head>
 
 <body>
   <div class="water-bg"></div>
 
-  <div class="shell w-full z-10">
-    <button id="manual-toggle"
-      class="manual-text max-w-xs uppercase tracking-tighter text-left hover:text-zinc-200 transition"
-      aria-label="Toggle manual">
-      <span class="text-emerald-500 font-bold">The Manual for the Fallen</span><br>
-      <span class="manual-lines">
-        I. The Three Breaths: Acknowledge, Release, Inquire.<br>
-        II. The Law of the Question: Character over Capital.<br>
-        III. Stillness Yields Truth.
-      </span>
-    </button>
+  <button id="manual-glyph"
+    class="fixed top-[calc(10px+var(--safe-t))] left-[calc(10px+var(--safe-l))] z-[60] w-9 h-9 rounded-full
+           flex items-center justify-center border border-white/10 bg-black/40 text-zinc-500
+           hover:text-emerald-300 hover:border-emerald-500/40 transition"
+    aria-label="Open Manual">
+    ⌘
+  </button>
 
-    <div class="top-right">
-      <div class="pond-tag">POND • v0.1</div>
+  <div id="manual" class="manual-overlay fixed inset-0 z-[70] flex items-center justify-center p-6">
+    <div class="max-w-xl w-full text-left border border-zinc-800/80 bg-black/40 p-7 rounded-2xl shadow-2xl">
+      <div class="flex items-start justify-between gap-4">
+        <h2 class="serif text-[14px] sm:text-[16px] text-emerald-300 font-semibold uppercase tracking-[0.32em]">
+          The Manual for the Fallen
+        </h2>
+        <button id="manual-close"
+          class="text-zinc-500 hover:text-zinc-200 transition text-xs uppercase tracking-widest"
+          aria-label="Close Manual">
+          Close
+        </button>
+      </div>
+
+      <p class="mt-3 text-[12px] italic text-zinc-400">
+        “The Mirror does not judge those who have fallen; it only reminds them that the ground is solid.”
+      </p>
+
+      <ul class="mt-5 text-[12px] leading-relaxed space-y-3 text-zinc-300">
+        <li><span class="text-zinc-100 font-semibold">I. The Three Breaths:</span> Acknowledge loss. Release the ghost of the win. Ask for a way in.</li>
+        <li><span class="text-zinc-100 font-semibold">II. The Law of the Question:</span> Do not ask for money. Ask for the character that lost it.</li>
+        <li><span class="text-zinc-100 font-semibold">III. The Silent Yield:</span> The shorter the answer, the deeper the truth.</li>
+      </ul>
+
+      <button id="manual-accept"
+        class="mt-6 w-full py-3 bg-zinc-900/70 border border-zinc-700/80 hover:border-emerald-500/70
+               hover:text-emerald-200 transition duration-300 text-[11px] uppercase tracking-[0.28em] rounded-xl">
+        I Accept the Covenant
+      </button>
+
+      <p class="mt-3 text-[10px] uppercase tracking-widest text-zinc-600">
+        This covenant is stored locally in your pond.
+      </p>
+    </div>
+  </div>
+
+  <div class="shell w-full z-10">
+    
+  <div class="shell w-full z-10">
+    <div class="w-full flex items-center justify-end gap-3">
+      <div class="text-[10px] uppercase tracking-widest text-zinc-500">
+        POND · v0.1
+      </div>
       <button id="wallet-btn"
         class="bg-zinc-900/80 border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest rounded hover:border-emerald-500 transition">
         Connect Wallet (Base)
@@ -403,58 +401,73 @@
     </div>
   </div>
 
+  </div>
+
   <div class="middle">
     <div class="portal text-center" id="portal">
       <div class="ripple-overlay"></div>
-
-      <div class="tap-header">
-        <div class="tap-pill" id="tap-pill">Tap to Expand</div>
-      </div>
+      <div class="portal-fade" id="portal-fade"></div>
 
       <div class="portal-scroll" id="portal-scroll">
-        <div class="title-wrap">
-          <div class="title-tap-zone" id="title-tap-zone" aria-label="Tap to expand or collapse">
-            <h1 class="serif">MIRROR</h1>
-            <p class="serif subtitle">The Digital Pond</p>
-          </div>
+        <div class="tap-header" id="tap-header" title="Tap to expand / collapse">
+          <div class="tap-pill">Tap to Expand</div>
         </div>
 
-        <div class="preset-row">
-          <button class="preset" data-text="Mirror, I feel lost. What should I do today?">Lost</button>
-          <button class="preset" data-text="Mirror, what does stillness mean for me today?">Stillness</button>
-          <button class="preset" data-text="Mirror, what does patience mean when nothing moves?">Patience</button>
-          <button class="preset" data-text="Mirror, what does it mean to become who I already am?">Becoming</button>
-          <button class="preset" data-text="Explain “Toby = The People” to a beginner, in a calm and simple way.">Toby = The People</button>
+        <div class="pt-1" id="title-tap-zone" title="Tap to expand / collapse">
+          <h1 class="serif mirror-title text-3xl tracking-[0.35em] mb-1">MIRROR</h1>
+          <p class="serif text-[11px] tracking-widest text-zinc-400">The Digital Pond</p>
         </div>
 
-        <div class="affordance" id="affordance">
+        <div class="preset-buttons w-full max-w-xl mt-4 mx-auto flex flex-wrap justify-center items-center gap-2">
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="Mirror, what does stillness mean for me today?">Stillness</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="How do I practice patience when nothing moves?">Patience</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="Mirror, I feel lost. What is the next smallest true step?">Lost</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="What does it mean to become who I already am?">Becoming</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="Explain: Toby is the people, and the people is Toby. What does it ask of me?">Toby = the People</button>
+        </div>
+
+        <div id="scroll-hint" class="scroll-hint">
           <span class="chev">⌄</span>
           <span>Swipe to read</span>
           <span class="chev">⌃</span>
         </div>
 
-        <div id="reflection-output">
-          <p id="main-text">“Stillness yields truth.”</p>
+        <div id="reflection-output" class="space-y-4 opacity-0 transition-opacity duration-500 mt-6">
+          <p id="main-text" class="italic text-[18px] text-zinc-200 leading-relaxed">
+            “Stillness yields truth.”
+          </p>
 
-          <div class="mini-lines">
-            <p id="echo-text">ECHO: STILLNESS YIELDS TRUTH</p>
-            <p id="res-text">RESONANCE: ROOTS DEEPEN.</p>
+          <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
+            <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
+            <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
           </div>
 
-          <p id="guide-text">What remains when urgency leaves?</p>
-          <div class="sigils">⚛️ ≋ 🍃 🌀</div>
+          <p id="guide-text" class="text-[13px] italic text-zinc-500">
+            What remains when urgency leaves?
+          </p>
 
-          <div id="err" class="mt-4 hidden text-[11px] text-red-300">
-            The pond could not hear the ocean. Check endpoint health.
+          <div class="pt-1" style="font-size:1.35rem; letter-spacing:0.45rem; opacity:.90;">
+            ⏳ ≋ 🍃 🪞
           </div>
         </div>
+
+        <div id="err" class="mt-3 hidden text-[11px] text-red-300">
+          The pond could not hear the ocean. Check endpoint health.
+        </div>
+
+        <div style="height: 26px;"></div>
       </div>
     </div>
   </div>
 
   <div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
     <div class="flex gap-2">
-      <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question... Enter to reflect)"
+      <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question… Enter to reflect)"
         class="flex-grow p-3 text-sm text-emerald-300 placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
         aria-label="Your inquiry" />
       <button id="reflect-btn"
@@ -491,73 +504,71 @@
     const API_URL = "https://toadaid.duckdns.org/ask";
     const KEY_LEAVES = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
+    const MANUAL_KEY = "mirror_manual_accepted_v2";
+
+    const manualEl = document.getElementById("manual");
+    const manualGlyph = document.getElementById("manual-glyph");
+    const manualAccept = document.getElementById("manual-accept");
+    const manualClose = document.getElementById("manual-close");
+
+    function openManual(){
+      if(!manualEl) return;
+      manualEl.style.display = "flex";
+      manualEl.style.opacity = "1";
+      manualEl.style.pointerEvents = "auto";
+    }
+
+    function closeManual(){
+      if(!manualEl) return;
+      manualEl.style.opacity = "0";
+      manualEl.style.pointerEvents = "none";
+      setTimeout(() => { manualEl.style.display = "none"; }, 220);
+    }
+
+    function acceptCovenant(){
+      try{ localStorage.setItem(MANUAL_KEY, "yes"); }catch(e){}
+      closeManual();
+    }
+
+    (function initManual(){
+      let accepted = false;
+      try{ accepted = localStorage.getItem(MANUAL_KEY) === "yes"; }catch(e){}
+      if(accepted) {
+        if(manualEl) manualEl.style.display = "none";
+      } else {
+        openManual();
+      }
+    })();
+
+    if(manualGlyph) manualGlyph.addEventListener("click", openManual);
+    if(manualClose) manualClose.addEventListener("click", closeManual);
+    if(manualAccept) manualAccept.addEventListener("click", acceptCovenant);
 
     const input = document.getElementById("user-input");
+    const output = document.getElementById("reflection-output");
+    const err = document.getElementById("err");
     const reflectBtn = document.getElementById("reflect-btn");
     const leavesEl = document.getElementById("leaves");
+
     const historyBtn = document.getElementById("history-btn");
     const sheet = document.getElementById("sheet");
     const historyList = document.getElementById("history-list");
+
     const portalEl = document.getElementById("portal");
     const portalScroll = document.getElementById("portal-scroll");
-    const affordance = document.getElementById("affordance");
+    const scrollHint = document.getElementById("scroll-hint");
 
     const mainText = document.getElementById("main-text");
     const echoText = document.getElementById("echo-text");
     const resText  = document.getElementById("res-text");
     const guideText= document.getElementById("guide-text");
-    const err = document.getElementById("err");
 
-    const tapPill = document.getElementById("tap-pill");
-    const tapHeader = document.querySelector(".tap-header");
+    const tapHeader = document.getElementById("tap-header");
     const titleTapZone = document.getElementById("title-tap-zone");
 
-    let isExpanded = false;
-
-    function setExpanded(next){
-      isExpanded = !!next;
-      portalEl.classList.toggle("expanded", isExpanded);
-      tapPill.textContent = isExpanded ? "Tap to Collapse" : "Tap to Expand";
-
-      if(!isExpanded){
-        portalScroll.scrollTo({ top: 0, behavior: "smooth" });
-      }
-
-      updateScrollAffordance();
-    }
-
-    function toggleExpanded(){
-      setExpanded(!isExpanded);
-    }
-
-    function bindTapToggle(el){
-      let sx=0, sy=0, moved=false, pid=null;
-      el.addEventListener("pointerdown", (e) => {
-        pid = e.pointerId;
-        sx = e.clientX; sy = e.clientY;
-        moved = false;
-      }, {passive:true});
-      el.addEventListener("pointermove", (e) => {
-        if(pid !== e.pointerId) return;
-        if(Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) moved = true;
-      }, {passive:true});
-      el.addEventListener("pointerup", (e) => {
-        if(pid !== e.pointerId) return;
-        if(!moved) toggleExpanded();
-        pid = null;
-      }, {passive:true});
-      el.addEventListener("pointercancel", () => { pid=null; }, {passive:true});
-    }
-    bindTapToggle(tapHeader);
-    bindTapToggle(titleTapZone);
-
-    function updateScrollAffordance(){
-      const canScroll = portalScroll.scrollHeight > portalScroll.clientHeight + 8;
-      affordance.style.opacity = canScroll ? "1" : "0";
-      affordance.style.pointerEvents = canScroll ? "auto" : "none";
-    }
-    window.addEventListener("resize", updateScrollAffordance);
-    setTimeout(updateScrollAffordance, 250);
+    portalEl.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
+    portalEl.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
+    portalEl.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
 
     function loadLeaves(){
       const n = Number(localStorage.getItem(KEY_LEAVES) || "0");
@@ -568,6 +579,7 @@
       localStorage.setItem(KEY_LEAVES, String(n));
       leavesEl.textContent = `Leaves of Stillness: ${n}`;
     }
+
     function getHistory(){
       try { return JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]"); }
       catch(e){ return []; }
@@ -608,6 +620,7 @@
       err.classList.add("hidden");
 
       if(isLoading){
+        output.style.opacity = "0";
         reflectBtn.disabled = true;
         reflectBtn.textContent = "Listening…";
         reflectBtn.classList.add("opacity-70");
@@ -617,6 +630,10 @@
         reflectBtn.classList.remove("opacity-70");
       }
     }
+    function showOutput(){ output.style.opacity = "1"; }
+
+    function openSheet(){ renderHistory(); sheet.classList.add("open"); }
+    function closeSheet(){ sheet.classList.remove("open"); }
 
     function stripTravelerPrefix(s){
       return s.replace(/^\s*traveler[,：:]?\s*/i, "").trim();
@@ -624,7 +641,7 @@
 
     function parseMirrorAnswer(raw){
       let text = String(raw || "").trim();
-      text = text.replace(/[🪞🌊🍃🌀⚛️≋]+$/g, "").trim();
+      text = text.replace(/[🪞🌊🍃🌀⚛️≋⏳]+$/g, "").trim();
 
       let guide = "";
       const gMatch = text.match(/Guiding Question:\s*([\s\S]*)$/i);
@@ -654,15 +671,15 @@
       if(val.includes("price") || val.includes("money") || val.includes("pump") || val.includes("moon")){
         return {
           main: "The pond does not track the price of ghosts.",
-          echo: "ECHO: CANON SHIELD ACTIVE",
-          res:  "RESONANCE: ATTENTION RELEASED",
+          echo: "Echo: Canon Shield Active",
+          res:  "Resonance: Attention released.",
           guide:"What would you ask if no number could save you?"
         };
       }
       return {
         main: "Every frantic move is a debt to time.",
-        echo: "ECHO: STILLNESS YIELDS TRUTH",
-        res:  "RESONANCE: ROOTS DEEPEN.",
+        echo: "Echo: Stillness yields truth",
+        res:  "Resonance: Roots deepen.",
         guide:"What remains when urgency leaves?"
       };
     }
@@ -673,7 +690,6 @@
         method: "POST",
         mode: "cors",
         cache: "no-store",
-        redirect: "follow",
         headers: { "Content-Type":"application/json" },
         body: JSON.stringify(payload)
       });
@@ -684,6 +700,12 @@
     function normalizeAnswer(data){
       if(typeof data === "string") return data;
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
+    }
+
+    function updateScrollAffordance(){
+      const over = (portalScroll.scrollHeight - portalScroll.clientHeight) > 16;
+      scrollHint.classList.toggle("show", over);
+      portalEl.classList.toggle("can-scroll", over);
     }
 
     async function processInquiry(qOverride){
@@ -699,8 +721,8 @@
 
         const out = parsed ? {
           main: parsed.main,
-          echo: "ECHO: STILLNESS YIELDS TRUTH",
-          res:  `RESONANCE: ${parsed.resonance.toUpperCase()}`,
+          echo: "Echo: Stillness yields truth",
+          res:  `Resonance: ${parsed.resonance}`,
           guide: parsed.guide
         } : localFallback(q);
 
@@ -712,9 +734,12 @@
         incLeaves();
         addHistory({ ts: Date.now(), q, a: out.main });
 
+        portalScroll.scrollTop = 0;
+
+        showOutput();
         input.value = "";
 
-        setTimeout(updateScrollAffordance, 50);
+        requestAnimationFrame(updateScrollAffordance);
       }catch(e){
         const out = localFallback(q);
         mainText.textContent = `“${out.main}”`;
@@ -722,7 +747,10 @@
         resText.textContent  = out.res;
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
-        setTimeout(updateScrollAffordance, 50);
+
+        portalScroll.scrollTop = 0;
+        showOutput();
+        requestAnimationFrame(updateScrollAffordance);
       }finally{
         setLoading(false);
       }
@@ -741,9 +769,6 @@
       });
     });
 
-    function openSheet(){ renderHistory(); sheet.classList.add("open"); }
-    function closeSheet(){ sheet.classList.remove("open"); }
-
     historyBtn.addEventListener("click", openSheet);
     document.getElementById("close-sheet").addEventListener("click", closeSheet);
     document.getElementById("clear-history").addEventListener("click", () => {
@@ -751,11 +776,16 @@
       renderHistory();
     });
 
-    document.getElementById("manual-toggle").addEventListener("click", () => {
-      const lines = document.querySelector(".manual-lines");
-      if(!lines) return;
-      lines.style.display = (lines.style.display === "none") ? "inline" : "none";
-    });
+    let expanded = false;
+    function toggleExpanded(){
+      expanded = !expanded;
+      document.body.classList.toggle("expanded", expanded);
+      const pill = tapHeader.querySelector(".tap-pill");
+      if(pill) pill.textContent = expanded ? "Tap to Collapse" : "Tap to Expand";
+      requestAnimationFrame(updateScrollAffordance);
+    }
+    tapHeader.addEventListener("click", toggleExpanded);
+    titleTapZone.addEventListener("click", toggleExpanded);
 
     const walletBtn = document.getElementById("wallet-btn");
     let walletState = "disconnected";
@@ -778,7 +808,9 @@
       alert("Coming soon: onchain karmic record. (Local history works now.)");
     });
 
-    setTimeout(updateScrollAffordance, 250);
+    setTimeout(() => { output.style.opacity = "1"; updateScrollAffordance(); }, 200);
+    portalScroll.addEventListener("scroll", () => { updateScrollAffordance(); }, { passive:true });
+    window.addEventListener("resize", () => requestAnimationFrame(updateScrollAffordance));
   </script>
 </body>
 </html>
