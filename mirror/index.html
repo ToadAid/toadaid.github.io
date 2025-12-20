@@ -461,9 +461,16 @@
           </div>
         </div>
 
-        <div id="err" class="mt-3 hidden text-[11px] text-red-300">
-          The pond could not hear the ocean. Check endpoint health.
+        <div id="err" class="mt-3 hidden text-[11px] text-zinc-500">
+          The pond could not hear the ocean. Try again in a moment.
         </div>
+        <button id="retry-btn" class="mt-3 hidden px-4 py-2 rounded-full border border-white/10 bg-zinc-900/40
+          text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:border-emerald-500/40 hover:text-emerald-200 transition">
+          Try again
+        </button>
+
+
+        <div id="queue" class="sr-only" aria-live="polite">The pond is listening to another traveler…</div>
 
         <div style="height: 26px;"></div>
       </div>
@@ -480,6 +487,7 @@
         aria-label="Reflect">
         Reflect
       </button>
+      <div id="busy-dot" class="hidden self-center w-2.5 h-2.5 rounded-full border border-white/10 bg-emerald-500/20 shadow-[0_0_18px_rgba(16,185,129,0.25)]"></div>
     </div>
 
     <div class="flex justify-between items-center text-[10px] text-zinc-500 uppercase tracking-widest">
@@ -498,15 +506,22 @@
     <div class="px-5 pb-4 flex items-center justify-between">
       <div class="text-xs uppercase tracking-widest text-zinc-400">Karmic Record (Local)</div>
       <div class="flex gap-3">
-        <button id="clear-history" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-red-300 transition">Clear</button>
+        <button id="clear-history" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-zinc-500 transition">Clear</button>
         <button id="close-sheet" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition">Close</button>
       </div>
     </div>
     <div id="history-list" class="px-5 overflow-auto" style="height: calc(75% - 64px);"></div>
   </div>
 
+  
+  <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-[calc(14px+var(--safe-b))] z-[80] hidden
+        px-4 py-2 rounded-full border border-white/10 bg-black/70 text-[10px] uppercase tracking-[0.24em] text-zinc-300
+        backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.6)]">
+    Coming soon.
+  </div>
+
   <script>
-    const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
+const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
 
     function resolveApiUrl(){
       try{
@@ -519,6 +534,54 @@
     }
 
     let API_URL = resolveApiUrl();
+
+    // v0.1.2 — queue-aware pond (wait-in-line)
+    function resolveHealthUrl(){
+      try{
+        const u = new URL(API_URL, window.location.href);
+        u.pathname = "/health";
+        u.search = "";
+        u.hash = "";
+        return u.toString();
+      }catch(e){
+        return null;
+      }
+    }
+
+    const HEALTH_URL = resolveHealthUrl();
+
+    async function waitForPondReady(maxWaitMs = 20000, pollMs = 800){
+      if(!HEALTH_URL) return true;
+
+      const start = Date.now();
+      while(true){
+        try{
+          const controller = new AbortController();
+          const t = setTimeout(() => controller.abort(), 2000);
+          let r;
+          try{
+            r = await fetch(HEALTH_URL, { method: "GET", cache: "no-store", mode: "cors", signal: controller.signal });
+          } finally {
+            clearTimeout(t);
+          }
+
+          if(r.ok){
+            const j = await r.json();
+            if(j && typeof j.queue_locked === "boolean"){
+              if(j.queue_locked === false) return true;
+            }else{
+              return true;
+            }
+          }
+        }catch(e){
+          // ignore and keep waiting briefly
+        }
+
+        if(Date.now() - start > maxWaitMs) return false;
+        await new Promise(res => setTimeout(res, pollMs));
+      }
+    }
+
     const KEY_LEAVES = "mirror_leaves";
     const KEY_HISTORY = "mirror_history_v1";
     const MANUAL_KEY = "mirror_manual_accepted_v2";
@@ -564,7 +627,9 @@
     const input = document.getElementById("user-input");
     const output = document.getElementById("reflection-output");
     const err = document.getElementById("err");
+    const queueEl = document.getElementById("queue");
     const reflectBtn = document.getElementById("reflect-btn");
+    let retryBtnEl;
     const leavesEl = document.getElementById("leaves");
 
     const historyBtn = document.getElementById("history-btn");
@@ -579,6 +644,8 @@
     const echoText = document.getElementById("echo-text");
     const resText  = document.getElementById("res-text");
     const guideText= document.getElementById("guide-text");
+
+    let lastQuestion = "";
 
     const tapHeader = document.getElementById("tap-header");
     const titleTapZone = document.getElementById("title-tap-zone");
@@ -631,19 +698,30 @@
 
     loadLeaves();
 
-    function setLoading(isLoading){
-      if(isLoading) portalEl.classList.add("listening");
-      else portalEl.classList.remove("listening");
-      err.classList.add("hidden");
+    function setLoading(state){
+      // state: false | "waiting" | "listening"
+      const waiting = (state === "waiting");
+      const listening = (state === "listening");
 
-      if(isLoading){
+      // Ripple-only waiting: no textual noise inside the portal
+      if(listening || waiting) portalEl.classList.add("listening");
+      else portalEl.classList.remove("listening");
+
+      // Busy dot near the Reflect button
+      const busy = (waiting || listening);
+      const bd = document.getElementById("busy-dot");
+      if(bd) bd.classList.toggle("hidden", !busy);
+
+      err.classList.add("hidden");
+      retryBtnEl = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.classList.add("hidden");
+
+      if(state){
         output.style.opacity = "0";
         reflectBtn.disabled = true;
-        reflectBtn.textContent = "Listening…";
         reflectBtn.classList.add("opacity-70");
       }else{
         reflectBtn.disabled = false;
-        reflectBtn.textContent = "Reflect";
         reflectBtn.classList.remove("opacity-70");
       }
     }
@@ -702,32 +780,54 @@
     }
 
     async function askAPI(question){
-      const payload = { question, user: "miniapp" };
+      // OpenAI-style chat completions (Mirror API / LM Studio compatible)
+      const payload = {
+        model: "local-mirror",
+        messages: [
+          { role: "system", content: "You are the Mirror. Answer with calm, reflective tone. End with one Guiding Question." },
+          { role: "user", content: question }
+        ],
+        max_tokens: 512,
+        temperature: 0.75,
+        top_p: 0.9,
+        stream: false
+      };
 
-      const controller = new AbortController();
-      const timeoutMs = 12000; // v0.1.1 timeout
-      const t = setTimeout(() => controller.abort(), timeoutMs);
+      async function once(){
+        const controller = new AbortController();
+        const t = setTimeout(() => controller.abort(), 12000);
+        try{
+          const r = await fetch(API_URL, {
+            method: "POST",
+            mode: "cors",
+            cache: "no-store",
+            headers: { "Content-Type":"application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          });
+          if(!r.ok) throw new Error("HTTP " + r.status);
+          return await r.json();
+        } finally {
+          clearTimeout(t);
+        }
+      }
 
       try{
-        const r = await fetch(API_URL, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-store",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-
-        if(!r.ok) throw new Error("HTTP " + r.status);
-        return await r.json();
-      } finally {
-        clearTimeout(t);
+        return await once();
+      }catch(e){
+        await new Promise(res => setTimeout(res, 400));
+        return await once();
       }
     }
 
 
     function normalizeAnswer(data){
       if(typeof data === "string") return data;
+      // OpenAI schema
+      const c = data?.choices?.[0];
+      const msg = c?.message?.content;
+      if(msg) return msg;
+      // fallback fields
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
     }
 
@@ -739,9 +839,33 @@
 
     async function processInquiry(qOverride){
       const q = (qOverride ?? input.value).trim();
+      lastQuestion = q;
       if(!q) return;
 
-      setLoading(true);
+      // v0.1.2 — if pond is busy, wait in line (calmly)
+      setLoading("waiting");
+      const ready = await waitForPondReady(20000, 800);
+      if(!ready){
+        const out = localFallback(q);
+        mainText.textContent = `“${out.main}”`;
+        echoText.textContent = out.echo;
+        resText.textContent  = out.res;
+        guideText.textContent= out.guide;
+        err.classList.remove("hidden");
+        retryBtnEl = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.classList.remove("hidden");
+        retryBtnEl = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.classList.remove("hidden");
+        if(queueEl) queueEl.classList.add("hidden");
+        portalScroll.scrollTop = 0;
+        showOutput();
+        input.value = "";
+        requestAnimationFrame(updateScrollAffordance);
+        setLoading(false);
+        return;
+      }
+
+      setLoading("listening");
 
       try{
         const data = await askAPI(q);
@@ -776,6 +900,8 @@
         resText.textContent  = out.res;
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
+        retryBtnEl = document.getElementById("retry-btn");
+if(retryBtn) retryBtn.classList.remove("hidden");
 
         portalScroll.scrollTop = 0;
         showOutput();
@@ -786,6 +912,15 @@
     }
 
     reflectBtn.addEventListener("click", () => processInquiry());
+
+    
+    retryBtnEl = document.getElementById("retry-btn");
+if(retryBtnEl){
+      retryBtnEl.addEventListener("click", () => {
+        if(lastQuestion) processInquiry(lastQuestion);
+      });
+    }
+
     input.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
 
     document.querySelectorAll(".preset").forEach(btn => {
@@ -806,7 +941,11 @@
     });
 
     let expanded = false;
+    let _expandLock = 0;
     function toggleExpanded(){
+      const now = Date.now();
+      if(now - _expandLock < 250) return;
+      _expandLock = now;
       expanded = !expanded;
       document.body.classList.toggle("expanded", expanded);
       const pill = tapHeader.querySelector(".tap-pill");
@@ -815,6 +954,16 @@
     }
     tapHeader.addEventListener("click", toggleExpanded);
     titleTapZone.addEventListener("click", toggleExpanded);
+
+    
+    function showToast(msg){
+      const t = document.getElementById("toast");
+      if(!t) return;
+      t.textContent = msg || "Coming soon.";
+      t.classList.remove("hidden");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => t.classList.add("hidden"), 1800);
+    }
 
     const walletBtn = document.getElementById("wallet-btn");
     let walletState = "disconnected";
@@ -834,7 +983,7 @@
     });
 
     document.getElementById("basescan-btn").addEventListener("click", () => {
-      alert("Coming soon: onchain karmic record. (Local history works now.)");
+      showToast("Onchain record coming soon.");
     });
 
     setTimeout(() => { output.style.opacity = "1"; updateScrollAffordance(); }, 200);
