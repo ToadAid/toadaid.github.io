@@ -465,9 +465,7 @@
           The pond could not hear the ocean. Check endpoint health.
         </div>
 
-        <div id="queue" class="mt-2 hidden text-[10px] uppercase tracking-[0.24em] text-zinc-500">
-          The pond is listening to another traveler…
-        </div>
+        <div id="queue" class="sr-only" aria-live="polite">The pond is listening to another traveler…</div>
 
         <div style="height: 26px;"></div>
       </div>
@@ -689,20 +687,18 @@ const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
       const waiting = (state === "waiting");
       const listening = (state === "listening");
 
-      if(listening) portalEl.classList.add("listening");
+      // Ripple-only waiting: no textual noise inside the portal
+      if(listening || waiting) portalEl.classList.add("listening");
       else portalEl.classList.remove("listening");
 
       err.classList.add("hidden");
-      if(queueEl) queueEl.classList.toggle("hidden", !waiting);
 
       if(state){
         output.style.opacity = "0";
         reflectBtn.disabled = true;
-        reflectBtn.textContent = waiting ? "Waiting…" : "Listening…";
         reflectBtn.classList.add("opacity-70");
       }else{
         reflectBtn.disabled = false;
-        reflectBtn.textContent = "Reflect";
         reflectBtn.classList.remove("opacity-70");
       }
     }
