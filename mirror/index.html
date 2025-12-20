@@ -18,19 +18,22 @@
       --pad-top: calc(14px + var(--safe-t));
       --pad-bot: calc(18px + var(--safe-b));
       --pad-x: 16px;
+
+      --portal-radius: 28px;
     }
 
     html, body {
       height: 100%;
       margin: 0;
-      background-color: #030303;
+      background: #030303;
       color: #d1d1d1;
       font-family: 'Inter', sans-serif;
-      overflow: hidden; 
+      overflow: hidden;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
 
+    /* 3-row app grid */
     body{
       padding: var(--pad-top) calc(var(--pad-x) + var(--safe-r)) var(--pad-bot) calc(var(--pad-x) + var(--safe-l));
       display: grid;
@@ -39,6 +42,7 @@
       overflow: hidden;
     }
 
+    /* Deep black pond (subtle green bloom) */
     .water-bg{
       position: fixed;
       inset: 0;
@@ -71,130 +75,145 @@
       justify-content: center;
     }
 
+    /* =========================
+       PORTAL (3D GLASS POND)
+       ========================= */
     .portal{
       position: relative;
-      overflow: hidden;           
+      overflow: hidden;
       box-sizing: border-box;
 
-      width: 100%;
-      max-width: min(720px, calc(100vw - 32px));
-      max-height: calc(100% - 8px); 
-      height: 100%;
+      width: min(92vw, 860px);
+      height: min(56vh, 540px);
+      max-height: 100%;
+      margin: 0 auto;
 
-      border-radius: 26px;
+      border-radius: var(--portal-radius);
       border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.42);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 0 100px rgba(0,0,0,0.8);
+
+      background:
+        radial-gradient(900px 420px at 28% 18%, rgba(255,255,255,0.10), transparent 55%),
+        radial-gradient(700px 520px at 70% 30%, rgba(16,185,129,0.06), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.38));
+
+      box-shadow:
+        0 28px 80px rgba(0,0,0,0.72),
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 0 -22px 50px rgba(0,0,0,0.55);
+
+      backdrop-filter: blur(10px);
 
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
+
+      padding: 18px 18px 16px;
+      gap: 12px;
+
+      transform: translateZ(0);
+      transition: transform .18s ease, box-shadow .18s ease;
     }
 
+    /* lens glare */
+    .portal::before{
+      content:'';
+      position:absolute;
+      inset:-2px;
+      border-radius: inherit;
+      background:
+        radial-gradient(420px 220px at 26% 16%, rgba(255,255,255,0.14), transparent 62%),
+        radial-gradient(520px 260px at 64% 24%, rgba(255,255,255,0.07), transparent 70%);
+      opacity: 0.95;
+      pointer-events:none;
+      z-index: 0;
+    }
+
+    /* rim */
     .portal::after{
       content:'';
       position:absolute;
-      inset: 8px;
-      border-radius: 22px;
-      border: 1px solid rgba(16,185,129,0.10);
-      animation:pulse 8s infinite;
+      inset: 6px;
+      border-radius: inherit;
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow:
+        0 0 0 1px rgba(16,185,129,0.10),
+        0 0 28px rgba(16,185,129,0.08);
       pointer-events:none;
+      z-index: 0;
     }
 
-    @keyframes pulse{
-      0%,100%{opacity:0.14;transform:scale(1)}
-      50%{opacity:0.48;transform:scale(1.01)}
+    .portal > *{ position: relative; z-index: 1; }
+
+    .portal.tilt{
+      transform: translateY(-1px);
+      box-shadow:
+        0 34px 90px rgba(0,0,0,0.74),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -22px 52px rgba(0,0,0,0.56);
+    }
+
+    /* ripple listening */
+    .ripple-overlay{
+      position:absolute;
+      inset:0;
+      border-radius: inherit;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity .25s ease;
+      background: radial-gradient(circle at 50% 60%, rgba(16,185,129,0.08), transparent 55%);
+      z-index: 0;
+    }
+    .ripple-overlay::before,
+    .ripple-overlay::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:60%;
+      width:16px;height:16px;
+      transform:translate(-50%,-50%);
+      border-radius:9999px;
+      border:1px solid rgba(16,185,129,0.28);
+      opacity:0;
+    }
+    .portal.listening .ripple-overlay{ opacity:1; }
+    .portal.listening .ripple-overlay::before{
+      animation: pondRipple 1.35s ease-out infinite;
+      opacity:1;
+    }
+    .portal.listening .ripple-overlay::after{
+      animation: pondRipple 1.35s ease-out infinite;
+      animation-delay:.35s;
+      border-color: rgba(16,185,129,0.18);
+      opacity:1;
+    }
+    @keyframes pondRipple{
+      0%{width:16px;height:16px;opacity:.75}
+      70%{width:520px;height:520px;opacity:.10}
+      100%{width:620px;height:620px;opacity:0}
     }
 
     @media (max-width: 480px){
-      .portal{ border-radius: 22px; }
-      .portal::after{ inset: 7px; border-radius: 18px; }
+      .portal{
+        width: min(94vw, 860px);
+        height: min(54vh, 540px);
+        padding: 16px 14px 14px;
+        border-radius: 26px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce){
-      .portal::after{ animation:none; }
+      .portal::after{ box-shadow:none; }
       .portal.listening .ripple-overlay::before,
       .portal.listening .ripple-overlay::after{ animation:none !important; }
-      .answer-text{ transition: none !important; }
-    }
-
-    .portal-scroll{
-      width: 100%;
-      flex: 1;
-      min-height: 0;                 
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch; 
-      overscroll-behavior: contain;
-      touch-action: pan-y;            
-      padding: 1.3rem 1.2rem 1.1rem;
-    }
-
-    .portal-fade-top, .portal-fade-bot{
-      position: absolute;
-      left: 0; right: 0;
-      height: 24px;
-      pointer-events: none;
-      z-index: 5;
-    }
-    .portal-fade-top{
-      top: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.90), rgba(0,0,0,0));
-    }
-    .portal-fade-bot{
-      bottom: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.90), rgba(0,0,0,0));
     }
 
     .manual-text { font-size: 0.7rem; color:#888; line-height:1.4; }
 
     input{
       background: rgba(255,255,255,0.05) !important;
-      border: 1px solid rgba(255,255,255,0.1) !important;
+      border: 1px solid rgba(255,255,255,0.12) !important;
       border-radius: 12px;
-    }
-
-    .portal .ripple-overlay{
-      position:absolute;
-      inset:0;
-      border-radius: 26px;
-      pointer-events:none;
-      opacity:0;
-      transition: opacity .25s ease;
-      background: radial-gradient(circle at 50% 45%, rgba(16,185,129,0.10), transparent 55%);
-      z-index: 2;
-    }
-
-    .portal .ripple-overlay::before,
-    .portal .ripple-overlay::after{
-      content:"";
-      position:absolute;
-      left:50%;
-      top:46%;
-      width:14px;height:14px;
-      transform:translate(-50%,-50%);
-      border-radius:9999px;
-      border:1px solid rgba(16,185,129,0.26);
-      opacity:0;
-    }
-
-    .portal.listening .ripple-overlay{ opacity:1; }
-
-    .portal.listening .ripple-overlay::before{
-      animation: pondRipple 1.45s ease-out infinite;
-      opacity:1;
-    }
-    .portal.listening .ripple-overlay::after{
-      animation: pondRipple 1.45s ease-out infinite;
-      animation-delay:.38s;
-      border-color: rgba(16,185,129,0.18);
-      opacity:1;
-    }
-
-    @keyframes pondRipple{
-      0%{width:14px;height:14px;opacity:.70}
-      70%{width:540px;height:540px;opacity:.10}
-      100%{width:660px;height:660px;opacity:0}
     }
 
     .preset.active{
@@ -203,6 +222,75 @@
       background: rgba(16,185,129,0.06) !important;
     }
 
+    /* ==============
+       SCROLLING BODY
+       ============== */
+    .portal-body{
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 2px 6px 6px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .portal-body::-webkit-scrollbar{ display:none; }
+
+    /* subtle scroll hint */
+    .scroll-hint{
+      font-size: 10px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.20);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+      pointer-events: none;
+    }
+    .scroll-hint.show{ display:flex; }
+
+    .chev{
+      width: 18px; height: 18px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      display:flex; align-items:center; justify-content:center;
+      opacity: .85;
+    }
+
+    /* Expand mode (tap-to-expand) */
+    body.expanded{ overflow: hidden; }
+    body.expanded .portal{
+      height: min(72vh, 720px);
+      width: min(94vw, 900px);
+    }
+
+    /* A tap zone that looks like a header but uses zero extra buttons */
+    .tap-header{
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content: flex-end;
+      gap: 10px;
+      user-select:none;
+    }
+    .tap-pill{
+      font-size: 10px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.32);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 6px 10px;
+      border-radius: 9999px;
+    }
+    body.expanded .tap-pill{
+      color: rgba(255,255,255,0.62);
+      border-color: rgba(16,185,129,0.30);
+      box-shadow: 0 0 18px rgba(16,185,129,0.10);
+      background: rgba(16,185,129,0.05);
+    }
+
+    /* History sheet */
     .sheet{
       position:fixed;
       left:0; right:0;
@@ -224,43 +312,13 @@
     }
 
     #reflect-btn:active{ transform: translateY(1px); }
-
-    .answer-wrap{
-      width: 100%;
-      max-width: 560px;
-      margin: 0 auto;
-      position: relative;
-    }
-
-    .answer-text{
-      display: block;
-      max-height: 8.2em; 
-      overflow: hidden;
-      transition: max-height 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
-    }
-
-    .answer-wrap.clamped::after{
-      content: "";
-      position: absolute;
-      left: 0; right: 0; bottom: 0;
-      height: 2.2em;
-      background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.92));
-      pointer-events: none;
-      border-radius: 12px;
-    }
-
-    .answer-wrap.expandable{ cursor: pointer; }
-
-    .answer-wrap.expanded .answer-text{
-      max-height: 2000px; 
-    }
-    .answer-wrap.expanded::after{ display:none; }
   </style>
 </head>
 
 <body>
   <div class="water-bg"></div>
 
+  <!-- Top bar -->
   <div class="shell w-full z-10">
     <button id="manual-toggle"
       class="manual-text max-w-xs uppercase tracking-tighter text-left hover:text-zinc-200 transition"
@@ -274,7 +332,9 @@
     </button>
 
     <div class="flex items-start gap-3">
-      <div id="pond-ver" class="text-[10px] uppercase tracking-widest text-zinc-500 mt-2">Pond · v0.1</div>
+      <div class="text-[10px] uppercase tracking-widest text-zinc-500 mt-2">
+        POND · v0.1
+      </div>
       <button id="wallet-btn"
         class="bg-zinc-900/80 border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest rounded hover:border-emerald-500 transition">
         Connect Wallet (Base)
@@ -282,59 +342,73 @@
     </div>
   </div>
 
+  <!-- Middle -->
   <div class="middle">
-    <div class="portal text-center">
+    <div class="portal text-center" id="portal">
       <div class="ripple-overlay"></div>
-      <div class="portal-fade-top"></div>
-      <div class="portal-fade-bot"></div>
 
-      <div class="portal-scroll">
-        <h1 class="serif text-3xl tracking-[0.32em] text-white mt-1 mb-2">MIRROR</h1>
-        <p class="serif text-xs tracking-widest text-zinc-400 mb-5">The Digital Pond</p>
+      <!-- Tap header (no buttons, minimal space) -->
+      <div class="tap-header" id="tap-header" title="Tap to expand / collapse">
+        <div class="tap-pill">Tap to Expand</div>
+      </div>
 
-        <div class="w-full max-w-md mb-5 flex flex-wrap gap-2 justify-center mx-auto">
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-            data-text="I feel lost. What should I do today?">Lost</button>
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-            data-text="Mirror, what does stillness mean for me today?">Stillness</button>
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-            data-text="How do I hold patience when nothing moves?">Patience</button>
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-            data-text="What am I becoming, beneath the surface?">Becoming</button>
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-            data-text="In Rune 3, what is the still-water garden teaching me?">Rune3</button>
-          <button class="preset bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[11px] uppercase tracking-widest transition"
-            data-text="Explain: ‘Toby is the people, and the people is Toby.’">Toby = The People</button>
-        </div>
+      <div class="pt-1" id="title-tap-zone" title="Tap to expand / collapse">
+        <h1 class="serif text-3xl tracking-[0.35em] text-white mb-1">MIRROR</h1>
+        <p class="serif text-[11px] tracking-widest text-zinc-400">The Digital Pond</p>
+      </div>
 
-        <div id="reflection-output" class="space-y-5 opacity-0 transition-opacity duration-700 max-w-[560px] mx-auto">
-          <div id="answer-wrap" class="answer-wrap">
-            <p id="main-text" class="answer-text italic text-lg text-zinc-200 leading-relaxed">
-              “Stillness yields truth.”
-            </p>
-          </div>
+      <!-- Presets (trimmed for mobile space) -->
+      <div class="w-full max-w-xl mt-2 flex flex-wrap gap-2 justify-center">
+        <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+          data-text="Mirror, what does stillness mean for me today?">Stillness</button>
+        <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+          data-text="How do I practice patience when nothing moves?">Patience</button>
+        <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+          data-text="What does it mean to become who I already am?">Becoming</button>
+        <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+          data-text="Explain: Toby is the people, and the people is Toby. What does it ask of me?">Toby = the People</button>
+      </div>
+
+      <!-- Scroll Hint -->
+      <div id="scroll-hint" class="scroll-hint mt-1">
+        <span class="chev">⌄</span>
+        <span>Swipe to read</span>
+        <span class="chev">⌃</span>
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="portal-body" id="portal-body">
+        <div id="reflection-output" class="space-y-4 opacity-0 transition-opacity duration-500">
+          <p id="main-text" class="italic text-[18px] text-zinc-200 leading-relaxed">
+            “Stillness yields truth.”
+          </p>
 
           <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
             <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
             <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
           </div>
 
-          <p id="guide-text" class="text-sm italic text-zinc-500">What remains when urgency leaves?</p>
-          <div class="pt-1" style="font-size:1.4rem; letter-spacing:0.45rem; opacity:.85;">⚛️ ≋ 🍃 🌀</div>
+          <p id="guide-text" class="text-[13px] italic text-zinc-500">
+            What remains when urgency leaves?
+          </p>
+
+          <!-- Patience vibe -->
+          <div class="pt-1" style="font-size:1.35rem; letter-spacing:0.45rem; opacity:.90;">
+            ⏳ ≋ 🍃 🪞
+          </div>
         </div>
 
-        <div id="err" class="mt-4 hidden text-[11px] text-red-300">
+        <div id="err" class="mt-3 hidden text-[11px] text-red-300">
           The pond could not hear the ocean. Check endpoint health.
         </div>
-
-        <div style="height: 22px;"></div>
       </div>
     </div>
   </div>
 
+  <!-- Bottom input -->
   <div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
     <div class="flex gap-2">
-      <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question... Enter to reflect)"
+      <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question… Enter to reflect)"
         class="flex-grow p-3 text-sm text-emerald-300 placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
         aria-label="Your inquiry" />
       <button id="reflect-btn"
@@ -355,6 +429,7 @@
     </div>
   </div>
 
+  <!-- History Sheet -->
   <div id="sheet" class="sheet">
     <div class="sheet-handle"></div>
     <div class="px-5 pb-4 flex items-center justify-between">
@@ -377,18 +452,27 @@
     const err = document.getElementById("err");
     const reflectBtn = document.getElementById("reflect-btn");
     const leavesEl = document.getElementById("leaves");
+
     const historyBtn = document.getElementById("history-btn");
     const sheet = document.getElementById("sheet");
     const historyList = document.getElementById("history-list");
-    const portalEl = document.querySelector(".portal");
-    const portalScroll = document.querySelector(".portal-scroll");
+
+    const portalEl = document.getElementById("portal");
+    const portalBody = document.getElementById("portal-body");
+    const scrollHint = document.getElementById("scroll-hint");
 
     const mainText = document.getElementById("main-text");
     const echoText = document.getElementById("echo-text");
     const resText  = document.getElementById("res-text");
     const guideText= document.getElementById("guide-text");
 
-    const answerWrap = document.getElementById("answer-wrap");
+    const tapHeader = document.getElementById("tap-header");
+    const titleTapZone = document.getElementById("title-tap-zone");
+
+    // Tap “tilt” micro-life
+    portalEl.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
+    portalEl.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
+    portalEl.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
 
     function loadLeaves(){
       const n = Number(localStorage.getItem(KEY_LEAVES) || "0");
@@ -399,6 +483,7 @@
       localStorage.setItem(KEY_LEAVES, String(n));
       leavesEl.textContent = `Leaves of Stillness: ${n}`;
     }
+
     function getHistory(){
       try { return JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]"); }
       catch(e){ return []; }
@@ -410,6 +495,11 @@
       const arr = getHistory();
       arr.unshift(item);
       setHistory(arr);
+    }
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
     }
     function renderHistory(){
       const arr = getHistory();
@@ -424,11 +514,6 @@
           <div class="mt-2 text-sm italic text-emerald-200/90">“${escapeHtml(x.a)}”</div>
         </div>
       `).join("");
-    }
-    function escapeHtml(s){
-      return String(s).replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-      }[m]));
     }
 
     loadLeaves();
@@ -457,9 +542,10 @@
     function stripTravelerPrefix(s){
       return s.replace(/^\s*traveler[,：:]?\s*/i, "").trim();
     }
+
     function parseMirrorAnswer(raw){
       let text = String(raw || "").trim();
-      text = text.replace(/[🪞🌊🍃🌀⚛️≋]+$/g, "").trim();
+      text = text.replace(/[🪞🌊🍃🌀⚛️≋⏳]+$/g, "").trim();
 
       let guide = "";
       const gMatch = text.match(/Guiding Question:\s*([\s\S]*)$/i);
@@ -490,7 +576,7 @@
         return {
           main: "The pond does not track the price of ghosts.",
           echo: "Echo: Canon Shield Active",
-          res:  "Resonance: Attention Released",
+          res:  "Resonance: Attention released.",
           guide:"What would you ask if no number could save you?"
         };
       }
@@ -508,7 +594,6 @@
         method: "POST",
         mode: "cors",
         cache: "no-store",
-        redirect: "follow",
         headers: { "Content-Type":"application/json" },
         body: JSON.stringify(payload)
       });
@@ -521,24 +606,11 @@
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
     }
 
-    function applyClampIfNeeded(){
-      answerWrap.classList.remove("clamped", "expanded", "expandable");
-      requestAnimationFrame(() => {
-        const el = mainText;
-        const tooTall = el.scrollHeight > el.clientHeight + 2;
-        if(tooTall){
-          answerWrap.classList.add("clamped", "expandable");
-        }
-      });
+    function updateScrollHint(){
+      const over = portalBody.scrollHeight - portalBody.clientHeight > 16;
+      if(over) scrollHint.classList.add("show");
+      else scrollHint.classList.remove("show");
     }
-
-    answerWrap.addEventListener("click", () => {
-      if(!answerWrap.classList.contains("clamped")) return;
-      answerWrap.classList.toggle("expanded");
-      requestAnimationFrame(() => {
-        portalScroll.scrollTop = portalScroll.scrollTop; 
-      });
-    });
 
     async function processInquiry(qOverride){
       const q = (qOverride ?? input.value).trim();
@@ -566,16 +638,12 @@
         incLeaves();
         addHistory({ ts: Date.now(), q, a: out.main });
 
+        portalBody.scrollTop = 0;
+
         showOutput();
         input.value = "";
 
-        applyClampIfNeeded();
-
-        requestAnimationFrame(() => {
-          portalScroll.scrollTo({ top: 9999, behavior: "smooth" });
-          setTimeout(() => portalScroll.scrollTo({ top: 0, behavior: "smooth" }), 380);
-        });
-
+        requestAnimationFrame(updateScrollHint);
       }catch(e){
         const out = localFallback(q);
         mainText.textContent = `“${out.main}”`;
@@ -583,8 +651,10 @@
         resText.textContent  = out.res;
         guideText.textContent= out.guide;
         err.classList.remove("hidden");
+
+        portalBody.scrollTop = 0;
         showOutput();
-        applyClampIfNeeded();
+        requestAnimationFrame(updateScrollHint);
       }finally{
         setLoading(false);
       }
@@ -616,6 +686,19 @@
       lines.style.display = (lines.style.display === "none") ? "inline" : "none";
     });
 
+    // Tap-to-expand (single tap on header/title area only)
+    let expanded = false;
+    function toggleExpanded(){
+      expanded = !expanded;
+      document.body.classList.toggle("expanded", expanded);
+      const pill = tapHeader.querySelector(".tap-pill");
+      if(pill) pill.textContent = expanded ? "Tap to Collapse" : "Tap to Expand";
+      requestAnimationFrame(updateScrollHint);
+    }
+    tapHeader.addEventListener("click", toggleExpanded);
+    titleTapZone.addEventListener("click", toggleExpanded);
+
+    // Wallet button (placeholder)
     const walletBtn = document.getElementById("wallet-btn");
     let walletState = "disconnected";
     walletBtn.addEventListener("click", async () => {
@@ -637,10 +720,9 @@
       alert("Coming soon: onchain karmic record. (Local history works now.)");
     });
 
-    setTimeout(() => {
-      output.style.opacity = "1";
-      applyClampIfNeeded();
-    }, 250);
+    // initial show
+    setTimeout(() => { output.style.opacity = "1"; updateScrollHint(); }, 200);
+    window.addEventListener("resize", () => requestAnimationFrame(updateScrollHint));
   </script>
 </body>
 </html>
