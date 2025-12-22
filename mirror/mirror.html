@@ -908,21 +908,6 @@
       text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
     }
 
-    /* Follow-up and share buttons */
-    #followup-btn, #share-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-light);
-      color: var(--text-secondary);
-      padding: 10px 20px;
-      font-size: 13px;
-    }
-    
-    #followup-btn:hover, #share-btn:hover {
-      border-color: var(--accent-primary);
-      color: var(--accent-primary);
-      background: rgba(34, 197, 94, 0.05);
-    }
-
     /* Error message */
     #err {
       background: rgba(239, 68, 68, 0.1);
@@ -1075,17 +1060,7 @@
           <p id="guide-text" class="text-[14px] italic">
             What remains when urgency leaves?
           </p>
-
-          <div class="pt-6 flex justify-center gap-4">
-            <button id="share-btn" class="text-xs px-4 py-2 rounded-full">
-              Share Reflection
-            </button>
-            <button id="followup-btn" class="text-xs px-4 py-2 rounded-full">
-              Ask Follow-up
-            </button>
-          </div>
-
-          <div class="pt-8 text-2xl opacity-70">
+<div class="pt-8 text-2xl opacity-70">
             ⏳ ≋ 🍃 🪞
           </div>
         </div>
@@ -1131,6 +1106,10 @@
     <div class="sheet-handle"></div>
     <div class="px-6 pb-6 flex items-center justify-between">
       <div class="text-sm uppercase tracking-widest text-zinc-400 font-medium">Reflection History</div>
+      <div class="flex gap-3 text-[11px] uppercase tracking-widest font-medium">
+        <button id="filter-all" class="text-zinc-500 hover:text-green-400 transition">All</button>
+        <button id="filter-fav" class="text-zinc-500 hover:text-amber-400 transition">★</button>
+      </div>
       <div class="flex gap-4">
         <button id="search-history" class="text-zinc-500 hover:text-green-400 transition text-lg" title="Search">
           🔍
@@ -1498,10 +1477,13 @@ initManual();
       
       // History
       elements.historyBtn?.addEventListener('click', () => {
-        renderHistory();
+        renderHistory('all');
         elements.sheet.classList.add('open');
       });
       
+      document.getElementById('filter-all')?.addEventListener('click', () => renderHistory('all'));
+      document.getElementById('filter-fav')?.addEventListener('click', () => renderHistory('fav'));
+
       document.getElementById('close-sheet')?.addEventListener('click', () => {
         elements.sheet.classList.remove('open');
       });
@@ -1514,39 +1496,36 @@ initManual();
         }
       });
       
-      // Favorite
+      // Favorite (per-reflection; persists to history[0].fav)
       elements.favoriteBtn?.addEventListener('click', () => {
-        elements.favoriteBtn.classList.toggle('active');
-        elements.favoriteBtn.textContent = elements.favoriteBtn.classList.contains('active') ? '★' : '☆';
-        showToast(elements.favoriteBtn.classList.contains('active') ? 'Added to favorites' : 'Removed from favorites');
+        const btn = elements.favoriteBtn;
+        const isNowFav = !btn.classList.contains('active');
+        btn.classList.toggle('active', isNowFav);
+        btn.textContent = isNowFav ? '★' : '☆';
+        btn.dataset.marked = isNowFav ? '1' : '0';
+        showToast(isNowFav ? 'Marked as favorite' : 'Unmarked');
+
+        // Persist to most recent history entry
+        try {
+          const KEY = 'mirror_history';
+          const history = JSON.parse(localStorage.getItem(KEY) || '[]');
+          if (history.length > 0) {
+            history[0].fav = isNowFav;
+            localStorage.setItem(KEY, JSON.stringify(history));
+          }
+        } catch (e) {}
       });
-      
-      // Share
-      document.getElementById('share-btn')?.addEventListener('click', async () => {
-        const text = document.getElementById('main-text')?.textContent || '';
-        try{
-          await navigator.clipboard.writeText(text.replace(/^“|”$/g,''));
-          showToast('Reflection copied to clipboard');
-        }catch(e){
-          showToast('Copy failed');
-        }
-      });
-      
-      // Follow-up
-      document.getElementById('followup-btn')?.addEventListener('click', () => {
-        elements.input.value = 'Can you elaborate on that?';
-        elements.input.focus();
-      });
+      // (Share/Follow-up removed in v0.2)
+
+
       
       // Wallet
       document.getElementById('wallet-btn')?.addEventListener('click', () => {
         showToast('Wallet connection coming soon');
       });
-      
-      // Voice
-      document.getElementById('voice-btn')?.addEventListener('click', () => {
-        showToast('Voice input requires microphone permission');
-      });
+      // (Voice removed in v0.2)
+
+
       
       // Scroll handling
       elements.portalScroll.addEventListener('scroll', updateScrollAffordance, { passive: true });
@@ -1608,11 +1587,17 @@ initManual();
             try{
               const KEY_HISTORY = "mirror_history";
               const history = JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]");
-              history.unshift({ ts: Date.now(), q, a: out.main });
+              history.unshift({ ts: Date.now(), q, a: out.main, fav: false });
               localStorage.setItem(KEY_HISTORY, JSON.stringify(history.slice(0, 30)));
             }catch(e){}
 
             incLeaves();
+            // reset favorite for the next reflection (never auto-mark)
+            if (elements.favoriteBtn) {
+              elements.favoriteBtn.classList.remove('active');
+              elements.favoriteBtn.textContent = '☆';
+              elements.favoriteBtn.dataset.marked = '0';
+            }
             showToast('Reflection received');
 
             elements.portalScroll.scrollTop = 0;
@@ -1656,24 +1641,26 @@ initManual();
     }
 
     
-    // History rendering
-    function renderHistory() {
+    // History rendering (supports filter: 'all' | 'fav')
+    function renderHistory(filter = 'all') {
       try {
         const history = JSON.parse(localStorage.getItem('mirror_history') || '[]');
-        if (!history.length) {
+        const list = (filter === 'fav') ? history.filter(h => h.fav) : history;
+
+        if (!list.length) {
           elements.historyList.innerHTML = `
             <div class="text-center py-12">
               <div class="text-zinc-500 mb-2">No reflections yet</div>
-              <div class="text-xs text-zinc-600">Your first inquiry will appear here</div>
+              <div class="text-xs text-zinc-600">${filter === 'fav' ? 'Your marked reflections will appear here' : 'Your first inquiry will appear here'}</div>
             </div>`;
           return;
         }
-        
-        elements.historyList.innerHTML = history.map(item => `
+
+        elements.historyList.innerHTML = list.map(item => `
           <div class="py-5 border-b border-zinc-800">
             <div class="flex justify-between items-start mb-3">
               <div class="text-xs text-zinc-500">${new Date(item.ts).toLocaleString()}</div>
-              <button class="text-zinc-600 hover:text-yellow-400">☆</button>
+              ${item.fav ? '<span class="text-amber-400">★</span>' : ''}
             </div>
             <div class="text-sm text-zinc-300 mb-2">${escapeHtml(item.q)}</div>
             <div class="text-sm italic text-green-300">"${escapeHtml(item.a)}"</div>
@@ -1683,14 +1670,14 @@ initManual();
         elements.historyList.innerHTML = `<div class="text-red-400 text-sm py-6">Could not load history</div>`;
       }
     }
-    
+
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     }
     
-    // Initialize
+// Initialize
     document.addEventListener('DOMContentLoaded', init);
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
