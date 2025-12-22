@@ -16,26 +16,25 @@
       --safe-l: env(safe-area-inset-left);
       --safe-r: env(safe-area-inset-right);
 
-      
-      --safe-x: max(var(--safe-l), var(--safe-r));--pad-top: calc(14px + var(--safe-t));
+      --pad-top: calc(14px + var(--safe-t));
       --pad-bot: calc(18px + var(--safe-b));
       --pad-x: 16px;
 
       --portal-radius: 28px;
       
       /* New color palette - soft, readable, easy on eyes */
-      --bg-primary: #0b0f0c;
-      --bg-secondary: #101614;
-      --text-primary: #f3f4f2;
-      --text-secondary: #d1d5cf;
-      --text-muted: #9aa39a;
-      --accent-primary: #4fae7a;
-      --accent-secondary: #d6b36a;
-      --border-light: rgba(255, 255, 255, 0.08);
-      --border-medium: rgba(255, 255, 255, 0.14);
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #111111;
+      --text-primary: #f5f5f5;
+      --text-secondary: #d4d4d4;
+      --text-muted: #a3a3a3;
+      --accent-primary: #22c55e;
+      --accent-secondary: #fbbf24;
+      --border-light: rgba(255, 255, 255, 0.1);
+      --border-medium: rgba(255, 255, 255, 0.15);
       
-      --theme-soft: rgba(79, 174, 122, 0.18);
-      --theme-glow: rgba(79, 174, 122, 0.12);
+      --theme-soft: rgba(34, 197, 94, 0.2);
+      --theme-glow: rgba(34, 197, 94, 0.1);
     }
 
     html, body {
@@ -44,20 +43,25 @@
       background: var(--bg-primary);
       color: var(--text-primary);
       font-family: 'Inter', sans-serif;
-      overflow: hidden;
+	      /* Avoid right-edge cutoffs in certain mobile/in-app webviews */
+	      width: 100%;
+	      max-width: 100%;
+	      overflow-x: hidden;
+	      overflow-y: auto;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
-    body {
-      padding: var(--pad-top) calc(var(--pad-x) + var(--safe-x)) var(--pad-bot) calc(var(--pad-x) + var(--safe-x));
+	    body {
+	      padding: var(--pad-top) calc(var(--pad-x) + var(--safe-r)) var(--pad-bot) calc(var(--pad-x) + var(--safe-l));
       display: grid;
       grid-template-rows: auto 1fr auto;
       gap: 14px;
-      overflow: hidden;
-      background: linear-gradient(135deg, var(--bg-primary) 0%, #0a1210 100%);
+	      overflow-x: hidden;
+	      overflow-y: visible;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1a1a 100%);
     }
 
     /* Skip link for accessibility */
@@ -148,7 +152,10 @@
       position: relative;
       overflow: hidden;
       box-sizing: border-box;
-      width: min(92vw, 860px);
+	      /* Use container width (not vw) so in-app webviews with odd viewport
+	         calculations won't drift right or get clipped */
+	      width: 100%;
+	      max-width: 860px;
       height: min(56vh, 540px);
       max-height: 100%;
       margin: 0 auto;
@@ -316,7 +323,8 @@
 
     @media (max-width: 480px) {
       .portal {
-        width: min(94vw, 860px);
+	        width: 100%;
+	        max-width: 860px;
         height: min(54vh, 540px);
         border-radius: 24px;
       }
@@ -379,10 +387,10 @@
     }
 
     .preset.active {
-      border-color: var(--accent-secondary) !important;
-      background: rgba(214, 179, 106, 0.08) !important;
-      color: var(--accent-secondary) !important;
-      font-weight: 600;
+      border-color: var(--accent-primary) !important;
+      background: rgba(34, 197, 94, 0.1) !important;
+      color: var(--accent-primary) !important;
+      font-weight: 500;
     }
 
     .portal-scroll {
@@ -394,7 +402,7 @@
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
-      padding: 24px 16px 32px;
+      padding: 12px 16px 20px;
       scrollbar-width: thin;
       scrollbar-color: var(--border-light) transparent;
     }
@@ -608,12 +616,12 @@
 
     /* Main content styles */
     .mirror-title {
-      color: var(--accent-secondary);
-      text-shadow:
-        0 2px 12px rgba(214, 179, 106, 0.35),
-        0 0 28px rgba(214, 179, 106, 0.15);
+      color: #f5f5f5; /* Clean white instead of gold */
+      text-shadow: 
+        0 2px 10px rgba(34, 197, 94, 0.3),
+        0 0 30px rgba(34, 197, 94, 0.1);
       font-weight: 400;
-      letter-spacing: 0.22em;
+      letter-spacing: 0.2em;
     }
     
     #main-text {
@@ -668,7 +676,7 @@
     }
     
     #reflect-btn {
-      background: linear-gradient(135deg, #4fae7a 0%, #3f8f66 100%);
+      background: linear-gradient(135deg, var(--accent-primary) 0%, #16a34a 100%);
       color: white;
       border: none;
       padding: 14px 28px;
@@ -677,9 +685,9 @@
     }
     
     #reflect-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #63c18e 0%, #4fae7a 100%);
+      background: linear-gradient(135deg, #2dd47c 0%, #22c55e 100%);
       transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(79, 174, 122, 0.28);
+      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
     }
     
     #reflect-btn:active:not(:disabled) {
@@ -909,6 +917,21 @@
       text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
     }
 
+    /* Follow-up and share buttons */
+    #followup-btn, #share-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      padding: 10px 20px;
+      font-size: 13px;
+    }
+    
+    #followup-btn:hover, #share-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      background: rgba(34, 197, 94, 0.05);
+    }
+
     /* Error message */
     #err {
       background: rgba(239, 68, 68, 0.1);
@@ -918,20 +941,7 @@
       color: #fca5a5;
       font-size: 13px;
     }
-  
-    /* Optical centering on mobile (idle state) */
-    .portal.idle .portal-scroll{
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    @media (max-width: 480px){
-      .tap-header{ margin-bottom: 6px; }
-      #title-tap-zone{ margin-bottom: 10px; }
-    }
-
-</style>
+  </style>
 </head>
 
 <body>
@@ -965,8 +975,16 @@
     </div>
     
     <div class="space-y-8">
-      <!-- Theme UI hidden for v0.2 (locked to Pond Classic) -->
-<div>
+      <div>
+        <h4>Theme</h4>
+        <div class="flex gap-3 mt-3">
+          <button class="theme-btn theme-soft active" data-theme="soft"></button>
+          <button class="theme-btn theme-dark" data-theme="dark"></button>
+          <button class="theme-btn theme-warm" data-theme="warm"></button>
+        </div>
+      </div>
+      
+      <div>
         <h4>Sounds</h4>
         <div class="flex items-center justify-between mt-3">
           <span class="text-sm">Ambient sounds</span>
@@ -999,9 +1017,12 @@
         POND · v0.2
       </div>
       <div class="flex items-center gap-3">
-
-        <!-- Voice ritual (v0.3+): return Speak as a sacred hold-to-whisper action -->
-<button id="settings-btn"
+        <button id="voice-btn"
+          class="px-4 py-2 text-[11px] uppercase tracking-widest rounded flex items-center gap-2 font-medium"
+          title="Voice input">
+          🎤 Speak
+        </button>
+        <button id="settings-btn"
           class="px-4 py-2 text-[11px] uppercase tracking-widest rounded font-medium"
           title="Settings">
           ⚙️ Settings
@@ -1074,7 +1095,17 @@
           <p id="guide-text" class="text-[14px] italic">
             What remains when urgency leaves?
           </p>
-<div class="pt-8 text-2xl opacity-70">
+
+          <div class="pt-6 flex justify-center gap-4">
+            <button id="share-btn" class="text-xs px-4 py-2 rounded-full">
+              Share Reflection
+            </button>
+            <button id="followup-btn" class="text-xs px-4 py-2 rounded-full">
+              Ask Follow-up
+            </button>
+          </div>
+
+          <div class="pt-8 text-2xl opacity-70">
             ⏳ ≋ 🍃 🪞
           </div>
         </div>
@@ -1120,10 +1151,6 @@
     <div class="sheet-handle"></div>
     <div class="px-6 pb-6 flex items-center justify-between">
       <div class="text-sm uppercase tracking-widest text-zinc-400 font-medium">Reflection History</div>
-      <div class="flex gap-3 text-[11px] uppercase tracking-widest font-medium">
-        <button id="filter-all" class="text-zinc-500 hover:text-green-400 transition">All</button>
-        <button id="filter-fav" class="text-zinc-500 hover:text-amber-400 transition">★</button>
-      </div>
       <div class="flex gap-4">
         <button id="search-history" class="text-zinc-500 hover:text-green-400 transition text-lg" title="Search">
           🔍
@@ -1143,68 +1170,6 @@
       favorites: new Set(),
       voiceActive: false
     };
-
-    // --- Hidden Theme Engine (v0.2 locked UI, but engine remains) ---
-    const THEMES = {
-      classic: {
-        "--bg-primary": "#0b0f0c",
-        "--bg-secondary": "#101614",
-        "--text-primary": "#f3f4f2",
-        "--text-secondary": "#d1d5cf",
-        "--text-muted": "#9aa39a",
-        "--accent-primary": "#4fae7a",
-        "--accent-secondary": "#d6b36a",
-        "--border-light": "rgba(255, 255, 255, 0.08)",
-        "--border-medium": "rgba(255, 255, 255, 0.14)",
-        "--theme-soft": "rgba(79, 174, 122, 0.18)",
-        "--theme-glow": "rgba(79, 174, 122, 0.12)"
-      },
-      soft: {
-        "--bg-primary": "#0b0f0c",
-        "--bg-secondary": "#101614",
-        "--text-primary": "#f3f4f2",
-        "--text-secondary": "#d1d5cf",
-        "--text-muted": "#9aa39a",
-        "--accent-primary": "#5cc69a",
-        "--accent-secondary": "#d6b36a",
-        "--border-light": "rgba(255, 255, 255, 0.08)",
-        "--border-medium": "rgba(255, 255, 255, 0.14)",
-        "--theme-soft": "rgba(92, 198, 154, 0.16)",
-        "--theme-glow": "rgba(92, 198, 154, 0.10)"
-      },
-      night: {
-        "--bg-primary": "#070b09",
-        "--bg-secondary": "#0e1412",
-        "--text-primary": "#f3f4f2",
-        "--text-secondary": "#d1d5cf",
-        "--text-muted": "#9aa39a",
-        "--accent-primary": "#3f8f66",
-        "--accent-secondary": "#e0c07a",
-        "--border-light": "rgba(255, 255, 255, 0.07)",
-        "--border-medium": "rgba(255, 255, 255, 0.13)",
-        "--theme-soft": "rgba(63, 143, 102, 0.14)",
-        "--theme-glow": "rgba(63, 143, 102, 0.10)"
-      }
-    };
-
-    function applyTheme(name){
-      const vars = THEMES[name];
-      if(!vars) return;
-      Object.entries(vars).forEach(([k,v]) => {
-        document.documentElement.style.setProperty(k, v);
-      });
-      try{ localStorage.setItem("mirror_theme", name); }catch(e){}
-    }
-
-    function loadTheme(){
-      try{
-        const t = localStorage.getItem("mirror_theme") || "classic";
-        applyTheme(t);
-      }catch(e){
-        applyTheme("classic");
-      }
-    }
-
     
     // DOM Elements
     const elements = {
@@ -1229,159 +1194,11 @@
       themeButtons: document.querySelectorAll('.theme-btn'),
       toast: document.getElementById('toast')
     };
-    // --- API integration (ported from the old pond) ---
-    const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
-
-    function resolveApiUrl(){
-      try{
-        const p = new URLSearchParams(window.location.search);
-        const v = p.get("api");
-        return (v && v.trim()) ? v.trim() : DEFAULT_API_URL;
-      }catch(e){
-        return DEFAULT_API_URL;
-      }
-    }
-
-    let API_URL = resolveApiUrl();
-
-    function isOpenAIChatCompletions(url){
-      try{ return String(url || "").includes("/v1/chat/completions"); }catch(e){ return false; }
-    }
-
-    function resolveTimeoutMs(){
-      try{
-        const p = new URLSearchParams(window.location.search);
-        const v = p.get("timeout");
-        const n = v ? Number(v) : NaN;
-        if(Number.isFinite(n) && n >= 3000 && n <= 180000) return Math.floor(n);
-      }catch(e){}
-      return 45000;
-    }
-
-    const TIMEOUT_MS = resolveTimeoutMs();
-
-    function stripTravelerPrefix(s){
-      return String(s || "").replace(/^\s*traveler[,：:]?\s*/i, "").trim();
-    }
-
-    function parseMirrorAnswer(raw){
-      let text = String(raw || "").trim();
-      text = text.replace(/[🪞🌊🍃🌀⚛️≋⏳]+$/g, "").trim();
-
-      let guide = "";
-      const gMatch = text.match(/Guiding Question:\s*([\s\S]*)$/i);
-      if(gMatch){
-        guide = gMatch[1].trim();
-        text = text.slice(0, gMatch.index).trim();
-      }
-
-      let resonance = "";
-      const rMatch = text.match(/Reflection Resonance:\s*([\s\S]*)$/i);
-      if(rMatch){
-        resonance = rMatch[1].trim();
-        text = text.slice(0, rMatch.index).trim();
-      }
-
-      const main = stripTravelerPrefix(text);
-
-      return {
-        main: main || "Stillness yields truth.",
-        resonance: resonance || "Roots deepen.",
-        guide: guide || "What remains when urgency leaves?"
-      };
-    }
-
-    function localFallback(q){
-      const val = String(q || "").toLowerCase();
-      if(val.includes("price") || val.includes("money") || val.includes("pump") || val.includes("moon")){
-        return {
-          main: "The pond does not track the price of ghosts.",
-          echo: "Echo: Canon Shield Active",
-          res:  "Resonance: Attention released.",
-          guide:"What would you ask if no number could save you?"
-        };
-      }
-      return {
-        main: "Every frantic move is a debt to time.",
-        echo: "Echo: Stillness yields truth",
-        res:  "Resonance: Roots deepen.",
-        guide:"What remains when urgency leaves?"
-      };
-    }
-
-    async function askAPI(question){
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-      try{
-        if(isOpenAIChatCompletions(API_URL)){
-          const payload = {
-            model: "local-mirror",
-            messages: [
-              { role: "system", content: "You are the Mirror. Answer with calm, reflective tone. Include 'Reflection Resonance:' and end with one 'Guiding Question:'." },
-              { role: "user", content: question }
-            ],
-            max_tokens: 512,
-            temperature: 0.75,
-            top_p: 0.9,
-            stream: false,
-            stop: ["</s>", "<|endoftext|>", "USER:", "###"]
-          };
-
-          const r = await fetch(API_URL, {
-            method: "POST",
-            mode: "cors",
-            cache: "no-store",
-            headers: { "Content-Type":"application/json" },
-            body: JSON.stringify(payload),
-            signal: controller.signal
-          });
-
-          if(r.status === 429){
-            const err = new Error("QUEUE_BUSY");
-            err.code = 429;
-            throw err;
-          }
-          if(!r.ok) throw new Error("HTTP " + r.status);
-          return await r.json();
-        }
-
-        const payload = { question, user: "miniapp" };
-        const r = await fetch(API_URL, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-store",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-
-        if(r.status === 429){
-          const err = new Error("QUEUE_BUSY");
-          err.code = 429;
-          throw err;
-        }
-        if(!r.ok) throw new Error("HTTP " + r.status);
-        return await r.json();
-      } finally {
-        clearTimeout(t);
-      }
-    }
-
-    function normalizeAnswer(data){
-      if(typeof data === "string") return data;
-      const openai = data?.choices?.[0]?.message?.content;
-      if(openai) return openai;
-      return data?.answer || data?.unified_answer || data?.text || data?.response || "";
-    }
-
     
     // Initialize
     function init() {
       loadLeaves();
-      
-      loadTheme();
-initManual();
+      initManual();
       initEventListeners();
       
       // Add idle animation after delay
@@ -1449,19 +1266,16 @@ initManual();
         elements.settingsPanel.classList.remove('open');
       });
       
-      // Theme switching (UI hidden in v0.2, engine remains)
-      if (elements.themeButtons && elements.themeButtons.length) {
-        elements.themeButtons.forEach(btn => {
-          btn.addEventListener('click', () => {
-            elements.themeButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const name = btn.dataset.theme || 'classic';
-            applyTheme(name);
-            showToast(`Theme: ${name}`);
-          });
+      // Theme switching
+      elements.themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          elements.themeButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.currentTheme = btn.dataset.theme;
+          showToast(`Theme: ${btn.dataset.theme}`);
         });
-      }
-
+      });
+      
       // Portal interactions
       elements.portal.addEventListener("pointerdown", () => elements.portal.classList.add("tilt"));
       elements.portal.addEventListener("pointerup", () => elements.portal.classList.remove("tilt"));
@@ -1479,25 +1293,21 @@ initManual();
           const text = btn.getAttribute('data-text') || '';
           elements.input.value = text;
           elements.input.focus();
-        processInquiry(text);
-          });
+        });
       });
       
       // Reflect button
-      elements.reflectBtn?.addEventListener('click', () => processInquiry());
+      elements.reflectBtn?.addEventListener('click', simulateReflection);
       elements.input?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') processInquiry();
+        if (e.key === 'Enter') simulateReflection();
       });
       
       // History
       elements.historyBtn?.addEventListener('click', () => {
-        renderHistory('all');
+        renderHistory();
         elements.sheet.classList.add('open');
       });
       
-      document.getElementById('filter-all')?.addEventListener('click', () => renderHistory('all'));
-      document.getElementById('filter-fav')?.addEventListener('click', () => renderHistory('fav'));
-
       document.getElementById('close-sheet')?.addEventListener('click', () => {
         elements.sheet.classList.remove('open');
       });
@@ -1510,36 +1320,33 @@ initManual();
         }
       });
       
-      // Favorite (per-reflection; persists to history[0].fav)
+      // Favorite
       elements.favoriteBtn?.addEventListener('click', () => {
-        const btn = elements.favoriteBtn;
-        const isNowFav = !btn.classList.contains('active');
-        btn.classList.toggle('active', isNowFav);
-        btn.textContent = isNowFav ? '★' : '☆';
-        btn.dataset.marked = isNowFav ? '1' : '0';
-        showToast(isNowFav ? 'Marked as favorite' : 'Unmarked');
-
-        // Persist to most recent history entry
-        try {
-          const KEY = 'mirror_history';
-          const history = JSON.parse(localStorage.getItem(KEY) || '[]');
-          if (history.length > 0) {
-            history[0].fav = isNowFav;
-            localStorage.setItem(KEY, JSON.stringify(history));
-          }
-        } catch (e) {}
+        elements.favoriteBtn.classList.toggle('active');
+        elements.favoriteBtn.textContent = elements.favoriteBtn.classList.contains('active') ? '★' : '☆';
+        showToast(elements.favoriteBtn.classList.contains('active') ? 'Added to favorites' : 'Removed from favorites');
       });
-      // (Share/Follow-up removed in v0.2)
-
-
+      
+      // Share
+      document.getElementById('share-btn')?.addEventListener('click', () => {
+        showToast('Reflection copied to clipboard');
+      });
+      
+      // Follow-up
+      document.getElementById('followup-btn')?.addEventListener('click', () => {
+        elements.input.value = 'Can you elaborate on that?';
+        elements.input.focus();
+      });
       
       // Wallet
       document.getElementById('wallet-btn')?.addEventListener('click', () => {
         showToast('Wallet connection coming soon');
       });
-      // (Voice removed in v0.2)
-
-
+      
+      // Voice
+      document.getElementById('voice-btn')?.addEventListener('click', () => {
+        showToast('Voice input requires microphone permission');
+      });
       
       // Scroll handling
       elements.portalScroll.addEventListener('scroll', updateScrollAffordance, { passive: true });
@@ -1563,118 +1370,67 @@ initManual();
       elements.portal.classList.toggle('can-scroll', over);
     }
     
-    
-    // --- Live reflection: call API (old logic, new UI) ---
-    async function processInquiry(qOverride){
-      const q = (qOverride ?? elements.input.value).trim();
-      if(!q) return;
-
+    // Simulate reflection (for demo)
+    function simulateReflection() {
+      const question = elements.input.value.trim();
+      if (!question) return;
+      
+      // Show loading state
       elements.portal.classList.add('listening');
       elements.reflectBtn.disabled = true;
-      elements.reflectBtn.textContent = 'Listening...';
-      elements.output.style.opacity = '0.65';
-      elements.err.classList.add('hidden');
-
-      const maxAttempts = 4;
-      let attempt = 0;
-
-      try{
-        while(true){
-          attempt += 1;
-          try{
-            const data = await askAPI(q);
-            const a = normalizeAnswer(data);
-            const parsed = a ? parseMirrorAnswer(a) : null;
-
-            const out = parsed ? {
-              main: parsed.main,
-              echo: "Echo: " + (parsed.main.split(' ').slice(0, 6).join(' ') + (parsed.main.split(' ').length > 6 ? "..." : "")),
-              res:  "Resonance: " + parsed.resonance,
-              guide: parsed.guide
-            } : localFallback(q);
-
-            document.getElementById('main-text').textContent = `“${out.main}”`;
-            document.getElementById('echo-text').textContent = out.echo;
-            document.getElementById('res-text').textContent = out.res;
-            document.getElementById('guide-text').textContent = out.guide;
-
-            try{
-              const KEY_HISTORY = "mirror_history";
-              const history = JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]");
-              history.unshift({ ts: Date.now(), q, a: out.main, fav: false });
-              localStorage.setItem(KEY_HISTORY, JSON.stringify(history.slice(0, 30)));
-            }catch(e){}
-
-            incLeaves();
-            // reset favorite for the next reflection (never auto-mark)
-            if (elements.favoriteBtn) {
-              elements.favoriteBtn.classList.remove('active');
-              elements.favoriteBtn.textContent = '☆';
-              elements.favoriteBtn.dataset.marked = '0';
-            }
-            showToast('Reflection received');
-
-            elements.portalScroll.scrollTop = 0;
-            updateScrollAffordance();
-
-            elements.input.value = '';
-            elements.output.style.opacity = '1';
-            break;
-          }catch(e){
-            const isQueue = (e && (e.code === 429 || String(e.message||"") === "QUEUE_BUSY"));
-            const isAbort = (e && String(e.name||"") === "AbortError");
-
-            if((isQueue || isAbort) && attempt < maxAttempts){
-              document.getElementById('main-text').textContent = `“The pond is busy… waiting (${attempt}/${maxAttempts})”`;
-              document.getElementById('echo-text').textContent = "Echo: Hold your breath.";
-              document.getElementById('res-text').textContent = "Resonance: Patience in motion.";
-              document.getElementById('guide-text').textContent = "What changes when you allow time to work for you?";
-              elements.output.style.opacity = '1';
-
-              const delay = Math.min(600 * Math.pow(2, attempt-1), 3500);
-              await new Promise(r => setTimeout(r, delay));
-              continue;
-            }
-
-            const out = localFallback(q);
-            document.getElementById('main-text').textContent = `“${out.main}”`;
-            document.getElementById('echo-text').textContent = out.echo;
-            document.getElementById('res-text').textContent  = out.res;
-            document.getElementById('guide-text').textContent = out.guide;
-
-            elements.err.classList.remove('hidden');
-            elements.output.style.opacity = '1';
-            break;
-          }
-        }
-      } finally {
+      elements.reflectBtn.textContent = 'Reflecting...';
+      elements.output.style.opacity = '0.5';
+      
+      // Simulate API call
+      setTimeout(() => {
+        const responses = [
+          "The water shows only what is already within you.",
+          "Stillness is not the absence of motion, but the presence of peace.",
+          "Every reflection is a conversation with your deeper self.",
+          "The pond holds no answers, only clearer questions.",
+          "What you seek is already seeking you."
+        ];
+        
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        
+        document.getElementById('main-text').textContent = `"${randomResponse}"`;
+        document.getElementById('echo-text').textContent = `Echo: ${randomResponse.split(' ').slice(0, 3).join(' ')}...`;
+        document.getElementById('res-text').textContent = 'Resonance: Surface calm.';
+        document.getElementById('guide-text').textContent = 'What would you hear if you listened without expecting?';
+        
         elements.portal.classList.remove('listening');
         elements.reflectBtn.disabled = false;
         elements.reflectBtn.textContent = 'Reflect';
-      }
+        elements.output.style.opacity = '1';
+        elements.input.value = '';
+        
+        incLeaves();
+        showToast('Reflection received');
+        
+        // Scroll to top
+        elements.portalScroll.scrollTop = 0;
+        updateScrollAffordance();
+      }, 1500);
     }
-
     
-    // History rendering (supports filter: 'all' | 'fav')
-    function renderHistory(filter = 'all') {
+    // History rendering
+    function renderHistory() {
       try {
         const history = JSON.parse(localStorage.getItem('mirror_history') || '[]');
-        const list = (filter === 'fav') ? history.filter(h => h.fav) : history;
-
-        if (!list.length) {
+        if (!history.length) {
           elements.historyList.innerHTML = `
             <div class="text-center py-12">
               <div class="text-zinc-500 mb-2">No reflections yet</div>
-              <div class="text-xs text-zinc-600">${filter === 'fav' ? 'Your marked reflections will appear here' : 'Your first inquiry will appear here'}</div>
+              <div class="text-xs text-zinc-600">Your first inquiry will appear here</div>
             </div>`;
           return;
         }
-
-        elements.historyList.innerHTML = list.map(item => `
+        
+        elements.historyList.innerHTML = history.map(item => `
           <div class="py-5 border-b border-zinc-800">
             <div class="flex justify-between items-start mb-3">
               <div class="text-xs text-zinc-500">${new Date(item.ts).toLocaleString()}</div>
-              ${item.fav ? '<span class="text-amber-400">★</span>' : ''}
+              <button class="text-zinc-600 hover:text-yellow-400">☆</button>
             </div>
             <div class="text-sm text-zinc-300 mb-2">${escapeHtml(item.q)}</div>
             <div class="text-sm italic text-green-300">"${escapeHtml(item.a)}"</div>
@@ -1684,14 +1440,14 @@ initManual();
         elements.historyList.innerHTML = `<div class="text-red-400 text-sm py-6">Could not load history</div>`;
       }
     }
-
+    
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     }
     
-// Initialize
+    // Initialize
     document.addEventListener('DOMContentLoaded', init);
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
