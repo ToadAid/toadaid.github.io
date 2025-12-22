@@ -1010,7 +1010,6 @@ max-width: 860px;
 
   <div class="middle">
     <div class="portal text-center" id="portal">
-      <button id="favorite-btn" class="favorite-btn" aria-label="Favorite" title="Favorite">☆</button>
       <div class="ripple-overlay"></div>
       <div class="portal-fade" id="portal-fade"></div>
 
@@ -1046,7 +1045,13 @@ max-width: 860px;
         </div>
 
         <div id="reflection-output" class="space-y-6 opacity-0 transition-opacity duration-500 mt-8">
-<p id="main-text" class="italic">
+          <div class="flex justify-end">
+            <button id="favorite-btn" class="favorite-btn hidden" title="Add to favorites">
+              ☆
+            </button>
+          </div>
+
+          <p id="main-text" class="italic">
             "Stillness yields truth."
           </p>
 
@@ -1208,7 +1213,6 @@ max-width: 860px;
       themeButtons: document.querySelectorAll('.theme-btn'),
       toast: document.getElementById('toast')
     };
-
 
   function hideFavoriteButton(){
     if(!elements.favoriteBtn) return;
@@ -1374,8 +1378,7 @@ max-width: 860px;
       const openai = data?.choices?.[0]?.message?.content;
       if(openai) return openai;
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
-    }// Initialize
-
+    }
 
     
     function init() {
@@ -1514,12 +1517,11 @@ initManual();
           }
         } catch (e) {}
       });
-
       
       document.getElementById('wallet-btn')?.addEventListener('click', () => {
         showToast('Wallet connection coming soon');
       });
-      
+
       elements.portalScroll.addEventListener('scroll', updateScrollAffordance, { passive: true });
       window.addEventListener('resize', () => requestAnimationFrame(updateScrollAffordance));
     }
