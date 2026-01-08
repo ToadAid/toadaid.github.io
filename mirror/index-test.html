@@ -337,40 +337,6 @@
         0 0 26px rgba(230,194,122,.10);
     }
 
-    .filter-pill{
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      padding: 6px 10px;
-      border-radius: 9999px;
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.65);
-      background: rgba(0,0,0,.20);
-      transition: all .15s ease;
-    }
-    .filter-pill:hover{ color: rgba(255,255,255,.90); border-color: rgba(255,255,255,.18); }
-    .filter-pill.active{
-      color: rgba(255,255,255,.95);
-      border-color: rgba(16,185,129,.35);
-      box-shadow: 0 0 0 1px rgba(16,185,129,.15) inset;
-    }
-    .star-toggle{
-      font-size: 16px;
-      line-height: 1;
-      padding: 6px 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.18);
-      color: rgba(255,255,255,.65);
-      transition: all .15s ease;
-    }
-    .star-toggle:hover{ color: rgba(255,255,255,.95); border-color: rgba(255,255,255,.16); }
-    .star-toggle.on{
-      color: rgba(250, 204, 21, .95);
-      border-color: rgba(250, 204, 21, .25);
-      box-shadow: 0 0 0 1px rgba(250, 204, 21, .12) inset;
-    }
-
     .share-actions {
       margin-top: 24px;
       display: flex;
@@ -418,6 +384,24 @@
       border-color: rgba(234, 179, 8, 0.5) !important;
       color: #eab308 !important;
     }
+
+    /* Confirm preview block */
+    .confirm-preview{
+      max-height: 40vh;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.25);
+      padding: 10px;
+      color: rgba(255,255,255,0.85);
+      font-size: 12px;
+      line-height: 1.35rem;
+    }
+    .confirm-preview::-webkit-scrollbar{ display:none; }
   </style>
 </head>
 
@@ -862,8 +846,10 @@
       portalEl.classList.toggle("can-scroll", over);
     }
 
-    let currentReflection = null;
-    function saveCurrentReflection(q, a) { currentReflection = { q, a }; }
+    // IMPORTANT: make it global so module script can read it
+    window.currentReflection = null;
+    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
+    window.saveCurrentReflection = saveCurrentReflection;
 
     async function processInquiry(qOverride){
       const q = (qOverride ?? input.value).trim();
@@ -895,6 +881,7 @@
             resText.textContent  = out.res;
             guideText.textContent= out.guide;
 
+            // save FULL qa for casting
             saveCurrentReflection(q, out.main);
 
             incLeaves();
@@ -928,6 +915,7 @@
               echoText.textContent = out.echo;
               resText.textContent  = out.res;
               guideText.textContent= out.guide;
+              saveCurrentReflection(q, out.main);
               showOutput();
               break;
             }
@@ -1057,16 +1045,22 @@
       }, 3000);
     }
 
-    // ==================== CONFIRM MODAL (OK / CANCEL) ====================
-    function confirmSend({ title, body, okText="Send", cancelText="Cancel" }) {
+    // ==================== CONFIRM MODAL (OK / CANCEL) + SCROLLABLE PREVIEW ====================
+    function confirmSend({ title, body, previewText = "", okText="Send", cancelText="Cancel" }) {
       return new Promise((resolve) => {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-[999] p-4';
         modal.innerHTML = `
-          <div class="bg-zinc-900 border border-emerald-800 rounded-xl p-6 max-w-md w-full">
+          <div class="bg-zinc-900 border border-emerald-800 rounded-xl p-5 max-w-md w-full">
             <div class="text-emerald-400 mb-2 text-sm uppercase tracking-widest">${title}</div>
-            <div class="text-xs text-zinc-300 mb-4 whitespace-pre-wrap">${body}</div>
-            <div class="flex gap-2">
+            <div class="text-xs text-zinc-300 mb-3 whitespace-pre-wrap">${body}</div>
+
+            ${previewText ? `
+              <div class="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Preview (exact cast text)</div>
+              <div class="confirm-preview">${escapeHtml(previewText)}</div>
+            ` : ""}
+
+            <div class="flex gap-2 mt-4">
               <button class="flex-1 py-2 bg-zinc-800 rounded-lg text-xs hover:bg-zinc-700 cancel-btn">${cancelText}</button>
               <button class="flex-1 py-2 bg-emerald-900/30 border border-emerald-800 rounded-lg text-xs text-emerald-300 hover:bg-emerald-900/50 ok-btn">${okText}</button>
             </div>
@@ -1081,22 +1075,19 @@
         modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(false); });
       });
     }
+
+    // expose for module script
+    window.confirmSend = confirmSend;
+    window.showStatusMessage = showStatusMessage;
   </script>
 
   <!-- ==================== MINIAPP SDK + WALLET + CAST ==================== -->
   <script type="module">
-    // Farcaster Mini App SDK (works inside Base app / Farcaster clients)
-    // Wallet: sdk.wallet.getEthereumProvider()  (EIP-1193)  :contentReference[oaicite:3]{index=3}
-    // Cast composer: sdk.actions.composeCast({ text, embeds }) :contentReference[oaicite:4]{index=4}
     import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk";
-
-    // Expose for debugging
     window.__sdk = sdk;
 
-    // Signal ready to host (recommended) :contentReference[oaicite:5]{index=5}
     try { await sdk.actions.ready(); } catch (e) { /* ok in web */ }
 
-    // Wallet + share elements
     const walletBtn = document.getElementById("wallet-btn");
     const shareActions = document.getElementById("share-actions");
     const dropBtn = document.getElementById("drop-btn");
@@ -1106,32 +1097,14 @@
     let connectedAddress = null;
     let ethProvider = null;
 
-    // Environment indicator (simple, reliable)
-    setTimeout(() => {
-      const envIndicator = document.createElement('div');
-      envIndicator.className = 'fixed top-4 left-4 z-50 text-xs px-3 py-1 rounded-full';
-      const inFrame = (window.self !== window.top);
-
-      if (inFrame) {
-        envIndicator.textContent = '📱 Mini App Frame';
-        envIndicator.className += ' bg-blue-900/30 text-blue-400 border border-blue-700/50';
-      } else {
-        envIndicator.textContent = '🖥️ Web View';
-        envIndicator.className += ' bg-zinc-900/30 text-zinc-400 border border-zinc-700/50';
-      }
-      document.body.appendChild(envIndicator);
-    }, 600);
+    // NOTE: removed the "🖥️ Web View" / "📱 Mini App Frame" label per your request
 
     async function getProvider() {
-      // Preferred: Mini App SDK provider (Base/Farcaster) :contentReference[oaicite:6]{index=6}
       try {
         const p = await sdk.wallet.getEthereumProvider();
         if (p) return p;
       } catch (e) {}
-
-      // Fallback: injected browser wallet (Metamask / Coinbase extension)
       if (window.ethereum) return window.ethereum;
-
       return null;
     }
 
@@ -1151,7 +1124,6 @@
       shareActions.classList.remove("visible");
     }
 
-    // Connect wallet
     walletBtn.addEventListener("click", async () => {
       if (walletConnected) {
         setWalletUIDisconnected();
@@ -1161,13 +1133,12 @@
       ethProvider = await getProvider();
 
       if (!ethProvider) {
-        // No provider: mock connect (still lets you test UI)
         const mockAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
         walletConnected = true;
         connectedAddress = mockAddress;
         walletBtn.classList.add("wallet-mock");
         setWalletUIConnected(mockAddress, "Mock");
-        showStatusMessage("🔧 No Mini App wallet provider detected — using Mock.", "info");
+        window.showStatusMessage?.("🔧 No Mini App wallet provider detected — using Mock.", "info");
         return;
       }
 
@@ -1179,25 +1150,20 @@
         walletConnected = true;
         connectedAddress = addr;
         setWalletUIConnected(addr, (ethProvider === window.ethereum ? "Browser" : "Base"));
-        showStatusMessage("✅ Wallet connected.", "success");
+        window.showStatusMessage?.("✅ Wallet connected.", "success");
       } catch (e) {
         console.error("Wallet connect error:", e);
         alert("Wallet connection failed: " + (e?.message || "Unknown error"));
       }
     });
 
-    // Drop to Pond: confirm -> open composer
+    // Drop to Pond: CONFIRM (with exact preview) -> open composer with FULL QA
     dropBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
         return;
       }
-      if (!window.currentReflection) {
-        // currentReflection is in non-module script scope; mirror it:
-        // We'll read it from the global set by the other script.
-      }
 
-      // Grab reflection from global (set by core script)
       const ref = window.currentReflection || null;
       if (!ref) {
         alert("Please generate a reflection first using the input above.");
@@ -1205,45 +1171,48 @@
       }
 
       const { q, a } = ref;
+
+      // include FULL QA (complete post). NOTE: Farcaster has a character limit;
+      // the composer will show if it exceeds and user can edit.
+      const appUrl = "https://toadaid.github.io/pond/";
       const castText =
-`${q.length > 100 ? q.substring(0, 100) + '...' : q}
+`Q:
+${q}
 
-🪞 Mirror Reflection 🪞
+A:
+${a}
 
-${a.length > 160 ? a.substring(0, 160) + '...' : a}
+— from Tobyworld Mirror
+${appUrl}`;
 
-— from Tobyworld Mirror`;
+      // host this image on your GitHub Pages
+      const embeds = ["https://toadaid.github.io/assets/pond-ripple.png"];
 
-      const embeds = ["https://tobyworld.xyz/pond-ripple.png"];
-
-      // ✅ CONFIRMATION MODAL (OK / Cancel)
-      const ok = await confirmSend({
+      const ok = await window.confirmSend({
         title: "Drop to Pond",
-        body: `This will open the Farcaster composer with your reflection prefilled.\n\nProceed?`,
-        okText: "OK — Send",
+        body: "This will open the Farcaster composer with your full Q&A.\nConfirm the exact text below:",
+        previewText: castText,
+        okText: "OK — Open Composer",
         cancelText: "Cancel"
       });
       if (!ok) return;
 
-      // Prefer native SDK composer inside Base App :contentReference[oaicite:7]{index=7}
       try {
         await sdk.actions.composeCast({ text: castText, embeds });
-        showStatusMessage("🌊 Composer opened.", "success");
+        window.showStatusMessage?.("🌊 Composer opened.", "success");
       } catch (e) {
         console.error("composeCast failed:", e);
-        // Fallback for web: best-effort intent URL (docs recommend SDK in miniapps) :contentReference[oaicite:8]{index=8}
         const url = "https://warpcast.com/~/compose?text=" + encodeURIComponent(castText);
         window.open(url, "_blank");
       }
     });
 
-    // Freeze: keep placeholder + confirm (you can wire this later to a real contract)
     freezeBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
         return;
       }
-      const ok = await confirmSend({
+      const ok = await window.confirmSend({
         title: "Freeze as Leaf",
         body: "Minting is not wired yet (contract placeholder). Continue to view setup note?",
         okText: "OK",
@@ -1273,16 +1242,6 @@ ${a.length > 160 ? a.substring(0, 160) + '...' : a}
       modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
       modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
     });
-
-    // Make currentReflection accessible in module scope
-    // (core script uses `let currentReflection`, so we mirror it to window on save)
-    const _save = window.saveCurrentReflection;
-    if (_save) {
-      window.saveCurrentReflection = function(q, a) {
-        window.currentReflection = { q, a };
-        return _save(q, a);
-      }
-    }
   </script>
 </body>
 </html>
