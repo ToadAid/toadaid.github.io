@@ -5,8 +5,195 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Mirror | The Digital Pond</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- MiniKit for Base wallet + onchain actions -->
-  <script src="https://minikit.worldcoin.org/minikit.js"></script>
+  
+  <!-- DUAL MODE: Load MiniKit OR fallback to mock -->
+  <script>
+    // Try to load MiniKit but have fallback ready
+    (function() {
+      console.log('🔄 Mirror App: Loading in dual mode...');
+      
+      // Create mock MiniKit immediately for fallback
+      window.MiniKit = window.MiniKit || {
+        isMock: true,
+        address: null,
+        commands: {
+          connect: async () => {
+            console.log('🔧 MOCK: connect() called');
+            // Generate a mock address
+            const mockAddress = '0x' + Array.from({length: 40}, () => 
+              Math.floor(Math.random() * 16).toString(16)).join('');
+            window.MiniKit.address = mockAddress;
+            
+            // Update UI
+            const walletBtn = document.getElementById('wallet-btn');
+            const shareActions = document.getElementById('share-actions');
+            if (walletBtn) {
+              const shortAddr = mockAddress.slice(0,6) + '…' + mockAddress.slice(-4);
+              walletBtn.textContent = shortAddr + ' (Mock)';
+              walletBtn.classList.add('wallet-connected');
+            }
+            if (shareActions) {
+              shareActions.classList.add('visible');
+            }
+            
+            // Show mock connection message
+            showStatus('🔧 Mock Mode: Connected with test address', 'info');
+            
+            return { address: mockAddress };
+          },
+          isConnected: async () => {
+            return window.MiniKit.address !== null;
+          },
+          cast: async (params) => {
+            console.log('🔧 MOCK: cast() called:', params);
+            
+            // Show nice mock modal
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+              <div class="bg-zinc-900 border border-emerald-800 rounded-xl p-6 max-w-md w-full">
+                <div class="text-emerald-400 mb-4">
+                  <div class="text-lg mb-2">🔧 Mock Farcaster Post</div>
+                  <div class="text-sm text-zinc-300">In Base App, this would post to your Farcaster feed.</div>
+                </div>
+                <div class="text-xs text-zinc-500 mb-4 p-3 bg-zinc-800/30 rounded max-h-32 overflow-y-auto">
+                  ${params.text.replace(/\n/g, '<br>')}
+                </div>
+                <div class="text-xs text-zinc-600 mb-4">
+                  <strong>To test in Base App:</strong><br>
+                  1. Load this URL in Base App<br>
+                  2. Connect real wallet<br>
+                  3. Post will go to your feed
+                </div>
+                <button class="w-full py-2 bg-emerald-900/30 border border-emerald-800 rounded-lg text-emerald-400 hover:bg-emerald-900/50 close-mock-modal">
+                  Got it
+                </button>
+              </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.querySelector('.close-mock-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => {
+              if (e.target === modal) modal.remove();
+            });
+            
+            return { success: true, mock: true };
+          },
+          mint: async (params) => {
+            console.log('🔧 MOCK: mint() called:', params);
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+              <div class="bg-zinc-900 border border-purple-800 rounded-xl p-6 max-w-md w-full">
+                <div class="text-purple-400 mb-4">
+                  <div class="text-lg mb-2">🔧 Mock NFT Mint</div>
+                  <div class="text-sm text-zinc-300">In Base App, this would mint an NFT on Base.</div>
+                </div>
+                <div class="text-xs text-zinc-500 mb-4">
+                  <strong>To enable real minting:</strong><br>
+                  1. Deploy ERC721 contract on Base<br>
+                  2. Update contract address in code<br>
+                  3. Set up metadata/IPFS
+                </div>
+                <div class="flex gap-2">
+                  <button class="flex-1 py-2 bg-zinc-800 rounded-lg text-xs hover:bg-zinc-700 close-mock-modal">
+                    Close
+                  </button>
+                  <button class="flex-1 py-2 bg-purple-900/30 border border-purple-800 rounded-lg text-xs text-purple-400 hover:bg-purple-900/50" onclick="window.open('https://docs.base.org/tools/quickstarts/nft-quickstart', '_blank')">
+                    Base NFT Guide ↗
+                  </button>
+                </div>
+              </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.querySelector('.close-mock-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => {
+              if (e.target === modal) modal.remove();
+            });
+            
+            return { success: true, mock: true };
+          }
+        }
+      };
+      
+      // Now try to load the real MiniKit
+      const script = document.createElement('script');
+      script.src = 'https://minikit.worldcoin.org/minikit.js';
+      script.onload = function() {
+        console.log('✅ Real MiniKit loaded! Overriding mock...');
+        
+        // Check if real MiniKit is available
+        if (window.MiniKit && window.MiniKit.commands && !window.MiniKit.isMock) {
+          console.log('🎉 Using REAL MiniKit!');
+          showStatus('✅ Real MiniKit loaded in Base App!', 'success');
+          
+          // Update button text
+          const walletBtn = document.getElementById('wallet-btn');
+          if (walletBtn) {
+            walletBtn.textContent = "Connect Wallet (Base)";
+            walletBtn.disabled = false;
+            walletBtn.classList.remove('opacity-50');
+          }
+        } else {
+          console.log('⚠️ Real MiniKit loaded but appears to be mock');
+          showStatus('🔧 Using mock MiniKit - Load in Base App for real wallet', 'info');
+        }
+      };
+      
+      script.onerror = function() {
+        console.log('❌ Failed to load real MiniKit, using mock');
+        showStatus('🔧 Using mock MiniKit - Load in Base App for real wallet', 'info');
+      };
+      
+      document.head.appendChild(script);
+      
+      function showStatus(message, type = 'info') {
+        // Remove existing status
+        const existing = document.getElementById('app-status');
+        if (existing) existing.remove();
+        
+        const status = document.createElement('div');
+        status.id = 'app-status';
+        status.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm ${
+          type === 'success' ? 'bg-emerald-900/90 text-emerald-300 border border-emerald-700' :
+          type === 'info' ? 'bg-blue-900/90 text-blue-300 border border-blue-700' :
+          'bg-zinc-900/90 text-zinc-300 border border-zinc-700'
+        } backdrop-blur-sm`;
+        status.textContent = message;
+        status.style.transition = 'opacity 0.3s, transform 0.3s';
+        document.body.appendChild(status);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+          status.style.opacity = '0';
+          status.style.transform = 'translate(-50%, -20px)';
+          setTimeout(() => status.remove(), 300);
+        }, 5000);
+      }
+      
+      // Add environment indicator
+      setTimeout(() => {
+        const envIndicator = document.createElement('div');
+        envIndicator.className = 'fixed top-4 left-4 z-50 text-xs px-3 py-1 rounded-full';
+        
+        if (window.location.href.includes('base.org') || window.location.href.includes('basecamp')) {
+          envIndicator.textContent = '🌐 Base App';
+          envIndicator.className += ' bg-blue-900/30 text-blue-400 border border-blue-700/50';
+        } else if (window.self !== window.top) {
+          envIndicator.textContent = '📱 Embedded';
+          envIndicator.className += ' bg-purple-900/30 text-purple-400 border border-purple-700/50';
+        } else {
+          envIndicator.textContent = '🖥️ Web View';
+          envIndicator.className += ' bg-zinc-900/30 text-zinc-400 border border-zinc-700/50';
+        }
+        
+        document.body.appendChild(envIndicator);
+      }, 1000);
+      
+    })();
+  </script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400&display=swap');
@@ -418,105 +605,12 @@
       color: #10b981 !important;
     }
 
-    /* Status indicator */
-    .status-indicator {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.7);
-      border: 1px solid rgba(16,185,129,0.3);
-      border-radius: 12px;
-      padding: 6px 12px;
-      font-size: 10px;
-      color: #10b981;
-      z-index: 1000;
-      backdrop-filter: blur(10px);
+    .wallet-mock {
+      background: rgba(234, 179, 8, 0.1) !important;
+      border-color: rgba(234, 179, 8, 0.5) !important;
+      color: #eab308 !important;
     }
   </style>
-  
-  <!-- Base App initialization script -->
-  <script>
-    // Wait for MiniKit to load in Base App
-    (function initBaseApp() {
-      console.log('🔄 Mirror app starting in Base App...');
-      
-      let checkCount = 0;
-      const maxChecks = 50; // 5 seconds
-      
-      const checkMiniKit = setInterval(() => {
-        checkCount++;
-        
-        if (typeof MiniKit !== 'undefined' && MiniKit.commands) {
-          clearInterval(checkMiniKit);
-          console.log('✅ MiniKit loaded successfully in', checkCount * 100, 'ms');
-          
-          // Update UI to show MiniKit is ready
-          const walletBtn = document.getElementById('wallet-btn');
-          if (walletBtn) {
-            walletBtn.textContent = "Connect Wallet (Base)";
-            walletBtn.disabled = false;
-            walletBtn.classList.remove('opacity-50');
-            
-            // Check if already connected
-            setTimeout(async () => {
-              try {
-                const isConnected = await MiniKit.commands.isConnected();
-                if (isConnected && MiniKit.address) {
-                  console.log('🔗 Already connected to:', MiniKit.address);
-                  const shortAddr = MiniKit.address.slice(0,6) + '…' + MiniKit.address.slice(-4);
-                  walletBtn.textContent = shortAddr + " (Base)";
-                  walletBtn.classList.add("wallet-connected");
-                  
-                  const shareActions = document.getElementById('share-actions');
-                  if (shareActions) {
-                    shareActions.classList.add("visible");
-                  }
-                  
-                  // Show status indicator
-                  showStatus('Connected to ' + shortAddr);
-                }
-              } catch (e) {
-                console.log('Auto-connection check failed:', e);
-              }
-            }, 500);
-          }
-          
-          showStatus('MiniKit ready');
-          
-        } else if (checkCount >= maxChecks) {
-          clearInterval(checkMiniKit);
-          console.error('❌ MiniKit not loaded after', maxChecks * 100, 'ms');
-          
-          const walletBtn = document.getElementById('wallet-btn');
-          if (walletBtn) {
-            walletBtn.textContent = "MiniKit Not Loaded";
-            walletBtn.disabled = true;
-          }
-          
-          showStatus('MiniKit not loaded - Are you in Base App?', 'error');
-        }
-      }, 100);
-      
-      function showStatus(message, type = 'info') {
-        let indicator = document.getElementById('status-indicator');
-        if (!indicator) {
-          indicator = document.createElement('div');
-          indicator.id = 'status-indicator';
-          indicator.className = 'status-indicator';
-          document.body.appendChild(indicator);
-        }
-        
-        indicator.textContent = message;
-        indicator.style.color = type === 'error' ? '#f87171' : '#10b981';
-        indicator.style.borderColor = type === 'error' ? 'rgba(248,113,113,0.3)' : 'rgba(16,185,129,0.3)';
-        
-        setTimeout(() => {
-          indicator.style.opacity = '0';
-          setTimeout(() => indicator.remove(), 300);
-        }, 3000);
-      }
-    })();
-  </script>
 </head>
 
 <body>
@@ -572,7 +666,7 @@
       </div>
       <button id="wallet-btn"
         class="bg-zinc-900/80 border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest rounded hover:border-emerald-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
-        Loading MiniKit...
+        Connect Wallet (Mock Mode)
       </button>
     </div>
   </div>
@@ -1066,7 +1160,7 @@
       });
     });
 
-    // ==================== WALLET FUNCTIONALITY ====================
+    // ==================== WALLET FUNCTIONALITY (DUAL MODE) ====================
     const walletBtn = document.getElementById("wallet-btn");
     const shareActions = document.getElementById("share-actions");
     const dropBtn = document.getElementById("drop-btn");
@@ -1074,46 +1168,109 @@
 
     let walletConnected = false;
 
-    // Wallet connection
-    walletBtn.addEventListener("click", async () => {
-      console.log('Wallet button clicked, MiniKit status:', typeof MiniKit);
+    // Initialize wallet button based on MiniKit availability
+    function updateWalletButton() {
+      const isRealMiniKit = window.MiniKit && window.MiniKit.commands && !window.MiniKit.isMock;
       
-      if (typeof MiniKit === 'undefined' || !MiniKit.commands) {
-        alert("MiniKit is not available. Please make sure you're in the Base App.");
-        return;
+      if (isRealMiniKit) {
+        walletBtn.textContent = "Connect Wallet (Base)";
+        walletBtn.classList.remove('wallet-mock');
+        walletBtn.classList.remove('opacity-50');
+        walletBtn.disabled = false;
+      } else {
+        walletBtn.textContent = "Connect Wallet (Mock Mode)";
+        walletBtn.classList.add('wallet-mock');
+        walletBtn.classList.remove('opacity-50');
+        walletBtn.disabled = false;
       }
+    }
 
+    // Update button on load
+    setTimeout(updateWalletButton, 1000);
+
+    // Wallet connection (works with both real and mock MiniKit)
+    walletBtn.addEventListener("click", async () => {
+      console.log('Wallet button clicked, MiniKit type:', window.MiniKit?.isMock ? 'Mock' : 'Real');
+      
       if (walletConnected) {
         // Disconnect
         walletConnected = false;
-        walletBtn.textContent = "Connect Wallet (Base)";
+        walletBtn.textContent = window.MiniKit?.isMock ? "Connect Wallet (Mock Mode)" : "Connect Wallet (Base)";
         walletBtn.classList.remove("wallet-connected");
+        walletBtn.classList.remove("wallet-mock");
         shareActions.classList.remove("visible");
         return;
       }
 
       try {
-        console.log('Attempting to connect with MiniKit...');
-        
-        // Simple direct connection
+        if (!window.MiniKit || !window.MiniKit.commands) {
+          throw new Error('MiniKit not available');
+        }
+
         const result = await MiniKit.commands.connect();
-        console.log('Connection result:', result);
         
         if (result && result.address) {
           const shortAddr = `${result.address.slice(0,6)}…${result.address.slice(-4)}`;
-          walletBtn.textContent = shortAddr + " (Base)";
-          walletBtn.classList.add("wallet-connected");
+          
+          if (window.MiniKit.isMock) {
+            walletBtn.textContent = shortAddr + " (Mock)";
+            walletBtn.classList.add("wallet-mock");
+            
+            // Show mock info
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+              <div class="bg-zinc-900 border border-yellow-800 rounded-xl p-6 max-w-md w-full">
+                <div class="text-yellow-400 mb-4">
+                  <div class="text-lg mb-2">🔧 Mock Mode Active</div>
+                  <div class="text-sm text-zinc-300">Using mock wallet for testing.</div>
+                </div>
+                <div class="text-xs text-zinc-500 mb-4">
+                  <strong>To test with real wallet in Base App:</strong><br>
+                  1. Load this URL in Base App developer section<br>
+                  2. Real MiniKit will automatically load<br>
+                  3. Connect with your real wallet
+                </div>
+                <button class="w-full py-2 bg-yellow-900/30 border border-yellow-800 rounded-lg text-yellow-400 hover:bg-yellow-900/50 close-modal">
+                  Got it
+                </button>
+              </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => {
+              if (e.target === modal) modal.remove();
+            });
+          } else {
+            walletBtn.textContent = shortAddr + " (Base)";
+            walletBtn.classList.add("wallet-connected");
+            
+            // Show success for real connection
+            showStatusMessage(`✅ Connected to ${shortAddr} in Base App!`, 'success');
+          }
+          
           walletConnected = true;
           shareActions.classList.add("visible");
           
-          // Show success message
-          showStatusMessage(`Connected to ${shortAddr}`, 'success');
         } else {
-          alert("Connection failed: No address returned");
+          throw new Error('No address returned');
         }
       } catch (error) {
         console.error('Wallet connection error:', error);
-        alert(`Connection failed: ${error.message || 'Unknown error'}`);
+        
+        if (window.MiniKit?.isMock) {
+          // For mock mode, just simulate connection
+          const mockAddress = '0x' + Array.from({length: 40}, () => 
+            Math.floor(Math.random() * 16).toString(16)).join('');
+          const shortAddr = mockAddress.slice(0,6) + '…' + mockAddress.slice(-4);
+          walletBtn.textContent = shortAddr + " (Mock)";
+          walletBtn.classList.add("wallet-mock");
+          walletConnected = true;
+          shareActions.classList.add("visible");
+        } else {
+          alert(`Connection failed: ${error.message || 'Unknown error'}`);
+        }
       }
     });
 
@@ -1129,28 +1286,32 @@
         return;
       }
 
+      // Works with both real and mock MiniKit
       const { q, a } = currentReflection;
-      // Keep cast text under 280 characters for Farcaster
       const castText = `${q.length > 100 ? q.substring(0, 100) + '...' : q}\n\n🪞 Mirror Reflection 🪞\n\n${a.length > 120 ? a.substring(0, 120) + '...' : a}\n\n— from Tobyworld Mirror`;
       
       try {
-        // Use your pond image or a placeholder
+        // Use your pond image
         const imageUrl = "https://tobyworld.xyz/pond-ripple.png";
         
-        const result = await MiniKit.commands.cast({
+        await MiniKit.commands.cast({
           text: castText,
           embeds: [imageUrl]
         });
         
-        console.log("Cast result:", result);
-        showStatusMessage("Posted to Farcaster! Check your feed.", 'success');
+        // If we get here and it's mock, the mock already showed a modal
+        if (!window.MiniKit?.isMock) {
+          showStatusMessage("✅ Posted to Farcaster! Check your feed.", 'success');
+        }
       } catch (e) {
         console.error("Cast error:", e);
-        alert("Cast failed: " + (e.message || "Unknown error"));
+        if (!window.MiniKit?.isMock) {
+          alert("Cast failed: " + (e.message || "Unknown error"));
+        }
       }
     });
 
-    // NFT minting (with setup instructions)
+    // NFT minting
     freezeBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
@@ -1162,67 +1323,38 @@
         return;
       }
 
-      // Show setup instructions
-      const modal = document.createElement('div');
-      modal.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4';
-      modal.innerHTML = `
-        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-emerald-400 font-semibold">Setup NFT Contract</h3>
-            <button class="text-zinc-500 hover:text-white close-modal" style="background:none;border:none;cursor:pointer;font-size:18px;">✕</button>
-          </div>
-          <p class="text-sm text-zinc-300 mb-3">The "Freeze as Leaf" feature requires an NFT contract on Base.</p>
-          <div class="text-xs text-zinc-400 space-y-2 mb-4 p-3 bg-zinc-800/30 rounded-lg">
-            <p><strong class="text-emerald-400">To set up:</strong></p>
-            <p>1. Deploy an ERC721 contract on Base</p>
-            <p>2. Update contract address in code</p>
-            <p>3. Configure metadata/IPFS storage</p>
-          </div>
-          <p class="text-xs text-zinc-500 mb-4">For now, use "Drop to Pond" to post reflections to Farcaster.</p>
-          <div class="flex gap-2">
-            <button class="flex-1 py-2 bg-zinc-800 rounded-lg text-xs hover:bg-zinc-700 close-modal">
-              Got it
-            </button>
-            <button class="flex-1 py-2 bg-emerald-900/30 border border-emerald-800 rounded-lg text-xs text-emerald-400 hover:bg-emerald-900/50 open-guide">
-              Base NFT Guide ↗
-            </button>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      const closeButtons = modal.querySelectorAll('.close-modal');
-      closeButtons.forEach(btn => {
-        btn.addEventListener('click', () => modal.remove());
-      });
-      
-      const guideButton = modal.querySelector('.open-guide');
-      guideButton.addEventListener('click', () => {
-        window.open('https://docs.base.org/tools/quickstarts/nft-quickstart', '_blank');
-        modal.remove();
-      });
-      
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
-      });
+      // Works with both real and mock MiniKit (mock shows instructions)
+      try {
+        await MiniKit.commands.mint({
+          chain: "base",
+          contract: "0x0000000000000000000000000000000000000000", // Placeholder
+          metadata: {
+            name: `Mirror Reflection • ${new Date().toLocaleDateString()}`,
+            description: `Reflection from Tobyworld Mirror`,
+            image: "https://tobyworld.xyz/pond-ripple.png"
+          }
+        });
+      } catch (e) {
+        // Error handling done by mock or real MiniKit
+        console.log("Mint attempt:", e.message || "Contract not configured");
+      }
     });
 
     // Helper function for status messages
     function showStatusMessage(message, type = 'info') {
       const statusDiv = document.createElement('div');
       statusDiv.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm ${
-        type === 'success' ? 'bg-emerald-900/80 text-emerald-300 border border-emerald-700' :
-        'bg-zinc-900/80 text-zinc-300 border border-zinc-700'
-      }`;
+        type === 'success' ? 'bg-emerald-900/90 text-emerald-300 border border-emerald-700' :
+        type === 'info' ? 'bg-blue-900/90 text-blue-300 border border-blue-700' :
+        'bg-zinc-900/90 text-zinc-300 border border-zinc-700'
+      } backdrop-blur-sm`;
       statusDiv.textContent = message;
+      statusDiv.style.transition = 'opacity 0.3s, transform 0.3s';
       document.body.appendChild(statusDiv);
       
       setTimeout(() => {
         statusDiv.style.opacity = '0';
-        statusDiv.style.transform = '-translate-x-1/2) translateY(-20px)';
+        statusDiv.style.transform = 'translate(-50%, -20px)';
         setTimeout(() => statusDiv.remove(), 300);
       }, 3000);
     }
