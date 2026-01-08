@@ -418,41 +418,105 @@
       color: #10b981 !important;
     }
 
-    /* Debug modal styles */
-    .debug-modal {
+    /* Status indicator */
+    .status-indicator {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.9);
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.7);
       border: 1px solid rgba(16,185,129,0.3);
       border-radius: 12px;
-      padding: 15px;
-      z-index: 1000;
-      max-width: 300px;
-      font-size: 12px;
+      padding: 6px 12px;
+      font-size: 10px;
       color: #10b981;
+      z-index: 1000;
       backdrop-filter: blur(10px);
     }
-
-    .debug-modal h4 {
-      margin: 0 0 8px 0;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: white;
-    }
-
-    .debug-modal button {
-      margin-top: 10px;
-      padding: 5px 10px;
-      font-size: 10px;
-      background: rgba(16,185,129,0.2);
-      border: 1px solid rgba(16,185,129,0.4);
-      border-radius: 6px;
-      color: #10b981;
-      cursor: pointer;
-    }
   </style>
+  
+  <!-- Base App initialization script -->
+  <script>
+    // Wait for MiniKit to load in Base App
+    (function initBaseApp() {
+      console.log('🔄 Mirror app starting in Base App...');
+      
+      let checkCount = 0;
+      const maxChecks = 50; // 5 seconds
+      
+      const checkMiniKit = setInterval(() => {
+        checkCount++;
+        
+        if (typeof MiniKit !== 'undefined' && MiniKit.commands) {
+          clearInterval(checkMiniKit);
+          console.log('✅ MiniKit loaded successfully in', checkCount * 100, 'ms');
+          
+          // Update UI to show MiniKit is ready
+          const walletBtn = document.getElementById('wallet-btn');
+          if (walletBtn) {
+            walletBtn.textContent = "Connect Wallet (Base)";
+            walletBtn.disabled = false;
+            walletBtn.classList.remove('opacity-50');
+            
+            // Check if already connected
+            setTimeout(async () => {
+              try {
+                const isConnected = await MiniKit.commands.isConnected();
+                if (isConnected && MiniKit.address) {
+                  console.log('🔗 Already connected to:', MiniKit.address);
+                  const shortAddr = MiniKit.address.slice(0,6) + '…' + MiniKit.address.slice(-4);
+                  walletBtn.textContent = shortAddr + " (Base)";
+                  walletBtn.classList.add("wallet-connected");
+                  
+                  const shareActions = document.getElementById('share-actions');
+                  if (shareActions) {
+                    shareActions.classList.add("visible");
+                  }
+                  
+                  // Show status indicator
+                  showStatus('Connected to ' + shortAddr);
+                }
+              } catch (e) {
+                console.log('Auto-connection check failed:', e);
+              }
+            }, 500);
+          }
+          
+          showStatus('MiniKit ready');
+          
+        } else if (checkCount >= maxChecks) {
+          clearInterval(checkMiniKit);
+          console.error('❌ MiniKit not loaded after', maxChecks * 100, 'ms');
+          
+          const walletBtn = document.getElementById('wallet-btn');
+          if (walletBtn) {
+            walletBtn.textContent = "MiniKit Not Loaded";
+            walletBtn.disabled = true;
+          }
+          
+          showStatus('MiniKit not loaded - Are you in Base App?', 'error');
+        }
+      }, 100);
+      
+      function showStatus(message, type = 'info') {
+        let indicator = document.getElementById('status-indicator');
+        if (!indicator) {
+          indicator = document.createElement('div');
+          indicator.id = 'status-indicator';
+          indicator.className = 'status-indicator';
+          document.body.appendChild(indicator);
+        }
+        
+        indicator.textContent = message;
+        indicator.style.color = type === 'error' ? '#f87171' : '#10b981';
+        indicator.style.borderColor = type === 'error' ? 'rgba(248,113,113,0.3)' : 'rgba(16,185,129,0.3)';
+        
+        setTimeout(() => {
+          indicator.style.opacity = '0';
+          setTimeout(() => indicator.remove(), 300);
+        }, 3000);
+      }
+    })();
+  </script>
 </head>
 
 <body>
@@ -615,14 +679,8 @@
     <div id="history-list" class="px-5 overflow-auto" style="height: calc(75% - 64px);"></div>
   </div>
 
-  <!-- Debug Modal (optional) -->
-  <div id="debug-modal" class="debug-modal hidden">
-    <h4>Debug Info</h4>
-    <div id="debug-content"></div>
-    <button onclick="document.getElementById('debug-modal').classList.add('hidden')">Close</button>
-  </div>
-
   <script>
+    // ==================== CORE MIRROR FUNCTIONALITY ====================
     const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
 
     function resolveApiUrl(){
@@ -657,6 +715,7 @@
     const KEY_HISTORY = "mirror_history_v1";
     const MANUAL_KEY = "mirror_manual_accepted_v2";
 
+    // Manual functionality
     const manualEl = document.getElementById("manual");
     const manualGlyph = document.getElementById("manual-glyph");
     const manualAccept = document.getElementById("manual-accept");
@@ -695,6 +754,7 @@
     if(manualClose) manualClose.addEventListener("click", closeManual);
     if(manualAccept) manualAccept.addEventListener("click", acceptCovenant);
 
+    // Core elements
     const input = document.getElementById("user-input");
     const output = document.getElementById("reflection-output");
     const err = document.getElementById("err");
@@ -717,10 +777,12 @@
     const tapHeader = document.getElementById("tap-header");
     const titleTapZone = document.getElementById("title-tap-zone");
 
+    // Portal interactions
     portalEl.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
     portalEl.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
     portalEl.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
 
+    // Leaves functionality
     function loadLeaves(){
       const n = Number(localStorage.getItem(KEY_LEAVES) || "0");
       leavesEl.textContent = `Leaves of Stillness: ${n}`;
@@ -731,6 +793,7 @@
       leavesEl.textContent = `Leaves of Stillness: ${n}`;
     }
 
+    // History functionality
     function getHistory(){
       try {
         const arr = JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]");
@@ -755,6 +818,7 @@
 
     loadLeaves();
 
+    // UI states
     function setLoading(isLoading){
       if(isLoading) portalEl.classList.add("listening");
       else portalEl.classList.remove("listening");
@@ -773,6 +837,7 @@
     }
     function showOutput(){ output.style.opacity = "1"; }
 
+    // Sheet functionality
     function openSheet(mode){ 
       window.__historyFilter = mode || window.__historyFilter || "all"; 
       renderHistory(); 
@@ -781,6 +846,7 @@
     
     function closeSheet(){ sheet.classList.remove("open"); }
 
+    // Text processing
     function stripTravelerPrefix(s){
       return s.replace(/^\s*traveler[,：:]?\s*/i, "").trim();
     }
@@ -830,6 +896,7 @@
       };
     }
 
+    // API functions
     async function askAPI(question){
       const controller = new AbortController();
       const t = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -898,6 +965,7 @@
       return data?.answer || data?.unified_answer || data?.text || data?.response || "";
     }
 
+    // Scroll functionality
     function updateScrollAffordance(){
       const over = (portalScroll.scrollHeight - portalScroll.clientHeight) > 16;
       scrollHint.classList.toggle("show", over);
@@ -910,6 +978,7 @@
       currentReflection = { q, a };
     }
 
+    // Main inquiry processing
     async function processInquiry(qOverride){
       const q = (qOverride ?? input.value).trim();
       if(!q) return;
@@ -983,6 +1052,7 @@
       }
     }
 
+    // Event listeners for reflection
     reflectBtn.addEventListener("click", () => processInquiry());
     input.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
 
@@ -996,73 +1066,20 @@
       });
     });
 
-    // === WALLET & ONCHAIN ACTIONS ===
+    // ==================== WALLET FUNCTIONALITY ====================
     const walletBtn = document.getElementById("wallet-btn");
     const shareActions = document.getElementById("share-actions");
     const dropBtn = document.getElementById("drop-btn");
     const freezeBtn = document.getElementById("freeze-btn");
 
     let walletConnected = false;
-    let minikitAvailable = false;
 
-    // Debug function to show MiniKit status
-    function showDebugInfo(message) {
-      console.log(message);
-      const debugModal = document.getElementById('debug-modal');
-      const debugContent = document.getElementById('debug-content');
-      if (debugModal && debugContent) {
-        debugContent.innerHTML = `<div>${message}</div>`;
-        debugModal.classList.remove('hidden');
-        setTimeout(() => debugModal.classList.add('hidden'), 3000);
-      }
-    }
-
-    // Check if MiniKit is available
-    function checkMiniKit() {
-      if (typeof MiniKit === 'undefined') {
-        console.warn('MiniKit SDK not loaded');
-        showDebugInfo('MiniKit SDK not loaded. Make sure you are in a MiniKit environment.');
-        minikitAvailable = false;
-        walletBtn.disabled = true;
-        walletBtn.textContent = "MiniKit Not Loaded";
-        walletBtn.classList.add('opacity-50');
-        return false;
-      }
-      
-      if (!MiniKit.commands) {
-        console.warn('MiniKit commands not available');
-        showDebugInfo('MiniKit commands not available');
-        minikitAvailable = false;
-        walletBtn.disabled = true;
-        walletBtn.textContent = "MiniKit Commands Missing";
-        walletBtn.classList.add('opacity-50');
-        return false;
-      }
-      
-      minikitAvailable = true;
-      walletBtn.disabled = false;
-      walletBtn.textContent = "Connect Wallet (Base)";
-      walletBtn.classList.remove('opacity-50');
-      showDebugInfo('MiniKit is available! Click to connect wallet.');
-      return true;
-    }
-
-    // Initialize MiniKit check
-    document.addEventListener('DOMContentLoaded', () => {
-      // Check immediately
-      checkMiniKit();
-      
-      // Check again after a delay
-      setTimeout(() => {
-        if (!minikitAvailable) {
-          checkMiniKit();
-        }
-      }, 2000);
-    });
-
+    // Wallet connection
     walletBtn.addEventListener("click", async () => {
-      if (!minikitAvailable) {
-        alert("MiniKit wallet is not available in this environment. Please open in a MiniKit-compatible app like Farcaster, Base Camp, or Warpcast mobile.");
+      console.log('Wallet button clicked, MiniKit status:', typeof MiniKit);
+      
+      if (typeof MiniKit === 'undefined' || !MiniKit.commands) {
+        alert("MiniKit is not available. Please make sure you're in the Base App.");
         return;
       }
 
@@ -1072,54 +1089,35 @@
         walletBtn.textContent = "Connect Wallet (Base)";
         walletBtn.classList.remove("wallet-connected");
         shareActions.classList.remove("visible");
-        showDebugInfo('Wallet disconnected');
-      } else {
-        try {
-          showDebugInfo('Attempting to connect wallet...');
+        return;
+      }
+
+      try {
+        console.log('Attempting to connect with MiniKit...');
+        
+        // Simple direct connection
+        const result = await MiniKit.commands.connect();
+        console.log('Connection result:', result);
+        
+        if (result && result.address) {
+          const shortAddr = `${result.address.slice(0,6)}…${result.address.slice(-4)}`;
+          walletBtn.textContent = shortAddr + " (Base)";
+          walletBtn.classList.add("wallet-connected");
+          walletConnected = true;
+          shareActions.classList.add("visible");
           
-          // First check connection status
-          let isConnected = false;
-          try {
-            isConnected = await MiniKit.commands.isConnected();
-            showDebugInfo(`isConnected result: ${isConnected}`);
-          } catch (e) {
-            console.log('isConnected check failed, proceeding with connect:', e);
-          }
-          
-          if (isConnected && MiniKit.address) {
-            // Already connected
-            const shortAddr = `${MiniKit.address.slice(0,6)}…${MiniKit.address.slice(-4)}`;
-            walletBtn.textContent = shortAddr + " (Base)";
-            walletBtn.classList.add("wallet-connected");
-            walletConnected = true;
-            shareActions.classList.add("visible");
-            showDebugInfo(`Already connected: ${MiniKit.address}`);
-          } else {
-            // Need to connect
-            console.log("Attempting to connect with MiniKit.commands.connect()");
-            const result = await MiniKit.commands.connect();
-            
-            if (result && result.address) {
-              const shortAddr = `${result.address.slice(0,6)}…${result.address.slice(-4)}`;
-              walletBtn.textContent = shortAddr + " (Base)";
-              walletBtn.classList.add("wallet-connected");
-              walletConnected = true;
-              shareActions.classList.add("visible");
-              showDebugInfo(`Connected successfully: ${result.address}`);
-              console.log("Connected to:", result.address);
-            } else {
-              showDebugInfo('Connection returned no address');
-              alert("Connection failed. No address returned. Please try again.");
-            }
-          }
-        } catch (e) {
-          console.error("Wallet connection error:", e);
-          showDebugInfo(`Connection error: ${e.message}`);
-          alert("Connection declined or failed. Error: " + (e.message || "Unknown error") + "\n\nMake sure you're in a MiniKit-compatible app.");
+          // Show success message
+          showStatusMessage(`Connected to ${shortAddr}`, 'success');
+        } else {
+          alert("Connection failed: No address returned");
         }
+      } catch (error) {
+        console.error('Wallet connection error:', error);
+        alert(`Connection failed: ${error.message || 'Unknown error'}`);
       }
     });
 
+    // Farcaster posting
     dropBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
@@ -1136,11 +1134,8 @@
       const castText = `${q.length > 100 ? q.substring(0, 100) + '...' : q}\n\n🪞 Mirror Reflection 🪞\n\n${a.length > 120 ? a.substring(0, 120) + '...' : a}\n\n— from Tobyworld Mirror`;
       
       try {
-        showDebugInfo('Posting to Farcaster...');
-        console.log("Attempting to cast:", castText);
-        
-        // Use a placeholder image if yours doesn't exist yet
-        const imageUrl = "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80";
+        // Use your pond image or a placeholder
+        const imageUrl = "https://tobyworld.xyz/pond-ripple.png";
         
         const result = await MiniKit.commands.cast({
           text: castText,
@@ -1148,15 +1143,14 @@
         });
         
         console.log("Cast result:", result);
-        showDebugInfo('Posted to Farcaster successfully!');
-        alert("✅ Reflection dropped into the pond! Check your Farcaster feed.");
+        showStatusMessage("Posted to Farcaster! Check your feed.", 'success');
       } catch (e) {
         console.error("Cast error:", e);
-        showDebugInfo(`Farcaster post failed: ${e.message}`);
-        alert("Cast failed: " + (e.message || "Check console for details"));
+        alert("Cast failed: " + (e.message || "Unknown error"));
       }
     });
 
+    // NFT minting (with setup instructions)
     freezeBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
@@ -1168,7 +1162,7 @@
         return;
       }
 
-      // Create a custom modal for contract setup instructions
+      // Show setup instructions
       const modal = document.createElement('div');
       modal.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4';
       modal.innerHTML = `
@@ -1198,7 +1192,6 @@
       
       document.body.appendChild(modal);
       
-      // Add event listeners for modal buttons
       const closeButtons = modal.querySelectorAll('.close-modal');
       closeButtons.forEach(btn => {
         btn.addEventListener('click', () => modal.remove());
@@ -1210,7 +1203,6 @@
         modal.remove();
       });
       
-      // Close modal when clicking outside
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           modal.remove();
@@ -1218,7 +1210,24 @@
       });
     });
 
-    // === HISTORY SHEET FUNCTIONALITY ===
+    // Helper function for status messages
+    function showStatusMessage(message, type = 'info') {
+      const statusDiv = document.createElement('div');
+      statusDiv.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm ${
+        type === 'success' ? 'bg-emerald-900/80 text-emerald-300 border border-emerald-700' :
+        'bg-zinc-900/80 text-zinc-300 border border-zinc-700'
+      }`;
+      statusDiv.textContent = message;
+      document.body.appendChild(statusDiv);
+      
+      setTimeout(() => {
+        statusDiv.style.opacity = '0';
+        statusDiv.style.transform = '-translate-x-1/2) translateY(-20px)';
+        setTimeout(() => statusDiv.remove(), 300);
+      }, 3000);
+    }
+
+    // ==================== HISTORY & SHEET FUNCTIONALITY ====================
     function renderHistory() {
       const arr = getHistory();
       const filter = window.__historyFilter || "all";
@@ -1292,30 +1301,16 @@
         tapPill.textContent = expanded ? "Tap to Collapse" : "Tap to Expand";
       }
       
-      // Update scroll affordance after animation
       setTimeout(updateScrollAffordance, 300);
     }
 
     tapHeader.addEventListener("click", toggleExpand);
     titleTapZone.addEventListener("click", toggleExpand);
 
-    // Show debug button (optional)
-    const debugBtn = document.createElement('button');
-    debugBtn.textContent = '🔧 Debug';
-    debugBtn.className = 'fixed bottom-4 right-4 text-xs bg-black/50 text-zinc-400 px-2 py-1 rounded z-50';
-    debugBtn.onclick = () => {
-      const modal = document.getElementById('debug-modal');
-      modal.classList.toggle('hidden');
-    };
-    document.body.appendChild(debugBtn);
-
     // Initialize
     setTimeout(() => { 
       output.style.opacity = "1"; 
       updateScrollAffordance(); 
-      
-      // Final MiniKit check
-      setTimeout(checkMiniKit, 3000);
     }, 200);
     
     portalScroll.addEventListener("scroll", () => { 
