@@ -385,7 +385,6 @@
       color: #eab308 !important;
     }
 
-    /* Confirm preview block */
     .confirm-preview{
       max-height: 40vh;
       overflow: auto;
@@ -416,7 +415,8 @@
     ⌘
   </button>
 
-  <div id="manual" class="manual-overlay fixed inset-0 z-[70] flex items-center justify-center p-6">
+  <!-- Manual is OPTIONAL (no auto-gate on entry) -->
+  <div id="manual" class="manual-overlay fixed inset-0 z-[70] hidden items-center justify-center p-6">
     <div class="max-w-xl w-full text-left border border-zinc-800/80 bg-black/40 p-7 rounded-2xl shadow-2xl">
       <div class="flex items-start justify-between gap-4">
         <h2 class="serif text-[14px] sm:text-[16px] text-emerald-300 font-semibold uppercase tracking-[0.32em]">
@@ -442,11 +442,11 @@
       <button id="manual-accept"
         class="mt-6 w-full py-3 bg-zinc-900/70 border border-zinc-700/80 hover:border-emerald-500/70
                hover:text-emerald-200 transition duration-300 text-[11px] uppercase tracking-[0.28em] rounded-xl">
-        I Accept the Covenant
+        Enter the Pond
       </button>
 
       <p class="mt-3 text-[10px] uppercase tracking-widest text-zinc-600">
-        This covenant is stored locally in your pond.
+        Optional. Open anytime (⌘).
       </p>
     </div>
   </div>
@@ -600,7 +600,7 @@
     const KEY_HISTORY = "mirror_history_v1";
     const MANUAL_KEY = "mirror_manual_accepted_v2";
 
-    // Manual functionality
+    // Manual functionality (OPTIONAL, no gate)
     const manualEl = document.getElementById("manual");
     const manualGlyph = document.getElementById("manual-glyph");
     const manualAccept = document.getElementById("manual-accept");
@@ -608,6 +608,7 @@
 
     function openManual(){
       if(!manualEl) return;
+      manualEl.classList.remove("hidden");
       manualEl.style.display = "flex";
       manualEl.style.opacity = "1";
       manualEl.style.pointerEvents = "auto";
@@ -617,22 +618,21 @@
       if(!manualEl) return;
       manualEl.style.opacity = "0";
       manualEl.style.pointerEvents = "none";
-      setTimeout(() => { manualEl.style.display = "none"; }, 220);
+      setTimeout(() => {
+        manualEl.style.display = "none";
+        manualEl.classList.add("hidden");
+      }, 220);
     }
 
     function acceptCovenant(){
+      // Optional: remember they've closed it once (not required)
       try{ localStorage.setItem(MANUAL_KEY, "yes"); }catch(e){}
       closeManual();
     }
 
     (function initManual(){
-      let accepted = false;
-      try{ accepted = localStorage.getItem(MANUAL_KEY) === "yes"; }catch(e){}
-      if(accepted) {
-        if(manualEl) manualEl.style.display = "none";
-      } else {
-        openManual();
-      }
+      // No auto-open. Manual is opened via ⌘.
+      if(manualEl) manualEl.style.display = "none";
     })();
 
     if(manualGlyph) manualGlyph.addEventListener("click", openManual);
@@ -846,7 +846,6 @@
       portalEl.classList.toggle("can-scroll", over);
     }
 
-    // IMPORTANT: make it global so module script can read it
     window.currentReflection = null;
     function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
     window.saveCurrentReflection = saveCurrentReflection;
@@ -881,7 +880,6 @@
             resText.textContent  = out.res;
             guideText.textContent= out.guide;
 
-            // save FULL qa for casting
             saveCurrentReflection(q, out.main);
 
             incLeaves();
@@ -994,7 +992,6 @@
       }
     });
 
-    // ======= BaseScan Karmic Record (POND v1.0) =======
     const TOADAID_SAFE = "0xe5C1378F91243727a24fa7c64d5286C537D8eAB2";
 
     function openBaseScanFor(addr){
@@ -1005,7 +1002,7 @@
 
     document.getElementById("basescan-btn")?.addEventListener("click", () => {
       const addr = window.__connectedAddress || "";
-      const mode = window.__walletMode || "none"; // "Base" | "Browser" | "Mock" | "none"
+      const mode = window.__walletMode || "none";
 
       if (mode === "Mock") {
         window.showStatusMessage?.("🔧 Mock wallet mode — connect a real wallet to view BaseScan record.", "info");
@@ -1044,7 +1041,6 @@
 
     window.addEventListener("resize", () => requestAnimationFrame(updateScrollAffordance));
 
-    // ==================== STATUS TOAST ====================
     function showStatusMessage(message, type = 'info') {
       const statusDiv = document.createElement('div');
       statusDiv.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm ${
@@ -1063,7 +1059,6 @@
       }, 3000);
     }
 
-    // ==================== CONFIRM MODAL (OK / CANCEL) + SCROLLABLE PREVIEW ====================
     function confirmSend({ title, body, previewText = "", okText="Send", cancelText="Cancel" }) {
       return new Promise((resolve) => {
         const modal = document.createElement('div');
@@ -1094,12 +1089,10 @@
       });
     }
 
-    // expose for module script
     window.confirmSend = confirmSend;
     window.showStatusMessage = showStatusMessage;
   </script>
 
-  <!-- ==================== MINIAPP SDK + WALLET + CAST ==================== -->
   <script type="module">
     import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk";
     window.__sdk = sdk;
@@ -1115,12 +1108,10 @@
     let connectedAddress = null;
     let ethProvider = null;
 
-    // Expose wallet state for CORE script (BaseScan button)
     function syncWalletGlobals(modeLabel){
       window.__connectedAddress = connectedAddress;
       window.__walletMode = modeLabel || (walletConnected ? "Unknown" : "none");
     }
-    // init defaults
     syncWalletGlobals("none");
 
     async function getProvider() {
@@ -1185,7 +1176,6 @@
       }
     });
 
-    // Drop to Pond: CONFIRM (with exact preview) -> open composer with FULL QA
     dropBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
@@ -1211,7 +1201,6 @@ ${a}
 — from Tobyworld Mirror
 ${appUrl}`;
 
-      // host this image on your GitHub Pages
       const embeds = [];
 
       const ok = await window.confirmSend({
