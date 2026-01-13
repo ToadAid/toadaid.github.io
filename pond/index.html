@@ -768,6 +768,7 @@
         .replace(/<\|[^|>]+?\|>\s*/g, "")
         .replace(/<\/?s>/g, "")
         .replace(/<[^>]{1,24}>/g, "")
+        .replace(/<\/[^\s>]{1,24}>/g, "")
         .trim();
 
       let guide = "";
