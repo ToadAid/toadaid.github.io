@@ -28,7 +28,7 @@
       margin: 0;
       background: #030303;
       color: #d1d1d1;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
       overflow: hidden;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
@@ -676,22 +676,53 @@
       leavesEl.textContent = `Leaves of Stillness: ${n}`;
     }
 
+    function safeUuid(){
+      try{
+        if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+      }catch(e){}
+      return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+    }
+
     function getHistory(){
       try {
-        const arr = JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]");
-        return (Array.isArray(arr) ? arr : []).map(x => ({ ...x, star: !!x.star }));
+        const raw = JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]");
+        const arr = Array.isArray(raw) ? raw : [];
+        // Ensure each item has a stable id (fixes star toggle bug under filtered views)
+        const normalized = arr.map((x, i) => ({
+          id: x?.id || `${String(x?.ts || Date.now())}_${i}`,
+          ts: x?.ts || Date.now(),
+          q:  x?.q || "",
+          a:  x?.a || "",
+          star: !!x?.star
+        }));
+
+        // Persist ids once so future loads are stable
+        const needsPersist = normalized.some((it, i) => !arr[i]?.id);
+        if (needsPersist) {
+          localStorage.setItem(KEY_HISTORY, JSON.stringify(normalized.slice(0, 30)));
+        }
+        return normalized;
       } catch(e){
         return [];
       }
     }
+
     function setHistory(arr){
       localStorage.setItem(KEY_HISTORY, JSON.stringify(arr.slice(0, 30)));
     }
+
     function addHistory(item){
       const arr = getHistory();
-      arr.unshift(item);
+      arr.unshift({
+        id: item?.id || safeUuid(),
+        ts: item?.ts || Date.now(),
+        q: item?.q || "",
+        a: item?.a || "",
+        star: !!item?.star
+      });
       setHistory(arr);
     }
+
     function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, m => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -731,7 +762,12 @@
 
     function parseMirrorAnswer(raw){
       let text = String(raw || "").trim();
-      text = text.replace(/[🪞🌊🍃🌀⚛️≋⏳]+$/g, "").trim();
+
+      // ✅ remove llama/control tokens like <|echo_res| ...> but KEEP emojis
+      text = text
+        .replace(/<\|[^|>]+?\|>\s*/g, "")
+        .replace(/<\/?s>/g, "")
+        .trim();
 
       let guide = "";
       const gMatch = text.match(/Guiding Question:\s*([\s\S]*)$/i);
@@ -952,7 +988,7 @@
       }
 
       let html = `<div class="space-y-3">`;
-      filtered.forEach((item, idx) => {
+      filtered.forEach((item) => {
         const date = new Date(item.ts).toLocaleDateString();
         const time = new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -960,7 +996,7 @@
           <div class="p-3 border border-zinc-800 rounded-lg bg-zinc-900/30">
             <div class="flex justify-between items-start mb-2">
               <div class="text-xs text-zinc-500">${date} ${time}</div>
-              <button data-index="${idx}" class="star-toggle text-xs ${item.star ? 'on' : ''}" onclick="toggleStar(${idx})">
+              <button data-id="${escapeHtml(item.id)}" class="star-toggle text-xs ${item.star ? 'on' : ''}" onclick="toggleStarById('${escapeHtml(item.id)}')">
                 ${item.star ? '★' : '☆'}
               </button>
             </div>
@@ -973,10 +1009,12 @@
       historyList.innerHTML = html;
     }
 
-    window.toggleStar = function(idx) {
+    // ✅ FIX: star toggle by stable id (works correctly even under filtered lists)
+    window.toggleStarById = function(id) {
       const arr = getHistory();
-      if (arr[idx]) {
-        arr[idx].star = !arr[idx].star;
+      const i = arr.findIndex(x => x.id === id);
+      if (i >= 0) {
+        arr[i].star = !arr[i].star;
         setHistory(arr);
         renderHistory();
       }
@@ -1017,7 +1055,6 @@
     function toggleExpand() {
       expanded = !expanded;
       document.body.classList.toggle("expanded", expanded);
-      portalEl.classList.toggle("expanded", expanded);
 
       const tapPill = tapHeader.querySelector('.tap-pill');
       if (tapPill) {
@@ -1136,6 +1173,7 @@
       connectedAddress = null;
       walletBtn.textContent = "Connect Wallet";
       walletBtn.classList.remove("wallet-connected");
+      walletBtn.classList.remove("wallet-mock");
       shareActions.classList.remove("visible");
       syncWalletGlobals("none");
     }
