@@ -767,6 +767,7 @@
       text = text
         .replace(/<\|[^|>]+?\|>\s*/g, "")
         .replace(/<\/?s>/g, "")
+        .replace(/<[^>]{1,24}>/g, "")
         .trim();
 
       let guide = "";
