@@ -738,9 +738,9 @@
       if(manualEl) manualEl.style.display = "none";
     })();
 
-    if(manualGlyph) manualGlyph.addEventListener("click", openManual);
-    if(manualClose) manualClose.addEventListener("click", closeManual);
-    if(manualAccept) manualAccept.addEventListener("click", acceptCovenant);
+    manualGlyph?.addEventListener("click", openManual);
+    manualClose?.addEventListener("click", closeManual);
+    manualAccept?.addEventListener("click", acceptCovenant);
 
     // Core elements
     const input = document.getElementById("user-input");
@@ -765,9 +765,10 @@
     const tapHeader = document.getElementById("tap-header");
     const titleTapZone = document.getElementById("title-tap-zone");
 
-    portalEl.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
-    portalEl.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
-    portalEl.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
+    // Safe-guarded listeners (prevents runtime crashes if element IDs change)
+    portalEl?.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
+    portalEl?.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
+    portalEl?.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
 
     function loadLeaves(){
       const n = Number(localStorage.getItem(KEY_LEAVES) || "0");
@@ -833,29 +834,33 @@
     loadLeaves();
 
     function setLoading(isLoading){
-      if(isLoading) portalEl.classList.add("listening");
-      else portalEl.classList.remove("listening");
-      err.classList.add("hidden");
+      if(isLoading) portalEl?.classList.add("listening");
+      else portalEl?.classList.remove("listening");
+      err?.classList.add("hidden");
 
       if(isLoading){
-        output.style.opacity = "0";
-        reflectBtn.disabled = true;
-        reflectBtn.textContent = "Listening…";
-        reflectBtn.classList.add("opacity-70");
+        if (output) output.style.opacity = "0";
+        if (reflectBtn){
+          reflectBtn.disabled = true;
+          reflectBtn.textContent = "Listening…";
+          reflectBtn.classList.add("opacity-70");
+        }
       }else{
-        reflectBtn.disabled = false;
-        reflectBtn.textContent = "Reflect";
-        reflectBtn.classList.remove("opacity-70");
+        if (reflectBtn){
+          reflectBtn.disabled = false;
+          reflectBtn.textContent = "Reflect";
+          reflectBtn.classList.remove("opacity-70");
+        }
       }
     }
-    function showOutput(){ output.style.opacity = "1"; }
+    function showOutput(){ if (output) output.style.opacity = "1"; }
 
     function openSheet(mode){
       window.__historyFilter = mode || window.__historyFilter || "all";
       renderHistory();
-      sheet.classList.add("open");
+      sheet?.classList.add("open");
     }
-    function closeSheet(){ sheet.classList.remove("open"); }
+    function closeSheet(){ sheet?.classList.remove("open"); }
 
     function stripTravelerPrefix(s){
       return s.replace(/^\s*traveler[,：:]?\s*/i, "").trim();
@@ -979,6 +984,7 @@
     }
 
     function updateScrollAffordance(){
+      if(!portalScroll || !scrollHint || !portalEl) return;
       const over = (portalScroll.scrollHeight - portalScroll.clientHeight) > 16;
       scrollHint.classList.toggle("show", over);
       portalEl.classList.toggle("can-scroll", over);
@@ -989,7 +995,7 @@
     window.saveCurrentReflection = saveCurrentReflection;
 
     async function processInquiry(qOverride){
-      const q = (qOverride ?? input.value).trim();
+      const q = (qOverride ?? input?.value ?? "").trim();
       if(!q) return;
 
       setLoading(true);
@@ -1013,20 +1019,20 @@
               guide: parsed.guide
             } : localFallback(q);
 
-            mainText.textContent = `"${out.main}"`;
-            echoText.textContent = out.echo;
-            resText.textContent  = out.res;
-            guideText.textContent= out.guide;
+            if (mainText) mainText.textContent = `"${out.main}"`;
+            if (echoText) echoText.textContent = out.echo;
+            if (resText)  resText.textContent  = out.res;
+            if (guideText)guideText.textContent= out.guide;
 
             saveCurrentReflection(q, out.main);
 
             incLeaves();
             addHistory({ ts: Date.now(), q, a: out.main, star: false });
 
-            portalScroll.scrollTop = 0;
+            if (portalScroll) portalScroll.scrollTop = 0;
 
             showOutput();
-            input.value = "";
+            if (input) input.value = "";
 
             requestAnimationFrame(updateScrollAffordance);
             break;
@@ -1045,12 +1051,12 @@
             }
             console.error("Attempt", attempt, "failed:", e);
             if(attempt >= maxAttempts){
-              err.classList.remove("hidden");
+              err?.classList.remove("hidden");
               const out = localFallback(q);
-              mainText.textContent = `"${out.main}"`;
-              echoText.textContent = out.echo;
-              resText.textContent  = out.res;
-              guideText.textContent= out.guide;
+              if (mainText) mainText.textContent = `"${out.main}"`;
+              if (echoText) echoText.textContent = out.echo;
+              if (resText)  resText.textContent  = out.res;
+              if (guideText)guideText.textContent= out.guide;
               saveCurrentReflection(q, out.main);
               showOutput();
               break;
@@ -1062,15 +1068,15 @@
       }
     }
 
-    reflectBtn.addEventListener("click", () => processInquiry());
-    input.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
+    reflectBtn?.addEventListener("click", () => processInquiry());
+    input?.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
 
     document.querySelectorAll(".preset").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         const t = btn.getAttribute("data-text") || "";
-        input.value = t;
+        if (input) input.value = t;
         processInquiry(t);
       });
     });
@@ -1083,6 +1089,8 @@
         if (filter === "starred") return item.star;
         return true;
       });
+
+      if (!historyList) return;
 
       if (filtered.length === 0) {
         historyList.innerHTML = `<div class="text-center py-10 text-zinc-600 text-sm">No reflections yet</div>`;
@@ -1097,10 +1105,9 @@
         html += `
           <div class="p-3 border border-zinc-800 rounded-lg bg-zinc-900/30">
             <div class="flex justify-between items-start mb-2">
-              <div class="text-xs text-zinc-500">${date} ${time}</div>
-              <button data-id="${escapeHtml(item.id)}" class="star-toggle text-xs ${item.star ? 'on' : ''}" onclick="toggleStarById('${escapeHtml(item.id)}')">
-                ${item.star ? '★' : '☆'}
-              </button>
+              <div class="text-xs text-zinc-500">${escapeHtml(date)} ${escapeHtml(time)}</div>
+              <button data-id="${escapeHtml(item.id)}"
+                class="star-toggle text-xs ${item.star ? 'on' : ''}">${item.star ? '★' : '☆'}</button>
             </div>
             <div class="text-sm font-semibold text-zinc-300 mb-1">${escapeHtml(item.q)}</div>
             <div class="text-xs italic text-zinc-400">${escapeHtml(item.a)}</div>
@@ -1111,7 +1118,13 @@
       historyList.innerHTML = html;
     }
 
-    window.toggleStarById = function(id) {
+    // Delegated star toggle (no inline onclick → safer + no quote issues)
+    historyList?.addEventListener("click", (e) => {
+      const btn = e.target?.closest?.("button.star-toggle");
+      if(!btn) return;
+      const id = btn.getAttribute("data-id");
+      if(!id) return;
+
       const arr = getHistory();
       const i = arr.findIndex(x => x.id === id);
       if (i >= 0) {
@@ -1119,9 +1132,9 @@
         setHistory(arr);
         renderHistory();
       }
-    };
+    });
 
-    historyBtn.addEventListener("click", () => openSheet("all"));
+    historyBtn?.addEventListener("click", () => openSheet("all"));
     document.getElementById("starred-btn")?.addEventListener("click", () => openSheet("starred"));
     document.getElementById("close-sheet")?.addEventListener("click", closeSheet);
     document.getElementById("clear-history")?.addEventListener("click", () => {
@@ -1157,7 +1170,7 @@
       expanded = !expanded;
       document.body.classList.toggle("expanded", expanded);
 
-      const tapPill = tapHeader.querySelector('.tap-pill');
+      const tapPill = tapHeader?.querySelector?.('.tap-pill');
       if (tapPill) {
         tapPill.textContent = expanded ? "Tap to Collapse" : "Tap to Expand";
       }
@@ -1165,15 +1178,16 @@
       setTimeout(updateScrollAffordance, 300);
     }
 
-    tapHeader.addEventListener("click", toggleExpand);
-    titleTapZone.addEventListener("click", toggleExpand);
+    tapHeader?.addEventListener("click", toggleExpand);
+    titleTapZone?.addEventListener("click", toggleExpand);
 
     setTimeout(() => {
-      output.style.opacity = "1";
+      // Don't auto-show output; keep initial calm until first response.
+      // (But keep layout stable.)
       updateScrollAffordance();
     }, 200);
 
-    portalScroll.addEventListener("scroll", () => {
+    portalScroll?.addEventListener("scroll", () => {
       updateScrollAffordance();
     }, { passive:true });
 
@@ -1203,8 +1217,8 @@
         modal.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-[999] p-4';
         modal.innerHTML = `
           <div class="bg-zinc-900 border border-emerald-800 rounded-xl p-5 max-w-md w-full">
-            <div class="text-emerald-400 mb-2 text-sm uppercase tracking-widest">${title}</div>
-            <div class="text-xs text-zinc-300 mb-3 whitespace-pre-wrap">${body}</div>
+            <div class="text-emerald-400 mb-2 text-sm uppercase tracking-widest">${escapeHtml(title)}</div>
+            <div class="text-xs text-zinc-300 mb-3 whitespace-pre-wrap">${escapeHtml(body)}</div>
 
             ${previewText ? `
               <div class="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Preview (exact cast text)</div>
@@ -1212,8 +1226,8 @@
             ` : ""}
 
             <div class="flex gap-2 mt-4">
-              <button class="flex-1 py-2 bg-zinc-800 rounded-lg text-xs hover:bg-zinc-700 cancel-btn">${cancelText}</button>
-              <button class="flex-1 py-2 bg-emerald-900/30 border border-emerald-800 rounded-lg text-xs text-emerald-300 hover:bg-emerald-900/50 ok-btn">${okText}</button>
+              <button class="flex-1 py-2 bg-zinc-800 rounded-lg text-xs hover:bg-zinc-700 cancel-btn">${escapeHtml(cancelText)}</button>
+              <button class="flex-1 py-2 bg-emerald-900/30 border border-emerald-800 rounded-lg text-xs text-emerald-300 hover:bg-emerald-900/50 ok-btn">${escapeHtml(okText)}</button>
             </div>
           </div>
         `;
@@ -1261,11 +1275,15 @@
       return null;
     }
 
+    // ✅ Fix: preserve Mock styling + avoid removing wallet-mock unintentionally
     function setWalletUIConnected(addr, modeLabel) {
       const shortAddr = `${addr.slice(0,6)}…${addr.slice(-4)}`;
       walletBtn.textContent = `${shortAddr} (${modeLabel})`;
-      walletBtn.classList.add("wallet-connected");
-      walletBtn.classList.remove("wallet-mock");
+
+      walletBtn.classList.remove("wallet-connected", "wallet-mock");
+      if (modeLabel === "Mock") walletBtn.classList.add("wallet-mock");
+      else walletBtn.classList.add("wallet-connected");
+
       shareActions.classList.add("visible");
     }
 
@@ -1291,7 +1309,6 @@
         const mockAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
         walletConnected = true;
         connectedAddress = mockAddress;
-        walletBtn.classList.add("wallet-mock");
         setWalletUIConnected(mockAddress, "Mock");
         syncWalletGlobals("Mock");
         window.showStatusMessage?.("🔧 No Mini App wallet provider detected — using Mock.", "info");
@@ -1362,43 +1379,28 @@ ${appUrl}`;
     });
 
     // ==================== FREEZE FLOW (ERC-1155 + 1 USDC fee) ====================
-    // NOTE: This assumes your ERC-1155 contract has a mint function that collects USDC:
-    //   - checks allowance
-    //   - transfers 1 USDC to TOADAID_SAFE
-    //   - mints ERC-1155 token to `to`
-    //
-    // If your contract instead expects the frontend to transfer USDC directly,
-    // update LEAF_ABI + mint call accordingly.
-
-    // ---- Chain + addresses (Base) ----
     const BASE_CHAIN_ID = "0x2105"; // 8453
     const USDC_BASE     = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
     const TOADAID_SAFE  = "0xe5C1378F91243727a24fa7c64d5286C537D8eAB2";
 
-    // ✅ Set this before production:
     const LEAF_CONTRACT = "0xYOUR_ERC1155_ADDRESS";
 
     const USDC_DECIMALS = 6;
-    const MINT_FEE      = 1 * 10 ** USDC_DECIMALS; // 1 USDC (6 decimals)
+    const MINT_FEE      = 1 * 10 ** USDC_DECIMALS;
 
-    // Minimal ABIs
     const USDC_ABI = [
       "function allowance(address owner, address spender) view returns (uint256)",
       "function approve(address spender, uint256 amount) returns (bool)"
     ];
 
-    // Option A (recommended): contract collects USDC inside mintLeaf
-    // function mintLeaf(address to, string cid, string tag) external
     const LEAF_ABI = [
       "function mintLeaf(address to, string cid, string tag)"
     ];
 
-    // Local storage keys
     const KEY_FREEZE_DRAFT = "mirror_freeze_draft_v1";
     const KEY_FREEZE_CD    = "mirror_freeze_cooldown_v1";
-    const KEY_IPFS_STUB    = "mirror_ipfs_stub_v1"; // local storage "ipfs"
+    const KEY_IPFS_STUB    = "mirror_ipfs_stub_v1";
 
-    // Modal elements
     const freezeModal   = document.getElementById("freeze-modal");
     const freezeClose   = document.getElementById("freeze-close");
     const freezeTag     = document.getElementById("freeze-tag");
@@ -1521,7 +1523,6 @@ ${appUrl}`;
 
       if(chainId === BASE_CHAIN_ID) return;
 
-      // Try switch
       try{
         await ethProvider.request({
           method: "wallet_switchEthereumChain",
@@ -1529,7 +1530,6 @@ ${appUrl}`;
         });
         return;
       }catch(e){
-        // Try add chain (some wallets require it)
         try{
           await ethProvider.request({
             method: "wallet_addEthereumChain",
@@ -1552,6 +1552,9 @@ ${appUrl}`;
       if(!walletConnected || !ethProvider || !connectedAddress){
         throw new Error("Connect a real wallet to mint.");
       }
+      if(window.__walletMode === "Mock"){
+        throw new Error("Mock wallet cannot mint. Please connect a real wallet.");
+      }
       if(!LEAF_CONTRACT || LEAF_CONTRACT === "0xYOUR_ERC1155_ADDRESS"){
         throw new Error("LEAF_CONTRACT not set.");
       }
@@ -1559,7 +1562,6 @@ ${appUrl}`;
 
       await ensureBaseNetwork();
 
-      // Load ethers v6 (module import)
       const ethers = await import("https://esm.sh/ethers@6.10.0");
       const provider = new ethers.BrowserProvider(ethProvider);
       const signer = await provider.getSigner();
@@ -1567,7 +1569,6 @@ ${appUrl}`;
       const usdc = new ethers.Contract(USDC_BASE, USDC_ABI, signer);
       const leaf = new ethers.Contract(LEAF_CONTRACT, LEAF_ABI, signer);
 
-      // Frontend ensures allowance for contract to pull 1 USDC
       const allowance = await usdc.allowance(connectedAddress, LEAF_CONTRACT);
       if(allowance < BigInt(MINT_FEE)){
         window.showStatusMessage?.("Approving 1 USDC…", "info");
@@ -1589,7 +1590,6 @@ ${appUrl}`;
         return;
       }
 
-      // Encrypt locally (AES-256-GCM)
       const enc = new TextEncoder();
       const key = await crypto.subtle.generateKey({ name:"AES-GCM", length:256 }, true, ["encrypt","decrypt"]);
       const iv  = crypto.getRandomValues(new Uint8Array(12));
@@ -1598,14 +1598,11 @@ ${appUrl}`;
       const ctBuf = await crypto.subtle.encrypt({ name:"AES-GCM", iv }, key, pt);
       const ct = new Uint8Array(ctBuf);
 
-      // CID-like hash = sha256(ciphertext) (placeholder for real IPFS CID)
       const digest = await sha256(ct);
       const cid = "sha256:" + hex(digest);
 
-      // Store encrypted blob in localStorage as IPFS stub
       ipfsStubStore(cid, b64(ct));
 
-      // Prepare payload (what we'd mint)
       const payload = {
         type: "MIRROR_REFLECTION_V1",
         target: "ERC-1155",
@@ -1613,7 +1610,7 @@ ${appUrl}`;
         wallet: connectedAddress,
         tag: freezeTag.value,
         created_at: nowISO(),
-        cid, // later: real IPFS CID
+        cid,
         fee: { token: "USDC", amount: "1.00", decimals: 6, to: TOADAID_SAFE },
         crypto: {
           alg: "AES-256-GCM",
@@ -1639,6 +1636,10 @@ ${appUrl}`;
     async function signProof(){
       if(!walletConnected || !ethProvider || !connectedAddress){
         alert("Connect a real wallet to sign.");
+        return;
+      }
+      if(window.__walletMode === "Mock"){
+        alert("Mock wallet cannot sign. Please connect a real wallet.");
         return;
       }
       if(!lastCommitPayload?.cid){
@@ -1753,7 +1754,6 @@ You can move it to a new wallet later, or list it.`,
         return;
       }
 
-      // Reset UI each open
       cidEl.textContent = "—";
       bytesEl.textContent = "—";
       payloadEl.textContent = "";
