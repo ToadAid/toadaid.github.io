@@ -620,11 +620,29 @@
         </div>
 
         <div class="mt-2 rounded-xl border border-white/10 bg-black/30 p-3 space-y-2">
-          <div class="text-[10px] uppercase tracking-widest text-zinc-500">Commit output (test)</div>
+          <div class="text-[10px] uppercase tracking-widest text-zinc-500">Commit output</div>
           <div class="text-xs"><span class="text-zinc-500">CID:</span> <span id="freeze-cid" class="text-zinc-200">—</span></div>
           <div class="text-xs"><span class="text-zinc-500">Encrypted bytes:</span> <span id="freeze-bytes" class="text-zinc-200">—</span></div>
           <div class="text-xs text-zinc-500">
-            (In production: upload encrypted blob to IPFS + ERC-1155 mint tx. Here: local stub + wallet signature.)
+            Commit encrypts your reflection locally. Mint is optional.
+          </div>
+        </div>
+
+        <div class="mt-2 rounded-xl border border-emerald-900/30 bg-emerald-950/20 p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] uppercase tracking-widest text-emerald-300">Mint Fee</div>
+            <div class="text-xs text-emerald-200"><span class="font-semibold">1 USDC</span> on Base</div>
+          </div>
+          <div class="text-xs text-emerald-200/90 leading-relaxed">
+            Fee is paid in <span class="font-semibold">USDC</span> (no conversion).
+            Funds route to the <span class="font-semibold">ToadAid Safe</span>:
+            <span class="font-mono text-emerald-200/90">0xe5C1378F91243727a24fa7c64d5286C537D8eAB2</span>
+          </div>
+          <div class="text-xs text-emerald-200/80">
+            This is an <span class="font-semibold">ERC-1155</span> leaf — transferable. You may move it between wallets, or list it if you wish.
+          </div>
+          <div class="text-[10px] uppercase tracking-widest text-emerald-400">
+            NOTE: Set LEAF_CONTRACT in code before minting.
           </div>
         </div>
 
@@ -634,6 +652,15 @@
           </button>
           <button id="freeze-sign" class="py-3 rounded-xl border border-emerald-700/60 bg-emerald-900/10 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             Sign Proof
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button id="freeze-mint" class="py-3 rounded-xl border border-emerald-500/60 bg-emerald-900/25 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+            Mint Leaf (1 USDC)
+          </button>
+          <button id="freeze-view" class="py-3 rounded-xl border border-zinc-700/60 bg-zinc-900/20 text-zinc-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+            View Tx ↗
           </button>
         </div>
 
@@ -703,13 +730,11 @@
     }
 
     function acceptCovenant(){
-      // Optional: remember they've closed it once (not required)
       try{ localStorage.setItem(MANUAL_KEY, "yes"); }catch(e){}
       closeManual();
     }
 
     (function initManual(){
-      // No auto-open. Manual is opened via ⌘.
       if(manualEl) manualEl.style.display = "none";
     })();
 
@@ -765,7 +790,6 @@
       try {
         const raw = JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]");
         const arr = Array.isArray(raw) ? raw : [];
-        // Ensure each item has a stable id (fixes star toggle bug under filtered views)
         const normalized = arr.map((x, i) => ({
           id: x?.id || `${String(x?.ts || Date.now())}_${i}`,
           ts: x?.ts || Date.now(),
@@ -774,7 +798,6 @@
           star: !!x?.star
         }));
 
-        // Persist ids once so future loads are stable
         const needsPersist = normalized.some((it, i) => !arr[i]?.id);
         if (needsPersist) {
           localStorage.setItem(KEY_HISTORY, JSON.stringify(normalized.slice(0, 30)));
@@ -841,7 +864,6 @@
     function parseMirrorAnswer(raw){
       let text = String(raw || "").trim();
 
-      // ✅ remove llama/control tokens like <|echo_res| ...> but KEEP emojis
       text = text
         .replace(/<\|[^|>]+?\|>\s*/g, "")
         .replace(/<\/?s>/g, "")
@@ -1089,7 +1111,6 @@
       historyList.innerHTML = html;
     }
 
-    // ✅ FIX: star toggle by stable id (works correctly even under filtered lists)
     window.toggleStarById = function(id) {
       const arr = getHistory();
       const i = arr.findIndex(x => x.id === id);
@@ -1340,11 +1361,44 @@ ${appUrl}`;
       }
     });
 
-    // ==================== FREEZE FLOW (TEST MODE, ERC-1155 TARGET) ====================
+    // ==================== FREEZE FLOW (ERC-1155 + 1 USDC fee) ====================
+    // NOTE: This assumes your ERC-1155 contract has a mint function that collects USDC:
+    //   - checks allowance
+    //   - transfers 1 USDC to TOADAID_SAFE
+    //   - mints ERC-1155 token to `to`
+    //
+    // If your contract instead expects the frontend to transfer USDC directly,
+    // update LEAF_ABI + mint call accordingly.
+
+    // ---- Chain + addresses (Base) ----
+    const BASE_CHAIN_ID = "0x2105"; // 8453
+    const USDC_BASE     = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+    const TOADAID_SAFE  = "0xe5C1378F91243727a24fa7c64d5286C537D8eAB2";
+
+    // ✅ Set this before production:
+    const LEAF_CONTRACT = "0xYOUR_ERC1155_ADDRESS";
+
+    const USDC_DECIMALS = 6;
+    const MINT_FEE      = 1 * 10 ** USDC_DECIMALS; // 1 USDC (6 decimals)
+
+    // Minimal ABIs
+    const USDC_ABI = [
+      "function allowance(address owner, address spender) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)"
+    ];
+
+    // Option A (recommended): contract collects USDC inside mintLeaf
+    // function mintLeaf(address to, string cid, string tag) external
+    const LEAF_ABI = [
+      "function mintLeaf(address to, string cid, string tag)"
+    ];
+
+    // Local storage keys
     const KEY_FREEZE_DRAFT = "mirror_freeze_draft_v1";
     const KEY_FREEZE_CD    = "mirror_freeze_cooldown_v1";
     const KEY_IPFS_STUB    = "mirror_ipfs_stub_v1"; // local storage "ipfs"
 
+    // Modal elements
     const freezeModal   = document.getElementById("freeze-modal");
     const freezeClose   = document.getElementById("freeze-close");
     const freezeTag     = document.getElementById("freeze-tag");
@@ -1359,10 +1413,15 @@ ${appUrl}`;
 
     const commitBtn     = document.getElementById("freeze-commit");
     const signBtn       = document.getElementById("freeze-sign");
+    const mintBtn       = document.getElementById("freeze-mint");
+    const viewBtn       = document.getElementById("freeze-view");
 
     const cidEl         = document.getElementById("freeze-cid");
     const bytesEl       = document.getElementById("freeze-bytes");
     const payloadEl     = document.getElementById("freeze-payload");
+
+    let lastCommitPayload = null;
+    let lastMintTxHash = null;
 
     function openFreezeModal(){
       freezeModal.classList.remove("hidden");
@@ -1456,7 +1515,72 @@ ${appUrl}`;
       }catch(e){}
     }
 
-    let lastCommitPayload = null;
+    async function ensureBaseNetwork(){
+      if(!ethProvider) throw new Error("No wallet provider");
+      const chainId = await ethProvider.request({ method: "eth_chainId" });
+
+      if(chainId === BASE_CHAIN_ID) return;
+
+      // Try switch
+      try{
+        await ethProvider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BASE_CHAIN_ID }]
+        });
+        return;
+      }catch(e){
+        // Try add chain (some wallets require it)
+        try{
+          await ethProvider.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: BASE_CHAIN_ID,
+              chainName: "Base",
+              nativeCurrency: { name:"Ether", symbol:"ETH", decimals:18 },
+              rpcUrls: ["https://mainnet.base.org"],
+              blockExplorerUrls: ["https://basescan.org"]
+            }]
+          });
+          return;
+        }catch(e2){
+          throw new Error("Please switch network to Base");
+        }
+      }
+    }
+
+    async function mintLeafOnchain({ cid, tag }){
+      if(!walletConnected || !ethProvider || !connectedAddress){
+        throw new Error("Connect a real wallet to mint.");
+      }
+      if(!LEAF_CONTRACT || LEAF_CONTRACT === "0xYOUR_ERC1155_ADDRESS"){
+        throw new Error("LEAF_CONTRACT not set.");
+      }
+      if(!cid) throw new Error("Missing CID");
+
+      await ensureBaseNetwork();
+
+      // Load ethers v6 (module import)
+      const ethers = await import("https://esm.sh/ethers@6.10.0");
+      const provider = new ethers.BrowserProvider(ethProvider);
+      const signer = await provider.getSigner();
+
+      const usdc = new ethers.Contract(USDC_BASE, USDC_ABI, signer);
+      const leaf = new ethers.Contract(LEAF_CONTRACT, LEAF_ABI, signer);
+
+      // Frontend ensures allowance for contract to pull 1 USDC
+      const allowance = await usdc.allowance(connectedAddress, LEAF_CONTRACT);
+      if(allowance < BigInt(MINT_FEE)){
+        window.showStatusMessage?.("Approving 1 USDC…", "info");
+        const txApprove = await usdc.approve(LEAF_CONTRACT, MINT_FEE);
+        await txApprove.wait();
+      }
+
+      window.showStatusMessage?.("Minting Leaf…", "info");
+      const tx = await leaf.mintLeaf(connectedAddress, cid, tag);
+      const receipt = await tx.wait();
+
+      return { txHash: tx.hash, receipt };
+    }
 
     async function commitReflection(){
       const text = (loadFreezeDraft()?.text || getCurrentReflectionText() || "").trim();
@@ -1481,7 +1605,7 @@ ${appUrl}`;
       // Store encrypted blob in localStorage as IPFS stub
       ipfsStubStore(cid, b64(ct));
 
-      // Prepare payload (what we'd mint later)
+      // Prepare payload (what we'd mint)
       const payload = {
         type: "MIRROR_REFLECTION_V1",
         target: "ERC-1155",
@@ -1490,6 +1614,7 @@ ${appUrl}`;
         tag: freezeTag.value,
         created_at: nowISO(),
         cid, // later: real IPFS CID
+        fee: { token: "USDC", amount: "1.00", decimals: 6, to: TOADAID_SAFE },
         crypto: {
           alg: "AES-256-GCM",
           iv_b64: b64(iv),
@@ -1504,6 +1629,10 @@ ${appUrl}`;
       payloadEl.textContent = JSON.stringify(payload, null, 2);
 
       signBtn.disabled = false;
+      mintBtn.disabled = false;
+      viewBtn.disabled = true;
+      lastMintTxHash = null;
+
       window.showStatusMessage?.("✅ Reflection committed (encrypted + CID created).", "success");
     }
 
@@ -1523,7 +1652,7 @@ CID: ${lastCommitPayload.cid}
 TAG: ${lastCommitPayload.tag}
 TIME: ${lastCommitPayload.created_at}
 WALLET: ${connectedAddress}
-NOTE: Test proof (no ERC-1155 mint tx yet).`;
+NOTE: Proof of commit (separate from mint).`;
 
       try{
         const sig = await ethProvider.request({
@@ -1532,11 +1661,53 @@ NOTE: Test proof (no ERC-1155 mint tx yet).`;
         });
 
         payloadEl.textContent = JSON.stringify({ ...lastCommitPayload, proof: { method:"personal_sign", signature: sig } }, null, 2);
-        window.showStatusMessage?.("🪞 Proof signed. (Next: real ERC-1155 mint tx)", "success");
+        window.showStatusMessage?.("🪞 Proof signed.", "success");
       }catch(e){
         console.error("signProof error:", e);
         alert("Signature failed: " + (e?.message || "Unknown"));
       }
+    }
+
+    async function mintLeaf(){
+      try{
+        if(!lastCommitPayload?.cid){
+          alert("Commit first.");
+          return;
+        }
+
+        const ok = await window.confirmSend({
+          title: "Mint Leaf (ERC-1155)",
+          body:
+`This mints a transferable ERC-1155 Reflection Leaf on Base.
+
+Fee: 1 USDC
+Recipient: ToadAid Safe
+${TOADAID_SAFE}
+
+You can move it to a new wallet later, or list it.`,
+          previewText: `CID: ${lastCommitPayload.cid}\nTAG: ${lastCommitPayload.tag}`,
+          okText: "OK — Mint",
+          cancelText: "Cancel"
+        });
+
+        if(!ok) return;
+
+        const { txHash } = await mintLeafOnchain({ cid: lastCommitPayload.cid, tag: lastCommitPayload.tag });
+
+        lastMintTxHash = txHash;
+        viewBtn.disabled = false;
+
+        payloadEl.textContent = JSON.stringify({ ...lastCommitPayload, mint: { txHash, explorer: `https://basescan.org/tx/${txHash}` } }, null, 2);
+        window.showStatusMessage?.("🪶 Leaf minted on Base.", "success");
+      }catch(e){
+        console.error("mintLeaf error:", e);
+        alert("Mint failed: " + (e?.message || "Unknown"));
+      }
+    }
+
+    function viewTx(){
+      if(!lastMintTxHash) return;
+      window.open(`https://basescan.org/tx/${lastMintTxHash}`, "_blank");
     }
 
     freezeClose?.addEventListener("click", closeFreezeModal);
@@ -1567,6 +1738,8 @@ NOTE: Test proof (no ERC-1155 mint tx yet).`;
 
     commitBtn?.addEventListener("click", commitReflection);
     signBtn?.addEventListener("click", signProof);
+    mintBtn?.addEventListener("click", mintLeaf);
+    viewBtn?.addEventListener("click", viewTx);
 
     freezeBtn.addEventListener("click", async () => {
       if (!walletConnected) {
@@ -1585,7 +1758,10 @@ NOTE: Test proof (no ERC-1155 mint tx yet).`;
       bytesEl.textContent = "—";
       payloadEl.textContent = "";
       signBtn.disabled = true;
+      mintBtn.disabled = true;
+      viewBtn.disabled = true;
       lastCommitPayload = null;
+      lastMintTxHash = null;
 
       syncPreviewFromDraftOrCurrent();
       updateCooldownUI();
