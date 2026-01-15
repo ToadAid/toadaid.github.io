@@ -1314,8 +1314,7 @@
     window.showStatusMessage = showStatusMessage;
   </script>
 
-<!-- Replace the existing module script with this fixed version -->
-<script type="module">
+  <script type="module">
     // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
     // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
     let sdk = null;
@@ -2032,12 +2031,12 @@ ${appUrl}`;
       }
 
       const msg =
-    `Mirror Reflection Commit Proof
-    CID: ${lastCommitPayload.cid}
-    TAG: ${lastCommitPayload.tag}
-    TIME: ${lastCommitPayload.created_at}
-    WALLET: ${connectedAddress}
-    NOTE: Proof of commit (separate from mint).`;
+`Mirror Reflection Commit Proof
+CID: ${lastCommitPayload.cid}
+TAG: ${lastCommitPayload.tag}
+TIME: ${lastCommitPayload.created_at}
+WALLET: ${connectedAddress}
+NOTE: Proof of commit (separate from mint).`;
 
       try{
         const sig = await ethProvider.request({
@@ -2063,13 +2062,13 @@ ${appUrl}`;
         const ok = await window.confirmSend({
           title: "Mint Leaf (ERC-1155)",
           body:
-    `This mints a transferable ERC-1155 Reflection Leaf on Base.
+`This mints a transferable ERC-1155 Reflection Leaf on Base.
 
-    Fee: 1 USDC
-    Recipient: ToadAid Safe
-    ${TOADAID_SAFE}
+Fee: 1 USDC
+Recipient: ToadAid Safe
+${TOADAID_SAFE}
 
-    You can move it to a new wallet later, or list it.`,
+You can move it to a new wallet later, or list it.`,
           previewText: `CID: ${lastCommitPayload.cid}\nTAG: ${lastCommitPayload.tag}`,
           okText: "OK — Mint",
           cancelText: "Cancel"
