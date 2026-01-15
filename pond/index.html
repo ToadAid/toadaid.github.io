@@ -32,6 +32,8 @@
       overflow: hidden;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
     }
 
     body{
@@ -219,6 +221,8 @@
       overflow: auto;
       padding: 18px 18px 16px;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      scroll-behavior: smooth;
       scrollbar-width: none;
     }
     .portal-scroll::-webkit-scrollbar{ display:none; }
@@ -402,16 +406,46 @@
     }
     .confirm-preview::-webkit-scrollbar{ display:none; }
 
-    /* LEAF PREVIEW */
-    .modal-card{ max-height: 90vh; overflow: auto; -webkit-overflow-scrolling: touch; }
-    .leaf-preview-shell{ border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; background: rgba(0,0,0,0.25); padding: 12px; }
-    .leaf-preview-title{ font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 8px; }
-    .leaf-preview-img{ width: 100%; height: auto; display: block; border-radius: 14px; }
-    .leaf-preview-actions{ display:flex; gap:10px; justify-content:center; margin-top: 10px; }
-    .leaf-preview-actions .share-btn{ border-color: rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.65); }
-    .leaf-preview-actions .share-btn:hover{ background: rgba(255,255,255,0.08); box-shadow: 0 0 20px rgba(255,255,255,0.08); }
+    /* Fix for mobile webkit */
+    @media screen and (max-width: 768px) {
+      html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        position: fixed;
+      }
+      
+      body.expanded {
+        position: fixed;
+        height: 100vh;
+      }
+      
+      .portal-scroll {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+        position: relative;
+      }
+    }
 
-    .no-scroll{ overflow: hidden !important; }
+    /* Improve touch scrolling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    /* Ensure modal doesn't cause scroll issues */
+    #freeze-modal {
+      position: fixed;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    #freeze-modal > div {
+      max-height: 90vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
   </style>
 </head>
 
@@ -577,7 +611,7 @@
 
   <!-- ==================== FREEZE (Reflection NFT) MODAL ==================== -->
   <div id="freeze-modal" class="fixed inset-0 z-[999] hidden items-center justify-center p-4 bg-black/90">
-    <div class="modal-card w-full max-w-md rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
+    <div class="w-full max-w-md rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
       <div class="flex items-start justify-between gap-3">
         <div>
           <div class="text-[10px] uppercase tracking-[0.28em] text-emerald-400">Freeze as Leaf</div>
@@ -587,19 +621,6 @@
       </div>
 
       <div class="mt-4 space-y-3">
-        <div class="leaf-preview-shell">
-          <div class="leaf-preview-title">LEAF (VISUAL PREVIEW)</div>
-          <div class="leaf-preview-sub">Your reflection is rendered locally as an SVG leaf.</div>
-          <div class="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/20">
-            <img id="leaf-preview" alt="Leaf preview" style="width:100%; height:auto; display:block;" />
-          </div>
-          <div class="leaf-preview-actions">
-            <button id="leaf-dl-svg" class="leaf-btn">Download SVG</button>
-            <button id="leaf-dl-png" class="leaf-btn">Download PNG</button>
-          </div>
-        </div>
-
-        
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Tag</div>
         <select id="freeze-tag" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm">
           <option value="STILLNESS">STILLNESS</option>
@@ -611,7 +632,15 @@
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Reflection (preview)</div>
         <div id="freeze-preview" class="confirm-preview"></div>
 
-        
+        <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
+        <div class="rounded-xl border border-white/10 bg-black/30 p-3">
+          <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
+            <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
+          </div>
+        </div>
+
 
         <div class="grid grid-cols-2 gap-2">
           <button id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
@@ -1285,9 +1314,9 @@
     window.showStatusMessage = showStatusMessage;
   </script>
 
-  <script>
-  (async () => {
-// Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
+<!-- Replace the existing module script with this fixed version -->
+<script type="module">
+    // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
     // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
     let sdk = null;
     try {
@@ -1501,8 +1530,7 @@ ${appUrl}`;
       .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
       .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
       .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
-      .no-scroll{ overflow: hidden !important; }
-  </style>
+    </style>
   </defs>
 
   <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
@@ -1611,137 +1639,165 @@ ${appUrl}`;
     const KEY_FREEZE_CD    = "mirror_freeze_cooldown_v1";
     const KEY_IPFS_STUB    = "mirror_ipfs_stub_v1";
 
-    // ==================== LEAF SVG (IN-MODAL) ====================
-    // Render a shareable Leaf preview *inside* the mint modal.
-    const leafShell = document.getElementById("leaf-preview");
-    const dlSvgBtn  = document.getElementById("leaf-dl-svg");
-    const dlPngBtn  = document.getElementById("leaf-dl-png");
+    const freezeModal   = document.getElementById("freeze-modal");
+    const freezeClose   = document.getElementById("freeze-close");
+    const freezeTag     = document.getElementById("freeze-tag");
+    const freezePreview = document.getElementById("freeze-preview");
 
-    let __lastLeafSvg = "";
+    const freezeSave    = document.getElementById("freeze-save");
+    const freezeClear   = document.getElementById("freeze-clear");
+    const cdMinInput    = document.getElementById("freeze-cooldown-min");
+    const cdStart       = document.getElementById("freeze-start");
+    const cdCancel      = document.getElementById("freeze-cancel");
+    const cdStatus      = document.getElementById("freeze-status");
+
+    const commitBtn     = document.getElementById("freeze-commit");
+    const signBtn       = document.getElementById("freeze-sign");
+    const mintBtn       = document.getElementById("freeze-mint");
+    const viewBtn       = document.getElementById("freeze-view");
+
+    const cidEl         = document.getElementById("freeze-cid");
+    const bytesEl       = document.getElementById("freeze-bytes");
+    const payloadEl     = document.getElementById("freeze-payload");
+
+    // Leaf preview wiring
+    const leafImg = document.getElementById("leaf-preview-img");
+    const dlSvgBtn = document.getElementById("leaf-download-svg");
+    const dlPngBtn = document.getElementById("leaf-download-png");
+
+    // ============ FIX: Add event listeners for the broken buttons ============
+
+    // Download SVG button
+    dlSvgBtn?.addEventListener("click", () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) {
+        alert("No leaf yet. Generate a reflection first.");
+        return;
+      }
+      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
+      window.showStatusMessage?.("🪶 SVG downloaded.", "success");
+    });
+
+    // Download PNG button
+    dlPngBtn?.addEventListener("click", async () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) {
+        alert("No leaf yet. Generate a reflection first.");
+        return;
+      }
+      try {
+        const png = await svgToPngBlob(svg, 400, 600);
+        if(!png) {
+          alert("PNG export failed.");
+          return;
+        }
+        downloadBlob(png, "reflection-leaf.png");
+        window.showStatusMessage?.("🪶 PNG downloaded.", "success");
+      } catch (error) {
+        console.error("PNG export error:", error);
+        alert("Failed to export PNG: " + error.message);
+      }
+    });
+
+    // Save Draft button
+    freezeSave?.addEventListener("click", () => {
+      const text = getCurrentReflectionText();
+      if(!text || text.trim() === "") {
+        alert("No reflection to save. Generate a reflection first.");
+        return;
+      }
+      const obj = { 
+        text: text, 
+        tag: freezeTag.value, 
+        saved_at: new Date().toISOString(),
+        svg: window.currentLeafSvg 
+      };
+      saveFreezeDraft(obj);
+      window.showStatusMessage?.("📝 Draft saved locally.", "success");
+      syncPreviewFromDraftOrCurrent();
+    });
+
+    // Clear Draft button
+    freezeClear?.addEventListener("click", () => {
+      if(confirm("Clear the saved draft? This cannot be undone.")) {
+        clearFreezeDraft();
+        window.showStatusMessage?.("🗑️ Draft cleared.", "info");
+        syncPreviewFromDraftOrCurrent();
+      }
+    });
+
+    function getCurrentReflectionText(){
+      const ref = window.currentReflection || null;
+      if(!ref) return "";
+      
+      // Get the actual displayed text from the main-text element
+      const mainDisplayElement = document.getElementById("main-text");
+      let displayedAnswer = "";
+      
+      if (mainDisplayElement) {
+        displayedAnswer = mainDisplayElement.textContent || "";
+        // Remove quotation marks if present
+        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
+          displayedAnswer = displayedAnswer.slice(1, -1).trim();
+        }
+      } else {
+        // Fallback to the stored answer
+        displayedAnswer = ref.a || "";
+      }
+      
+      return `Q: ${ref.q}\n\nA: ${displayedAnswer}\n\n— Tobyworld Mirror`;
+    }
 
     function refreshLeafPreview(){
-      if (!leafShell) return;
-
-      const ref = window.currentReflection || { q: "", a: "" };
-      const q = (ref.q || "").trim();
-      const a = (ref.a || "").trim();
-      const tag = (tagSel?.value || "STILLNESS").trim() || "STILLNESS";
-      const epoch = "EPOCH 5";
-      const n = Number(localStorage.getItem(KEY_LEAVES) || "0") + 1;
-
-      const svg = createLeafSVG({ n, q, a, tag, epoch });
-      __lastLeafSvg = svg;
-      leafShell.innerHTML = svg;
-    }
-
-    function downloadTextFile(filename, text){
-      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url), 500);
-    }
-
-    async function downloadLeafPNG(){
-      if (!__lastLeafSvg) refreshLeafPreview();
-      if (!__lastLeafSvg) return;
-
-      const svgText = __lastLeafSvg;
-      const svgBlob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
-      const url = URL.createObjectURL(svgBlob);
-
-      const img = new Image();
-      const w = 900;
-      const h = 1400;
-
-      await new Promise((resolve, reject)=>{
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = url;
+      const ref = window.currentReflection || null;
+      
+      // Get the actual displayed text
+      const mainDisplayElement = document.getElementById("main-text");
+      let displayedAnswer = "";
+      
+      if (mainDisplayElement) {
+        displayedAnswer = mainDisplayElement.textContent || "";
+        // Remove quotation marks if present
+        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
+          displayedAnswer = displayedAnswer.slice(1, -1).trim();
+        }
+      } else if (ref) {
+        displayedAnswer = ref.a || "";
+      }
+      
+      // Get resonance text
+      const resonanceElement = document.getElementById("res-text");
+      let resonanceText = "Stillness.";
+      if (resonanceElement) {
+        resonanceText = resonanceElement.textContent || "Stillness.";
+        // Remove "Resonance: " prefix if present
+        resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
+      }
+      
+      // Get guide text
+      const guideElement = document.getElementById("guide-text");
+      let guideText = "What remains when urgency leaves?";
+      if (guideElement) {
+        guideText = guideElement.textContent || "What remains when urgency leaves?";
+      }
+      
+      const svg = createLeafSVG({
+        leafNo: 8,
+        q: ref?.q || "",
+        a: displayedAnswer,
+        resonance: resonanceText,
+        guide: guideText,
+        mode: "POND",
+        epoch: "EPOCH 5"
       });
 
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0,0,w,h);
-      ctx.drawImage(img, 0, 0, w, h);
+      window.currentLeafSvg = svg;
 
-      URL.revokeObjectURL(url);
-
-      const pngUrl = canvas.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = pngUrl;
-      a.download = "leaf.png";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      try{ if(window.currentLeafSvgUrl) URL.revokeObjectURL(window.currentLeafSvgUrl); }catch(e){}
+      const url = svgToObjectUrl(svg);
+      window.currentLeafSvgUrl = url;
+      if(leafImg) leafImg.src = url;
     }
-
-    dlSvgBtn?.addEventListener("click", async () => {
-      try{
-        const svg = (window.__lastLeafSvg || "").trim();
-        if(!svg){
-          window.showStatusMessage?.("No SVG yet — generate a reflection first.", "info");
-          return;
-        }
-        const blob = new Blob([svg], { type:"image/svg+xml;charset=utf-8" });
-        const url  = URL.createObjectURL(blob);
-        // Try download; if blocked by in-app webview, fall back to opening the file.
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `reflection-leaf-${Date.now()}.svg`;
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.showStatusMessage?.("SVG export started. If download is blocked, it will open in a new tab.", "info");
-        // Fallback: open after a tick (some webviews ignore download attribute)
-        setTimeout(() => {
-          try{ window.open(url, "_blank", "noopener,noreferrer"); }catch(e){}
-        }, 600);
-        setTimeout(() => URL.revokeObjectURL(url), 10_000);
-      }catch(e){
-        console.error("download svg error:", e);
-        window.showStatusMessage?.("SVG export failed.", "info");
-      }
-    });
-
-    dlPngBtn?.addEventListener("click", async () => {
-      try{
-        const svg = (window.__lastLeafSvg || "").trim();
-        if(!svg){
-          window.showStatusMessage?.("No SVG yet — generate a reflection first.", "info");
-          return;
-        }
-        const pngDataUrl = await svgToPngDataUrl(svg, 1080);
-        if(!pngDataUrl){
-          window.showStatusMessage?.("PNG export failed.", "info");
-          return;
-        }
-        const a = document.createElement("a");
-        a.href = pngDataUrl;
-        a.download = `reflection-leaf-${Date.now()}.png`;
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.showStatusMessage?.("PNG export started. If download is blocked, it will open in a new tab.", "info");
-        setTimeout(() => {
-          try{ window.open(pngDataUrl, "_blank", "noopener,noreferrer"); }catch(e){}
-        }, 600);
-      }catch(e){
-        console.error("download png error:", e);
-        window.showStatusMessage?.("PNG export failed.", "info");
-      }
-    });
-
-
-
 
     let lastCommitPayload = null;
     let lastMintTxHash = null;
@@ -1749,12 +1805,12 @@ ${appUrl}`;
     function openFreezeModal(){
       freezeModal.classList.remove("hidden");
       freezeModal.style.display = "flex";
-      document.body.classList.add("no-scroll");
+      document.body.style.overflow = 'hidden'; // Prevent body scroll
     }
     function closeFreezeModal(){
       freezeModal.classList.add("hidden");
       freezeModal.style.display = "none";
-      document.body.classList.remove("no-scroll");
+      document.body.style.overflow = ''; // Restore body scroll
     }
 
     function b64(bytes){
@@ -1799,22 +1855,21 @@ ${appUrl}`;
       try{ localStorage.removeItem(KEY_FREEZE_CD); }catch(e){}
     }
 
-    function getCurrentReflectionText(){
-      const ref = window.currentReflection || null;
-      if(!ref) return "";
-      // Match the on-leaf visual (Inquiry + Reflection). No extra footer.
-      const q = String(ref.q || "").trim();
-      const a = String(ref.a || "").trim();
-      if(q && a) return `Q: ${q}\n\n${a}`;
-      return (a || q);
-    }
-
     function syncPreviewFromDraftOrCurrent(){
       const draft = loadFreezeDraft();
       const text = draft?.text || getCurrentReflectionText();
       const tag  = draft?.tag  || "STILLNESS";
       freezeTag.value = tag;
       freezePreview.textContent = text || "No reflection found. Generate one first.";
+      
+      // Also update leaf preview if draft has SVG
+      if(draft?.svg) {
+        window.currentLeafSvg = draft.svg;
+        refreshLeafPreview();
+      } else {
+        // Always refresh leaf preview with current reflection
+        refreshLeafPreview();
+      }
     }
 
     function updateCooldownUI(){
@@ -1905,6 +1960,8 @@ ${appUrl}`;
 
       window.showStatusMessage?.("Minting Leaf…", "info");
       const tx = await leaf.mintLeaf(connectedAddress, cid, tag);
+      window.showStatusMessage?.("Transaction sent, waiting for confirmation...", "info");
+      
       const receipt = await tx.wait();
 
       return { txHash: tx.hash, receipt };
@@ -1975,12 +2032,12 @@ ${appUrl}`;
       }
 
       const msg =
-`Mirror Reflection Commit Proof
-CID: ${lastCommitPayload.cid}
-TAG: ${lastCommitPayload.tag}
-TIME: ${lastCommitPayload.created_at}
-WALLET: ${connectedAddress}
-NOTE: Proof of commit (separate from mint).`;
+    `Mirror Reflection Commit Proof
+    CID: ${lastCommitPayload.cid}
+    TAG: ${lastCommitPayload.tag}
+    TIME: ${lastCommitPayload.created_at}
+    WALLET: ${connectedAddress}
+    NOTE: Proof of commit (separate from mint).`;
 
       try{
         const sig = await ethProvider.request({
@@ -2006,13 +2063,13 @@ NOTE: Proof of commit (separate from mint).`;
         const ok = await window.confirmSend({
           title: "Mint Leaf (ERC-1155)",
           body:
-`This mints a transferable ERC-1155 Reflection Leaf on Base.
+    `This mints a transferable ERC-1155 Reflection Leaf on Base.
 
-Fee: 1 USDC
-Recipient: ToadAid Safe
-${TOADAID_SAFE}
+    Fee: 1 USDC
+    Recipient: ToadAid Safe
+    ${TOADAID_SAFE}
 
-You can move it to a new wallet later, or list it.`,
+    You can move it to a new wallet later, or list it.`,
           previewText: `CID: ${lastCommitPayload.cid}\nTAG: ${lastCommitPayload.tag}`,
           okText: "OK — Mint",
           cancelText: "Cancel"
@@ -2020,15 +2077,39 @@ You can move it to a new wallet later, or list it.`,
 
         if(!ok) return;
 
-        const { txHash } = await mintLeafOnchain({ cid: lastCommitPayload.cid, tag: lastCommitPayload.tag });
+        // Disable buttons during minting
+        mintBtn.disabled = true;
+        mintBtn.textContent = "Minting...";
+        
+        const { txHash } = await mintLeafOnchain({ 
+          cid: lastCommitPayload.cid, 
+          tag: lastCommitPayload.tag 
+        });
 
         lastMintTxHash = txHash;
         viewBtn.disabled = false;
 
-        payloadEl.textContent = JSON.stringify({ ...lastCommitPayload, mint: { txHash, explorer: `https://basescan.org/tx/${txHash}` } }, null, 2);
+        payloadEl.textContent = JSON.stringify({ 
+          ...lastCommitPayload, 
+          mint: { 
+            txHash, 
+            explorer: `https://basescan.org/tx/${txHash}` 
+          } 
+        }, null, 2);
+        
         window.showStatusMessage?.("🪶 Leaf minted on Base.", "success");
+        
+        // Re-enable button
+        mintBtn.disabled = false;
+        mintBtn.textContent = "Mint Leaf (1 USDC)";
+        
       }catch(e){
         console.error("mintLeaf error:", e);
+        
+        // Re-enable button on error
+        mintBtn.disabled = false;
+        mintBtn.textContent = "Mint Leaf (1 USDC)";
+        
         alert("Mint failed: " + (e?.message || "Unknown"));
       }
     }
@@ -2040,22 +2121,6 @@ You can move it to a new wallet later, or list it.`,
 
     freezeClose?.addEventListener("click", closeFreezeModal);
     freezeModal?.addEventListener("click", (e) => { if(e.target === freezeModal) closeFreezeModal(); });
-
-    freezeSave?.addEventListener("click", () => {
-      const obj = { text: getCurrentReflectionText(), tag: freezeTag.value, saved_at: nowISO() };
-      saveFreezeDraft(obj);
-      window.showStatusMessage?.("Draft saved locally.", "info");
-      syncPreviewFromDraftOrCurrent();
-    });
-    freezeTag?.addEventListener("change", () => {
-      setLeafPreviewFromCurrent();
-    });
-
-    freezeClear?.addEventListener("click", () => {
-      clearFreezeDraft();
-      window.showStatusMessage?.("Draft cleared.", "info");
-      syncPreviewFromDraftOrCurrent();
-    });
 
     cdStart?.addEventListener("click", () => {
       const mins = Number(cdMinInput.value || "0");
@@ -2101,8 +2166,6 @@ You can move it to a new wallet later, or list it.`,
     });
 
     setInterval(updateCooldownUI, 1000);
-  
-  })().catch((e)=>{ console.warn("miniapp init failed", e); });
-<\/script>
+  </script>
 </body>
 </html>
