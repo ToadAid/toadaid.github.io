@@ -401,15 +401,7 @@
       line-height: 1.35rem;
     }
     .confirm-preview::-webkit-scrollbar{ display:none; }
-  
-    .modal-card{
-      max-height: 86vh;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .modal-card::-webkit-scrollbar{ display:none; }
-    </style>
+  </style>
 </head>
 
 <body>
@@ -574,7 +566,7 @@
 
   <!-- ==================== FREEZE (Reflection NFT) MODAL ==================== -->
   <div id="freeze-modal" class="fixed inset-0 z-[999] hidden items-center justify-center p-4 bg-black/90">
-    <div class="w-full max-w-md modal-card rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
+    <div class="w-full max-w-md rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
       <div class="flex items-start justify-between gap-3">
         <div>
           <div class="text-[10px] uppercase tracking-[0.28em] text-emerald-400">Freeze as Leaf</div>
@@ -595,34 +587,18 @@
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Reflection (preview)</div>
         <div id="freeze-preview" class="confirm-preview"></div>
 
-        
-<details id="leaf-preview-details" class="mt-2 rounded-xl border border-white/10 bg-black/20">
-  <summary class="cursor-pointer select-none px-3 py-2 flex items-center justify-between">
-    <span class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf Preview (optional)</span>
-    <span class="text-xs text-zinc-500">↕</span>
-  </summary>
-  <div class="px-3 pb-3">
-    <div class="text-[11px] text-zinc-500 leading-relaxed">
-      Preview is optional. If it blocks scrolling on mobile, keep it closed.
-    </div>
+        <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
+        <div class="rounded-xl border border-white/10 bg-black/30 p-3">
+          <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
+            <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
+          </div>
+        </div>
 
-    <div class="mt-3 rounded-xl border border-white/10 bg-black/25 p-2">
-      <img id="leaf-preview-img" alt="Leaf preview" class="w-full rounded-lg"
-           style="max-height: 260px; object-fit: contain; display:block;" />
-    </div>
 
-    <div class="grid grid-cols-2 gap-2 mt-3">
-      <button id="leaf-download-svg" class="py-3 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
-        Download SVG
-      </button>
-      <button id="leaf-download-png" class="py-3 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
-        Download PNG
-      </button>
-    </div>
-  </div>
-</details>
-
->
+        <div class="grid grid-cols-2 gap-2">
+          <button id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
             Save Draft
           </button>
           <button id="freeze-clear" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:text-red-200 hover:border-red-500/30 transition">
@@ -1294,10 +1270,21 @@
   </script>
 
   <script type="module">
-    import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk";
-    window.__sdk = sdk;
-
-    try { await sdk.actions.ready(); } catch (e) { /* ok in web */ }
+    // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
+    // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
+    let sdk = null;
+    try {
+      const mod = await import("https://esm.sh/@farcaster/miniapp-sdk");
+      sdk = mod?.sdk || null;
+      if (sdk) {
+        window.__sdk = sdk;
+        if (sdk) { try { await sdk.actions.ready(); } catch (e) {} }
+      }
+    } catch (e) {
+      // Not running in Farcaster; continue with plain web fallbacks.
+      sdk = null;
+      window.__sdk = null;
+    }
 
     const walletBtn = document.getElementById("wallet-btn");
     const shareActions = document.getElementById("share-actions");
@@ -1315,11 +1302,15 @@
     syncWalletGlobals("none");
 
     async function getProvider() {
-      try {
-        const p = await sdk.wallet.getEthereumProvider();
-        if (p) return p;
-      } catch (e) {}
+      if (sdk && sdk.wallet && typeof sdk.wallet.getEthereumProvider === "function") {
+        try {
+          const p = await sdk.wallet.getEthereumProvider();
+          if (p) return p;
+        } catch (e) {}
+      }
+      // Fallbacks (Base app / browser wallets)
       if (window.ethereum) return window.ethereum;
+      if (window?.coinbaseWalletExtension) return window.coinbaseWalletExtension;
       return null;
     }
 
@@ -1415,15 +1406,19 @@ ${appUrl}`;
         cancelText: "Cancel"
       });
       if (!ok) return;
-
-      try {
-        await sdk.actions.composeCast({ text: castText, embeds });
-        window.showStatusMessage?.("🌊 Composer opened.", "success");
-      } catch (e) {
-        console.error("composeCast failed:", e);
-        const url = "https://warpcast.com/~/compose?text=" + encodeURIComponent(castText);
-        window.open(url, "_blank");
+      if (sdk && sdk.actions && typeof sdk.actions.composeCast === "function") {
+        try {
+          await sdk.actions.composeCast({ text: castText, embeds });
+          window.showStatusMessage?.("🌊 Composer opened.", "success");
+          return;
+        } catch (e) {
+          console.error("composeCast failed:", e);
+        }
       }
+      const url = "https://warpcast.com/~/compose?text=" + encodeURIComponent(castText);
+      window.open(url, "_blank");
+      window.showStatusMessage?.("🌊 Opened Warpcast compose.", "success");
+
     });
 
     
@@ -1453,150 +1448,7 @@ ${appUrl}`;
       return out;
     }
 
-    function createLeafSVG(opts){
-  const o = opts || {};
-  const leafNo = Number.isFinite(Number(o.leafNo)) ? Number(o.leafNo) : 8;
-
-  const q = String(o.q || "").trim();
-  const a = String(o.a || "").trim();
-  const resonance = String(o.resonance || "Stillness.").trim();
-  const guide = String(o.guide || "What remains when urgency leaves?").trim();
-
-  const mode = String(o.mode || "POND").trim().toUpperCase();
-  const epoch = String(o.epoch || "EPOCH 5").trim().toUpperCase();
-  const site = String(o.site || "toadaid.github.io/pond").trim();
-
-  // Simple wrap by character count
-  function wrap(text, maxChars){
-    const words = text.split(/\s+/).filter(Boolean);
-    const lines = [];
-    let cur = "";
-    for(const w of words){
-      const next = cur ? (cur + " " + w) : w;
-      if(next.length <= maxChars){
-        cur = next;
-      }else{
-        if(cur) lines.push(cur);
-        cur = w;
-      }
-    }
-    if(cur) lines.push(cur);
-    return lines;
-  }
-
-  // Dynamic sizing — keep long answers readable without overflowing.
-  const qMax = (q.length > 90) ? 22 : 28;
-  const aMax = (a.length > 220) ? 26 : 30;
-  const gMax = 34;
-
-  const qLines = wrap(`Q: ${q}`, qMax).slice(0, 4);
-  const aLines = wrap(a, aMax).slice(0, 8);
-  const gLines = wrap(`Guiding: ${guide}`, gMax).slice(0, 2);
-
-  const qFont = (qLines.length >= 3 || q.length > 90) ? 14 : 16;
-  const aFont = (aLines.length >= 6 || a.length > 220) ? 14 : 18;
-  const qLineH = (qFont <= 14) ? 18 : 20;
-  const aLineH = (aFont <= 14) ? 18 : 22;
-
-  function esc(s){
-    return String(s)
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
-  }
-
-  function tspans(cx, y, lines, lineH, klass){
-    let out = `<text x="${cx}" y="${y}" text-anchor="middle" class="${klass}">`;
-    lines.forEach((line, i) => {
-      const dy = (i === 0) ? 0 : lineH;
-      out += `<tspan x="${cx}" dy="${dy}">${esc(line)}</tspan>`;
-    });
-    out += `</text>`;
-    return out;
-  }
-
-  const svg = `
-<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
-      <stop offset="0%" stop-color="#064e3b"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </radialGradient>
-
-    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
-      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
-      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
-    </linearGradient>
-
-    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="2.2" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-
-    <style>
-      .title { font-family: serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
-      .labelG { font-family: serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .labelY { font-family: serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .q { font-family: serif; fill:#e5e7eb; font-size: ${qFont}px; font-style: italic; }
-      .a { font-family: serif; fill:#ffffff; font-size: ${aFont}px; font-style: italic; }
-      .meta { font-family: sans-serif; fill:#94a3b8; font-size: 10px; }
-      .tiny { font-family: sans-serif; fill:#64748b; font-size: 9px; }
-    </style>
-  </defs>
-
-  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
-
-  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
-    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
-    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
-    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
-    <line x1="300" y1="0" x2="300" y2="600"/>
-  </g>
-
-  <path filter="url(#softGlow)" d="M40 36
-    C30 60, 30 90, 36 120
-    C24 190, 26 300, 38 360
-    C26 440, 40 520, 68 558
-    C120 592, 210 596, 292 590
-    C350 586, 374 542, 380 496
-    C392 414, 388 290, 372 220
-    C386 150, 380 82, 356 48
-    C320 18, 260 18, 200 22
-    C140 18, 80 18, 40 36 Z"
-    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
-
-  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${esc(mode)}</text>
-
-  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
-  <path d="M200 90
-    C232 92, 254 122, 246 154
-    C238 188, 200 202, 174 188
-    C148 176, 140 144, 156 118
-    C168 100, 184 90, 200 90 Z"
-    fill="#10b981" opacity="0.75"/>
-  <text x="200" y="152" text-anchor="middle" font-family="serif" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
-
-  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
-  ${tspans(200, 238, qLines, qLineH, "q")}
-
-  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${tspans(200, 362, aLines, aLineH, "a")}
-
-  <text x="200" y="500" text-anchor="middle" class="tiny">${esc(resonance)}</text>
-  ${tspans(200, 522, gLines, 14, "meta")}
-
-  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">🪞 8 🌊 ∞ 🍃</text>
-  <text x="200" y="582" text-anchor="middle" class="tiny">${esc(site)} · ${esc(epoch)}</text>
-</svg>`.trim();
-
-  return svg;
-}){
+    function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
       const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
       const aLines = _wrapLines(a, 30).slice(0,6);
       const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
@@ -1632,14 +1484,6 @@ ${appUrl}`;
       .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
       .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
       .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
-    
-    .modal-card{
-      max-height: 86vh;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .modal-card::-webkit-scrollbar{ display:none; }
     </style>
   </defs>
 
