@@ -1371,7 +1371,7 @@
       syncWalletGlobals("none");
     }
 
-    walletBtn.addEventListener("click", async () => {
+    walletBtn && walletBtn.addEventListener("click", async () => {
       if (walletConnected) {
         setWalletUIDisconnected();
         return;
