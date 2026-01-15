@@ -1359,7 +1359,7 @@
       return null;
     }
 
-    // ✅ preserve Mock styling + avoid removing wallet-mock unintentionally
+    // ✅ Fix: preserve Mock styling + avoid removing wallet-mock unintentionally
     function setWalletUIConnected(addr, modeLabel) {
       const shortAddr = `${addr.slice(0,6)}…${addr.slice(-4)}`;
       walletBtn.textContent = `${shortAddr} (${modeLabel})`;
@@ -1497,118 +1497,86 @@ ${appUrl}`;
       const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
       const aLines = _wrapLines(a, 30).slice(0,6);
       const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
-      
-      // Cleaner, more integrated sigil
-      const sigilParts = ["🪞", "🌊", "🌀", "🍃", "⏳", "≋", "🪶"];
-      const sigil = sigilParts.slice(0, 5).join(" ");
+      const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
       return `
-    <svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <!-- Better gradients -->
-        <radialGradient id="pondDepth" cx="50%" cy="40%" r="75%">
-          <stop offset="0%" stop-color="#0a261d" stop-opacity="0.95"/>
-          <stop offset="45%" stop-color="#052016" stop-opacity="0.9"/>
-          <stop offset="100%" stop-color="#010a07" stop-opacity="1"/>
-        </radialGradient>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
 
-        <linearGradient id="goldVein" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.9"/>
-          <stop offset="40%" stop-color="#eab308" stop-opacity="0.6"/>
-          <stop offset="80%" stop-color="#d97706" stop-opacity="0.4"/>
-          <stop offset="100%" stop-color="#92400e" stop-opacity="0.2"/>
-        </linearGradient>
+    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
+    </linearGradient>
 
-        <linearGradient id="emeraldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#10b981" stop-opacity="0.8"/>
-          <stop offset="100%" stop-color="#047857" stop-opacity="0.3"/>
-        </linearGradient>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
 
-        <!-- Subtle texture -->
-        <pattern id="paperTexture" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-          <rect width="20" height="20" fill="#020617" opacity="0.98"/>
-          <path d="M0,0 L20,20 M20,0 L0,20" stroke="#0f172a" stroke-width="0.3" opacity="0.08"/>
-        </pattern>
+    <style>
+      .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
+      .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
+      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
+      .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
+    </style>
+  </defs>
 
-        <!-- Better filter -->
-        <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="3" result="blur"/>
-          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="glow"/>
-          <feMerge>
-            <feMergeNode in="glow"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
+  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
 
-        <style>
-          .title { font-family: 'Cinzel', serif; fill:#fef3c7; font-size: 13px; letter-spacing: 4px; font-weight: 600; }
-          .labelG { font-family: 'Cinzel', serif; fill:#a7f3d0; font-size: 11px; letter-spacing: 2px; font-weight: 500; }
-          .labelY { font-family: 'Cinzel', serif; fill:#fde68a; font-size: 11px; letter-spacing: 2px; font-weight: 500; }
-          .q { font-family: 'Cinzel', serif; fill:#d1d5db; font-size: 15px; font-style: italic; }
-          .a { font-family: 'Cinzel', serif; fill="#f9fafb"; font-size: 17px; font-style: italic; font-weight: 500; }
-          .meta { font-family: 'Inter', system-ui, sans-serif; fill="#94a3b8"; font-size: 10px; }
-          .tiny { font-family: 'Inter', system-ui, sans-serif; fill="#64748b"; font-size: 9px; letter-spacing: 1px; }
-          .sigil { font-family: 'Cinzel', serif; fill="#d1d5db"; font-size: 16px; letter-spacing: 2px; opacity: 0.9; }
-        </style>
-      </defs>
+  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
+    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
+    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
+    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="300" y1="0" x2="300" y2="600"/>
+  </g>
 
-      <!-- Background with texture -->
-      <rect width="400" height="600" rx="24" fill="url(#paperTexture)"/>
-      <rect width="400" height="600" rx="24" fill="url(#pondDepth)"/>
+  <path filter="url(#softGlow)" d="M40 36
+    C30 60, 30 90, 36 120
+    C24 190, 26 300, 38 360
+    C26 440, 40 520, 68 558
+    C120 592, 210 596, 292 590
+    C350 586, 374 542, 380 496
+    C392 414, 388 290, 372 220
+    C386 150, 380 82, 356 48
+    C320 18, 260 18, 200 22
+    C140 18, 80 18, 40 36 Z"
+    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
 
-      <!-- Subtle background elements (less distracting) -->
-      <g opacity="0.04" stroke="#10b981" stroke-width="0.4">
-        <circle cx="200" cy="300" r="180"/>
-        <circle cx="200" cy="300" r="120"/>
-        <circle cx="200" cy="300" r="60"/>
-      </g>
+  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
 
-      <!-- Main leaf shape (softer, more organic) -->
-      <path filter="url(#softGlow)" d="M80 80
-        C40 140, 30 200, 40 260
-        C20 340, 60 420, 120 480
-        C180 540, 260 560, 320 520
-        C380 480, 390 400, 360 320
-        C380 240, 360 160, 300 100
-        C240 40, 160 40, 80 80 Z"
-        fill="none" stroke="url(#goldVein)" stroke-width="2.5" opacity="0.7"/>
+  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
+  <path d="M200 90
+    C232 92, 254 122, 246 154
+    C238 188, 200 202, 174 188
+    C148 176, 140 144, 156 118
+    C168 100, 184 90, 200 90 Z"
+    fill="#10b981" opacity="0.75"/>
+  <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
 
-      <!-- Organic vein patterns -->
-      <g opacity="0.15" stroke="url(#emeraldGlow)" stroke-width="0.8">
-        <path d="M200 100 C180 180, 160 240, 140 300" fill="none"/>
-        <path d="M200 100 C220 180, 240 240, 260 300" fill="none"/>
-        <path d="M140 300 C120 360, 140 420, 180 460" fill="none"/>
-        <path d="M260 300 C280 360, 260 420, 220 460" fill="none"/>
-      </g>
+  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
+  ${_tspans(200, 238, qLines, 20, "q")}
 
-      <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
+  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
+  ${_tspans(200, 362, aLines, 22, "a")}
 
-      <!-- Central emblem (better design) -->
-      <circle cx="200" cy="150" r="52" fill="#10b981" opacity="0.08"/>
-      <circle cx="200" cy="150" r="46" fill="none" stroke="url(#goldVein)" stroke-width="1.2" opacity="0.6"/>
-      
-      <!-- Leaf number in a nicer arrangement -->
-      <text x="200" y="155" text-anchor="middle" font-family="Cinzel" font-size="38" fill="#d1fae5" opacity="0.4" font-weight="600">${leafNo}</text>
-      <text x="200" y="175" text-anchor="middle" font-family="Inter" font-size="10" fill="#a7f3d0" opacity="0.7" letter-spacing="1px">LEAF</text>
+  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+  ${_tspans(200, 522, gLines, 14, "meta")}
 
-      <text x="200" y="220" text-anchor="middle" class="labelG">INQUIRY</text>
-      ${_tspans(200, 248, qLines, 20, "q")}
-
-      <text x="200" y="320" text-anchor="middle" class="labelY">REFLECTION</text>
-      ${_tspans(200, 352, aLines, 22, "a")}
-
-      <text x="200" y="480" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-      ${_tspans(200, 502, gLines, 14, "meta")}
-
-      <!-- Better sigil arrangement -->
-      <g transform="translate(200, 540)">
-        <circle r="18" fill="none" stroke="url(#goldVein)" stroke-width="1" opacity="0.4"/>
-        <text y="5" text-anchor="middle" class="sigil">${sigil}</text>
-      </g>
-
-      <text x="200" y="582" text-anchor="middle" class="tiny">SEALED IN POND · ${_xmlEscape(epoch)}</text>
-    </svg>
-    `.trim();
+  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
+  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
+</svg>
+`.trim();
     }
 
     function svgToObjectUrl(svgText){
@@ -1696,128 +1664,14 @@ ${appUrl}`;
     const dlSvgBtn = document.getElementById("leaf-download-svg");
     const dlPngBtn = document.getElementById("leaf-download-png");
 
-    // ============ FIX: Add event listeners for the broken buttons ============
-
-    // Download SVG button
-    dlSvgBtn?.addEventListener("click", () => {
-      const svg = window.currentLeafSvg;
-      if(!svg) {
-        alert("No leaf yet. Generate a reflection first.");
-        return;
-      }
-      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
-      window.showStatusMessage?.("🪶 SVG downloaded.", "success");
-    });
-
-    // Download PNG button
-    dlPngBtn?.addEventListener("click", async () => {
-      const svg = window.currentLeafSvg;
-      if(!svg) {
-        alert("No leaf yet. Generate a reflection first.");
-        return;
-      }
-      try {
-        const png = await svgToPngBlob(svg, 400, 600);
-        if(!png) {
-          alert("PNG export failed.");
-          return;
-        }
-        downloadBlob(png, "reflection-leaf.png");
-        window.showStatusMessage?.("🪶 PNG downloaded.", "success");
-      } catch (error) {
-        console.error("PNG export error:", error);
-        alert("Failed to export PNG: " + error.message);
-      }
-    });
-
-    // Save Draft button
-    freezeSave?.addEventListener("click", () => {
-      const text = getCurrentReflectionText();
-      if(!text || text.trim() === "") {
-        alert("No reflection to save. Generate a reflection first.");
-        return;
-      }
-      const obj = { 
-        text: text, 
-        tag: freezeTag.value, 
-        saved_at: new Date().toISOString(),
-        svg: window.currentLeafSvg 
-      };
-      saveFreezeDraft(obj);
-      window.showStatusMessage?.("📝 Draft saved locally.", "success");
-      syncPreviewFromDraftOrCurrent();
-    });
-
-    // Clear Draft button
-    freezeClear?.addEventListener("click", () => {
-      if(confirm("Clear the saved draft? This cannot be undone.")) {
-        clearFreezeDraft();
-        window.showStatusMessage?.("🗑️ Draft cleared.", "info");
-        syncPreviewFromDraftOrCurrent();
-      }
-    });
-
-    function getCurrentReflectionText(){
-      const ref = window.currentReflection || null;
-      if(!ref) return "";
-      
-      // Get the actual displayed text from the main-text element
-      const mainDisplayElement = document.getElementById("main-text");
-      let displayedAnswer = "";
-      
-      if (mainDisplayElement) {
-        displayedAnswer = mainDisplayElement.textContent || "";
-        // Remove quotation marks if present
-        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
-          displayedAnswer = displayedAnswer.slice(1, -1).trim();
-        }
-      } else {
-        // Fallback to the stored answer
-        displayedAnswer = ref.a || "";
-      }
-      
-      return `Q: ${ref.q}\n\nA: ${displayedAnswer}\n\n— Tobyworld Mirror`;
-    }
-
     function refreshLeafPreview(){
       const ref = window.currentReflection || null;
-      
-      // Get the actual displayed text
-      const mainDisplayElement = document.getElementById("main-text");
-      let displayedAnswer = "";
-      
-      if (mainDisplayElement) {
-        displayedAnswer = mainDisplayElement.textContent || "";
-        // Remove quotation marks if present
-        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
-          displayedAnswer = displayedAnswer.slice(1, -1).trim();
-        }
-      } else if (ref) {
-        displayedAnswer = ref.a || "";
-      }
-      
-      // Get resonance text
-      const resonanceElement = document.getElementById("res-text");
-      let resonanceText = "Stillness.";
-      if (resonanceElement) {
-        resonanceText = resonanceElement.textContent || "Stillness.";
-        // Remove "Resonance: " prefix if present
-        resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
-      }
-      
-      // Get guide text
-      const guideElement = document.getElementById("guide-text");
-      let guideText = "What remains when urgency leaves?";
-      if (guideElement) {
-        guideText = guideElement.textContent || "What remains when urgency leaves?";
-      }
-      
-      const svg = createLeafSVG({
+      const svg = (window.currentLeafSvg) || createLeafSVG({
         leafNo: 8,
         q: ref?.q || "",
-        a: displayedAnswer,
-        resonance: resonanceText,
-        guide: guideText,
+        a: ref?.a || "",
+        resonance: "Stillness.",
+        guide: "What remains when urgency leaves?",
         mode: "POND",
         epoch: "EPOCH 5"
       });
@@ -1829,6 +1683,21 @@ ${appUrl}`;
       window.currentLeafSvgUrl = url;
       if(leafImg) leafImg.src = url;
     }
+
+    dlSvgBtn?.addEventListener("click", () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) return alert("No leaf yet. Generate a reflection first.");
+      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
+    });
+
+    dlPngBtn?.addEventListener("click", async () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) return alert("No leaf yet. Generate a reflection first.");
+      const png = await svgToPngBlob(svg, 400, 600);
+      if(!png) return alert("PNG export failed.");
+      downloadBlob(png, "reflection-leaf.png");
+    });
+
 
     let lastCommitPayload = null;
     let lastMintTxHash = null;
@@ -1886,21 +1755,18 @@ ${appUrl}`;
       try{ localStorage.removeItem(KEY_FREEZE_CD); }catch(e){}
     }
 
+    function getCurrentReflectionText(){
+      const ref = window.currentReflection || null;
+      if(!ref) return "";
+      return `Q:\n${ref.q}\n\nA:\n${ref.a}\n\n— Tobyworld Mirror`;
+    }
+
     function syncPreviewFromDraftOrCurrent(){
       const draft = loadFreezeDraft();
       const text = draft?.text || getCurrentReflectionText();
       const tag  = draft?.tag  || "STILLNESS";
       freezeTag.value = tag;
       freezePreview.textContent = text || "No reflection found. Generate one first.";
-      
-      // Also update leaf preview if draft has SVG
-      if(draft?.svg) {
-        window.currentLeafSvg = draft.svg;
-        refreshLeafPreview();
-      } else {
-        // Always refresh leaf preview with current reflection
-        refreshLeafPreview();
-      }
     }
 
     function updateCooldownUI(){
@@ -2152,6 +2018,18 @@ You can move it to a new wallet later, or list it.`,
 
     freezeClose?.addEventListener("click", closeFreezeModal);
     freezeModal?.addEventListener("click", (e) => { if(e.target === freezeModal) closeFreezeModal(); });
+
+    freezeSave?.addEventListener("click", () => {
+      const obj = { text: getCurrentReflectionText(), tag: freezeTag.value, saved_at: nowISO() };
+      saveFreezeDraft(obj);
+      window.showStatusMessage?.("Draft saved locally.", "info");
+      syncPreviewFromDraftOrCurrent();
+    });
+    freezeClear?.addEventListener("click", () => {
+      clearFreezeDraft();
+      window.showStatusMessage?.("Draft cleared.", "info");
+      syncPreviewFromDraftOrCurrent();
+    });
 
     cdStart?.addEventListener("click", () => {
       const mins = Number(cdMinInput.value || "0");
