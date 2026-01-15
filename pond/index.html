@@ -1682,13 +1682,62 @@ ${appUrl}`;
       a.remove();
     }
 
-    dlSvgBtn?.addEventListener("click", ()=>{
-      if (!__lastLeafSvg) refreshLeafPreview();
-      if (__lastLeafSvg) downloadTextFile("leaf.svg", __lastLeafSvg);
+    dlSvgBtn?.addEventListener("click", async () => {
+      try{
+        const svg = (window.__lastLeafSvg || "").trim();
+        if(!svg){
+          window.showStatusMessage?.("No SVG yet — generate a reflection first.", "info");
+          return;
+        }
+        const blob = new Blob([svg], { type:"image/svg+xml;charset=utf-8" });
+        const url  = URL.createObjectURL(blob);
+        // Try download; if blocked by in-app webview, fall back to opening the file.
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `reflection-leaf-${Date.now()}.svg`;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.showStatusMessage?.("SVG export started. If download is blocked, it will open in a new tab.", "info");
+        // Fallback: open after a tick (some webviews ignore download attribute)
+        setTimeout(() => {
+          try{ window.open(url, "_blank", "noopener,noreferrer"); }catch(e){}
+        }, 600);
+        setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      }catch(e){
+        console.error("download svg error:", e);
+        window.showStatusMessage?.("SVG export failed.", "info");
+      }
     });
 
-    dlPngBtn?.addEventListener("click", ()=>{
-      downloadLeafPNG().catch(()=>{});
+    dlPngBtn?.addEventListener("click", async () => {
+      try{
+        const svg = (window.__lastLeafSvg || "").trim();
+        if(!svg){
+          window.showStatusMessage?.("No SVG yet — generate a reflection first.", "info");
+          return;
+        }
+        const pngDataUrl = await svgToPngDataUrl(svg, 1080);
+        if(!pngDataUrl){
+          window.showStatusMessage?.("PNG export failed.", "info");
+          return;
+        }
+        const a = document.createElement("a");
+        a.href = pngDataUrl;
+        a.download = `reflection-leaf-${Date.now()}.png`;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.showStatusMessage?.("PNG export started. If download is blocked, it will open in a new tab.", "info");
+        setTimeout(() => {
+          try{ window.open(pngDataUrl, "_blank", "noopener,noreferrer"); }catch(e){}
+        }, 600);
+      }catch(e){
+        console.error("download png error:", e);
+        window.showStatusMessage?.("PNG export failed.", "info");
+      }
     });
 
 
