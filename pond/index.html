@@ -587,6 +587,12 @@
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Reflection (preview)</div>
         <div id="freeze-preview" class="confirm-preview"></div>
 
+        <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf Visual (SVG preview)</div>
+        <div class="rounded-xl border border-white/10 bg-black/20 p-2">
+          <img id="freeze-leaf-img" alt="Reflection Leaf SVG" class="w-full rounded-lg" style="display:none;" />
+          <div id="freeze-leaf-empty" class="text-xs text-zinc-500 py-6 text-center">Generate a reflection to see the Leaf.</div>
+        </div>
+
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
         <div class="rounded-xl border border-white/10 bg-black/30 p-3">
           <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
@@ -1556,7 +1562,9 @@ ${appUrl}`;
     const USDC_BASE     = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
     const TOADAID_SAFE  = "0xe5C1378F91243727a24fa7c64d5286C537D8eAB2";
 
-    const LEAF_CONTRACT = "0xYOUR_ERC1155_ADDRESS";
+    // TODO: set your deployed ERC-1155 Reflection Leaf contract address here (Base).
+    // You can also override at runtime: ?leaf=0xYourContract
+    const LEAF_CONTRACT = (new URLSearchParams(window.location.search).get("leaf") || "0xYOUR_ERC1155_ADDRESS").trim();
 
     const USDC_DECIMALS = 6;
     const MINT_FEE      = 1 * 10 ** USDC_DECIMALS;
@@ -1695,19 +1703,179 @@ ${appUrl}`;
       return `Q:\n${ref.q}\n\nA:\n${ref.a}\n\n— Tobyworld Mirror`;
     }
 
+    // ---------- Leaf SVG (local preview / onchain-ready) ----------
+    function xmlEscape(s){
+      return String(s).replace(/[&<>"']/g, m => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+      }[m]));
+    }
+
+    function wrapLines(text, maxChars, maxLines){
+      const words = String(text||"").split(/\s+/).filter(Boolean);
+      const lines=[];
+      let cur="";
+      for(const w of words){
+        const next = cur ? (cur+" "+w) : w;
+        if(next.length <= maxChars) cur = next;
+        else{
+          if(cur) lines.push(cur);
+          cur = w;
+          if(lines.length >= (maxLines||99)) break;
+        }
+      }
+      if(cur && lines.length < (maxLines||99)) lines.push(cur);
+      return lines;
+    }
+
+    function tspansCentered(x, y, lines, lineH, klass){
+      const safe = (lines||[]).map(xmlEscape);
+      const parts = [`<text x="${x}" y="${y}" text-anchor="middle" class="${klass}">`];
+      safe.forEach((ln, i) => {
+        const dy = i===0 ? '0' : String(lineH);
+        parts.push(`<tspan x="${x}" dy="${dy}">${ln}</tspan>`);
+      });
+      parts.push(`</text>`);
+      return parts.join('\n');
+    }
+
+    function buildLeafSVG({ q, a, tag, cid, epochLabel }){
+      const qLines = wrapLines(`Q: ${q}`, 28, 3);
+      const aLines = wrapLines(a, 30, 6);
+      const meta1  = `TAG: ${tag || 'STILLNESS'}`;
+      const meta2  = (cid ? `CID: ${cid}` : (epochLabel ? `EPOCH: ${epochLabel}` : ''));
+      const metaLines = wrapLines([meta1, meta2].filter(Boolean).join(' · '), 44, 2);
+
+      // Real symbols row (our pond glyphs)
+      const glyphRow = '⏳ ≋ 🍃 🪞';
+
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+
+    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+      .title { font-family: serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
+      .labelG { font-family: serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .labelY { font-family: serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .q { font-family: serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
+      .a { font-family: serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .meta { font-family: sans-serif; fill:#94a3b8; font-size: 10px; }
+      .tiny { font-family: sans-serif; fill:#64748b; font-size: 9px; }
+    </style>
+  </defs>
+
+  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
+
+  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
+    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
+    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
+    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="300" y1="0" x2="300" y2="600"/>
+  </g>
+
+  <path filter="url(#softGlow)" d="M40 36
+    C30 60, 30 90, 36 120
+    C24 190, 26 300, 38 360
+    C26 440, 40 520, 68 558
+    C120 592, 210 596, 292 590
+    C350 586, 374 542, 380 496
+    C392 414, 388 290, 372 220
+    C386 150, 380 82, 356 48
+    C320 18, 260 18, 200 22
+    C140 18, 80 18, 40 36 Z"
+    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
+
+  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · POND</text>
+
+  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
+  <path d="M200 90
+    C232 92, 254 122, 246 154
+    C238 188, 200 202, 174 188
+    C148 176, 140 144, 156 118
+    C168 100, 184 90, 200 90 Z"
+    fill="#10b981" opacity="0.75"/>
+  <text x="200" y="152" text-anchor="middle" font-family="serif" font-size="44" fill="#eafff7" opacity="0.35">8</text>
+
+  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
+  ${tspansCentered(200, 238, qLines, 20, 'q')}
+
+  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
+  ${tspansCentered(200, 362, aLines, 22, 'a')}
+
+  ${tspansCentered(200, 500, metaLines, 14, 'meta')}
+
+  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.92">${glyphRow}</text>
+  <text x="200" y="582" text-anchor="middle" class="tiny">toadaid.github.io/pond · local preview</text>
+</svg>`;
+    }
+
+    function svgToDataUri(svg){
+      try{
+        return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+      }catch(e){
+        return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+      }
+    }
+
+    function renderLeafPreview({ cid } = {}){
+      const img = document.getElementById('freeze-leaf-img');
+      const empty = document.getElementById('freeze-leaf-empty');
+      if(!img || !empty) return;
+
+      const ref = window.currentReflection || null;
+      if(!ref){
+        img.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      const svg = buildLeafSVG({
+        q: ref.q,
+        a: ref.a,
+        tag: freezeTag?.value || 'STILLNESS',
+        cid,
+        epochLabel: '5'
+      });
+      img.src = svgToDataUri(svg);
+      img.style.display = 'block';
+      empty.style.display = 'none';
+
+      // cache for commit payload
+      window.__latestLeafSVG = svg;
+    }
+
     function syncPreviewFromDraftOrCurrent(){
       const draft = loadFreezeDraft();
       const text = draft?.text || getCurrentReflectionText();
       const tag  = draft?.tag  || "STILLNESS";
       freezeTag.value = tag;
       freezePreview.textContent = text || "No reflection found. Generate one first.";
+      renderLeafPreview({ cid: lastCommitPayload?.cid || '' });
     }
 
     function updateCooldownUI(){
       const cd = getCooldown();
       if(!cd){
-        cdStatus.textContent = "Not started";
-        commitBtn.disabled = true;
+        // Cooldown is OPTIONAL. If you never start it, you can still commit.
+        cdStatus.textContent = "Ready ✅ You may commit.";
+        commitBtn.disabled = false;
         return;
       }
       const remaining = cd.endMs - Date.now();
@@ -1830,13 +1998,17 @@ ${appUrl}`;
           iv_b64: b64(iv),
           enc_bytes: ct.length
         },
-        note: "Encrypted content stored in IPFS stub (localStorage). Replace with real pinning + ERC-1155 mint tx."
+        note: "Encrypted content stored in IPFS stub (localStorage). Replace with real pinning + ERC-1155 mint tx.",
+        image_svg: (window.__latestLeafSVG || null)
       };
 
       lastCommitPayload = payload;
       cidEl.textContent = cid;
       bytesEl.textContent = String(ct.length);
       payloadEl.textContent = JSON.stringify(payload, null, 2);
+
+      // refresh SVG preview with CID
+      try{ renderLeafPreview({ cid }); }catch(e){}
 
       signBtn.disabled = false;
       mintBtn.disabled = false;
