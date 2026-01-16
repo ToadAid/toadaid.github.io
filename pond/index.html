@@ -1045,18 +1045,8 @@
       portalEl.classList.toggle("can-scroll", over);
     }
 
-    // Store the COMPLETE reflection data from LLM
     window.currentReflection = null;
-    function saveCurrentReflection(q, parsedData) { 
-      window.currentReflection = { 
-        q: q, 
-        main: parsedData.main,
-        echo: parsedData.echo,
-        res: parsedData.res,
-        guide: parsedData.guide,
-        parsed: parsedData // Store the complete parsed data
-      }; 
-    }
+    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
     window.saveCurrentReflection = saveCurrentReflection;
 
     async function processInquiry(qOverride){
@@ -1084,16 +1074,16 @@
               guide: parsed.guide
             } : localFallback(q);
 
-            // Update display with EXACT LLM response
             if (mainText) mainText.textContent = `"${out.main}"`;
             if (echoText) echoText.textContent = out.echo;
             if (resText)  resText.textContent  = out.res;
             if (guideText)guideText.textContent= out.guide;
 
-            // Save COMPLETE reflection data for freeze/SVG
-            saveCurrentReflection(q, out);
+            
+    window.__leafPreviewData = { q: q, a: out.main, resonance: out.res, guide: out.guide };
+saveCurrentReflection(q, out.main);
 
-            // Build a local leaf SVG for this reflection using the SAME data
+            // Build a local leaf SVG for this reflection (used by Freeze modal)
             try{
               const svg = window.__createLeafSVG?.({
                 leafNo: 8,
@@ -1138,7 +1128,7 @@
               if (echoText) echoText.textContent = out.echo;
               if (resText)  resText.textContent  = out.res;
               if (guideText)guideText.textContent= out.guide;
-              saveCurrentReflection(q, out);
+              saveCurrentReflection(q, out.main);
               showOutput();
               break;
             }
@@ -1326,7 +1316,8 @@
     window.showStatusMessage = showStatusMessage;
   </script>
 
-  <script type="module">
+  <script>
+  (async function(){
     // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
     // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
     let sdk = null;
@@ -1440,7 +1431,7 @@
         return;
       }
 
-      const { q, main } = ref;
+      const { q, a } = ref;
 
       const appUrl = "https://toadaid.github.io/pond/";
       const castText =
@@ -1448,7 +1439,7 @@
 ${q}
 
 A:
-${main}
+${a}
 
 — from Tobyworld Mirror
 ${appUrl}`;
@@ -1505,101 +1496,63 @@ ${appUrl}`;
       return out;
     }
 
-    function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
-      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
+function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
+      // Wrap lines first so we can auto-grow the SVG height (no clipping).
+      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,4);
+      const aLines = _wrapLines(a, 30).slice(0,12);
+      const gLines = _wrapLines(guide, 30); // do NOT truncate guiding question
 
-      // --- Auto-fit reflection text ---
-      // If the reflection runs long, allow more lines and shrink type/line-height.
-      const aAll = _wrapLines(a, 30);
-      let aLines = aAll.slice(0,6);
-      let aClass = "a";
-      let aLineH = 22;
-      if(aAll.length > 6){
-        aLines = aAll.slice(0,9);
-        aClass = "aSmall";
-        aLineH = 18;
-      }
+      // Estimate required height: base layout + extra for long guiding questions.
+      const baseH = 600;
+      const extra = Math.max(0, (gLines.length - 2)) * 18;
+      const H = Math.max(baseH, baseH + extra);
+      const W = 400;
 
-      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
-      const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
+      // Content positions are fixed; increasing H simply reveals more vertical room.
+      const leafPath = `M200 20 C120 60 40 160 40 ${H-140} C40 ${H-70} 120 ${H-40} 200 ${H-40} C280 ${H-40} 360 ${H-70} 360 ${H-140} C360 160 280 60 200 20 Z`;
+
+      // Build text blocks
+      const qText = qLines.map((ln,i)=>`<text x="80" y="${160 + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
+      const aText = aLines.map((ln,i)=>`<text x="80" y="${240 + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
+
+      // Guiding question block starts at y=520 and can extend (height grows as needed)
+      const gStartY = 520;
+      const gText = gLines.map((ln,i)=>`<text x="80" y="${gStartY + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
 
       return `
-<svg viewBox="0 0 400 600" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
   <defs>
-    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
-      <stop offset="0%" stop-color="#064e3b"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </radialGradient>
-
-    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
-      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
-      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b2c25"/>
+      <stop offset="1" stop-color="#07201b"/>
     </linearGradient>
-
-    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="2.2" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/>
     </filter>
-
-    <style>
-      .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
-      .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
-      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
-      .aSmall { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 15px; font-style: italic; }
-      .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
-      .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
-    </style>
   </defs>
 
-  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
+  <rect width="100%" height="100%" fill="url(#g)"/>
 
-  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
-    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
-    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
-    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
-    <line x1="300" y1="0" x2="300" y2="600"/>
-  </g>
+  <path d="${leafPath}" fill="#0f3b31" opacity="0.94" filter="url(#shadow)"/>
+  <path d="${leafPath}" fill="none" stroke="#1b6b57" stroke-width="2" opacity="0.65"/>
 
-  <path filter="url(#softGlow)" d="M40 36
-    C30 60, 30 90, 36 120
-    C24 190, 26 300, 38 360
-    C26 440, 40 520, 68 558
-    C120 592, 210 596, 292 590
-    C350 586, 374 542, 380 496
-    C392 414, 388 290, 372 220
-    C386 150, 380 82, 356 48
-    C320 18, 260 18, 200 22
-    C140 18, 80 18, 40 36 Z"
-    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
+  <text x="200" y="76" text-anchor="middle" font-size="16" fill="#b9f5e5" font-family="Inter, system-ui">Freeze as Leaf • #${leafNo}</text>
+  <text x="200" y="98" text-anchor="middle" font-size="12" fill="#79d8c2" font-family="Inter, system-ui">${_xmlEscape(mode)} • ${_xmlEscape(epoch)}</text>
 
-  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
+  <text x="200" y="130" text-anchor="middle" font-size="14" fill="#d8fff6" font-family="Inter, system-ui">Reflection</text>
 
-  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
-  <path d="M200 90
-    C232 92, 254 122, 246 154
-    C238 188, 200 202, 174 188
-    C148 176, 140 144, 156 118
-    C168 100, 184 90, 200 90 Z"
-    fill="#10b981" opacity="0.75"/>
-  <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
+  ${qText}
 
-  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
-  ${_tspans(200, 238, qLines, 20, "q")}
+  <text x="200" y="220" text-anchor="middle" font-size="13" fill="#d8fff6" font-family="Inter, system-ui">A:</text>
+  ${aText}
 
-  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${_tspans(200, 362, aLines, aLineH, aClass)}
+  <text x="200" y="470" text-anchor="middle" font-size="12" fill="#79d8c2" font-family="Inter, system-ui">${_xmlEscape(resonance)}</text>
 
-  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-  ${_tspans(200, 522, gLines, 14, "meta")}
+  <text x="200" y="500" text-anchor="middle" font-size="13" fill="#d8fff6" font-family="Inter, system-ui">Guiding Question</text>
+  ${gText}
 
-  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
-  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
+  <text x="200" y="${H-56}" text-anchor="middle" font-size="11" fill="#79d8c2" font-family="Inter, system-ui">🪞 🌊 🍃 🌀</text>
+  <text x="200" y="${H-34}" text-anchor="middle" font-size="10" fill="#4fbda3" font-family="Inter, system-ui">tobyworld • mirror</text>
 </svg>
 `.trim();
     }
@@ -1608,7 +1561,16 @@ ${appUrl}`;
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=400, h=600){
+    async function svgToPngBlob(svgText, w=null, h=null){
+      // If width/height not provided, parse them from the SVG so taller leaves export correctly
+      if (!w || !h){
+        const mW = svgText.match(/\bwidth="(\d+(?:\.\d+)?)"/i);
+        const mH = svgText.match(/\bheight="(\d+(?:\.\d+)?)"/i);
+        if (mW) w = parseFloat(mW[1]);
+        if (mH) h = parseFloat(mH[1]);
+      }
+      w = w || 400;
+      h = h || 600;
       const url = svgToObjectUrl(svgText);
       try{
         const img = new Image();
@@ -1623,6 +1585,7 @@ ${appUrl}`;
       } finally {
         URL.revokeObjectURL(url);
       }
+    }
     }
 
     function downloadBlob(blob, filename){
@@ -1689,7 +1652,7 @@ ${appUrl}`;
     const dlSvgBtn = document.getElementById("leaf-download-svg");
     const dlPngBtn = document.getElementById("leaf-download-png");
 
-    // ============ FIX: Unified data flow for freeze preview ============
+    // ============ FIX: Add event listeners for the broken buttons ============
 
     // Download SVG button
     dlSvgBtn?.addEventListener("click", () => {
@@ -1750,84 +1713,22 @@ ${appUrl}`;
       }
     });
 
-    // Get the CURRENT reflection text directly from stored LLM data
     function getCurrentReflectionText(){
-      const ref = window.currentReflection || null;
-      if(!ref) return "";
+      // Use the SAME fields that the Leaf SVG uses (so preview text always matches the SVG).
+      const data = window.__leafPreviewData || {};
+      const q = (data.q || window.currentReflection?.q || '').trim();
+      const a = (data.a || '').trim();
+      const res = (data.resonance || '').trim();
+      const guide = (data.guide || '').trim();
 
-      // Extract resonance text without the "Resonance: " prefix
-      let resonanceText = ref.res || "Stillness.";
-      if (resonanceText.startsWith("Resonance: ")) {
-        resonanceText = resonanceText.substring(11).trim();
-      }
+      const parts = [];
+      if(q) parts.push(`Q: ${q}`);
+      if(a) parts.push(`A: ${a}`);
+      if(res) parts.push(res);
+      if(guide) parts.push(`Guiding Question: ${guide}`);
 
-      // Extract guide text
-      const guideText = ref.guide || "What remains when urgency leaves?";
-
-      // Mirror the exact same structure as the SVG (Inquiry + Reflection + Resonance + Guiding)
-      // Using the EXACT SAME data that was displayed and used for the SVG
-      return `INQUIRY: ${ref.q}\n\nREFLECTION: ${ref.main}\n\nRESONANCE: ${resonanceText}\n\nGUIDING: ${guideText}`;
+      return parts.join("\n\n").trim();
     }
-
-    function refreshLeafPreview(){
-      const ref = window.currentReflection || null;
-      if(!ref) {
-        if(leafImg) leafImg.src = "";
-        return;
-      }
-
-      // Extract resonance text without the "Resonance: " prefix
-      let resonanceText = ref.res || "Stillness.";
-      if (resonanceText.startsWith("Resonance: ")) {
-        resonanceText = resonanceText.substring(11).trim();
-      }
-
-      // Use the EXACT SAME data from the LLM response (already stored in currentReflection)
-      const svg = createLeafSVG({
-        leafNo: 8,
-        q: ref.q || "",
-        a: ref.main || "",
-        resonance: resonanceText,
-        guide: ref.guide || "What remains when urgency leaves?",
-        mode: "POND",
-        epoch: "EPOCH 5"
-      });
-
-      window.currentLeafSvg = svg;
-
-      try{ if(window.currentLeafSvgUrl) URL.revokeObjectURL(window.currentLeafSvgUrl); }catch(e){}
-      const url = svgToObjectUrl(svg);
-      window.currentLeafSvgUrl = url;
-      if(leafImg) leafImg.src = url;
-    }
-
-    let lastCommitPayload = null;
-    let lastMintTxHash = null;
-
-    function openFreezeModal(){
-      freezeModal.classList.remove("hidden");
-      freezeModal.style.display = "flex";
-      document.body.style.overflow = 'hidden'; // Prevent body scroll
-    }
-    function closeFreezeModal(){
-      freezeModal.classList.add("hidden");
-      freezeModal.style.display = "none";
-      document.body.style.overflow = ''; // Restore body scroll
-    }
-
-    function b64(bytes){
-      let bin = "";
-      bytes.forEach(b => bin += String.fromCharCode(b));
-      return btoa(bin);
-    }
-    function hex(bytes){
-      return [...bytes].map(b => b.toString(16).padStart(2,'0')).join('');
-    }
-    async function sha256(bytes){
-      const digest = await crypto.subtle.digest("SHA-256", bytes);
-      return new Uint8Array(digest);
-    }
-    function nowISO(){ return new Date().toISOString(); }
 
     function loadFreezeDraft(){
       try{
@@ -2168,6 +2069,8 @@ You can move it to a new wallet later, or list it.`,
     });
 
     setInterval(updateCooldownUI, 1000);
-  </script>
+  
+  })();
+</script>
 </body>
 </html>
