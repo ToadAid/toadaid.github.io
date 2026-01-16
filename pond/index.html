@@ -406,52 +406,6 @@
     }
     .confirm-preview::-webkit-scrollbar{ display:none; }
 
-    /* NEW: Leaf preview container for larger SVGs */
-    .leaf-preview-container {
-      max-height: 400px;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.25);
-      padding: 10px;
-    }
-    
-    .leaf-preview-container::-webkit-scrollbar { 
-      display: none; 
-    }
-    
-    #leaf-preview-img {
-      max-width: 100%;
-      width: auto;
-      max-height: 400px;
-      margin: 0 auto;
-      display: block;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.3);
-    }
-    
-    /* Adjust modal for larger content */
-    @media (max-height: 800px) {
-      .leaf-preview-container {
-        max-height: 300px;
-      }
-      #leaf-preview-img {
-        max-height: 300px;
-      }
-    }
-    
-    @media (max-height: 600px) {
-      .leaf-preview-container {
-        max-height: 250px;
-      }
-      #leaf-preview-img {
-        max-height: 250px;
-      }
-    }
-
     /* Fix for mobile webkit */
     @media screen and (max-width: 768px) {
       html, body {
@@ -657,7 +611,7 @@
 
   <!-- ==================== FREEZE (Reflection NFT) MODAL ==================== -->
   <div id="freeze-modal" class="fixed inset-0 z-[999] hidden items-center justify-center p-4 bg-black/90">
-    <div class="w-full max-w-2xl rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
+    <div class="w-full max-w-md rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
       <div class="flex items-start justify-between gap-3">
         <div>
           <div class="text-[10px] uppercase tracking-[0.28em] text-emerald-400">Freeze as Leaf</div>
@@ -666,7 +620,7 @@
         <button id="freeze-close" class="text-zinc-500 hover:text-zinc-200 text-xs uppercase tracking-widest">Close</button>
       </div>
 
-      <div class="mt-4 space-y-3 max-h-[70vh] overflow-y-auto pr-2">
+      <div class="mt-4 space-y-3">
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Tag</div>
         <select id="freeze-tag" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm">
           <option value="STILLNESS">STILLNESS</option>
@@ -679,16 +633,14 @@
         <div id="freeze-preview" class="confirm-preview"></div>
 
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
-        <div class="leaf-preview-container">
-          <img id="leaf-preview-img" class="leaf-preview-img" alt="Leaf preview"/>
+        <div class="rounded-xl border border-white/10 bg-black/30 p-3">
+          <img id="leaf-preview-img" class="max-w-full w-auto max-h-[560px] mx-auto block rounded-xl border border-white/10 object-contain" alt="Leaf preview"/>
           <div class="grid grid-cols-2 gap-2 mt-3">
             <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
             <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
           </div>
-          <div class="mt-2 text-xs text-zinc-500 text-center">
-            SVG is 600×800px — supports long reflections
-          </div>
         </div>
+
 
         <div class="grid grid-cols-2 gap-2">
           <button id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
@@ -1517,14 +1469,123 @@ ${appUrl}`;
     });
 
     
-    // ==================== LEAF SVG GENERATOR HELPERS ====================
-    // Remove old createLeafSVG function - it's now in leaf_svg.js
-    
+    // ==================== LEAF SVG GENERATOR ====================
+    function _xmlEscape(s){
+      return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+
+    function _wrapLines(text, maxChars){
+      const words = String(text||"").split(/\s+/).filter(Boolean);
+      const lines = [];
+      let cur = "";
+      for(const w of words){
+        const next = cur ? (cur + " " + w) : w;
+        if(next.length <= maxChars) cur = next;
+        else { if(cur) lines.push(cur); cur = w; }
+      }
+      if(cur) lines.push(cur);
+      return lines;
+    }
+
+    function _tspans(cx, y, lines, lineH, klass){
+      let out = `<text x="${cx}" y="${y}" text-anchor="middle" class="${klass}">`;
+      lines.forEach((ln,i)=>{ out += `<tspan x="${cx}" dy="${i===0?0:lineH}">${_xmlEscape(ln)}</tspan>`; });
+      out += `</text>`;
+      return out;
+    }
+
+    function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
+      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
+      const aLines = _wrapLines(a, 30).slice(0,6);
+      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
+      const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
+
+      return `
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+
+    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+      .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
+      .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
+      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
+      .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
+    </style>
+  </defs>
+
+  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
+
+  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
+    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
+    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
+    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="300" y1="0" x2="300" y2="600"/>
+  </g>
+
+  <path filter="url(#softGlow)" d="M40 36
+    C30 60, 30 90, 36 120
+    C24 190, 26 300, 38 360
+    C26 440, 40 520, 68 558
+    C120 592, 210 596, 292 590
+    C350 586, 374 542, 380 496
+    C392 414, 388 290, 372 220
+    C386 150, 380 82, 356 48
+    C320 18, 260 18, 200 22
+    C140 18, 80 18, 40 36 Z"
+    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
+
+  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
+
+  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
+  <path d="M200 90
+    C232 92, 254 122, 246 154
+    C238 188, 200 202, 174 188
+    C148 176, 140 144, 156 118
+    C168 100, 184 90, 200 90 Z"
+    fill="#10b981" opacity="0.75"/>
+  <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
+
+  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
+  ${_tspans(200, 238, qLines, 20, "q")}
+
+  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
+  ${_tspans(200, 362, aLines, 22, "a")}
+
+  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+  ${_tspans(200, 522, gLines, 14, "meta")}
+
+  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
+  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
+</svg>
+`.trim();
+    }
+
     function svgToObjectUrl(svgText){
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=600, h=800){
+    async function svgToPngBlob(svgText, w=400, h=600){
       const url = svgToObjectUrl(svgText);
       try{
         const img = new Image();
@@ -1534,9 +1595,6 @@ ${appUrl}`;
         const canvas = document.createElement("canvas");
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext("2d");
-        // Add background matching SVG
-        ctx.fillStyle = '#020617';
-        ctx.fillRect(0, 0, w, h);
         ctx.drawImage(img, 0, 0, w, h);
         return await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 0.95));
       } finally {
@@ -1554,6 +1612,11 @@ ${appUrl}`;
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1500);
     }
+
+    // Expose to non-module script
+// (patched) keep elastic leaf_svg.js generator
+//     window.__createLeafSVG = createLeafSVG;
+
 
     // ==================== FREEZE FLOW (ERC-1155 + 1 USDC fee) ====================
     const BASE_CHAIN_ID = "0x2105"; // 8453
@@ -1604,7 +1667,7 @@ ${appUrl}`;
     const dlSvgBtn = document.getElementById("leaf-download-svg");
     const dlPngBtn = document.getElementById("leaf-download-png");
 
-    // ============ FIXED: Add event listeners for the broken buttons ============
+    // ============ FIX: Add event listeners for the broken buttons ============
 
     // Download SVG button
     dlSvgBtn?.addEventListener("click", () => {
@@ -1613,9 +1676,8 @@ ${appUrl}`;
         alert("No leaf yet. Generate a reflection first.");
         return;
       }
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
-      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), `reflection-leaf-${timestamp}.svg`);
-      window.showStatusMessage?.("🪶 SVG downloaded (600×800px).", "success");
+      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
+      window.showStatusMessage?.("🪶 SVG downloaded.", "success");
     });
 
     // Download PNG button
@@ -1626,14 +1688,13 @@ ${appUrl}`;
         return;
       }
       try {
-        const png = await svgToPngBlob(svg, 600, 800);
+        const png = await svgToPngBlob(svg, 400, 600);
         if(!png) {
           alert("PNG export failed.");
           return;
         }
-        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
-        downloadBlob(png, `reflection-leaf-${timestamp}.png`);
-        window.showStatusMessage?.("🪶 PNG downloaded (600×800px).", "success");
+        downloadBlob(png, "reflection-leaf.png");
+        window.showStatusMessage?.("🪶 PNG downloaded.", "success");
       } catch (error) {
         console.error("PNG export error:", error);
         alert("Failed to export PNG: " + error.message);
@@ -1667,6 +1728,8 @@ ${appUrl}`;
       }
     });
 
+    // NOTE: Freeze-as-Leaf preview must match the SVG card text, not a separate hard-coded format.
+    // We therefore source the exact same displayed reflection + guiding question used to build the SVG.
     function getCurrentReflectionText(){
       const mainEl  = document.getElementById("main-text");
       const guideEl = document.getElementById("guide-text");
@@ -1723,8 +1786,7 @@ ${appUrl}`;
         guideText = guideElement.textContent || "What remains when urgency leaves?";
       }
       
-      // Use the new larger SVG generator from leaf_svg.js
-      const svg = window.__createLeafSVG?.({
+      const svg = createLeafSVG({
         leafNo: 8,
         q: ref?.q || "",
         a: displayedAnswer,
@@ -1740,16 +1802,6 @@ ${appUrl}`;
       const url = svgToObjectUrl(svg);
       window.currentLeafSvgUrl = url;
       if(leafImg) leafImg.src = url;
-      
-      // Update freeze preview text
-      const freezePreview = document.getElementById("freeze-preview");
-      if (freezePreview) {
-        let previewText = displayedAnswer;
-        if (guideText && guideText !== "What remains when urgency leaves?") {
-          previewText += `\n\nGuiding Question: ${guideText}`;
-        }
-        freezePreview.textContent = previewText;
-      }
     }
 
     let lastCommitPayload = null;
@@ -1758,12 +1810,12 @@ ${appUrl}`;
     function openFreezeModal(){
       freezeModal.classList.remove("hidden");
       freezeModal.style.display = "flex";
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden'; // Prevent body scroll
     }
     function closeFreezeModal(){
       freezeModal.classList.add("hidden");
       freezeModal.style.display = "none";
-      document.body.style.overflow = '';
+      document.body.style.overflow = ''; // Restore body scroll
     }
 
     function b64(bytes){
@@ -1809,6 +1861,8 @@ ${appUrl}`;
     }
 
     function syncPreviewFromDraftOrCurrent(){
+      // Single source of truth: the same data used to render the Leaf SVG.
+      // If a freeze-draft exists, the SVG uses it (so the preview MUST use it too).
       refreshLeafPreview();
 
       const draft = loadFreezeDraft();
@@ -2124,8 +2178,5 @@ You can move it to a new wallet later, or list it.`,
 
     setInterval(updateCooldownUI, 1000);
   </script>
-  
-  <!-- Load the external leaf_svg.js file -->
-  <script src="leaf_svg.js"></script>
 </body>
 </html>
