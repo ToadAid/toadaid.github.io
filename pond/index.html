@@ -1511,13 +1511,13 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
       // Content positions are fixed; increasing H simply reveals more vertical room.
       const leafPath = `M200 20 C120 60 40 160 40 ${H-140} C40 ${H-70} 120 ${H-40} 200 ${H-40} C280 ${H-40} 360 ${H-70} 360 ${H-140} C360 160 280 60 200 20 Z`;
 
-      // Build text blocks
-      const qText = qLines.map((ln,i)=>`<text x="80" y="${160 + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
-      const aText = aLines.map((ln,i)=>`<text x="80" y="${240 + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
+      // Build text blocks with proper CSS styling
+      const qText = qLines.map((ln,i)=>`<text x="80" y="${160 + i*18}" font-family="Cinzel, serif" font-size="14" fill="#d8fff6">${_xmlEscape(ln)}</text>`).join("\n");
+      const aText = aLines.map((ln,i)=>`<text x="80" y="${240 + i*18}" font-family="Cinzel, serif" font-size="16" fill="#ffffff" font-style="italic">${_xmlEscape(ln)}</text>`).join("\n");
 
       // Guiding question block starts at y=520 and can extend (height grows as needed)
       const gStartY = 520;
-      const gText = gLines.map((ln,i)=>`<text x="80" y="${gStartY + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
+      const gText = gLines.map((ln,i)=>`<text x="80" y="${gStartY + i*18}" font-family="Inter, system-ui" font-size="12" fill="#79d8c2" font-style="italic">${_xmlEscape(ln)}</text>`).join("\n");
 
       return `
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
@@ -1536,23 +1536,23 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
   <path d="${leafPath}" fill="#0f3b31" opacity="0.94" filter="url(#shadow)"/>
   <path d="${leafPath}" fill="none" stroke="#1b6b57" stroke-width="2" opacity="0.65"/>
 
-  <text x="200" y="76" text-anchor="middle" font-size="16" fill="#b9f5e5" font-family="Inter, system-ui">Freeze as Leaf • #${leafNo}</text>
-  <text x="200" y="98" text-anchor="middle" font-size="12" fill="#79d8c2" font-family="Inter, system-ui">${_xmlEscape(mode)} • ${_xmlEscape(epoch)}</text>
+  <text x="200" y="76" text-anchor="middle" font-size="16" fill="#b9f5e5" font-family="Cinzel, serif">Freeze as Leaf • #${leafNo}</text>
+  <text x="200" y="98" text-anchor="middle" font-size="12" fill="#79d8c2" font-family="Cinzel, serif">${_xmlEscape(mode)} • ${_xmlEscape(epoch)}</text>
 
-  <text x="200" y="130" text-anchor="middle" font-size="14" fill="#d8fff6" font-family="Inter, system-ui">Reflection</text>
+  <text x="200" y="130" text-anchor="middle" font-size="14" fill="#d8fff6" font-family="Cinzel, serif">Inquiry</text>
 
   ${qText}
 
-  <text x="200" y="220" text-anchor="middle" font-size="13" fill="#d8fff6" font-family="Inter, system-ui">A:</text>
+  <text x="200" y="220" text-anchor="middle" font-size="13" fill="#d8fff6" font-family="Cinzel, serif">Reflection:</text>
   ${aText}
 
-  <text x="200" y="470" text-anchor="middle" font-size="12" fill="#79d8c2" font-family="Inter, system-ui">${_xmlEscape(resonance)}</text>
+  <text x="200" y="470" text-anchor="middle" font-size="12" fill="#79d8c2" font-family="Cinzel, serif">${_xmlEscape(resonance)}</text>
 
-  <text x="200" y="500" text-anchor="middle" font-size="13" fill="#d8fff6" font-family="Inter, system-ui">Guiding Question</text>
+  <text x="200" y="500" text-anchor="middle" font-size="13" fill="#d8fff6" font-family="Cinzel, serif">Guiding Question</text>
   ${gText}
 
-  <text x="200" y="${H-56}" text-anchor="middle" font-size="11" fill="#79d8c2" font-family="Inter, system-ui">🪞 🌊 🍃 🌀</text>
-  <text x="200" y="${H-34}" text-anchor="middle" font-size="10" fill="#4fbda3" font-family="Inter, system-ui">tobyworld • mirror</text>
+  <text x="200" y="${H-56}" text-anchor="middle" font-size="11" fill="#79d8c2" font-family="Cinzel, serif">🪞 🌊 🍃 🌀</text>
+  <text x="200" y="${H-34}" text-anchor="middle" font-size="10" fill="#4fbda3" font-family="Cinzel, serif">tobyworld • mirror</text>
 </svg>
 `.trim();
     }
@@ -1651,7 +1651,36 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
     const dlSvgBtn = document.getElementById("leaf-download-svg");
     const dlPngBtn = document.getElementById("leaf-download-png");
 
-    // ============ FIX: Add event listeners for the broken buttons ============
+    // ============ FIX: Add the missing refreshLeafPreview function ============
+    function refreshLeafPreview(){
+      const data = window.__leafPreviewData || {};
+      const q = data.q || '';
+      const a = data.a || '';
+      const resonance = (data.resonance || '').replace(/^Resonance:\s*/i, "").trim();
+      const guide = data.guide || '';
+
+      if (!q && !a) {
+        if(leafImg) leafImg.src = "";
+        return;
+      }
+
+      const svg = createLeafSVG({
+        leafNo: 8,
+        q: q,
+        a: a,
+        resonance: resonance,
+        guide: guide,
+        mode: "POND",
+        epoch: "EPOCH 5"
+      });
+
+      window.currentLeafSvg = svg;
+
+      try{ if(window.currentLeafSvgUrl) URL.revokeObjectURL(window.currentLeafSvgUrl); }catch(e){}
+      const url = svgToObjectUrl(svg);
+      window.currentLeafSvgUrl = url;
+      if(leafImg) leafImg.src = url;
+    }
 
     // Download SVG button
     dlSvgBtn?.addEventListener("click", () => {
@@ -1790,6 +1819,24 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
       cdStatus.textContent = `Waiting… ${sec}s remaining`;
       commitBtn.disabled = true;
     }
+
+    // Helper functions needed for freeze flow
+    function b64(bytes){
+      let bin = "";
+      bytes.forEach(b => bin += String.fromCharCode(b));
+      return btoa(bin);
+    }
+    function hex(bytes){
+      return [...bytes].map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    async function sha256(bytes){
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return new Uint8Array(digest);
+    }
+    function nowISO(){ return new Date().toISOString(); }
+
+    let lastCommitPayload = null;
+    let lastMintTxHash = null;
 
     function ipfsStubStore(cid, blobB64){
       try{
@@ -2018,6 +2065,17 @@ You can move it to a new wallet later, or list it.`,
     function viewTx(){
       if(!lastMintTxHash) return;
       window.open(`https://basescan.org/tx/${lastMintTxHash}`, "_blank");
+    }
+
+    function openFreezeModal(){
+      freezeModal.classList.remove("hidden");
+      freezeModal.style.display = "flex";
+      document.body.style.overflow = 'hidden'; // Prevent body scroll
+    }
+    function closeFreezeModal(){
+      freezeModal.classList.add("hidden");
+      freezeModal.style.display = "none";
+      document.body.style.overflow = ''; // Restore body scroll
     }
 
     freezeClose?.addEventListener("click", closeFreezeModal);
