@@ -1705,7 +1705,16 @@ ${appUrl}`;
         guideText = guideElement.textContent || "What remains when urgency leaves?";
       }
       
-      const svg = createLeafSVG({
+      // IMPORTANT: Use leaf_svg.js as the single source of truth.
+      // Gracefully degrade if it isn't loaded (do not break the modal).
+      if (typeof window.__createLeafSVG !== "function") {
+        console.warn("Leaf SVG generator missing: leaf_svg.js not loaded");
+        window.currentLeafSvg = "";
+        if (leafImg) leafImg.removeAttribute("src");
+        return;
+      }
+
+      const svg = window.__createLeafSVG({
         leafNo: 8,
         q: ref?.q || "",
         a: displayedAnswer,
@@ -2069,11 +2078,6 @@ You can move it to a new wallet later, or list it.`,
     viewBtn?.addEventListener("click", viewTx);
 
     freezeBtn.addEventListener("click", async () => {
-      if (!walletConnected) {
-        alert("Please connect wallet first.");
-        return;
-      }
-
       const ref = window.currentReflection || null;
       if (!ref) {
         alert("Please generate a reflection first using the input above.");
@@ -2093,6 +2097,13 @@ You can move it to a new wallet later, or list it.`,
       updateCooldownUI();
       refreshLeafPreview();
       openFreezeModal();
+
+      // Wallet is only required for onchain steps, not for previewing/freezing locally.
+      // If no wallet, keep mint disabled; user can still download SVG/PNG and save draft.
+      if (!walletConnected) {
+        try { mintBtn.disabled = true; signBtn.disabled = true; commitBtn.disabled = true; } catch (e) {}
+        window.showStatusMessage?.("Connect wallet to commit/sign/mint. Preview & downloads still work.", "info");
+      }
     });
 
     setInterval(updateCooldownUI, 1000);
