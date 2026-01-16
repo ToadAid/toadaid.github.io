@@ -32,7 +32,7 @@
     return lines;
   }
 
-  function createElasticLeafSVG({ inquiry, reflection, guidingQuestion, epoch } = {}){
+  function createElasticLeafSVG({ inquiry, reflection, epoch } = {}){
     const W = 400;
     const topPad = 40;
     const baseHeight = 420;
@@ -40,19 +40,15 @@
 
     const inquiryText = String(inquiry || '').trim();
     const reflectionText = String(reflection || '').trim();
-    const guidingText = String(guidingQuestion || '').trim();
 
     // Wrap inquiry a bit too (single-ish line in design, but let it wrap softly)
     const inquiryLines = wrapByChars(inquiryText, 34);
     const reflectionLines = wrapByChars(reflectionText, 38);
-    const guidingLines = guidingText ? wrapByChars(`Guiding Question: ${guidingText}`, 40) : [];
 
     const inquiryBlockH = Math.max(1, inquiryLines.length) * 18;
     const reflectionBlockH = Math.max(1, reflectionLines.length) * lineH;
-    const guidingLineH = 20;
-    const guidingBlockH = guidingLines.length ? (guidingLines.length * guidingLineH + 42) : 0;
 
-    const totalHeight = Math.max(560, baseHeight + inquiryBlockH + reflectionBlockH + guidingBlockH);
+    const totalHeight = Math.max(520, baseHeight + inquiryBlockH + reflectionBlockH);
 
     const inquiryYStart = 200;
     const inquiryLineH = 18;
@@ -65,15 +61,6 @@
     const reflectionSvg = reflectionLines.map((l, i) =>
       `<text x="200" y="${reflectionYStart + i*lineH}" text-anchor="middle" fill="#ecfeff" font-size="18" font-style="italic">${esc(l)}</text>`
     ).join('');
-
-    const reflectionEndY = reflectionYStart + Math.max(0, reflectionLines.length-1) * lineH;
-    const guidingLabelY = guidingLines.length ? (reflectionEndY + 54) : null;
-    const guidingYStart = guidingLines.length ? (reflectionEndY + 78) : null;
-    const guidingSvg = guidingLines.length
-      ? guidingLines.map((l, i) =>
-          `<text x="200" y="${guidingYStart + i*guidingLineH}" text-anchor="middle" fill="#dbeafe" font-size="14">${esc(l)}</text>`
-        ).join('')
-      : '';
 
     const footer = `VERIFIED IN POND · ${esc(epoch ? `EPOCH ${epoch}` : 'EPOCH 5')}`;
 
@@ -101,9 +88,6 @@
 
   <text x="200" y="235" text-anchor="middle" fill="#fde68a" font-size="12" letter-spacing="2">REFLECTION</text>
   ${reflectionSvg}
-
-  ${guidingLines.length ? `<text x="200" y="${guidingLabelY}" text-anchor="middle" fill="#34d399" font-size="12" letter-spacing="2">GUIDING QUESTION</text>` : ''}
-  ${guidingSvg}
 
   <text x="200" y="${totalHeight - 40}" text-anchor="middle" fill="#64748b" font-size="10">${footer}</text>
 </svg>`;
