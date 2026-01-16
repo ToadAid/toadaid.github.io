@@ -1,9 +1,10 @@
 /* leaf_svg.js - Elastic Reflection Leaf SVG generator (no modules)
+   Now with larger canvas and better text wrapping for longer reflections
    Exposes: window.__createLeafSVG(payload)
-   payload: { inquiry, reflection, epoch?, mark?, tag? }
+   payload: { leafNo?, q, a, resonance?, guide?, mode?, epoch? }
 */
 (function(){
-  function esc(s){
+  function xmlEsc(s){
     return String(s ?? "")
       .replace(/&/g,'&amp;')
       .replace(/</g,'&lt;')
@@ -12,89 +13,231 @@
       .replace(/'/g,'&apos;');
   }
 
-  // Very light "layout" - wraps by chars (good enough for mobile + SVG)
-  function wrapByChars(text, maxChars){
-    const t = String(text || '').trim().replace(/\s+/g,' ');
+  // Smart text wrapping with max chars per line
+  function wrapText(text, maxChars){
+    const t = String(text || '').trim();
     if (!t) return [];
-    const words = t.split(' ');
+    
+    const words = t.split(/\s+/).filter(Boolean);
     const lines = [];
-    let line = '';
-    for (const w of words){
-      const test = line ? (line + ' ' + w) : w;
-      if (test.length > maxChars && line){
-        lines.push(line);
-        line = w;
+    let currentLine = '';
+    
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      
+      if (testLine.length <= maxChars) {
+        currentLine = testLine;
       } else {
-        line = test;
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
       }
     }
-    if (line) lines.push(line);
+    
+    if (currentLine) lines.push(currentLine);
     return lines;
   }
 
-  function createElasticLeafSVG({ inquiry, reflection, epoch } = {}){
-    // Wider canvas gives long reflections (especially Guiding Question lines)
-    // more room while still scaling responsively in the miniapp.
-    const W = 460;
-    const CX = W / 2;
-    const topPad = 40;
-    const baseHeight = 460;
-    const lineH = 26;
+  // Create text spans for SVG
+  function createTextSpans(x, y, lines, lineHeight, className, fontSize, color, align = 'middle') {
+    let svg = `<text x="${x}" y="${y}" text-anchor="${align}" class="${className}" font-size="${fontSize}" fill="${color}">`;
+    
+    lines.forEach((line, index) => {
+      const dy = index === 0 ? '0' : lineHeight;
+      svg += `<tspan x="${x}" dy="${dy}">${xmlEsc(line)}</tspan>`;
+    });
+    
+    svg += '</text>';
+    return svg;
+  }
 
-    const inquiryText = String(inquiry || '').trim();
-    const reflectionText = String(reflection || '').trim();
-
-    // Wrap inquiry a bit too (single-ish line in design, but let it wrap softly)
-    const inquiryLines = wrapByChars(inquiryText, 40);
-    const reflectionLines = wrapByChars(reflectionText, 46);
-
-    const inquiryBlockH = Math.max(1, inquiryLines.length) * 18;
-    const reflectionBlockH = Math.max(1, reflectionLines.length) * lineH;
-
-    const totalHeight = Math.max(520, baseHeight + inquiryBlockH + reflectionBlockH);
-
-    const inquiryYStart = 200;
-    const inquiryLineH = 18;
-
-    const inquirySvg = inquiryLines.map((l, i) =>
-      `<text x="${CX}" y="${inquiryYStart + i*inquiryLineH}" text-anchor="middle" fill="#d1fae5" font-size="15">${esc(l)}</text>`
-    ).join('');
-
-    const reflectionYStart = 260 + Math.max(0, inquiryLines.length-1)*inquiryLineH;
-    const reflectionSvg = reflectionLines.map((l, i) =>
-      `<text x="${CX}" y="${reflectionYStart + i*lineH}" text-anchor="middle" fill="#ecfeff" font-size="18" font-style="italic">${esc(l)}</text>`
-    ).join('');
-
-    const footer = `VERIFIED IN POND · ${esc(epoch ? `EPOCH ${epoch}` : 'EPOCH 5')}`;
+  function createLeafSVG({ 
+    leafNo = 8, 
+    q = "", 
+    a = "", 
+    resonance = "Stillness.", 
+    guide = "What remains when urgency leaves?", 
+    mode = "POND", 
+    epoch = "EPOCH 5" 
+  } = {}) {
+    
+    // Larger canvas dimensions
+    const WIDTH = 600;
+    const HEIGHT = 800;
+    const CX = WIDTH / 2;
+    
+    // Text wrapping settings
+    const qLines = wrapText(`Q: ${q}`, 36);
+    const aLines = wrapText(a, 40);
+    const guideLines = wrapText(`Guiding: ${guide}`, 42);
+    
+    // Calculate dynamic heights
+    const titleHeight = 60;
+    const sectionSpacing = 60;
+    
+    // Positions
+    const titleY = 70;
+    const leafNoY = 150;
+    const inquiryLabelY = 220;
+    const inquiryTextY = 260;
+    const reflectionLabelY = inquiryTextY + (qLines.length * 24) + 40;
+    const reflectionTextY = reflectionLabelY + 30;
+    const guideY = reflectionTextY + (aLines.length * 28) + 40;
+    const sigilY = guideY + (guideLines.length * 20) + 30;
+    const footerY = HEIGHT - 30;
+    
+    const sigil = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="100%" viewBox="0 0 ${W} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">
+<svg width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+    <!-- Background gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%" stop-color="#064e3b"/>
       <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+    
+    <!-- Gold gradient for decorative elements -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
     </linearGradient>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="0.6"/>
+    
+    <!-- Soft glow filter -->
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
+    
+    <!-- CSS styles for text -->
+    <style>
+      .title { font-family: 'Cinzel', serif; font-weight: bold; }
+      .label { font-family: 'Cinzel', serif; }
+      .q-text { font-family: 'Cinzel', serif; font-style: italic; }
+      .a-text { font-family: 'Cinzel', serif; font-style: italic; }
+      .meta { font-family: 'Inter', sans-serif; }
+      .tiny { font-family: 'Inter', sans-serif; }
+    </style>
   </defs>
-
-  <rect width="${W}" height="${totalHeight}" rx="28" fill="url(#bg)"/>
-
-  <text x="${CX}" y="50" text-anchor="middle" fill="#fde68a" font-size="14" letter-spacing="3">REFLECTION LEAF · POND</text>
-
-  <circle cx="${CX}" cy="110" r="36" fill="#10b981" filter="url(#soft)"/>
-  <text x="${CX}" y="118" text-anchor="middle" fill="#022c22" font-size="22">8</text>
-
-  <text x="${CX}" y="170" text-anchor="middle" fill="#34d399" font-size="12" letter-spacing="2">INQUIRY</text>
-  ${inquirySvg}
-
-  <text x="${CX}" y="235" text-anchor="middle" fill="#fde68a" font-size="12" letter-spacing="2">REFLECTION</text>
-  ${reflectionSvg}
-
-  <text x="${CX}" y="${totalHeight - 40}" text-anchor="middle" fill="#64748b" font-size="10">${footer}</text>
+  
+  <!-- Background -->
+  <rect width="${WIDTH}" height="${HEIGHT}" rx="32" fill="url(#bgGrad)"/>
+  
+  <!-- Decorative grid lines (subtle) -->
+  <g opacity="0.06" stroke="#10b981" stroke-width="0.5">
+    <line x1="0" y1="${HEIGHT * 0.2}" x2="${WIDTH}" y2="${HEIGHT * 0.2}"/>
+    <line x1="0" y1="${HEIGHT * 0.4}" x2="${WIDTH}" y2="${HEIGHT * 0.4}"/>
+    <line x1="0" y1="${HEIGHT * 0.6}" x2="${WIDTH}" y2="${HEIGHT * 0.6}"/>
+    <line x1="0" y1="${HEIGHT * 0.8}" x2="${WIDTH}" y2="${HEIGHT * 0.8}"/>
+    <line x1="${WIDTH * 0.25}" y1="0" x2="${WIDTH * 0.25}" y2="${HEIGHT}"/>
+    <line x1="${WIDTH * 0.5}" y1="0" x2="${WIDTH * 0.5}" y2="${HEIGHT}"/>
+    <line x1="${WIDTH * 0.75}" y1="0" x2="${WIDTH * 0.75}" y2="${HEIGHT}"/>
+  </g>
+  
+  <!-- Decorative border path -->
+  <path filter="url(#softGlow)"
+    d="M40 36
+      C30 80, 30 120, 36 160
+      C24 240, 26 400, 38 520
+      C26 620, 40 720, 68 758
+      C120 792, 210 796, 292 790
+      C350 786, 374 742, 380 696
+      C392 614, 388 440, 372 320
+      C386 250, 380 162, 356 128
+      C320 98, 260 98, 200 102
+      C140 98, 80 98, 40 116 Z"
+    fill="none" stroke="url(#goldGrad)" stroke-width="2.5" opacity="0.6"/>
+  
+  <!-- Title -->
+  <text x="${CX}" y="${titleY}" text-anchor="middle" class="title" font-size="22" fill="#e6c27a" letter-spacing="4">
+    REFLECTION LEAF · ${xmlEsc(mode)}
+  </text>
+  
+  <!-- Leaf number in circle -->
+  <circle cx="${CX}" cy="${leafNoY}" r="70" fill="#10b981" opacity="0.15"/>
+  <circle cx="${CX}" cy="${leafNoY}" r="50" fill="#10b981" opacity="0.3"/>
+  <text x="${CX}" y="${leafNoY + 10}" text-anchor="middle" font-family="Cinzel" font-size="48" fill="#eafff7" opacity="0.8">
+    ${leafNo}
+  </text>
+  
+  <!-- Inquiry Label -->
+  <text x="${CX}" y="${inquiryLabelY}" text-anchor="middle" class="label" font-size="16" fill="#34d399" letter-spacing="2">
+    INQUIRY
+  </text>
+  
+  <!-- Inquiry Text -->
+  ${createTextSpans(CX, inquiryTextY, qLines, '24', 'q-text', '18', '#e5e7eb')}
+  
+  <!-- Reflection Label -->
+  <text x="${CX}" y="${reflectionLabelY}" text-anchor="middle" class="label" font-size="16" fill="#fde68a" letter-spacing="2">
+    REFLECTION
+  </text>
+  
+  <!-- Reflection Text -->
+  ${createTextSpans(CX, reflectionTextY, aLines, '28', 'a-text', '22', '#ffffff')}
+  
+  <!-- Guiding Question -->
+  ${createTextSpans(CX, guideY, guideLines, '20', 'meta', '14', '#94a3b8')}
+  
+  <!-- Resonance -->
+  <text x="${CX}" y="${guideY + (guideLines.length * 20) + 20}" text-anchor="middle" class="meta" font-size="12" fill="#64748b">
+    ${xmlEsc(resonance)}
+  </text>
+  
+  <!-- Sigil -->
+  <text x="${CX}" y="${sigilY}" text-anchor="middle" font-size="22" fill="#d1d5db" opacity="0.9">
+    ${xmlEsc(sigil)}
+  </text>
+  
+  <!-- Footer -->
+  <text x="${CX}" y="${footerY}" text-anchor="middle" class="tiny" font-size="10" fill="#64748b">
+    VERIFIED IN POND · ${xmlEsc(epoch)}
+  </text>
 </svg>`;
   }
 
-  window.__createLeafSVG = createElasticLeafSVG;
+  // Also create a simpler version for the Freeze modal preview
+  function createCompactLeafSVG({ q = "", a = "" } = {}) {
+    const W = 400;
+    const H = 500;
+    const CX = W / 2;
+    
+    const qLines = wrapText(q, 30).slice(0, 2);
+    const aLines = wrapText(a, 35).slice(0, 4);
+    
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="cg" cx="50%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+  </defs>
+  
+  <rect width="${W}" height="${H}" rx="20" fill="url(#cg)"/>
+  
+  <text x="${CX}" y="50" text-anchor="middle" font-family="Cinzel" font-size="16" fill="#e6c27a">REFLECTION LEAF</text>
+  
+  <circle cx="${CX}" cy="120" r="40" fill="#10b981" opacity="0.3"/>
+  <text x="${CX}" y="128" text-anchor="middle" font-family="Cinzel" font-size="32" fill="#ffffff">8</text>
+  
+  <text x="${CX}" y="180" text-anchor="middle" font-family="Cinzel" font-size="12" fill="#34d399">INQUIRY</text>
+  ${createTextSpans(CX, 210, qLines, '20', '', '14', '#d1fae5')}
+  
+  <text x="${CX}" y="280" text-anchor="middle" font-family="Cinzel" font-size="12" fill="#fde68a">REFLECTION</text>
+  ${createTextSpans(CX, 310, aLines, '24', '', '16', '#ecfeff', 'middle')}
+  
+  <text x="${CX}" y="450" text-anchor="middle" font-size="10" fill="#64748b">POND VERIFICATION</text>
+</svg>`;
+  }
+
+  // Expose both functions
+  window.__createLeafSVG = createLeafSVG;
+  window.__createCompactLeafSVG = createCompactLeafSVG;
+  
+  console.log('Leaf SVG generator loaded - larger canvas with auto-fitting text');
 })();
+[file content end]
