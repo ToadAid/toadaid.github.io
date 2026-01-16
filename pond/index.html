@@ -406,6 +406,10 @@
     }
     .confirm-preview::-webkit-scrollbar{ display:none; }
 
+    /* Freeze modal: give the Leaf SVG more room; keep text preview compact */
+    #freeze-preview{ max-height: 18vh; }
+    #leaf-preview-img{ max-height: 52vh; object-fit: contain; }
+
     /* Fix for mobile webkit */
     @media screen and (max-width: 768px) {
       html, body {
@@ -636,17 +640,17 @@
         <div class="rounded-xl border border-white/10 bg-black/30 p-3">
           <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
           <div class="grid grid-cols-2 gap-2 mt-3">
-            <button type="button" id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
-            <button type="button" id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
+            <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
+            <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
           </div>
         </div>
 
 
         <div class="grid grid-cols-2 gap-2">
-          <button type="button" id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
+          <button id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
             Save Draft
           </button>
-          <button type="button" id="freeze-clear" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:text-red-200 hover:border-red-500/30 transition">
+          <button id="freeze-clear" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:text-red-200 hover:border-red-500/30 transition">
             Clear
           </button>
         </div>
@@ -661,10 +665,10 @@
             </div>
           </div>
           <div class="mt-2 flex gap-2">
-            <button type="button" id="freeze-start" class="flex-1 py-2 rounded-xl bg-emerald-900/30 border border-emerald-800 text-xs uppercase tracking-widest text-emerald-200 hover:bg-emerald-900/45 transition">
+            <button id="freeze-start" class="flex-1 py-2 rounded-xl bg-emerald-900/30 border border-emerald-800 text-xs uppercase tracking-widest text-emerald-200 hover:bg-emerald-900/45 transition">
               Start
             </button>
-            <button type="button" id="freeze-cancel" class="flex-1 py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-zinc-600 transition">
+            <button id="freeze-cancel" class="flex-1 py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-zinc-600 transition">
               Cancel
             </button>
           </div>
@@ -702,19 +706,19 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2 mt-2">
-          <button type="button" id="freeze-commit" class="py-3 rounded-xl bg-emerald-400 text-black text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+          <button id="freeze-commit" class="py-3 rounded-xl bg-emerald-400 text-black text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             Commit
           </button>
-          <button type="button" id="freeze-sign" class="py-3 rounded-xl border border-emerald-700/60 bg-emerald-900/10 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+          <button id="freeze-sign" class="py-3 rounded-xl border border-emerald-700/60 bg-emerald-900/10 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             Sign Proof
           </button>
         </div>
 
         <div class="grid grid-cols-2 gap-2 mt-2">
-          <button type="button" id="freeze-mint" class="py-3 rounded-xl border border-emerald-500/60 bg-emerald-900/25 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+          <button id="freeze-mint" class="py-3 rounded-xl border border-emerald-500/60 bg-emerald-900/25 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             Mint Leaf (1 USDC)
           </button>
-          <button type="button" id="freeze-view" class="py-3 rounded-xl border border-zinc-700/60 bg-zinc-900/20 text-zinc-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+          <button id="freeze-view" class="py-3 rounded-xl border border-zinc-700/60 bg-zinc-900/20 text-zinc-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             View Tx ↗
           </button>
         </div>
@@ -1445,7 +1449,7 @@ ${appUrl}`;
 
       const ok = await window.confirmSend({
         title: "Drop to Pond",
-        body: "This will open the Farcaster composer with your full Q&A.\n\nNote: Farcaster may reformat spacing and add a link preview — the text below is the exact cast text.\n\nConfirm the exact text below:",
+        body: "This will open the Farcaster composer with your full Q&A.\nConfirm the exact text below:",
         previewText: castText,
         okText: "OK — Open Composer",
         cancelText: "Cancel"
@@ -1493,83 +1497,45 @@ ${appUrl}`;
       return out;
     }
 
+    // Leaf SVG is used both for the on-page preview and the eventual NFT payload.
+    // Key rule: the TEXT PREVIEW and the LEAF must be derived from the same live reflection.
+    // Also: prefer growing the leaf taller (more readable) over shrinking fonts.
     function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
-      // --- Wrap lines (do NOT truncate). The SVG height grows to fit long reflections. ---
-      const qLines = _wrapLines(`Q: ${q}`.trim(), 28).slice(0, 4);
-      let aLines    = _wrapLines((a || "").trim(), 30);
-      const gLines  = _wrapLines(`Guiding: ${guide}`.trim(), 40).slice(0, 4);
+      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
 
-      // Guardrail: prevent absurdly-long content from producing a multi‑thousand px SVG.
-      // If someone pastes a novel, we cap lines but keep the beginning intact.
-      const HARD_CAP_A_LINES = 28;
-      if (aLines.length > HARD_CAP_A_LINES) aLines = aLines.slice(0, HARD_CAP_A_LINES);
+      // --- Reflection block: allow more lines, keep type readable ---
+      // We cap lines to prevent insane payload sizes, but grow the canvas height as needed.
+      const aAll = _wrapLines(a, 30);
+      const aLines = aAll.slice(0, 14);
+      const aClass = "a"; // keep the main readable size
+      const aLineH = 22;
 
-      // --- Adaptive typography (shrink only when needed; keep readability) ---
-      let aFont = 18, aLH = 22;
-      if (aLines.length > 10) { aFont = 16; aLH = 20; }
-      if (aLines.length > 14) { aFont = 15; aLH = 18; }
-      if (aLines.length > 18) { aFont = 14; aLH = 17; }
-
-      let qFont = 16, qLH = 20;
-      if (qLines.length >= 4) { qFont = 15; qLH = 19; }
-
+      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
       const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
-      // --- Dynamic layout ---
-      const titleY = 62;
-      const circleCy = 132;
+      // --- Dynamic layout (height grows with reflection length) ---
+      const reflY = 362;
+      const reflEnd = reflY + Math.max(0, (aLines.length - 1)) * aLineH;
+      const resonanceY = reflEnd + 44;
+      const guideY = resonanceY + 22;
+      const sigilY = guideY + 52;
+      const verifiedY = sigilY + 22;
+      const H = Math.max(600, verifiedY + 30);
 
-      const inquiryLabelY = 210;
-      const inquiryStartY = 238;
-      const inquiryEndY = inquiryStartY + (qLines.length * qLH);
+      const gridYs = [0.2,0.4,0.6,0.8].map(f => Math.round(H*f));
+      const gridX = [100,200,300];
 
-      const refLabelY = Math.max(330, inquiryEndY + 44);
-      const refStartY = refLabelY + 32;
-      const refEndY   = refStartY + (aLines.length * aLH);
-
-      const resonanceY = refEndY + 26;
-      const guideStartY = resonanceY + 22;
-      const guideEndY = guideStartY + (gLines.length * 14);
-
-      // Footer
-      const minH = 600;
-      const neededH = guideEndY + 92; // padding + footer block
-      const H = Math.max(minH, neededH);
-
-      // Footer positions anchored to bottom so the leaf "breathes" when it grows
-      const sigilY = H - 40;
-      const verifiedY = H - 18;
-
-      // Grid lines (extend to new height)
-      const gridH = H;
-      const gridLines = (() => {
-        const ys = [];
-        for (let y = 120; y < gridH; y += 120) ys.push(y);
-        const yLines = ys.map(y => `<line x1="0" y1="${y}" x2="400" y2="${y}"/>`).join("");
-        const xLines = [100,200,300].map(x => `<line x1="${x}" y1="0" x2="${x}" y2="${gridH}"/>`).join("");
-        return yLines + xLines;
-      })();
-
-      // Border path with dynamic bottom
-      const borderPath = (() => {
-        const b1 = H - 42;
-        const b2 = H - 8;
-        const b3 = H - 18;
-        // Keep the original silhouette, just extend the lower curves.
-        return `M40 36
-    C30 60, 30 90, 36 120
-    C24 190, 26 300, 38 360
-    C26 440, 40 ${b1-38}, 68 ${b1}
-    C120 ${b2}, 210 ${b2+4}, 292 ${b2-2}
-    C350 ${b2-6}, 374 ${b1-16}, 380 ${b1-62}
-    C392 414, 388 290, 372 220
-    C386 150, 380 82, 356 48
-    C320 18, 260 18, 200 22
-    C140 18, 80 18, 40 36 Z`;
-      })();
+      // Border path uses fixed top geometry and dynamic bottom control points.
+      const b558 = H - 42;
+      const b592 = H - 8;
+      const b596 = H - 4;
+      const b590 = H - 10;
+      const b586 = H - 14;
+      const b542 = H - 58;
+      const b496 = H - 104;
 
       return `
-<svg width="400" height="${H}" viewBox="0 0 400 ${H}" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 400 ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%" stop-color="#064e3b"/>
@@ -1594,8 +1560,10 @@ ${appUrl}`;
       .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
       .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
       .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: ${qFont}px; font-style: italic; }
-      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: ${aFont}px; font-style: italic; }
+      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
+      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .aSmall { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 15px; font-style: italic; }
+      .aSmall { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 15px; font-style: italic; }
       .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
       .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
     </style>
@@ -1603,14 +1571,31 @@ ${appUrl}`;
 
   <rect width="400" height="${H}" rx="26" fill="url(#pondGrad)"/>
 
-  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">${gridLines}</g>
+  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
+    <line x1="0" y1="${gridYs[0]}" x2="400" y2="${gridYs[0]}"/>
+    <line x1="0" y1="${gridYs[1]}" x2="400" y2="${gridYs[1]}"/>
+    <line x1="0" y1="${gridYs[2]}" x2="400" y2="${gridYs[2]}"/>
+    <line x1="0" y1="${gridYs[3]}" x2="400" y2="${gridYs[3]}"/>
+    <line x1="${gridX[0]}" y1="0" x2="${gridX[0]}" y2="${H}"/>
+    <line x1="${gridX[1]}" y1="0" x2="${gridX[1]}" y2="${H}"/>
+    <line x1="${gridX[2]}" y1="0" x2="${gridX[2]}" y2="${H}"/>
+  </g>
 
-  <path filter="url(#softGlow)" d="${borderPath}"
+  <path filter="url(#softGlow)" d="M40 36
+    C30 60, 30 90, 36 120
+    C24 190, 26 300, 38 360
+    C26 440, 40 ${b542-22}, 68 ${b558}
+    C120 ${b592}, 210 ${b596}, 292 ${b590}
+    C350 ${b586}, 374 ${b542}, 380 ${b496}
+    C392 414, 388 290, 372 220
+    C386 150, 380 82, 356 48
+    C320 18, 260 18, 200 22
+    C140 18, 80 18, 40 36 Z"
     fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
 
-  <text x="200" y="${titleY}" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
+  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
 
-  <circle cx="200" cy="${circleCy}" r="58" fill="#10b981" opacity="0.12"/>
+  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
   <path d="M200 90
     C232 92, 254 122, 246 154
     C238 188, 200 202, 174 188
@@ -1619,14 +1604,14 @@ ${appUrl}`;
     fill="#10b981" opacity="0.75"/>
   <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
 
-  <text x="200" y="${inquiryLabelY}" text-anchor="middle" class="labelG">INQUIRY</text>
-  ${_tspans(200, inquiryStartY, qLines, qLH, "q")}
+  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
+  ${_tspans(200, 238, qLines, 20, "q")}
 
-  <text x="200" y="${refLabelY}" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${_tspans(200, refStartY, aLines, aLH, "a")}
+  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
+  ${_tspans(200, ${reflY}, aLines, aLineH, aClass)}
 
   <text x="200" y="${resonanceY}" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-  ${_tspans(200, guideStartY, gLines, 14, "meta")}
+  ${_tspans(200, ${guideY}, gLines, 14, "meta")}
 
   <text x="200" y="${sigilY}" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
   <text x="200" y="${verifiedY}" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
@@ -1638,14 +1623,17 @@ ${appUrl}`;
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=400, h=null){
-      // If the SVG height is dynamic, derive it from the viewBox.
-      if (!h){
-        const m = /viewBox="0 0 400\s+(\d+(?:\.\d+)?)"/.exec(svgText);
-        if (m) h = Math.round(parseFloat(m[1]));
-        else h = 600;
-      }
+    function _parseSvgSize(svgText){
+      // Prefer viewBox for correct dynamic height.
+      const vb = String(svgText||"").match(/viewBox\s*=\s*"\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s*"/i);
+      if(vb) return { w: Math.round(parseFloat(vb[3])), h: Math.round(parseFloat(vb[4])) };
+      return { w: 400, h: 600 };
+    }
 
+    async function svgToPngBlob(svgText, w=null, h=null){
+      const sz = _parseSvgSize(svgText);
+      const W = (w==null ? sz.w : w);
+      const H = (h==null ? sz.h : h);
       const url = svgToObjectUrl(svgText);
       try{
         const img = new Image();
@@ -1653,9 +1641,9 @@ ${appUrl}`;
         img.src = url;
         await img.decode();
         const canvas = document.createElement("canvas");
-        canvas.width = w; canvas.height = h;
+        canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, w, h);
+        ctx.drawImage(img, 0, 0, W, H);
         return await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 0.95));
       } finally {
         URL.revokeObjectURL(url);
@@ -1663,22 +1651,14 @@ ${appUrl}`;
     }
 
     function downloadBlob(blob, filename){
-      // NOTE: Some in-app browsers (including Base App) can be picky about programmatic downloads.
-      // We try the normal <a download> path first, then fall back to opening the blob URL.
       const url = URL.createObjectURL(blob);
-      try{
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        a.rel = "noopener";
-        a.target = "_blank";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }catch(e){
-        try{ window.open(url, "_blank", "noopener"); }catch(_e){}
-      }
-      setTimeout(() => { try{ URL.revokeObjectURL(url); }catch(e){} }, 2500);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
     }
 
     // Expose to non-module script
@@ -1734,31 +1714,10 @@ ${appUrl}`;
     const dlSvgBtn = document.getElementById("leaf-download-svg");
     const dlPngBtn = document.getElementById("leaf-download-png");
 
-    // ============ FIX: Mobile-safe tap bindings (Base App in-app browser) ============
-
-    function bindTap(el, handler){
-      if(!el) return;
-      let last = 0;
-      const wrapped = (ev) => {
-        // de-dupe pointerup+click double firing
-        const now = Date.now();
-        if(now - last < 350) return;
-        last = now;
-        try{ ev.preventDefault?.(); }catch(e){}
-        try{ ev.stopPropagation?.(); }catch(e){}
-        try{ handler(ev); }catch(e){
-          console.error("bindTap handler error:", e);
-          alert("Action failed: " + (e?.message || String(e)));
-        }
-      };
-      el.addEventListener("pointerup", wrapped, { passive: false });
-      el.addEventListener("click", wrapped, { passive: false });
-    }
-
-    // ============ Buttons (Download / Draft / Clear) ============
+    // ============ FIX: Add event listeners for the broken buttons ============
 
     // Download SVG button
-    bindTap(dlSvgBtn, () => {
+    dlSvgBtn?.addEventListener("click", () => {
       const svg = window.currentLeafSvg;
       if(!svg) {
         alert("No leaf yet. Generate a reflection first.");
@@ -1769,14 +1728,14 @@ ${appUrl}`;
     });
 
     // Download PNG button
-    bindTap(dlPngBtn, async () => {
+    dlPngBtn?.addEventListener("click", async () => {
       const svg = window.currentLeafSvg;
       if(!svg) {
         alert("No leaf yet. Generate a reflection first.");
         return;
       }
       try {
-        const png = await svgToPngBlob(svg, 400);
+        const png = await svgToPngBlob(svg);
         if(!png) {
           alert("PNG export failed.");
           return;
@@ -1790,7 +1749,7 @@ ${appUrl}`;
     });
 
     // Save Draft button
-    bindTap(freezeSave, () => {
+    freezeSave?.addEventListener("click", () => {
       const text = getCurrentReflectionText();
       if(!text || text.trim() === "") {
         alert("No reflection to save. Generate a reflection first.");
@@ -1808,7 +1767,7 @@ ${appUrl}`;
     });
 
     // Clear Draft button
-    bindTap(freezeClear, () => {
+    freezeClear?.addEventListener("click", () => {
       if(confirm("Clear the saved draft? This cannot be undone.")) {
         clearFreezeDraft();
         window.showStatusMessage?.("🗑️ Draft cleared.", "info");
@@ -1816,67 +1775,57 @@ ${appUrl}`;
       }
     });
 
-    function getCurrentReflectionText(){
-      // The preview text must match the Leaf/NFT content (what you SEE).
+    function getDisplayedAnswer(){
       const ref = window.currentReflection || null;
       if(!ref) return "";
-
-      const mainDisplayElement = document.getElementById("main-text");
-      let displayedAnswer = (mainDisplayElement?.textContent || ref.a || "").trim();
-      if(displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) displayedAnswer = displayedAnswer.slice(1, -1).trim();
-
-      const resonanceElement = document.getElementById("res-text");
-      let resonanceText = (resonanceElement?.textContent || "").trim();
-      resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
-      if(!resonanceText) resonanceText = "Stillness.";
-
-      const guideElement = document.getElementById("guide-text");
-      const guideText = (guideElement?.textContent || "What remains when urgency leaves?").trim();
-
-      // Keep it human-readable and aligned with the visual leaf
-      return [
-        `Q: ${ref.q}`,
-        "",
-        "REFLECTION",
-        displayedAnswer,
-        "",
-        `RESONANCE: ${resonanceText}`,
-        `GUIDING: ${guideText}`
-      ].join("\n");
-    }
-
-    function refreshLeafPreview(){
-      const ref = window.currentReflection || null;
-      
-      // Get the actual displayed text
       const mainDisplayElement = document.getElementById("main-text");
       let displayedAnswer = "";
-      
       if (mainDisplayElement) {
         displayedAnswer = mainDisplayElement.textContent || "";
         // Remove quotation marks if present
         if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
           displayedAnswer = displayedAnswer.slice(1, -1).trim();
         }
-      } else if (ref) {
+      } else {
         displayedAnswer = ref.a || "";
       }
-      
-      // Get resonance text
+      return displayedAnswer;
+    }
+
+    function getResonanceText(){
       const resonanceElement = document.getElementById("res-text");
       let resonanceText = "Stillness.";
       if (resonanceElement) {
         resonanceText = resonanceElement.textContent || "Stillness.";
-        // Remove "Resonance: " prefix if present
         resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
       }
-      
-      // Get guide text
+      return resonanceText;
+    }
+
+    function getGuideText(){
       const guideElement = document.getElementById("guide-text");
-      let guideText = "What remains when urgency leaves?";
-      if (guideElement) {
-        guideText = guideElement.textContent || "What remains when urgency leaves?";
-      }
+      return (guideElement ? (guideElement.textContent || "") : "") || "What remains when urgency leaves?";
+    }
+
+    // Text preview inside the Freeze modal should match what the Leaf (SVG/NFT) will actually carry.
+    function getCurrentReflectionText(){
+      const ref = window.currentReflection || null;
+      if(!ref) return "";
+
+      const displayedAnswer = getDisplayedAnswer();
+      const resonanceText = getResonanceText();
+      const guideText = getGuideText();
+
+      // Mirror the same structure as the SVG (Inquiry + Reflection + Resonance + Guiding)
+      return `INQUIRY: ${ref.q}\n\nREFLECTION: ${displayedAnswer}\n\nRESONANCE: ${resonanceText}\n\nGUIDING: ${guideText}`;
+    }
+
+    function refreshLeafPreview(){
+      const ref = window.currentReflection || null;
+      
+      const displayedAnswer = getDisplayedAnswer();
+      const resonanceText = getResonanceText();
+      const guideText = getGuideText();
       
       const svg = createLeafSVG({
         leafNo: 8,
@@ -1954,18 +1903,17 @@ ${appUrl}`;
 
     function syncPreviewFromDraftOrCurrent(){
       const draft = loadFreezeDraft();
-      const hasCurrent = !!(window.currentReflection && (window.currentReflection.q || window.currentReflection.a));
-
-      // Prefer CURRENT reflection (what you see on screen) over any saved draft.
-      // Draft is only used when there is no current reflection (e.g., after reload).
-      const text = hasCurrent ? getCurrentReflectionText() : (draft?.text || "");
-      const tag  = hasCurrent ? (freezeTag.value || "STILLNESS") : (draft?.tag  || "STILLNESS");
+      // IMPORTANT: The preview text must match the *current* reflection (same source as the SVG/NFT).
+      // Drafts are only a fallback when there is no current reflection loaded.
+      const currentText = getCurrentReflectionText();
+      const text = currentText || draft?.text;
+      const tag  = (draft?.tag || window.currentTag || "STILLNESS");
       freezeTag.value = tag;
-      freezePreview.textContent = (text && text.trim()) ? text : "No reflection found. Generate one first.";
-
-      // Leaf preview: use current render when we have current reflection.
-      // If there is no current reflection but we have a saved SVG draft, show that.
-      if(!hasCurrent && draft?.svg){
+      freezePreview.textContent = text || "No reflection found. Generate one first.";
+      
+      // Leaf preview should follow the current reflection. Only fall back to draft SVG
+      // when there is no current reflection.
+      if(!currentText && draft?.svg){
         window.currentLeafSvg = draft.svg;
         try{ if(window.currentLeafSvgUrl) URL.revokeObjectURL(window.currentLeafSvgUrl); }catch(e){}
         const url = svgToObjectUrl(draft.svg);
@@ -2072,7 +2020,8 @@ ${appUrl}`;
     }
 
     async function commitReflection(){
-      const text = (loadFreezeDraft()?.text || getCurrentReflectionText() || "").trim();
+      // Always commit the current reflection (same as the SVG). Draft is fallback only.
+      const text = (getCurrentReflectionText() || loadFreezeDraft()?.text || "").trim();
       if(!text){
         alert("No reflection found. Generate a reflection first, then freeze.");
         return;
