@@ -14,68 +14,45 @@
 
   // Very light "layout" - wraps by chars (good enough for mobile + SVG)
   function wrapByChars(text, maxChars){
-    // Preserve intentional line breaks (and blank lines) so the leaf can grow taller.
-    const src = String(text || '').replace(/\r\n?/g,'\n');
-    const lines = src.split('\n');
-    const out = [];
-
-    for (let rawLine of lines) {
-      rawLine = (rawLine || '').trim();
-      if (!rawLine) {
-        out.push('');
-        continue;
+    const t = String(text || '').trim().replace(/\s+/g,' ');
+    if (!t) return [];
+    const words = t.split(' ');
+    const lines = [];
+    let line = '';
+    for (const w of words){
+      const test = line ? (line + ' ' + w) : w;
+      if (test.length > maxChars && line){
+        lines.push(line);
+        line = w;
+      } else {
+        line = test;
       }
-
-      const words = rawLine.split(/\s+/).filter(Boolean);
-      let cur = '';
-      for (const w of words) {
-        const next = cur ? (cur + ' ' + w) : w;
-        if (next.length <= maxChars) {
-          cur = next;
-        } else {
-          if (cur) out.push(cur);
-          // If a single word is too long, hard-split it.
-          if (w.length > maxChars) {
-            for (let i=0;i<w.length;i+=maxChars) out.push(w.slice(i,i+maxChars));
-            cur = '';
-          } else {
-            cur = w;
-          }
-        }
-      }
-      if (cur) out.push(cur);
     }
-
-    // Trim leading/trailing blank lines, but keep internal ones.
-    while (out.length && out[0] === '') out.shift();
-    while (out.length && out[out.length-1] === '') out.pop();
-    return out;
+    if (line) lines.push(line);
+    return lines;
   }
 
-function createElasticLeafSVG({ inquiry, reflection, epoch } = {}){
+  function createElasticLeafSVG({ inquiry, reflection, guidingQuestion, epoch } = {}){
     const W = 400;
     const topPad = 40;
     const baseHeight = 420;
-    let fontSize = 18;
-    let lineH = 26;
+    const lineH = 26;
 
     const inquiryText = String(inquiry || '').trim();
     const reflectionText = String(reflection || '').trim();
+    const guidingText = String(guidingQuestion || '').trim();
 
     // Wrap inquiry a bit too (single-ish line in design, but let it wrap softly)
     const inquiryLines = wrapByChars(inquiryText, 34);
     const reflectionLines = wrapByChars(reflectionText, 38);
-
-    // Auto-fit: if the reflection is long, grow the leaf (height) and gently shrink text.
-    const lineCount = reflectionLines.length;
-    if (lineCount > 18) { fontSize = 16; lineH = 23; }
-    if (lineCount > 24) { fontSize = 14; lineH = 20; }
-
+    const guidingLines = guidingText ? wrapByChars(`Guiding Question: ${guidingText}`, 40) : [];
 
     const inquiryBlockH = Math.max(1, inquiryLines.length) * 18;
     const reflectionBlockH = Math.max(1, reflectionLines.length) * lineH;
+    const guidingLineH = 20;
+    const guidingBlockH = guidingLines.length ? (guidingLines.length * guidingLineH + 42) : 0;
 
-    const totalHeight = Math.max(520, baseHeight + inquiryBlockH + reflectionBlockH);
+    const totalHeight = Math.max(560, baseHeight + inquiryBlockH + reflectionBlockH + guidingBlockH);
 
     const inquiryYStart = 200;
     const inquiryLineH = 18;
@@ -86,8 +63,17 @@ function createElasticLeafSVG({ inquiry, reflection, epoch } = {}){
 
     const reflectionYStart = 260 + Math.max(0, inquiryLines.length-1)*inquiryLineH;
     const reflectionSvg = reflectionLines.map((l, i) =>
-      `<text x="200" y="${reflectionYStart + i*lineH}" text-anchor="middle" fill="#ecfeff" font-size="${fontSize}" font-style="italic">${esc(l)}</text>`
+      `<text x="200" y="${reflectionYStart + i*lineH}" text-anchor="middle" fill="#ecfeff" font-size="18" font-style="italic">${esc(l)}</text>`
     ).join('');
+
+    const reflectionEndY = reflectionYStart + Math.max(0, reflectionLines.length-1) * lineH;
+    const guidingLabelY = guidingLines.length ? (reflectionEndY + 54) : null;
+    const guidingYStart = guidingLines.length ? (reflectionEndY + 78) : null;
+    const guidingSvg = guidingLines.length
+      ? guidingLines.map((l, i) =>
+          `<text x="200" y="${guidingYStart + i*guidingLineH}" text-anchor="middle" fill="#dbeafe" font-size="14">${esc(l)}</text>`
+        ).join('')
+      : '';
 
     const footer = `VERIFIED IN POND · ${esc(epoch ? `EPOCH ${epoch}` : 'EPOCH 5')}`;
 
@@ -115,6 +101,9 @@ function createElasticLeafSVG({ inquiry, reflection, epoch } = {}){
 
   <text x="200" y="235" text-anchor="middle" fill="#fde68a" font-size="12" letter-spacing="2">REFLECTION</text>
   ${reflectionSvg}
+
+  ${guidingLines.length ? `<text x="200" y="${guidingLabelY}" text-anchor="middle" fill="#34d399" font-size="12" letter-spacing="2">GUIDING QUESTION</text>` : ''}
+  ${guidingSvg}
 
   <text x="200" y="${totalHeight - 40}" text-anchor="middle" fill="#64748b" font-size="10">${footer}</text>
 </svg>`;

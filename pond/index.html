@@ -634,7 +634,7 @@
 
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
         <div class="rounded-xl border border-white/10 bg-black/30 p-3">
-          <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
+          <img id="leaf-preview-img" class="block mx-auto w-full max-w-[380px] h-auto rounded-xl border border-white/10" alt="Leaf preview"/>
           <div class="grid grid-cols-2 gap-2 mt-3">
             <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
             <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
@@ -1586,7 +1586,6 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
         URL.revokeObjectURL(url);
       }
     }
-    }
 
     function downloadBlob(blob, filename){
       const url = URL.createObjectURL(blob);
@@ -1718,15 +1717,14 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
       const data = window.__leafPreviewData || {};
       const q = (data.q || window.currentReflection?.q || '').trim();
       const a = (data.a || '').trim();
-      const res = (data.resonance || '').trim();
+      // IMPORTANT: The freeze preview text must match the SVG leaf content.
+      // The leaf card renders: inquiry, reflection, and guiding question (with label added by leaf_svg.js).
+      // The upper preview should therefore show the reflection + the labeled guiding question (no Q/A headers).
       const guide = (data.guide || '').trim();
 
       const parts = [];
-      if(q) parts.push(`Q: ${q}`);
-      if(a) parts.push(`A: ${a}`);
-      if(res) parts.push(res);
+      if(a) parts.push(a);
       if(guide) parts.push(`Guiding Question: ${guide}`);
-
       return parts.join("\n\n").trim();
     }
 
