@@ -32,6 +32,8 @@
       overflow: hidden;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
     }
 
     body{
@@ -219,6 +221,8 @@
       overflow: auto;
       padding: 18px 18px 16px;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      scroll-behavior: smooth;
       scrollbar-width: none;
     }
     .portal-scroll::-webkit-scrollbar{ display:none; }
@@ -402,8 +406,48 @@
     }
     .confirm-preview::-webkit-scrollbar{ display:none; }
 
+    /* Fix for mobile webkit */
+    @media screen and (max-width: 768px) {
+      html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        position: fixed;
+      }
+      
+      body.expanded {
+        position: fixed;
+        height: 100vh;
+      }
+      
+      .portal-scroll {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+        position: relative;
+      }
+    }
+
+    /* Improve touch scrolling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    /* Ensure modal doesn't cause scroll issues */
+    #freeze-modal {
+      position: fixed;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    #freeze-modal > div {
+      max-height: 90vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     /* LEAF PREVIEW */
-    .modal-card{ max-height: 90vh; overflow: auto; -webkit-overflow-scrolling: touch; }
     .leaf-preview-shell{ border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; background: rgba(0,0,0,0.25); padding: 12px; }
     .leaf-preview-title{ font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 8px; }
     .leaf-preview-sub{ font-size: 9px; color: rgba(255,255,255,0.25); margin-bottom: 8px; }
