@@ -634,7 +634,9 @@
 
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
         <div class="rounded-xl border border-white/10 bg-black/30 p-3">
-          <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
+          <div class="flex items-center justify-center">
+            <img id="leaf-preview-img" class="w-full max-w-[420px] rounded-xl border border-white/10" alt="Leaf preview"/>
+          </div>
           <div class="grid grid-cols-2 gap-2 mt-3">
             <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
             <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
@@ -939,9 +941,12 @@
       }
 
       let resonance = "";
-      const rMatch = text.match(/Reflection Resonance:\s*([\s\S]*)$/i);
+      // Accept either "Reflection Resonance:" or "Echo:" tail lines.
+      const rMatch = text.match(/(?:Reflection Resonance|Echo):\s*([\s\S]*)$/i);
       if(rMatch){
         resonance = rMatch[1].trim();
+        // De-dup if model outputs "Echo: Echo: ..."
+        resonance = resonance.replace(/^Echo:\s*/i, "").trim();
         text = text.slice(0, rMatch.index).trim();
       }
 
@@ -1493,32 +1498,30 @@ ${appUrl}`;
       return out;
     }
 
-    function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
+    function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="", mode="POND", epoch="EPOCH 5" }){
       const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
-      // Allow more reflection + guiding room, then grow the canvas if needed.
       const aLines = _wrapLines(a, 30).slice(0,9);
-      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,4);
+      const gLines = _wrapLines(guide || "What remains when urgency leaves?", 36).slice(0,4);
       const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
-      // Dynamic height so long reflections / guiding questions don't get clipped.
-      const baseH = 640;
-      const extraA = Math.max(0, aLines.length - 6) * 18;
-      const extraG = Math.max(0, gLines.length - 2) * 16;
-      const H = Math.min(900, baseH + extraA + extraG);
+      // ---- auto-height: expand when reflection / guiding question is longer ----
+      const W = 400;
+      const baseH = 600;
+      const aLineH = 22;
+      const gLineH = 14;
+      const aBlockH = (Math.max(1, aLines.length) - 1) * aLineH;
+      const gBlockH = (Math.max(1, gLines.length) - 1) * gLineH;
 
-      // Bottom layout (relative to height)
-      const yVerified = H - 14;
-      const ySigil    = H - 40;
-      const yGuide0   = H - 96 - ((gLines.length - 1) * 16);
-
-      // Bottom layout anchors
-      const footerY = H - 18;
-      const verifiedY = H - 34;
-      const sigilY = H - 52;
-      const guideY = H - (90 + (gLines.length - 1) * 14);
+      const yAStart = 362;
+      const yAfterA = yAStart + aBlockH + 24;
+      const yRes    = yAfterA + 10;
+      const yGStart = yRes + 22;
+      const ySigil  = yGStart + gBlockH + 38;
+      const yFoot   = ySigil + 22;
+      const H = Math.max(baseH, yFoot + 22);
 
       return `
-<svg width="400" height="${H}" viewBox="0 0 400 ${H}" xmlns="http://www.w3.org/2000/svg">
+<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%" stop-color="#064e3b"/>
@@ -1550,11 +1553,11 @@ ${appUrl}`;
     </style>
   </defs>
 
-  <rect width="400" height="${H}" rx="26" fill="url(#pondGrad)"/>
+  <rect width="${W}" height="${H}" rx="26" fill="url(#pondGrad)"/>
 
   <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
-    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
-    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
+    <line x1="0" y1="120" x2="${W}" y2="120"/><line x1="0" y1="240" x2="${W}" y2="240"/>
+    <line x1="0" y1="360" x2="${W}" y2="360"/><line x1="0" y1="480" x2="${W}" y2="480"/>
     <line x1="100" y1="0" x2="100" y2="${H}"/><line x1="200" y1="0" x2="200" y2="${H}"/>
     <line x1="300" y1="0" x2="300" y2="${H}"/>
   </g>
@@ -1562,10 +1565,10 @@ ${appUrl}`;
   <path filter="url(#softGlow)" d="M40 36
     C30 60, 30 90, 36 120
     C24 190, 26 300, 38 360
-    C26 440, 40 520, 68 558
-    C120 592, 210 596, 292 590
-    C350 586, 374 542, 380 496
-    C392 414, 388 290, 372 220
+    C26 440, 40 ${Math.max(520, H-80)}, 68 ${Math.max(558, H-42)}
+    C120 ${Math.max(592, H-8)}, 210 ${Math.max(596, H-4)}, 292 ${Math.max(590, H-10)}
+    C350 ${Math.max(586, H-14)}, 374 ${Math.max(542, H-58)}, 380 ${Math.max(496, H-104)}
+    C392 ${Math.max(414, H-186)}, 388 290, 372 220
     C386 150, 380 82, 356 48
     C320 18, 260 18, 200 22
     C140 18, 80 18, 40 36 Z"
@@ -1586,13 +1589,14 @@ ${appUrl}`;
   ${_tspans(200, 238, qLines, 20, "q")}
 
   <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${_tspans(200, 362, aLines, 22, "a")}
+  ${_tspans(200, ${yAStart}, aLines, ${aLineH}, "a")}
 
-  <text x="200" y="${yGuide0 - 22}" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-  ${_tspans(200, yGuide0, gLines, 14, "meta")}
+  <text x="200" y="${yRes}" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+  <text x="200" y="${yGStart - 10}" text-anchor="middle" class="meta">Guiding Question</text>
+  ${_tspans(200, ${yGStart}, gLines, ${gLineH}, "meta")}
 
   <text x="200" y="${ySigil}" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
-  <text x="200" y="${yVerified}" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
+  <text x="200" y="${yFoot}" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
 </svg>
 `.trim();
     }
@@ -1601,11 +1605,16 @@ ${appUrl}`;
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=400, h=null){
-      if (!h) {
-        const m = (svgText || "").match(/viewBox=\"0\s+0\s+400\s+(\d+)\"/i);
-        h = m ? parseInt(m[1], 10) : 600;
-      }
+    function _svgViewBoxWH(svgText){
+      const m = String(svgText||"").match(/viewBox=\"0\s+0\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\"/i);
+      if(!m) return { w: 400, h: 600 };
+      return { w: Math.round(parseFloat(m[1])), h: Math.round(parseFloat(m[2])) };
+    }
+
+    async function svgToPngBlob(svgText, w=null, h=null){
+      const vb = _svgViewBoxWH(svgText);
+      const W = w || vb.w;
+      const H = h || vb.h;
       const url = svgToObjectUrl(svgText);
       try{
         const img = new Image();
@@ -1613,9 +1622,9 @@ ${appUrl}`;
         img.src = url;
         await img.decode();
         const canvas = document.createElement("canvas");
-        canvas.width = w; canvas.height = h;
+        canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, w, h);
+        ctx.drawImage(img, 0, 0, W, H);
         return await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 0.95));
       } finally {
         URL.revokeObjectURL(url);
@@ -1707,7 +1716,7 @@ ${appUrl}`;
         return;
       }
       try {
-        const png = await svgToPngBlob(svg, 400, null);
+        const png = await svgToPngBlob(svg, 400, 600);
         if(!png) {
           alert("PNG export failed.");
           return;
