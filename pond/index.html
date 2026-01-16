@@ -636,17 +636,17 @@
         <div class="rounded-xl border border-white/10 bg-black/30 p-3">
           <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
           <div class="grid grid-cols-2 gap-2 mt-3">
-            <button type="button" id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
-            <button type="button" id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
+            <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
+            <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
           </div>
         </div>
 
 
         <div class="grid grid-cols-2 gap-2">
-          <button type="button" id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
+          <button id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
             Save Draft
           </button>
-          <button type="button" id="freeze-clear" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:text-red-200 hover:border-red-500/30 transition">
+          <button id="freeze-clear" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:text-red-200 hover:border-red-500/30 transition">
             Clear
           </button>
         </div>
@@ -661,10 +661,10 @@
             </div>
           </div>
           <div class="mt-2 flex gap-2">
-            <button type="button" id="freeze-start" class="flex-1 py-2 rounded-xl bg-emerald-900/30 border border-emerald-800 text-xs uppercase tracking-widest text-emerald-200 hover:bg-emerald-900/45 transition">
+            <button id="freeze-start" class="flex-1 py-2 rounded-xl bg-emerald-900/30 border border-emerald-800 text-xs uppercase tracking-widest text-emerald-200 hover:bg-emerald-900/45 transition">
               Start
             </button>
-            <button type="button" id="freeze-cancel" class="flex-1 py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-zinc-600 transition">
+            <button id="freeze-cancel" class="flex-1 py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-zinc-600 transition">
               Cancel
             </button>
           </div>
@@ -702,19 +702,19 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2 mt-2">
-          <button type="button" id="freeze-commit" class="py-3 rounded-xl bg-emerald-400 text-black text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+          <button id="freeze-commit" class="py-3 rounded-xl bg-emerald-400 text-black text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             Commit
           </button>
-          <button type="button" id="freeze-sign" class="py-3 rounded-xl border border-emerald-700/60 bg-emerald-900/10 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+          <button id="freeze-sign" class="py-3 rounded-xl border border-emerald-700/60 bg-emerald-900/10 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             Sign Proof
           </button>
         </div>
 
         <div class="grid grid-cols-2 gap-2 mt-2">
-          <button type="button" id="freeze-mint" class="py-3 rounded-xl border border-emerald-500/60 bg-emerald-900/25 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+          <button id="freeze-mint" class="py-3 rounded-xl border border-emerald-500/60 bg-emerald-900/25 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             Mint Leaf (1 USDC)
           </button>
-          <button type="button" id="freeze-view" class="py-3 rounded-xl border border-zinc-700/60 bg-zinc-900/20 text-zinc-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+          <button id="freeze-view" class="py-3 rounded-xl border border-zinc-700/60 bg-zinc-900/20 text-zinc-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
             View Tx ↗
           </button>
         </div>
@@ -793,9 +793,9 @@
       if(manualEl) manualEl.style.display = "none";
     })();
 
-    bindTap(manualGlyph, openManual);
-    bindTap(manualClose, closeManual);
-    bindTap(manualAccept, acceptCovenant);
+    manualGlyph?.addEventListener("click", openManual);
+    manualClose?.addEventListener("click", closeManual);
+    manualAccept?.addEventListener("click", acceptCovenant);
 
     // Core elements
     const input = document.getElementById("user-input");
@@ -1045,8 +1045,18 @@
       portalEl.classList.toggle("can-scroll", over);
     }
 
+    // Store the COMPLETE reflection data from LLM
     window.currentReflection = null;
-    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
+    function saveCurrentReflection(q, parsedData) { 
+      window.currentReflection = { 
+        q: q, 
+        main: parsedData.main,
+        echo: parsedData.echo,
+        res: parsedData.res,
+        guide: parsedData.guide,
+        parsed: parsedData // Store the complete parsed data
+      }; 
+    }
     window.saveCurrentReflection = saveCurrentReflection;
 
     async function processInquiry(qOverride){
@@ -1074,14 +1084,16 @@
               guide: parsed.guide
             } : localFallback(q);
 
+            // Update display with EXACT LLM response
             if (mainText) mainText.textContent = `"${out.main}"`;
             if (echoText) echoText.textContent = out.echo;
             if (resText)  resText.textContent  = out.res;
             if (guideText)guideText.textContent= out.guide;
 
-            saveCurrentReflection(q, out.main);
+            // Save COMPLETE reflection data for freeze/SVG
+            saveCurrentReflection(q, out);
 
-            // Build a local leaf SVG for this reflection (used by Freeze modal)
+            // Build a local leaf SVG for this reflection using the SAME data
             try{
               const svg = window.__createLeafSVG?.({
                 leafNo: 8,
@@ -1126,7 +1138,7 @@
               if (echoText) echoText.textContent = out.echo;
               if (resText)  resText.textContent  = out.res;
               if (guideText)guideText.textContent= out.guide;
-              saveCurrentReflection(q, out.main);
+              saveCurrentReflection(q, out);
               showOutput();
               break;
             }
@@ -1137,11 +1149,11 @@
       }
     }
 
-    bindTap(reflectBtn, () => processInquiry());
+    reflectBtn?.addEventListener("click", () => processInquiry());
     input?.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
 
     document.querySelectorAll(".preset").forEach(btn => {
-      bindTap(btn, () => {
+      btn.addEventListener("click", () => {
         document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         const t = btn.getAttribute("data-text") || "";
@@ -1381,7 +1393,7 @@
       syncWalletGlobals("none");
     }
 
-    bindTap(walletBtn, async () => {
+    walletBtn.addEventListener("click", async () => {
       if (walletConnected) {
         setWalletUIDisconnected();
         return;
@@ -1416,7 +1428,7 @@
       }
     });
 
-    bindTap(dropBtn, async () => {
+    dropBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
         return;
@@ -1428,7 +1440,7 @@
         return;
       }
 
-      const { q, a } = ref;
+      const { q, main } = ref;
 
       const appUrl = "https://toadaid.github.io/pond/";
       const castText =
@@ -1436,7 +1448,7 @@
 ${q}
 
 A:
-${a}
+${main}
 
 — from Tobyworld Mirror
 ${appUrl}`;
@@ -1495,12 +1507,24 @@ ${appUrl}`;
 
     function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
       const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
-      const aLines = _wrapLines(a, 30).slice(0,6);
+
+      // --- Auto-fit reflection text ---
+      // If the reflection runs long, allow more lines and shrink type/line-height.
+      const aAll = _wrapLines(a, 30);
+      let aLines = aAll.slice(0,6);
+      let aClass = "a";
+      let aLineH = 22;
+      if(aAll.length > 6){
+        aLines = aAll.slice(0,9);
+        aClass = "aSmall";
+        aLineH = 18;
+      }
+
       const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
       const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
       return `
-<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 400 600" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%" stop-color="#064e3b"/>
@@ -1527,6 +1551,7 @@ ${appUrl}`;
       .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
       .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
       .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .aSmall { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 15px; font-style: italic; }
       .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
       .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
     </style>
@@ -1568,7 +1593,7 @@ ${appUrl}`;
   ${_tspans(200, 238, qLines, 20, "q")}
 
   <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${_tspans(200, 362, aLines, 22, "a")}
+  ${_tspans(200, 362, aLines, aLineH, aClass)}
 
   <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
   ${_tspans(200, 522, gLines, 14, "meta")}
@@ -1601,22 +1626,14 @@ ${appUrl}`;
     }
 
     function downloadBlob(blob, filename){
-      // NOTE: Some in-app browsers (including Base App) can be picky about programmatic downloads.
-      // We try the normal <a download> path first, then fall back to opening the blob URL.
       const url = URL.createObjectURL(blob);
-      try{
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        a.rel = "noopener";
-        a.target = "_blank";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }catch(e){
-        try{ window.open(url, "_blank", "noopener"); }catch(_e){}
-      }
-      setTimeout(() => { try{ URL.revokeObjectURL(url); }catch(e){} }, 2500);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
     }
 
     // Expose to non-module script
@@ -1672,31 +1689,10 @@ ${appUrl}`;
     const dlSvgBtn = document.getElementById("leaf-download-svg");
     const dlPngBtn = document.getElementById("leaf-download-png");
 
-    // ============ FIX: Mobile-safe tap bindings (Base App in-app browser) ============
-
-    function bindTap(el, handler){
-      if(!el) return;
-      let last = 0;
-      const wrapped = (ev) => {
-        // de-dupe pointerup+click double firing
-        const now = Date.now();
-        if(now - last < 350) return;
-        last = now;
-        try{ ev.preventDefault?.(); }catch(e){}
-        try{ ev.stopPropagation?.(); }catch(e){}
-        try{ handler(ev); }catch(e){
-          console.error("bindTap handler error:", e);
-          alert("Action failed: " + (e?.message || String(e)));
-        }
-      };
-      el.addEventListener("pointerup", wrapped, { passive: false });
-      el.addEventListener("click", wrapped, { passive: false });
-    }
-
-    // ============ Buttons (Download / Draft / Clear) ============
+    // ============ FIX: Unified data flow for freeze preview ============
 
     // Download SVG button
-    bindTap(dlSvgBtn, () => {
+    dlSvgBtn?.addEventListener("click", () => {
       const svg = window.currentLeafSvg;
       if(!svg) {
         alert("No leaf yet. Generate a reflection first.");
@@ -1707,7 +1703,7 @@ ${appUrl}`;
     });
 
     // Download PNG button
-    bindTap(dlPngBtn, async () => {
+    dlPngBtn?.addEventListener("click", async () => {
       const svg = window.currentLeafSvg;
       if(!svg) {
         alert("No leaf yet. Generate a reflection first.");
@@ -1728,7 +1724,7 @@ ${appUrl}`;
     });
 
     // Save Draft button
-    bindTap(freezeSave, () => {
+    freezeSave?.addEventListener("click", () => {
       const text = getCurrentReflectionText();
       if(!text || text.trim() === "") {
         alert("No reflection to save. Generate a reflection first.");
@@ -1746,7 +1742,7 @@ ${appUrl}`;
     });
 
     // Clear Draft button
-    bindTap(freezeClear, () => {
+    freezeClear?.addEventListener("click", () => {
       if(confirm("Clear the saved draft? This cannot be undone.")) {
         clearFreezeDraft();
         window.showStatusMessage?.("🗑️ Draft cleared.", "info");
@@ -1754,74 +1750,45 @@ ${appUrl}`;
       }
     });
 
+    // Get the CURRENT reflection text directly from stored LLM data
     function getCurrentReflectionText(){
-      // The preview text must match the Leaf/NFT content (what you SEE).
       const ref = window.currentReflection || null;
       if(!ref) return "";
 
-      const mainDisplayElement = document.getElementById("main-text");
-      let displayedAnswer = (mainDisplayElement?.textContent || ref.a || "").trim();
-      if(displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) displayedAnswer = displayedAnswer.slice(1, -1).trim();
+      // Extract resonance text without the "Resonance: " prefix
+      let resonanceText = ref.res || "Stillness.";
+      if (resonanceText.startsWith("Resonance: ")) {
+        resonanceText = resonanceText.substring(11).trim();
+      }
 
-      const resonanceElement = document.getElementById("res-text");
-      let resonanceText = (resonanceElement?.textContent || "").trim();
-      resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
-      if(!resonanceText) resonanceText = "Stillness.";
+      // Extract guide text
+      const guideText = ref.guide || "What remains when urgency leaves?";
 
-      const guideElement = document.getElementById("guide-text");
-      const guideText = (guideElement?.textContent || "What remains when urgency leaves?").trim();
-
-      // Keep it human-readable and aligned with the visual leaf
-      return [
-        `Q: ${ref.q}`,
-        "",
-        "REFLECTION",
-        displayedAnswer,
-        "",
-        `RESONANCE: ${resonanceText}`,
-        `GUIDING: ${guideText}`
-      ].join("\n");
+      // Mirror the exact same structure as the SVG (Inquiry + Reflection + Resonance + Guiding)
+      // Using the EXACT SAME data that was displayed and used for the SVG
+      return `INQUIRY: ${ref.q}\n\nREFLECTION: ${ref.main}\n\nRESONANCE: ${resonanceText}\n\nGUIDING: ${guideText}`;
     }
 
     function refreshLeafPreview(){
       const ref = window.currentReflection || null;
-      
-      // Get the actual displayed text
-      const mainDisplayElement = document.getElementById("main-text");
-      let displayedAnswer = "";
-      
-      if (mainDisplayElement) {
-        displayedAnswer = mainDisplayElement.textContent || "";
-        // Remove quotation marks if present
-        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
-          displayedAnswer = displayedAnswer.slice(1, -1).trim();
-        }
-      } else if (ref) {
-        displayedAnswer = ref.a || "";
+      if(!ref) {
+        if(leafImg) leafImg.src = "";
+        return;
       }
-      
-      // Get resonance text
-      const resonanceElement = document.getElementById("res-text");
-      let resonanceText = "Stillness.";
-      if (resonanceElement) {
-        resonanceText = resonanceElement.textContent || "Stillness.";
-        // Remove "Resonance: " prefix if present
-        resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
+
+      // Extract resonance text without the "Resonance: " prefix
+      let resonanceText = ref.res || "Stillness.";
+      if (resonanceText.startsWith("Resonance: ")) {
+        resonanceText = resonanceText.substring(11).trim();
       }
-      
-      // Get guide text
-      const guideElement = document.getElementById("guide-text");
-      let guideText = "What remains when urgency leaves?";
-      if (guideElement) {
-        guideText = guideElement.textContent || "What remains when urgency leaves?";
-      }
-      
+
+      // Use the EXACT SAME data from the LLM response (already stored in currentReflection)
       const svg = createLeafSVG({
         leafNo: 8,
-        q: ref?.q || "",
-        a: displayedAnswer,
+        q: ref.q || "",
+        a: ref.main || "",
         resonance: resonanceText,
-        guide: guideText,
+        guide: ref.guide || "What remains when urgency leaves?",
         mode: "POND",
         epoch: "EPOCH 5"
       });
@@ -2157,23 +2124,23 @@ You can move it to a new wallet later, or list it.`,
     freezeClose?.addEventListener("click", closeFreezeModal);
     freezeModal?.addEventListener("click", (e) => { if(e.target === freezeModal) closeFreezeModal(); });
 
-    bindTap(cdStart, () => {
+    cdStart?.addEventListener("click", () => {
       const mins = Number(cdMinInput.value || "0");
       const endMs = Date.now() + Math.max(0, mins) * 60_000;
       setCooldown(endMs);
       updateCooldownUI();
     });
-    bindTap(cdCancel, () => {
+    cdCancel?.addEventListener("click", () => {
       clearCooldown();
       updateCooldownUI();
     });
 
-    bindTap(commitBtn, commitReflection);
-    bindTap(signBtn, signProof);
-    bindTap(mintBtn, mintLeaf);
-    bindTap(viewBtn, viewTx);
+    commitBtn?.addEventListener("click", commitReflection);
+    signBtn?.addEventListener("click", signProof);
+    mintBtn?.addEventListener("click", mintLeaf);
+    viewBtn?.addEventListener("click", viewTx);
 
-    bindTap(freezeBtn, async () => {
+    freezeBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
         return;
