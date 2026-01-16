@@ -33,17 +33,20 @@
   }
 
   function createElasticLeafSVG({ inquiry, reflection, epoch } = {}){
-    const W = 400;
+    // Wider canvas gives long reflections (especially Guiding Question lines)
+    // more room while still scaling responsively in the miniapp.
+    const W = 460;
+    const CX = W / 2;
     const topPad = 40;
-    const baseHeight = 420;
+    const baseHeight = 460;
     const lineH = 26;
 
     const inquiryText = String(inquiry || '').trim();
     const reflectionText = String(reflection || '').trim();
 
     // Wrap inquiry a bit too (single-ish line in design, but let it wrap softly)
-    const inquiryLines = wrapByChars(inquiryText, 34);
-    const reflectionLines = wrapByChars(reflectionText, 38);
+    const inquiryLines = wrapByChars(inquiryText, 40);
+    const reflectionLines = wrapByChars(reflectionText, 46);
 
     const inquiryBlockH = Math.max(1, inquiryLines.length) * 18;
     const reflectionBlockH = Math.max(1, reflectionLines.length) * lineH;
@@ -54,12 +57,12 @@
     const inquiryLineH = 18;
 
     const inquirySvg = inquiryLines.map((l, i) =>
-      `<text x="200" y="${inquiryYStart + i*inquiryLineH}" text-anchor="middle" fill="#d1fae5" font-size="15">${esc(l)}</text>`
+      `<text x="${CX}" y="${inquiryYStart + i*inquiryLineH}" text-anchor="middle" fill="#d1fae5" font-size="15">${esc(l)}</text>`
     ).join('');
 
     const reflectionYStart = 260 + Math.max(0, inquiryLines.length-1)*inquiryLineH;
     const reflectionSvg = reflectionLines.map((l, i) =>
-      `<text x="200" y="${reflectionYStart + i*lineH}" text-anchor="middle" fill="#ecfeff" font-size="18" font-style="italic">${esc(l)}</text>`
+      `<text x="${CX}" y="${reflectionYStart + i*lineH}" text-anchor="middle" fill="#ecfeff" font-size="18" font-style="italic">${esc(l)}</text>`
     ).join('');
 
     const footer = `VERIFIED IN POND · ${esc(epoch ? `EPOCH ${epoch}` : 'EPOCH 5')}`;
@@ -78,18 +81,18 @@
 
   <rect width="${W}" height="${totalHeight}" rx="28" fill="url(#bg)"/>
 
-  <text x="200" y="50" text-anchor="middle" fill="#fde68a" font-size="14" letter-spacing="3">REFLECTION LEAF · POND</text>
+  <text x="${CX}" y="50" text-anchor="middle" fill="#fde68a" font-size="14" letter-spacing="3">REFLECTION LEAF · POND</text>
 
-  <circle cx="200" cy="110" r="36" fill="#10b981" filter="url(#soft)"/>
-  <text x="200" y="118" text-anchor="middle" fill="#022c22" font-size="22">8</text>
+  <circle cx="${CX}" cy="110" r="36" fill="#10b981" filter="url(#soft)"/>
+  <text x="${CX}" y="118" text-anchor="middle" fill="#022c22" font-size="22">8</text>
 
-  <text x="200" y="170" text-anchor="middle" fill="#34d399" font-size="12" letter-spacing="2">INQUIRY</text>
+  <text x="${CX}" y="170" text-anchor="middle" fill="#34d399" font-size="12" letter-spacing="2">INQUIRY</text>
   ${inquirySvg}
 
-  <text x="200" y="235" text-anchor="middle" fill="#fde68a" font-size="12" letter-spacing="2">REFLECTION</text>
+  <text x="${CX}" y="235" text-anchor="middle" fill="#fde68a" font-size="12" letter-spacing="2">REFLECTION</text>
   ${reflectionSvg}
 
-  <text x="200" y="${totalHeight - 40}" text-anchor="middle" fill="#64748b" font-size="10">${footer}</text>
+  <text x="${CX}" y="${totalHeight - 40}" text-anchor="middle" fill="#64748b" font-size="10">${footer}</text>
 </svg>`;
   }
 

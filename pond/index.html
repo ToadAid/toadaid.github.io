@@ -1727,26 +1727,29 @@ ${appUrl}`;
       }
     });
 
+    // NOTE: Freeze-as-Leaf preview must match the SVG card text, not a separate hard-coded format.
+    // We therefore source the exact same displayed reflection + guiding question used to build the SVG.
     function getCurrentReflectionText(){
-      const ref = window.currentReflection || null;
-      if(!ref) return "";
-      
-      // Get the actual displayed text from the main-text element
-      const mainDisplayElement = document.getElementById("main-text");
-      let displayedAnswer = "";
-      
-      if (mainDisplayElement) {
-        displayedAnswer = mainDisplayElement.textContent || "";
-        // Remove quotation marks if present
-        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
-          displayedAnswer = displayedAnswer.slice(1, -1).trim();
-        }
-      } else {
-        // Fallback to the stored answer
-        displayedAnswer = ref.a || "";
+      const mainEl  = document.getElementById("main-text");
+      const guideEl = document.getElementById("guide-text");
+
+      let main = (mainEl?.textContent || "").trim();
+      let guide = (guideEl?.textContent || "").trim();
+
+      // If UI wraps strict fastpath outputs in quotes, remove them.
+      if (main.startsWith('"') && main.endsWith('"')) main = main.slice(1, -1).trim();
+
+      // If guiding line is empty / placeholder, do not append.
+      if (guide === "—" || guide.toLowerCase() === "none") guide = "";
+
+      // If the main reflection already includes a guiding question, keep as-is.
+      const hasGQ = /\bGuiding\s*Question\s*:/i.test(main);
+      if (guide && !hasGQ) {
+        // Ensure we do not duplicate a trailing question mark formatting.
+        const cleanGuide = guide.replace(/^Guiding\s*Question\s*:\s*/i, "").trim();
+        return `${main}\n\nGuiding Question: ${cleanGuide}`.trim();
       }
-      
-      return `Q: ${ref.q}\n\nA: ${displayedAnswer}\n\n— Tobyworld Mirror`;
+      return main;
     }
 
     function refreshLeafPreview(){
@@ -1857,25 +1860,26 @@ ${appUrl}`;
     }
 
     function syncPreviewFromDraftOrCurrent(){
-      // Source of truth: whatever is rendered into the Leaf SVG (main + guiding question).
-      // We intentionally DO NOT show a stale saved draft text here, because that can drift
-      // from the current SVG and create the "preview mismatch" bug.
+      // Single source of truth: the same data used to render the Leaf SVG.
+      // If a freeze-draft exists, the SVG uses it (so the preview MUST use it too).
+      refreshLeafPreview();
 
       const draft = loadFreezeDraft();
+      const data = (window.__leafPreviewData || {});
 
-      const main = (mainText?.textContent || '').trim();
-      let guide = (guideText?.textContent || '').trim();
+      const main = (data.reflection || '').trim();
+      let guide = (data.guide || '').trim();
       guide = guide.replace(/^Guiding\s*Question\s*:\s*/i, '').trim();
 
       let text = main;
-      if (guide) text = `${main}\n\nGuiding Question: ${guide}`;
+      if (guide && !/\bGuiding\s*Question\s*:/i.test(main)) {
+        text = `${main}\n\nGuiding Question: ${guide}`;
+      }
 
-      const tag = (draft?.tag || 'STILLNESS');
+      const tag = (data.tag || draft?.tag || 'STILLNESS');
       freezeTag.value = tag;
 
-      // Keep preview text exactly aligned with SVG content.
       freezePreview.textContent = text || 'No reflection found. Generate one first.';
-      refreshLeafPreview();
     }
 
     function updateCooldownUI(){
