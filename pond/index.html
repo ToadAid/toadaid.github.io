@@ -32,6 +32,8 @@
       overflow: hidden;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
     }
 
     body{
@@ -219,6 +221,8 @@
       overflow: auto;
       padding: 18px 18px 16px;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      scroll-behavior: smooth;
       scrollbar-width: none;
     }
     .portal-scroll::-webkit-scrollbar{ display:none; }
@@ -401,6 +405,47 @@
       line-height: 1.35rem;
     }
     .confirm-preview::-webkit-scrollbar{ display:none; }
+
+    /* Fix for mobile webkit */
+    @media screen and (max-width: 768px) {
+      html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        position: fixed;
+      }
+      
+      body.expanded {
+        position: fixed;
+        height: 100vh;
+      }
+      
+      .portal-scroll {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+        position: relative;
+      }
+    }
+
+    /* Improve touch scrolling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    /* Ensure modal doesn't cause scroll issues */
+    #freeze-modal {
+      position: fixed;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    #freeze-modal > div {
+      max-height: 90vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
   </style>
 </head>
 
@@ -1001,23 +1046,7 @@
     }
 
     window.currentReflection = null;
-    // Single source of truth for the latest reflection.
-    // Also keep the Freeze preview in sync unless the user manually edited the draft.
-    function saveCurrentReflection(q, a) {
-      window.currentReflection = { q, a };
-      try {
-        // If the draft is "auto" (system-generated), overwrite it with the newest reflection.
-        const raw = localStorage.getItem(FREEZE_DRAFT_KEY);
-        const draft = raw ? JSON.parse(raw) : null;
-        const isUserEdited = draft && draft.auto === false;
-        if (!isUserEdited) {
-          localStorage.setItem(
-            FREEZE_DRAFT_KEY,
-            JSON.stringify({ text: getCurrentReflectionText(), ts: Date.now(), auto: true })
-          );
-        }
-      } catch {}
-    }
+    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
     window.saveCurrentReflection = saveCurrentReflection;
 
     async function processInquiry(qOverride){
@@ -1286,10 +1315,21 @@
   </script>
 
   <script type="module">
-    import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk";
-    window.__sdk = sdk;
-
-    try { await sdk.actions.ready(); } catch (e) { /* ok in web */ }
+    // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
+    // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
+    let sdk = null;
+    try {
+      const mod = await import("https://esm.sh/@farcaster/miniapp-sdk");
+      sdk = mod?.sdk || null;
+      if (sdk) {
+        window.__sdk = sdk;
+        if (sdk) { try { await sdk.actions.ready(); } catch (e) {} }
+      }
+    } catch (e) {
+      // Not running in Farcaster; continue with plain web fallbacks.
+      sdk = null;
+      window.__sdk = null;
+    }
 
     const walletBtn = document.getElementById("wallet-btn");
     const shareActions = document.getElementById("share-actions");
@@ -1307,15 +1347,19 @@
     syncWalletGlobals("none");
 
     async function getProvider() {
-      try {
-        const p = await sdk.wallet.getEthereumProvider();
-        if (p) return p;
-      } catch (e) {}
+      if (sdk && sdk.wallet && typeof sdk.wallet.getEthereumProvider === "function") {
+        try {
+          const p = await sdk.wallet.getEthereumProvider();
+          if (p) return p;
+        } catch (e) {}
+      }
+      // Fallbacks (Base app / browser wallets)
       if (window.ethereum) return window.ethereum;
+      if (window?.coinbaseWalletExtension) return window.coinbaseWalletExtension;
       return null;
     }
 
-    // ✅ Fix: preserve Mock styling + avoid removing wallet-mock unintentionally
+    // ✅ preserve Mock styling + avoid removing wallet-mock unintentionally
     function setWalletUIConnected(addr, modeLabel) {
       const shortAddr = `${addr.slice(0,6)}…${addr.slice(-4)}`;
       walletBtn.textContent = `${shortAddr} (${modeLabel})`;
@@ -1407,15 +1451,19 @@ ${appUrl}`;
         cancelText: "Cancel"
       });
       if (!ok) return;
-
-      try {
-        await sdk.actions.composeCast({ text: castText, embeds });
-        window.showStatusMessage?.("🌊 Composer opened.", "success");
-      } catch (e) {
-        console.error("composeCast failed:", e);
-        const url = "https://warpcast.com/~/compose?text=" + encodeURIComponent(castText);
-        window.open(url, "_blank");
+      if (sdk && sdk.actions && typeof sdk.actions.composeCast === "function") {
+        try {
+          await sdk.actions.composeCast({ text: castText, embeds });
+          window.showStatusMessage?.("🌊 Composer opened.", "success");
+          return;
+        } catch (e) {
+          console.error("composeCast failed:", e);
+        }
       }
+      const url = "https://warpcast.com/~/compose?text=" + encodeURIComponent(castText);
+      window.open(url, "_blank");
+      window.showStatusMessage?.("🌊 Opened Warpcast compose.", "success");
+
     });
 
     
@@ -1447,12 +1495,24 @@ ${appUrl}`;
 
     function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
       const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
-      const aLines = _wrapLines(a, 30).slice(0,6);
+
+      // --- Auto-fit reflection text ---
+      // If the reflection runs long, allow more lines and shrink type/line-height.
+      const aAll = _wrapLines(a, 30);
+      let aLines = aAll.slice(0,6);
+      let aClass = "a";
+      let aLineH = 22;
+      if(aAll.length > 6){
+        aLines = aAll.slice(0,9);
+        aClass = "aSmall";
+        aLineH = 18;
+      }
+
       const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
       const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
       return `
-<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 400 600" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%" stop-color="#064e3b"/>
@@ -1479,6 +1539,8 @@ ${appUrl}`;
       .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
       .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
       .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .aSmall { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 15px; font-style: italic; }
+      .aSmall { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 15px; font-style: italic; }
       .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
       .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
     </style>
@@ -1520,7 +1582,7 @@ ${appUrl}`;
   ${_tspans(200, 238, qLines, 20, "q")}
 
   <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${_tspans(200, 362, aLines, 22, "a")}
+  ${_tspans(200, 362, aLines, aLineH, aClass)}
 
   <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
   ${_tspans(200, 522, gLines, 14, "meta")}
@@ -1616,14 +1678,125 @@ ${appUrl}`;
     const dlSvgBtn = document.getElementById("leaf-download-svg");
     const dlPngBtn = document.getElementById("leaf-download-png");
 
+    // ============ FIX: Add event listeners for the broken buttons ============
+
+    // Download SVG button
+    dlSvgBtn?.addEventListener("click", () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) {
+        alert("No leaf yet. Generate a reflection first.");
+        return;
+      }
+      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
+      window.showStatusMessage?.("🪶 SVG downloaded.", "success");
+    });
+
+    // Download PNG button
+    dlPngBtn?.addEventListener("click", async () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) {
+        alert("No leaf yet. Generate a reflection first.");
+        return;
+      }
+      try {
+        const png = await svgToPngBlob(svg, 400, 600);
+        if(!png) {
+          alert("PNG export failed.");
+          return;
+        }
+        downloadBlob(png, "reflection-leaf.png");
+        window.showStatusMessage?.("🪶 PNG downloaded.", "success");
+      } catch (error) {
+        console.error("PNG export error:", error);
+        alert("Failed to export PNG: " + error.message);
+      }
+    });
+
+    // Save Draft button
+    freezeSave?.addEventListener("click", () => {
+      const text = getCurrentReflectionText();
+      if(!text || text.trim() === "") {
+        alert("No reflection to save. Generate a reflection first.");
+        return;
+      }
+      const obj = { 
+        text: text, 
+        tag: freezeTag.value, 
+        saved_at: new Date().toISOString(),
+        svg: window.currentLeafSvg 
+      };
+      saveFreezeDraft(obj);
+      window.showStatusMessage?.("📝 Draft saved locally.", "success");
+      syncPreviewFromDraftOrCurrent();
+    });
+
+    // Clear Draft button
+    freezeClear?.addEventListener("click", () => {
+      if(confirm("Clear the saved draft? This cannot be undone.")) {
+        clearFreezeDraft();
+        window.showStatusMessage?.("🗑️ Draft cleared.", "info");
+        syncPreviewFromDraftOrCurrent();
+      }
+    });
+
+    function getDisplayedAnswer(){
+      const ref = window.currentReflection || null;
+      if(!ref) return "";
+      const mainDisplayElement = document.getElementById("main-text");
+      let displayedAnswer = "";
+      if (mainDisplayElement) {
+        displayedAnswer = mainDisplayElement.textContent || "";
+        // Remove quotation marks if present
+        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
+          displayedAnswer = displayedAnswer.slice(1, -1).trim();
+        }
+      } else {
+        displayedAnswer = ref.a || "";
+      }
+      return displayedAnswer;
+    }
+
+    function getResonanceText(){
+      const resonanceElement = document.getElementById("res-text");
+      let resonanceText = "Stillness.";
+      if (resonanceElement) {
+        resonanceText = resonanceElement.textContent || "Stillness.";
+        resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
+      }
+      return resonanceText;
+    }
+
+    function getGuideText(){
+      const guideElement = document.getElementById("guide-text");
+      return (guideElement ? (guideElement.textContent || "") : "") || "What remains when urgency leaves?";
+    }
+
+    // Text preview inside the Freeze modal should match what the Leaf (SVG/NFT) will actually carry.
+    function getCurrentReflectionText(){
+      const ref = window.currentReflection || null;
+      if(!ref) return "";
+
+      const displayedAnswer = getDisplayedAnswer();
+      const resonanceText = getResonanceText();
+      const guideText = getGuideText();
+
+      // Mirror the same structure as the SVG (Inquiry + Reflection + Resonance + Guiding)
+      return `INQUIRY: ${ref.q}\n\nREFLECTION: ${displayedAnswer}\n\nRESONANCE: ${resonanceText}\n\nGUIDING: ${guideText}`;
+    }
+
     function refreshLeafPreview(){
       const ref = window.currentReflection || null;
-      const svg = (window.currentLeafSvg) || createLeafSVG({
+      
+      const displayedAnswer = getDisplayedAnswer();
+      const resonanceText = getResonanceText();
+      const guideText = getGuideText();
+      
+      const svg = createLeafSVG({
         leafNo: 8,
         q: ref?.q || "",
-        a: ref?.a || "",
-        resonance: "Stillness.",
-        guide: "What remains when urgency leaves?",
+        a: displayedAnswer,
+        resonance: resonanceText,
+        guide: guideText,
         mode: "POND",
         epoch: "EPOCH 5"
       });
@@ -1636,31 +1809,18 @@ ${appUrl}`;
       if(leafImg) leafImg.src = url;
     }
 
-    dlSvgBtn?.addEventListener("click", () => {
-      const svg = window.currentLeafSvg;
-      if(!svg) return alert("No leaf yet. Generate a reflection first.");
-      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
-    });
-
-    dlPngBtn?.addEventListener("click", async () => {
-      const svg = window.currentLeafSvg;
-      if(!svg) return alert("No leaf yet. Generate a reflection first.");
-      const png = await svgToPngBlob(svg, 400, 600);
-      if(!png) return alert("PNG export failed.");
-      downloadBlob(png, "reflection-leaf.png");
-    });
-
-
     let lastCommitPayload = null;
     let lastMintTxHash = null;
 
     function openFreezeModal(){
       freezeModal.classList.remove("hidden");
       freezeModal.style.display = "flex";
+      document.body.style.overflow = 'hidden'; // Prevent body scroll
     }
     function closeFreezeModal(){
       freezeModal.classList.add("hidden");
       freezeModal.style.display = "none";
+      document.body.style.overflow = ''; // Restore body scroll
     }
 
     function b64(bytes){
@@ -1705,21 +1865,21 @@ ${appUrl}`;
       try{ localStorage.removeItem(KEY_FREEZE_CD); }catch(e){}
     }
 
-    function getCurrentReflectionText(){
-      const ref = window.currentReflection || null;
-      if(!ref) return "";
-      return `Q:\n${ref.q}\n\nA:\n${ref.a}\n\n— Tobyworld Mirror`;
-    }
-
     function syncPreviewFromDraftOrCurrent(){
       const draft = loadFreezeDraft();
-      // If the user has manually edited the draft (auto:false), preserve it.
-      // Otherwise always reflect the latest reflection output.
-      const hasManualDraft = !!(draft && draft.auto === false && typeof draft.text === 'string' && draft.text.trim());
-      const text = hasManualDraft ? draft.text : getCurrentReflectionText();
-      const tag  = (hasManualDraft ? (draft.tag || "STILLNESS") : (window.currentReflectionTag || "STILLNESS"));
+      const text = draft?.text || getCurrentReflectionText();
+      const tag  = draft?.tag  || "STILLNESS";
       freezeTag.value = tag;
       freezePreview.textContent = text || "No reflection found. Generate one first.";
+      
+      // Also update leaf preview if draft has SVG
+      if(draft?.svg) {
+        window.currentLeafSvg = draft.svg;
+        refreshLeafPreview();
+      } else {
+        // Always refresh leaf preview with current reflection
+        refreshLeafPreview();
+      }
     }
 
     function updateCooldownUI(){
@@ -1810,6 +1970,8 @@ ${appUrl}`;
 
       window.showStatusMessage?.("Minting Leaf…", "info");
       const tx = await leaf.mintLeaf(connectedAddress, cid, tag);
+      window.showStatusMessage?.("Transaction sent, waiting for confirmation...", "info");
+      
       const receipt = await tx.wait();
 
       return { txHash: tx.hash, receipt };
@@ -1925,15 +2087,39 @@ You can move it to a new wallet later, or list it.`,
 
         if(!ok) return;
 
-        const { txHash } = await mintLeafOnchain({ cid: lastCommitPayload.cid, tag: lastCommitPayload.tag });
+        // Disable buttons during minting
+        mintBtn.disabled = true;
+        mintBtn.textContent = "Minting...";
+        
+        const { txHash } = await mintLeafOnchain({ 
+          cid: lastCommitPayload.cid, 
+          tag: lastCommitPayload.tag 
+        });
 
         lastMintTxHash = txHash;
         viewBtn.disabled = false;
 
-        payloadEl.textContent = JSON.stringify({ ...lastCommitPayload, mint: { txHash, explorer: `https://basescan.org/tx/${txHash}` } }, null, 2);
+        payloadEl.textContent = JSON.stringify({ 
+          ...lastCommitPayload, 
+          mint: { 
+            txHash, 
+            explorer: `https://basescan.org/tx/${txHash}` 
+          } 
+        }, null, 2);
+        
         window.showStatusMessage?.("🪶 Leaf minted on Base.", "success");
+        
+        // Re-enable button
+        mintBtn.disabled = false;
+        mintBtn.textContent = "Mint Leaf (1 USDC)";
+        
       }catch(e){
         console.error("mintLeaf error:", e);
+        
+        // Re-enable button on error
+        mintBtn.disabled = false;
+        mintBtn.textContent = "Mint Leaf (1 USDC)";
+        
         alert("Mint failed: " + (e?.message || "Unknown"));
       }
     }
@@ -1945,18 +2131,6 @@ You can move it to a new wallet later, or list it.`,
 
     freezeClose?.addEventListener("click", closeFreezeModal);
     freezeModal?.addEventListener("click", (e) => { if(e.target === freezeModal) closeFreezeModal(); });
-
-    freezeSave?.addEventListener("click", () => {
-      const obj = { text: getCurrentReflectionText(), tag: freezeTag.value, saved_at: nowISO(), auto: false };
-      saveFreezeDraft(obj);
-      window.showStatusMessage?.("Draft saved locally.", "info");
-      syncPreviewFromDraftOrCurrent();
-    });
-    freezeClear?.addEventListener("click", () => {
-      clearFreezeDraft();
-      window.showStatusMessage?.("Draft cleared.", "info");
-      syncPreviewFromDraftOrCurrent();
-    });
 
     cdStart?.addEventListener("click", () => {
       const mins = Number(cdMinInput.value || "0");
