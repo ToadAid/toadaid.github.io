@@ -1083,18 +1083,33 @@
 
             // Build a local leaf SVG for this reflection (used by Freeze modal)
             try{
-              const svg = window.__createLeafSVG?.({
+              const payload = {
                 leafNo: 8,
                 q,
                 a: out.main,
-                resonance: out.res.replace(/^Resonance:\s*/i, "").trim(),
+                resonance: (out.res || "").replace(/^Resonance:\s*/i, "").trim(),
                 guide: out.guide,
                 mode: "POND",
                 epoch: "EPOCH 5"
-              });
+              };
+
+              // Use the global elastic generator from leaf_svg.js (single source of truth)
+              const svg = (typeof window.__createLeafSVG === "function")
+                ? window.__createLeafSVG(payload)
+                : null;
+
               if(svg) window.currentLeafSvg = svg;
+
               // Keep Freeze preview text in sync with the SAME reflection used for the SVG
-              window.__leafPreviewData = { inquiry: q, reflection: out.main, guide: out.guide };
+              window.__leafPreviewData = {
+                tag: (document.getElementById("freeze-tag")?.value || "STILLNESS"),
+                inquiry: q,
+                reflection: out.main,
+                guide: out.guide
+              };
+
+              // Refresh the modal preview immediately if it's open
+              try{ window.syncPreviewFromDraftOrCurrent?.(); }catch(e){}
             }catch(e){}
 
             incLeaves();
