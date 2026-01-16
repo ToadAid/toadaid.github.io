@@ -1445,7 +1445,7 @@ ${appUrl}`;
 
       const ok = await window.confirmSend({
         title: "Drop to Pond",
-        body: "This will open the Farcaster composer with your full Q&A.\nConfirm the exact text below:",
+        body: "This will open the Farcaster composer with your full Q&A.\n\nNote: Farcaster may reformat spacing and add a link preview — the text below is the exact cast text.\n\nConfirm the exact text below:",
         previewText: castText,
         okText: "OK — Open Composer",
         cancelText: "Cancel"
@@ -1494,13 +1494,82 @@ ${appUrl}`;
     }
 
     function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
-      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
-      const aLines = _wrapLines(a, 30).slice(0,6);
-      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
+      // --- Wrap lines (do NOT truncate). The SVG height grows to fit long reflections. ---
+      const qLines = _wrapLines(`Q: ${q}`.trim(), 28).slice(0, 4);
+      let aLines    = _wrapLines((a || "").trim(), 30);
+      const gLines  = _wrapLines(`Guiding: ${guide}`.trim(), 40).slice(0, 4);
+
+      // Guardrail: prevent absurdly-long content from producing a multi‑thousand px SVG.
+      // If someone pastes a novel, we cap lines but keep the beginning intact.
+      const HARD_CAP_A_LINES = 28;
+      if (aLines.length > HARD_CAP_A_LINES) aLines = aLines.slice(0, HARD_CAP_A_LINES);
+
+      // --- Adaptive typography (shrink only when needed; keep readability) ---
+      let aFont = 18, aLH = 22;
+      if (aLines.length > 10) { aFont = 16; aLH = 20; }
+      if (aLines.length > 14) { aFont = 15; aLH = 18; }
+      if (aLines.length > 18) { aFont = 14; aLH = 17; }
+
+      let qFont = 16, qLH = 20;
+      if (qLines.length >= 4) { qFont = 15; qLH = 19; }
+
       const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
+      // --- Dynamic layout ---
+      const titleY = 62;
+      const circleCy = 132;
+
+      const inquiryLabelY = 210;
+      const inquiryStartY = 238;
+      const inquiryEndY = inquiryStartY + (qLines.length * qLH);
+
+      const refLabelY = Math.max(330, inquiryEndY + 44);
+      const refStartY = refLabelY + 32;
+      const refEndY   = refStartY + (aLines.length * aLH);
+
+      const resonanceY = refEndY + 26;
+      const guideStartY = resonanceY + 22;
+      const guideEndY = guideStartY + (gLines.length * 14);
+
+      // Footer
+      const minH = 600;
+      const neededH = guideEndY + 92; // padding + footer block
+      const H = Math.max(minH, neededH);
+
+      // Footer positions anchored to bottom so the leaf "breathes" when it grows
+      const sigilY = H - 40;
+      const verifiedY = H - 18;
+
+      // Grid lines (extend to new height)
+      const gridH = H;
+      const gridLines = (() => {
+        const ys = [];
+        for (let y = 120; y < gridH; y += 120) ys.push(y);
+        const yLines = ys.map(y => `<line x1="0" y1="${y}" x2="400" y2="${y}"/>`).join("");
+        const xLines = [100,200,300].map(x => `<line x1="${x}" y1="0" x2="${x}" y2="${gridH}"/>`).join("");
+        return yLines + xLines;
+      })();
+
+      // Border path with dynamic bottom
+      const borderPath = (() => {
+        const b1 = H - 42;
+        const b2 = H - 8;
+        const b3 = H - 18;
+        // Keep the original silhouette, just extend the lower curves.
+        return `M40 36
+    C30 60, 30 90, 36 120
+    C24 190, 26 300, 38 360
+    C26 440, 40 ${b1-38}, 68 ${b1}
+    C120 ${b2}, 210 ${b2+4}, 292 ${b2-2}
+    C350 ${b2-6}, 374 ${b1-16}, 380 ${b1-62}
+    C392 414, 388 290, 372 220
+    C386 150, 380 82, 356 48
+    C320 18, 260 18, 200 22
+    C140 18, 80 18, 40 36 Z`;
+      })();
+
       return `
-<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+<svg width="400" height="${H}" viewBox="0 0 400 ${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%" stop-color="#064e3b"/>
@@ -1525,37 +1594,23 @@ ${appUrl}`;
       .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
       .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
       .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
-      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: ${qFont}px; font-style: italic; }
+      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: ${aFont}px; font-style: italic; }
       .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
       .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
     </style>
   </defs>
 
-  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
+  <rect width="400" height="${H}" rx="26" fill="url(#pondGrad)"/>
 
-  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
-    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
-    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
-    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
-    <line x1="300" y1="0" x2="300" y2="600"/>
-  </g>
+  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">${gridLines}</g>
 
-  <path filter="url(#softGlow)" d="M40 36
-    C30 60, 30 90, 36 120
-    C24 190, 26 300, 38 360
-    C26 440, 40 520, 68 558
-    C120 592, 210 596, 292 590
-    C350 586, 374 542, 380 496
-    C392 414, 388 290, 372 220
-    C386 150, 380 82, 356 48
-    C320 18, 260 18, 200 22
-    C140 18, 80 18, 40 36 Z"
+  <path filter="url(#softGlow)" d="${borderPath}"
     fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
 
-  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
+  <text x="200" y="${titleY}" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
 
-  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
+  <circle cx="200" cy="${circleCy}" r="58" fill="#10b981" opacity="0.12"/>
   <path d="M200 90
     C232 92, 254 122, 246 154
     C238 188, 200 202, 174 188
@@ -1564,17 +1619,17 @@ ${appUrl}`;
     fill="#10b981" opacity="0.75"/>
   <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
 
-  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
-  ${_tspans(200, 238, qLines, 20, "q")}
+  <text x="200" y="${inquiryLabelY}" text-anchor="middle" class="labelG">INQUIRY</text>
+  ${_tspans(200, inquiryStartY, qLines, qLH, "q")}
 
-  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${_tspans(200, 362, aLines, 22, "a")}
+  <text x="200" y="${refLabelY}" text-anchor="middle" class="labelY">REFLECTION</text>
+  ${_tspans(200, refStartY, aLines, aLH, "a")}
 
-  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-  ${_tspans(200, 522, gLines, 14, "meta")}
+  <text x="200" y="${resonanceY}" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+  ${_tspans(200, guideStartY, gLines, 14, "meta")}
 
-  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
-  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
+  <text x="200" y="${sigilY}" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
+  <text x="200" y="${verifiedY}" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
 </svg>
 `.trim();
     }
@@ -1583,7 +1638,14 @@ ${appUrl}`;
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=400, h=600){
+    async function svgToPngBlob(svgText, w=400, h=null){
+      // If the SVG height is dynamic, derive it from the viewBox.
+      if (!h){
+        const m = /viewBox="0 0 400\s+(\d+(?:\.\d+)?)"/.exec(svgText);
+        if (m) h = Math.round(parseFloat(m[1]));
+        else h = 600;
+      }
+
       const url = svgToObjectUrl(svgText);
       try{
         const img = new Image();
@@ -1714,7 +1776,7 @@ ${appUrl}`;
         return;
       }
       try {
-        const png = await svgToPngBlob(svg, 400, 600);
+        const png = await svgToPngBlob(svg, 400);
         if(!png) {
           alert("PNG export failed.");
           return;
@@ -1892,17 +1954,24 @@ ${appUrl}`;
 
     function syncPreviewFromDraftOrCurrent(){
       const draft = loadFreezeDraft();
-      const text = draft?.text || getCurrentReflectionText();
-      const tag  = draft?.tag  || "STILLNESS";
+      const hasCurrent = !!(window.currentReflection && (window.currentReflection.q || window.currentReflection.a));
+
+      // Prefer CURRENT reflection (what you see on screen) over any saved draft.
+      // Draft is only used when there is no current reflection (e.g., after reload).
+      const text = hasCurrent ? getCurrentReflectionText() : (draft?.text || "");
+      const tag  = hasCurrent ? (freezeTag.value || "STILLNESS") : (draft?.tag  || "STILLNESS");
       freezeTag.value = tag;
-      freezePreview.textContent = text || "No reflection found. Generate one first.";
-      
-      // Also update leaf preview if draft has SVG
-      if(draft?.svg) {
+      freezePreview.textContent = (text && text.trim()) ? text : "No reflection found. Generate one first.";
+
+      // Leaf preview: use current render when we have current reflection.
+      // If there is no current reflection but we have a saved SVG draft, show that.
+      if(!hasCurrent && draft?.svg){
         window.currentLeafSvg = draft.svg;
-        refreshLeafPreview();
+        try{ if(window.currentLeafSvgUrl) URL.revokeObjectURL(window.currentLeafSvgUrl); }catch(e){}
+        const url = svgToObjectUrl(draft.svg);
+        window.currentLeafSvgUrl = url;
+        if(leafImg) leafImg.src = url;
       } else {
-        // Always refresh leaf preview with current reflection
         refreshLeafPreview();
       }
     }
