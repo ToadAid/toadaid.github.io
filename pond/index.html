@@ -1495,111 +1495,203 @@ ${appUrl}`;
       return out;
     }
 
-    function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
-      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
-      const aLines = _wrapLines(a, 30).slice(0,6);
-      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
-      const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
+    function createLeafSVG({
+      leafNo=8,
+      q="",
+      a="",
+      resonance="",
+      guide="",
+      mode="POND",
+      epoch="EPOCH 5"
+    }={}){
+      const W = 400;
+      const BASE_H = 600;
+      const safe = (s) => (s == null ? "" : String(s)).replace(/\u0000/g, "");
 
-      return `
-<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+      q = safe(q).trim();
+      a = safe(a).trim();
+      resonance = safe(resonance).trim();
+      guide = safe(guide).trim();
+
+      // wrap into lines without losing words
+      const _wrapLines = (txt, maxChars) => {
+        const t = (txt || "").trim();
+        if (!t) return [];
+        // If it's a single long token, hard-slice it
+        if (!/\s/.test(t) && t.length > maxChars){
+          const out=[];
+          for (let i=0;i<t.length;i+=maxChars) out.push(t.slice(i,i+maxChars));
+          return out;
+        }
+        const words = t.split(/\s+/).filter(Boolean);
+        const lines=[];
+        let line="";
+        for (const w of words){
+          if (!line){ line = w; continue; }
+          if ((line + " " + w).length <= maxChars) line += " " + w;
+          else { lines.push(line); line = w; }
+        }
+        if (line) lines.push(line);
+        return lines;
+      };
+
+      // allow longer answers by growing the leaf vertically
+      const qLines = _wrapLines(q, 28).slice(0, 5);
+      const aLines = _wrapLines(a, 34).slice(0, 18);
+      const gLines = _wrapLines(guide, 32).slice(0, 4);
+
+      const extra = Math.max(0, qLines.length - 3) * 18
+                  + Math.max(0, aLines.length - 6) * 22
+                  + Math.max(0, gLines.length - 2) * 16;
+      const delta = Math.min(320, extra);
+      const H = BASE_H + delta;
+
+      // expose dims for PNG export
+      window.__lastLeafDims = { w: W, h: H };
+
+      const cardH = H - 40;
+      const innerH = H - 80;
+      const gridBottom = 560 + delta;
+      const pathBottom = 590 + delta;
+      const pathInner = 552 + delta;
+
+      const yRes = 500 + delta;
+      const yGuide = 520 + delta;
+      const yIcons = 545 + delta;
+      const yVerified = 556 + delta;
+
+      const qTspans = qLines.map((line,i)=>
+        `<tspan x="200" y="${300 + i*20}">${escapeXml(line)}</tspan>`
+      ).join("");
+
+      const aTspans = aLines.map((line,i)=>
+        `<tspan x="200" y="${362 + i*24}">${escapeXml(line)}</tspan>`
+      ).join("");
+
+      const gText = (gLines.length ? gLines : ["" ]).join(" ").trim();
+
+      const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" shape-rendering="geometricPrecision">
   <defs>
-    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
-      <stop offset="0%" stop-color="#064e3b"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </radialGradient>
-
-    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
-      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
-      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#061214"/>
+      <stop offset="55%" stop-color="#08282a"/>
+      <stop offset="100%" stop-color="#061214"/>
     </linearGradient>
-
-    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="2.2" result="b"/>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f6e7b0"/>
+      <stop offset="50%" stop-color="#cda24c"/>
+      <stop offset="100%" stop-color="#f6e7b0"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
       <feMerge>
-        <feMergeNode in="b"/>
+        <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-
-    <style>
-      .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
-      .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
-      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
-      .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
-      .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
-    </style>
   </defs>
 
-  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
+  <rect x="20" y="20" width="360" height="${cardH}" rx="22" fill="url(#bg)" stroke="rgba(210,170,80,0.22)"/>
+  <rect x="40" y="40" width="320" height="${innerH}" rx="18" fill="rgba(10,55,55,0.18)" stroke="rgba(210,170,80,0.18)"/>
 
-  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
-    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
-    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
-    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
-    <line x1="300" y1="0" x2="300" y2="600"/>
+  <g opacity="0.25">
+    <path d="M40 60 H360" stroke="rgba(255,255,255,0.08)"/>
+    <path d="M40 100 H360" stroke="rgba(255,255,255,0.06)"/>
+    <path d="M40 140 H360" stroke="rgba(255,255,255,0.05)"/>
+    <path d="M40 180 H360" stroke="rgba(255,255,255,0.04)"/>
+    <path d="M40 220 H360" stroke="rgba(255,255,255,0.04)"/>
+    <path d="M40 260 H360" stroke="rgba(255,255,255,0.03)"/>
+    <path d="M40 300 H360" stroke="rgba(255,255,255,0.03)"/>
+    <path d="M40 340 H360" stroke="rgba(255,255,255,0.03)"/>
+    <path d="M40 380 H360" stroke="rgba(255,255,255,0.03)"/>
+    <path d="M40 420 H360" stroke="rgba(255,255,255,0.03)"/>
+    <path d="M40 460 H360" stroke="rgba(255,255,255,0.03)"/>
+    <path d="M40 ${gridBottom} H360" stroke="rgba(255,255,255,0.02)"/>
+    <path d="M80 40 V${gridBottom}" stroke="rgba(255,255,255,0.02)"/>
+    <path d="M120 40 V${gridBottom}" stroke="rgba(255,255,255,0.02)"/>
+    <path d="M160 40 V${gridBottom}" stroke="rgba(255,255,255,0.02)"/>
+    <path d="M200 40 V${gridBottom}" stroke="rgba(255,255,255,0.02)"/>
+    <path d="M240 40 V${gridBottom}" stroke="rgba(255,255,255,0.02)"/>
+    <path d="M280 40 V${gridBottom}" stroke="rgba(255,255,255,0.02)"/>
+    <path d="M320 40 V${gridBottom}" stroke="rgba(255,255,255,0.02)"/>
   </g>
 
-  <path filter="url(#softGlow)" d="M40 36
-    C30 60, 30 90, 36 120
-    C24 190, 26 300, 38 360
-    C26 440, 40 520, 68 558
-    C120 592, 210 596, 292 590
-    C350 586, 374 542, 380 496
-    C392 414, 388 290, 372 220
-    C386 150, 380 82, 356 48
-    C320 18, 260 18, 200 22
-    C140 18, 80 18, 40 36 Z"
-    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
+  <path d="M70 90 C100 55, 160 55, 200 75 C250 50, 310 60, 330 110 C355 150, 350 250, 335 330 C320 420, 330 ${pathInner}, 300 ${pathBottom} C250 ${pathBottom+10}, 210 ${pathBottom-8}, 200 ${pathBottom} C160 ${pathBottom+12}, 110 ${pathBottom}, 90 ${pathInner} C55 480, 45 180, 70 90 Z"
+        fill="none" stroke="rgba(210,170,80,0.45)" stroke-width="2" filter="url(#softGlow)"/>
 
-  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
+  <text x="200" y="95" text-anchor="middle" font-family="Cinzel, serif" font-size="15" letter-spacing="3" fill="url(#gold)">
+    REFLECTION LEAF · ${escapeXml(mode)}
+  </text>
 
-  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
-  <path d="M200 90
-    C232 92, 254 122, 246 154
-    C238 188, 200 202, 174 188
-    C148 176, 140 144, 156 118
-    C168 100, 184 90, 200 90 Z"
-    fill="#10b981" opacity="0.75"/>
-  <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
+  <circle cx="200" cy="150" r="44" fill="rgba(20,200,160,0.25)" stroke="rgba(20,200,160,0.35)"/>
+  <text x="200" y="158" text-anchor="middle" font-family="Inter, sans-serif" font-size="40" fill="rgba(255,255,255,0.28)">${leafNo}</text>
 
-  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
-  ${_tspans(200, 238, qLines, 20, "q")}
+  <text x="200" y="210" text-anchor="middle" font-family="Cinzel, serif" font-size="12" letter-spacing="2" fill="rgba(200,255,240,0.45)">INQUIRY</text>
+  <text x="200" y="268" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-style="italic" fill="rgba(255,255,255,0.85)">
+    <tspan x="200" y="268">Q: ${escapeXml(qLines[0]||"")}</tspan>
+    ${qTspans ? qTspans.replace(/<tspan x=\"200\" y=\"300\">/,"<tspan x=\"200\" y=\"288\">") : ""}
+  </text>
 
-  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${_tspans(200, 362, aLines, 22, "a")}
+  <text x="200" y="345" text-anchor="middle" font-family="Cinzel, serif" font-size="12" letter-spacing="2" fill="rgba(200,255,240,0.45)">REFLECTION</text>
 
-  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-  ${_tspans(200, 522, gLines, 14, "meta")}
+  <text x="200" y="376" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-style="italic" fill="rgba(255,255,255,0.82)">
+    ${aTspans}
+  </text>
 
-  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
-  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
-</svg>
-`.trim();
+  <text x="200" y="${yRes}" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="rgba(255,255,255,0.35)">${escapeXml(resonance||"")}</text>
+  <text x="200" y="${yGuide}" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="rgba(255,255,255,0.55)">Guiding: ${escapeXml(gText||"")}</text>
+
+  <text x="200" y="${yIcons}" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" fill="rgba(255,255,255,0.65)">🜂  ${leafNo}  🜄  🜁  🜃  ⏳</text>
+  <text x="200" y="${yVerified}" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" letter-spacing="1" fill="rgba(255,255,255,0.35)">VERIFIED IN POND · ${escapeXml(epoch)}</text>
+</svg>`.trim();
+
+      return svg;
     }
 
     function svgToObjectUrl(svgText){
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=400, h=600){
-      const url = svgToObjectUrl(svgText);
-      try{
-        const img = new Image();
-        img.decoding = "async";
-        img.src = url;
-        await img.decode();
-        const canvas = document.createElement("canvas");
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, w, h);
-        return await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 0.95));
-      } finally {
-        URL.revokeObjectURL(url);
-      }
+    async function svgToPngBlob(svgText){
+      return new Promise((resolve, reject)=>{
+        try{
+          const svgBlob = new Blob([svgText], {type: "image/svg+xml;charset=utf-8"});
+          const url = URL.createObjectURL(svgBlob);
+          const img = new Image();
+          img.onload = ()=>{
+            try{
+              const dims = window.__lastLeafDims || {};
+              // fallback: parse from svg header
+              let w = Number(dims.w || 0);
+              let h = Number(dims.h || 0);
+              if (!w || !h){
+                const mW = svgText.match(/\bwidth=\"(\d+)/i);
+                const mH = svgText.match(/\bheight=\"(\d+)/i);
+                w = w || (mW ? Number(mW[1]) : 400);
+                h = h || (mH ? Number(mH[1]) : 600);
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = w * 2;
+              canvas.height = h * 2;
+              const ctx = canvas.getContext('2d');
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              canvas.toBlob((blob)=>{
+                URL.revokeObjectURL(url);
+                if (!blob) return reject(new Error('PNG conversion failed')); 
+                resolve(blob);
+              }, 'image/png');
+            }catch(err){
+              URL.revokeObjectURL(url);
+              reject(err);
+            }
+          };
+          img.onerror = (e)=>{ URL.revokeObjectURL(url); reject(e); };
+          img.src = url;
+        }catch(e){ reject(e); }
+      });
     }
 
     function downloadBlob(blob, filename){
