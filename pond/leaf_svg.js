@@ -1,112 +1,122 @@
-/* leaf_svg.js - Elastic Reflection Leaf SVG generator (no modules)
-   Exposes: window.__createLeafSVG(payload)
-   payload: { inquiry, reflection, epoch?, mark?, tag? }
-*/
-(function(){
-  function esc(s){
-    return String(s ?? "")
-      .replace(/&/g,'&amp;')
-      .replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;')
-      .replace(/'/g,'&apos;');
-  }
+// leaf_svg.js — Dynamic "Reflection Leaf" SVG generator
+// Exports window.createLeafSVG + window.__createLeafSVG
 
-  // Very light "layout" - wraps by chars (good enough for mobile + SVG)
-  function wrapByChars(text, maxChars){
-    const t = String(text || '').trim().replace(/\s+/g,' ');
-    if (!t) return [];
-    const words = t.split(' ');
-    const lines = [];
-    let line = '';
-    for (const w of words){
-      const test = line ? (line + ' ' + w) : w;
-      if (test.length > maxChars && line){
-        lines.push(line);
+(function(){
+  function wrapLines(text, maxChars){
+    const t = String(text || "").replace(/\s+/g, " ").trim();
+    if(!t) return [""];
+    const words = t.split(" ");
+    const out = [];
+    let line = "";
+    for(const w of words){
+      const cand = line ? (line + " " + w) : w;
+      if(cand.length <= maxChars){
+        line = cand;
+      }else{
+        if(line) out.push(line);
         line = w;
-      } else {
-        line = test;
       }
     }
-    if (line) lines.push(line);
-    return lines;
+    if(line) out.push(line);
+    return out.length ? out : [t];
   }
 
-  function createElasticLeafSVG({ inquiry, reflection, guide, epoch } = {}){
+  function esc(s){
+    return String(s||"")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/\"/g,"&quot;")
+      .replace(/'/g,"&apos;");
+  }
+
+  function createLeafSVG({
+    leafNo=8,
+    q="",
+    a="",
+    resonance="Stillness.",
+    guide="What remains when urgency leaves?",
+    mode="POND",
+    epoch="EPOCH 5",
+  }={}){
+    // Normalize resonance (avoid Echo: Echo: ...)
+    let res = String(resonance||"").trim();
+    res = res.replace(/^\s*(Echo|Reflection Resonance)\s*:\s*/i, "").trim();
+    res = res.replace(/^\s*(Echo|Reflection Resonance)\s*:\s*/i, "").trim();
+
+    const qLines = wrapLines(`Q: ${q}`.trim(), 30).slice(0,3);
+    const aLines = wrapLines(a, 32).slice(0,9);
+    const gLines = wrapLines(guide, 38).slice(0,4);
+
     const W = 400;
-    const topPad = 40;
-    const baseHeight = 420;
-    const lineH = 26;
 
-    const inquiryText = String(inquiry || '').trim();
-    const reflectionText = String(reflection || '').trim();
-    const guideText = String(guide || '').trim();
+    const aLineH = 22;
+    const yA0 = 362;
+    const aBlockH = (aLines.length ? (aLines.length-1) : 0) * aLineH;
+    const yAfterA = yA0 + aBlockH;
 
-    // Wrap inquiry a bit too (single-ish line in design, but let it wrap softly)
-    const inquiryLines = wrapByChars(inquiryText, 34);
-    const reflectionLines = wrapByChars(reflectionText, 38);
-    const guideLines = wrapByChars(guideText, 36).slice(0, 4);
+    const yRes = yAfterA + 52;
+    const yGuide = yRes + 26;
+    const gLineH = 14;
+    const gBlockH = (gLines.length ? (gLines.length-1) : 0) * gLineH;
 
-    const inquiryBlockH = Math.max(1, inquiryLines.length) * 18;
-    const reflectionBlockH = Math.max(1, reflectionLines.length) * lineH;
+    const padBottom = 70;
+    const H = Math.max(600, yGuide + gBlockH + padBottom);
 
-    const guideBlockH = guideLines.length ? (16 + guideLines.length * 14) : 0;
-    const totalHeight = Math.max(520, baseHeight + inquiryBlockH + reflectionBlockH + guideBlockH);
+    const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
-    const inquiryYStart = 200;
-    const inquiryLineH = 18;
+    const qTspans = qLines.map((ln,i)=>`<tspan x="200" dy="${i?18:0}">${esc(ln)}</tspan>`).join("");
+    const aTspans = aLines.map((ln,i)=>`<tspan x="200" dy="${i?aLineH:0}">${esc(ln)}</tspan>`).join("");
+    const gTspans = gLines.map((ln,i)=>`<tspan x="200" dy="${i?gLineH:0}">${esc(ln)}</tspan>`).join("");
 
-    const inquirySvg = inquiryLines.map((l, i) =>
-      `<text x="200" y="${inquiryYStart + i*inquiryLineH}" text-anchor="middle" fill="#d1fae5" font-size="15">${esc(l)}</text>`
-    ).join('');
-
-    const reflectionYStart = 260 + Math.max(0, inquiryLines.length-1)*inquiryLineH;
-    const reflectionSvg = reflectionLines.map((l, i) =>
-      `<text x="200" y="${reflectionYStart + i*lineH}" text-anchor="middle" fill="#ecfeff" font-size="18" font-style="italic">${esc(l)}</text>`
-    ).join('');
-
-    const footer = `VERIFIED IN POND · ${esc(epoch ? `EPOCH ${epoch}` : 'EPOCH 5')}`;
-    const sigil = esc(`🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`);
-
-    // Guiding question block (anchored above footer)
-    const guideY0 = totalHeight - 72 - Math.max(0, guideLines.length - 1) * 14;
-    const guideSvg = guideLines.length ? (
-      `<text x="200" y="${guideY0}" text-anchor="middle" fill="#a7f3d0" font-size="11">Guiding:</text>` +
-      guideLines.map((l, i) =>
-        `<text x="200" y="${guideY0 + 16 + i*14}" text-anchor="middle" fill="#a7f3d0" font-size="11">${esc(l)}</text>`
-      ).join('')
-    ) : '';
+    const gridV = [80,140,200,260,320].map(x=>`<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="white" opacity="0.03"/>`).join("");
+    const gridH = [120,220,320,420,520].map(y=> y < H ? `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="white" opacity="0.03"/>` : "").join("");
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="100%" viewBox="0 0 ${W} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#064e3b"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </linearGradient>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="0.6"/>
+    <radialGradient id="g" cx="50%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#0ad7a6" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#003b46" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#001219"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
+  <rect width="${W}" height="${H}" fill="url(#g)"/>
+  <g>${gridV}${gridH}</g>
 
-  <rect width="${W}" height="${totalHeight}" rx="28" fill="url(#bg)"/>
+  <rect x="18" y="18" width="${W-36}" height="${H-36}" rx="28" fill="none" stroke="#f5d06a" stroke-opacity="0.55" stroke-width="2" filter="url(#glow)"/>
 
-  <text x="200" y="50" text-anchor="middle" fill="#fde68a" font-size="14" letter-spacing="3">REFLECTION LEAF · POND</text>
+  <text x="200" y="64" text-anchor="middle" fill="#f5d06a" font-family="Cinzel, serif" font-size="11" letter-spacing="3">REFLECTION LEAF · ${esc(mode)}</text>
 
-  <circle cx="200" cy="110" r="36" fill="#10b981" filter="url(#soft)"/>
-  <text x="200" y="118" text-anchor="middle" fill="#022c22" font-size="22">${leafNo}</text>
+  <circle cx="200" cy="142" r="42" fill="#0ad7a6" fill-opacity="0.18" stroke="#0ad7a6" stroke-opacity="0.35"/>
+  <text x="200" y="154" text-anchor="middle" fill="#c8fff2" font-family="Cinzel, serif" font-size="34">${esc(String(leafNo))}</text>
 
-  <text x="200" y="170" text-anchor="middle" fill="#34d399" font-size="12" letter-spacing="2">INQUIRY</text>
-  ${inquirySvg}
+  <text x="200" y="214" text-anchor="middle" fill="#bfe9ff" font-family="Cinzel, serif" font-size="10" letter-spacing="3">INQUIRY</text>
+  <text x="200" y="250" text-anchor="middle" fill="#dcefff" font-family="Georgia, serif" font-size="16" font-style="italic">
+    ${qTspans}
+  </text>
 
-  <text x="200" y="235" text-anchor="middle" fill="#fde68a" font-size="12" letter-spacing="2">REFLECTION</text>
-  ${reflectionSvg}
+  <text x="200" y="330" text-anchor="middle" fill="#bfe9ff" font-family="Cinzel, serif" font-size="10" letter-spacing="3">REFLECTION</text>
+  <text x="200" y="${yA0}" text-anchor="middle" fill="#e9f7ff" font-family="Georgia, serif" font-size="18" font-style="italic">
+    ${aTspans}
+  </text>
 
-  ${guideSvg}
-  <text x="200" y="${totalHeight - 44}" text-anchor="middle" fill="#E5E7EB" font-size="16" opacity="0.85">${sigil}</text>
-  <text x="200" y="${totalHeight - 22}" text-anchor="middle" fill="#64748b" font-size="10">${footer}</text>
+  <text x="200" y="${yRes}" text-anchor="middle" fill="#7fe8d1" font-family="Inter, sans-serif" font-size="11" opacity="0.9">${esc(res || "Stillness.")}</text>
+
+  <text x="200" y="${yGuide}" text-anchor="middle" fill="#9fd7ff" font-family="Inter, sans-serif" font-size="10" opacity="0.85">Guiding: <tspan fill="#cfefff">${gTspans}</tspan></text>
+
+  <text x="200" y="${H-64}" text-anchor="middle" fill="#f5d06a" font-family="Inter, sans-serif" font-size="13">${esc(sigil)}</text>
+  <text x="200" y="${H-38}" text-anchor="middle" fill="#bfe9ff" font-family="Inter, sans-serif" font-size="10" opacity="0.8">VERIFIED IN POND · ${esc(epoch)}</text>
 </svg>`;
   }
 
-  window.__createLeafSVG = createElasticLeafSVG;
+  window.createLeafSVG = createLeafSVG;
+  window.__createLeafSVG = createLeafSVG;
 })();

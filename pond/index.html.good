@@ -630,13 +630,11 @@
         </select>
 
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Reflection (preview)</div>
-        <div id="freeze-preview" class="confirm-preview whitespace-pre-wrap"></div>
+        <div id="freeze-preview" class="confirm-preview"></div>
 
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
         <div class="rounded-xl border border-white/10 bg-black/30 p-3">
-          <div class="flex items-center justify-center">
-            <img id="leaf-preview-img" class="max-w-full w-auto max-h-[420px] rounded-xl border border-white/10 object-contain" alt="Leaf preview"/>
-          </div>
+          <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
           <div class="grid grid-cols-2 gap-2 mt-3">
             <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
             <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
@@ -1047,21 +1045,8 @@
       portalEl.classList.toggle("can-scroll", over);
     }
 
-    // Holds the latest reflection in a structured form so Freeze/Mint preview
-    // always matches what the traveler saw (no hard-coded preview text).
     window.currentReflection = null;
-    function saveCurrentReflection(obj) {
-      // obj: { q, main, resonance, guide, echo, raw }
-      if (!obj || typeof obj !== 'object') return;
-      window.currentReflection = {
-        q: String(obj.q || '').trim(),
-        main: String(obj.main || '').trim(),
-        resonance: String(obj.resonance || '').trim(),
-        guide: String(obj.guide || '').trim(),
-        echo: String(obj.echo || '').trim(),
-        raw: String(obj.raw || '').trim(),
-      };
-    }
+    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
     window.saveCurrentReflection = saveCurrentReflection;
 
     async function processInquiry(qOverride){
@@ -1094,7 +1079,7 @@
             if (resText)  resText.textContent  = out.res;
             if (guideText)guideText.textContent= out.guide;
 
-            saveCurrentReflection({ q, main: out.main, echo: out.echo, res: out.res, guide: out.guide });
+            saveCurrentReflection(q, out.main);
 
             // Build a local leaf SVG for this reflection (used by Freeze modal)
             try{
@@ -1141,7 +1126,7 @@
               if (echoText) echoText.textContent = out.echo;
               if (resText)  resText.textContent  = out.res;
               if (guideText)guideText.textContent= out.guide;
-              saveCurrentReflection({ q, main: out.main, echo: out.echo, res: out.res, guide: out.guide });
+              saveCurrentReflection(q, out.main);
               showOutput();
               break;
             }
@@ -1510,12 +1495,30 @@ ${appUrl}`;
 
     function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
       const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
-      const aLines = _wrapLines(a, 30).slice(0,6);
-      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
+      // Allow more reflection + guiding room, then grow the canvas if needed.
+      const aLines = _wrapLines(a, 30).slice(0,9);
+      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,4);
       const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
+      // Dynamic height so long reflections / guiding questions don't get clipped.
+      const baseH = 640;
+      const extraA = Math.max(0, aLines.length - 6) * 18;
+      const extraG = Math.max(0, gLines.length - 2) * 16;
+      const H = Math.min(900, baseH + extraA + extraG);
+
+      // Bottom layout (relative to height)
+      const yVerified = H - 14;
+      const ySigil    = H - 40;
+      const yGuide0   = H - 96 - ((gLines.length - 1) * 16);
+
+      // Bottom layout anchors
+      const footerY = H - 18;
+      const verifiedY = H - 34;
+      const sigilY = H - 52;
+      const guideY = H - (90 + (gLines.length - 1) * 14);
+
       return `
-<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+<svg width="400" height="${H}" viewBox="0 0 400 ${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%" stop-color="#064e3b"/>
@@ -1547,13 +1550,13 @@ ${appUrl}`;
     </style>
   </defs>
 
-  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
+  <rect width="400" height="${H}" rx="26" fill="url(#pondGrad)"/>
 
   <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
     <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
     <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
-    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
-    <line x1="300" y1="0" x2="300" y2="600"/>
+    <line x1="100" y1="0" x2="100" y2="${H}"/><line x1="200" y1="0" x2="200" y2="${H}"/>
+    <line x1="300" y1="0" x2="300" y2="${H}"/>
   </g>
 
   <path filter="url(#softGlow)" d="M40 36
@@ -1585,11 +1588,11 @@ ${appUrl}`;
   <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
   ${_tspans(200, 362, aLines, 22, "a")}
 
-  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-  ${_tspans(200, 522, gLines, 14, "meta")}
+  <text x="200" y="${yGuide0 - 22}" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+  ${_tspans(200, yGuide0, gLines, 14, "meta")}
 
-  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
-  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
+  <text x="200" y="${ySigil}" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
+  <text x="200" y="${yVerified}" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
 </svg>
 `.trim();
     }
@@ -1598,7 +1601,11 @@ ${appUrl}`;
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=400, h=600){
+    async function svgToPngBlob(svgText, w=400, h=null){
+      if (!h) {
+        const m = (svgText || "").match(/viewBox=\"0\s+0\s+400\s+(\d+)\"/i);
+        h = m ? parseInt(m[1], 10) : 600;
+      }
       const url = svgToObjectUrl(svgText);
       try{
         const img = new Image();
@@ -1700,7 +1707,7 @@ ${appUrl}`;
         return;
       }
       try {
-        const png = await svgToPngBlob(svg, 400, 600);
+        const png = await svgToPngBlob(svg, 400, null);
         if(!png) {
           alert("PNG export failed.");
           return;
@@ -1741,39 +1748,59 @@ ${appUrl}`;
     });
 
     function getCurrentReflectionText(){
-      // Prefer structured reflection so the mint preview always matches the Mirror's answer.
       const ref = window.currentReflection || null;
-      if(ref && (ref.main || ref.echo || ref.res || ref.guide)){
-        const parts = [];
-        if(ref.q) parts.push(`Q: ${ref.q}`);
-        if(ref.main) parts.push(ref.main);
-        if(ref.echo) parts.push(`Echo: ${ref.echo}`);
-        if(ref.res) parts.push(`Reflection Resonance: ${ref.res}`);
-        if(ref.guide) parts.push(`Guiding Question: ${ref.guide}`);
-        parts.push("— Tobyworld Mirror");
-        return parts.join("\n\n").trim();
-      }
-
-      // Fallback: use whatever is currently displayed in the UI.
+      if(!ref) return "";
+      
+      // Get the actual displayed text from the main-text element
       const mainDisplayElement = document.getElementById("main-text");
-      let displayedAnswer = (mainDisplayElement?.textContent || "").trim();
-      if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
-        displayedAnswer = displayedAnswer.slice(1, -1).trim();
+      let displayedAnswer = "";
+      
+      if (mainDisplayElement) {
+        displayedAnswer = mainDisplayElement.textContent || "";
+        // Remove quotation marks if present
+        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
+          displayedAnswer = displayedAnswer.slice(1, -1).trim();
+        }
+      } else {
+        // Fallback to the stored answer
+        displayedAnswer = ref.a || "";
       }
-      if(!displayedAnswer) displayedAnswer = (ref?.a || "").trim();
-      if(!displayedAnswer) return "";
-      const q = (ref?.q || "").trim();
-      return `Q: ${q}\n\nA: ${displayedAnswer}\n\n— Tobyworld Mirror`;
+      
+      return `Q: ${ref.q}\n\nA: ${displayedAnswer}\n\n— Tobyworld Mirror`;
     }
 
     function refreshLeafPreview(){
       const ref = window.currentReflection || null;
-
-      // Always prefer the structured reflection (the same fields used to render the UI)
-      // so the Freeze/Mint preview can never drift or fall back to hard-coded text.
-      const displayedAnswer = (ref?.main || "").trim();
-      const resonanceText = (ref?.res || "Stillness.").trim();
-      const guideText = (ref?.guide || "What remains when urgency leaves?").trim();
+      
+      // Get the actual displayed text
+      const mainDisplayElement = document.getElementById("main-text");
+      let displayedAnswer = "";
+      
+      if (mainDisplayElement) {
+        displayedAnswer = mainDisplayElement.textContent || "";
+        // Remove quotation marks if present
+        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
+          displayedAnswer = displayedAnswer.slice(1, -1).trim();
+        }
+      } else if (ref) {
+        displayedAnswer = ref.a || "";
+      }
+      
+      // Get resonance text
+      const resonanceElement = document.getElementById("res-text");
+      let resonanceText = "Stillness.";
+      if (resonanceElement) {
+        resonanceText = resonanceElement.textContent || "Stillness.";
+        // Remove "Resonance: " prefix if present
+        resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
+      }
+      
+      // Get guide text
+      const guideElement = document.getElementById("guide-text");
+      let guideText = "What remains when urgency leaves?";
+      if (guideElement) {
+        guideText = guideElement.textContent || "What remains when urgency leaves?";
+      }
       
       const svg = createLeafSVG({
         leafNo: 8,
@@ -1791,10 +1818,6 @@ ${appUrl}`;
       const url = svgToObjectUrl(svg);
       window.currentLeafSvgUrl = url;
       if(leafImg) leafImg.src = url;
-
-      // Preview text must come from the Mirror reflection (same source as the leaf SVG)
-      const freezePreviewEl = document.getElementById("freeze-preview");
-      if (freezePreviewEl) freezePreviewEl.textContent = getCurrentReflectionText() || "";
     }
 
     let lastCommitPayload = null;
