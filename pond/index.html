@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mirror | The Digital Pond</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400&display=swap');
+
+    :root{
+      --safe-t: env(safe-area-inset-top);
+      --safe-b: env(safe-area-inset-bottom);
+      --safe-l: env(safe-area-inset-left);
+      --safe-r: env(safe-area-inset-right);
+
+      --pad-top: calc(14px + var(--safe-t));
+      --pad-bot: calc(18px + var(--safe-b));
+      --pad-x: 16px;
+
+      --portal-radius: 28px;
+      --mirror-title-color: #e6c27a;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #030303;
+      color: #d1d1d1;
+      font-family: 'Inter', system-ui, -apple-system, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+      overflow: hidden;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+
+    body{
+      padding: var(--pad-top) calc(var(--pad-x) + var(--safe-r)) var(--pad-bot) calc(var(--pad-x) + var(--safe-l));
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .water-bg{
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(1200px 800px at 50% 35%, rgba(16,185,129,0.06), transparent 55%),
+        radial-gradient(900px 600px at 50% 70%, rgba(255,255,255,0.03), transparent 60%),
+        linear-gradient(rgba(0,0,0,0.92), rgba(0,0,0,0.98));
+      z-index: -1;
+    }
+
+    .serif { font-family: 'Cinzel', serif; }
+
+    .shell{
+      width: 100%;
+      max-width: 1024px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .middle{
+      min-height: 0;
+      width: 100%;
+      max-width: 1024px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .portal{
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+
+      width: min(92vw, 860px);
+      height: min(56vh, 540px);
+      max-height: 100%;
+      margin: 0 auto;
+
+      border-radius: var(--portal-radius);
+      border: 1px solid rgba(255,255,255,0.10);
+
+      background:
+        radial-gradient(1200px 620px at 30% 18%, rgba(255,255,255,0.14), transparent 58%),
+        radial-gradient(900px 620px at 70% 26%, rgba(16,185,129,0.08), transparent 62%),
+        radial-gradient(1200px 900px at 50% 120%, rgba(0,0,0,0.85), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.46));
+
+      box-shadow:
+        0 36px 110px rgba(0,0,0,0.82),
+        0 10px 28px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        inset 0 -28px 70px rgba(0,0,0,0.68),
+        inset 0 0 0 1px rgba(16,185,129,0.08);
+
+      backdrop-filter: blur(10px);
+
+      display: flex;
+      flex-direction: column;
+
+      transform: translateZ(0);
+      transition: transform .18s ease, box-shadow .18s ease;
+      transform-style: preserve-3d;
+      will-change: transform, box-shadow;
+    }
+
+    .portal::before{
+      content:'';
+      position:absolute;
+      inset:-2px;
+      border-radius: inherit;
+      background:
+        radial-gradient(420px 220px at 26% 16%, rgba(255,255,255,0.16), transparent 62%),
+        radial-gradient(520px 260px at 64% 24%, rgba(255,255,255,0.08), transparent 70%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 3px);
+      opacity: 0.95;
+      pointer-events:none;
+      z-index: 0;
+    }
+
+    .portal::after{
+      content:'';
+      position:absolute;
+      inset: 6px;
+      border-radius: inherit;
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow:
+        0 0 0 1px rgba(16,185,129,0.10),
+        0 0 28px rgba(16,185,129,0.08);
+      pointer-events:none;
+      z-index: 0;
+    }
+
+    .portal > *{ position: relative; z-index: 1; }
+
+    .portal.tilt{
+      transform: translateY(-1px) rotateX(0.8deg);
+      box-shadow:
+        0 34px 90px rgba(0,0,0,0.74),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -22px 52px rgba(0,0,0,0.56);
+    }
+
+    .ripple-overlay{
+      position:absolute;
+      inset:0;
+      border-radius: inherit;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity .25s ease;
+      background: radial-gradient(circle at 50% 60%, rgba(16,185,129,0.08), transparent 55%);
+      z-index: 0;
+    }
+    .ripple-overlay::before,
+    .ripple-overlay::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:60%;
+      width:16px;height:16px;
+      transform:translate(-50%,-50%);
+      border-radius:9999px;
+      border:1px solid rgba(16,185,129,0.28);
+      opacity:0;
+    }
+    .portal.listening .ripple-overlay{ opacity:1; }
+    .portal.listening .ripple-overlay::before{
+      animation: pondRipple 1.35s ease-out infinite;
+      opacity:1;
+    }
+    .portal.listening .ripple-overlay::after{
+      animation: pondRipple 1.35s ease-out infinite;
+      animation-delay:.35s;
+      border-color: rgba(16,185,129,0.18);
+      opacity:1;
+    }
+    @keyframes pondRipple{
+      0%{width:16px;height:16px;opacity:.75}
+      70%{width:520px;height:520px;opacity:.10}
+      100%{width:620px;height:620px;opacity:0}
+    }
+
+    @media (max-width: 480px){
+      .portal{
+        width: min(94vw, 860px);
+        height: min(54vh, 540px);
+        border-radius: 26px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .portal.listening .ripple-overlay::before,
+      .portal.listening .ripple-overlay::after{ animation:none !important; }
+      .manual-overlay{ animation:none !important; }
+    }
+
+    input{
+      background: rgba(255,255,255,0.05) !important;
+      border: 1px solid rgba(255,255,255,0.12) !important;
+      border-radius: 12px;
+    }
+
+    .preset.active{
+      border-color: rgba(16,185,129,0.65) !important;
+      box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 0 22px rgba(16,185,129,0.12);
+      background: rgba(16,185,129,0.06) !important;
+    }
+
+    .portal-scroll{
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 18px 18px 16px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+    .portal-scroll::-webkit-scrollbar{ display:none; }
+
+    .portal-fade{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      height: 56px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.55));
+      pointer-events:none;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    .portal.can-scroll .portal-fade{ opacity: 1; }
+
+    .scroll-hint{
+      font-size: 10px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.22);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      user-select: none;
+      pointer-events: none;
+      margin-top: 6px;
+    }
+    .scroll-hint.show{ display:flex; }
+
+    .chev{
+      width: 18px; height: 18px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      display:flex; align-items:center; justify-content:center;
+      opacity: .85;
+    }
+
+    body.expanded{ overflow: hidden; }
+    body.expanded .portal{
+      height: min(72vh, 720px);
+      width: min(94vw, 900px);
+    }
+
+    .tap-header{
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content: flex-end;
+      user-select:none;
+      margin-bottom: 10px;
+    }
+    .tap-pill{
+      font-size: 10px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.32);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 6px 10px;
+      border-radius: 9999px;
+    }
+    body.expanded .tap-pill{
+      color: rgba(255,255,255,0.62);
+      border-color: rgba(16,185,129,0.30);
+      box-shadow: 0 0 18px rgba(16,185,129,0.10);
+      background: rgba(16,185,129,0.05);
+    }
+
+    .sheet{
+      position:fixed;
+      left:0; right:0;
+      bottom:-75%;
+      height:75%;
+      background: rgba(5,5,5,0.92);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      transition: bottom .35s ease;
+      z-index:50;
+      padding-bottom: calc(16px + var(--safe-b));
+    }
+    .sheet.open{ bottom:0; }
+    .sheet-handle{
+      width:64px; height:4px;
+      border-radius:9999px;
+      background: rgba(255,255,255,0.18);
+      margin: 10px auto;
+    }
+
+    #reflect-btn:active{ transform: translateY(1px); }
+
+    .manual-overlay{
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(12px);
+      animation: manualFadeIn .6s ease-out;
+      transition: opacity .25s ease;
+    }
+    @keyframes manualFadeIn{
+      from{ opacity:0; }
+      to{ opacity:1; }
+    }
+
+    .preset-buttons{
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .preset-buttons .preset{ white-space: nowrap; }
+
+    .mirror-title{
+      color: var(--mirror-title-color);
+      text-shadow:
+        0 0 10px rgba(230,194,122,.22),
+        0 0 26px rgba(230,194,122,.10);
+    }
+
+    .share-actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+    .share-actions.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .share-btn {
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      padding: 9px 16px;
+      border-radius: 9999px;
+      border: 1px solid rgba(16,185,129,0.4);
+      background: rgba(16,185,129,0.08);
+      color: rgba(16,185,129,0.9);
+      transition: all .3s ease;
+    }
+    .share-btn:hover {
+      background: rgba(16,185,129,0.18);
+      color: #10b981;
+      box-shadow: 0 0 20px rgba(16,185,129,0.25);
+    }
+
+    .wallet-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .wallet-connected {
+      background: rgba(16,185,129,0.1) !important;
+      border-color: rgba(16,185,129,0.5) !important;
+      color: #10b981 !important;
+    }
+
+    .wallet-mock {
+      background: rgba(234, 179, 8, 0.1) !important;
+      border-color: rgba(234, 179, 8, 0.5) !important;
+      color: #eab308 !important;
+    }
+
+    .confirm-preview{
+      max-height: 40vh;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.25);
+      padding: 10px;
+      color: rgba(255,255,255,0.85);
+      font-size: 12px;
+      line-height: 1.35rem;
+    }
+    .confirm-preview::-webkit-scrollbar{ display:none; }
+
+    /* Fix for mobile webkit */
+    @media screen and (max-width: 768px) {
+      html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        position: fixed;
+      }
+      
+      body.expanded {
+        position: fixed;
+        height: 100vh;
+      }
+      
+      .portal-scroll {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+        position: relative;
+      }
+    }
+
+    /* Improve touch scrolling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    /* Ensure modal doesn't cause scroll issues */
+    #freeze-modal {
+      position: fixed;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    #freeze-modal > div {
+      max-height: 90vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="water-bg"></div>
+
+  <button id="manual-glyph"
+    class="fixed top-[calc(10px+var(--safe-t))] left-[calc(10px+var(--safe-l))] z-[60] w-9 h-9 rounded-full
+           flex items-center justify-center border border-white/10 bg-black/40 text-zinc-500
+           hover:text-emerald-300 hover:border-emerald-500/40 transition"
+    aria-label="Open Manual">
+    ⌘
+  </button>
+
+  <!-- Manual is OPTIONAL (no auto-gate on entry) -->
+  <div id="manual" class="manual-overlay fixed inset-0 z-[70] hidden items-center justify-center p-6">
+    <div class="max-w-xl w-full text-left border border-zinc-800/80 bg-black/40 p-7 rounded-2xl shadow-2xl">
+      <div class="flex items-start justify-between gap-4">
+        <h2 class="serif text-[14px] sm:text-[16px] text-emerald-300 font-semibold uppercase tracking-[0.32em]">
+          The Manual for the Fallen
+        </h2>
+        <button id="manual-close"
+          class="text-zinc-500 hover:text-zinc-200 transition text-xs uppercase tracking-widest"
+          aria-label="Close Manual">
+          Close
+        </button>
+      </div>
+
+      <p class="mt-3 text-[12px] italic text-zinc-400">
+        "The Mirror does not judge those who have fallen; it only reminds them that the ground is solid."
+      </p>
+
+      <ul class="mt-5 text-[12px] leading-relaxed space-y-3 text-zinc-300">
+        <li><span class="text-zinc-100 font-semibold">I. The Three Breaths:</span> Acknowledge loss. Release the ghost of the win. Ask for a way in.</li>
+        <li><span class="text-zinc-100 font-semibold">II. The Law of the Question:</span> Do not ask for money. Ask for the character that lost it.</li>
+        <li><span class="text-zinc-100 font-semibold">III. The Silent Yield:</span> The shorter the answer, the deeper the truth.</li>
+      </ul>
+
+      <button id="manual-accept"
+        class="mt-6 w-full py-3 bg-zinc-900/70 border border-zinc-700/80 hover:border-emerald-500/70
+               hover:text-emerald-200 transition duration-300 text-[11px] uppercase tracking-[0.28em] rounded-xl">
+        Enter the Pond
+      </button>
+
+      <p class="mt-3 text-[10px] uppercase tracking-widest text-zinc-600">
+        Optional. Open anytime (⌘).
+      </p>
+    </div>
+  </div>
+
+  <div class="shell w-full z-10">
+    <div class="w-full flex items-center justify-end gap-3">
+      <div class="text-[10px] uppercase tracking-widest text-zinc-500">
+        POND · v1.0
+      </div>
+      <button id="wallet-btn"
+        class="bg-zinc-900/80 border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest rounded hover:border-emerald-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
+        Connect Wallet
+      </button>
+    </div>
+  </div>
+
+  <div class="middle">
+    <div class="portal text-center" id="portal">
+      <div class="ripple-overlay"></div>
+      <div class="portal-fade" id="portal-fade"></div>
+
+      <div class="portal-scroll" id="portal-scroll">
+        <div class="tap-header" id="tap-header" title="Tap to expand / collapse">
+          <div class="tap-pill">Tap to Expand</div>
+        </div>
+
+        <div class="pt-1" id="title-tap-zone" title="Tap to expand / collapse">
+          <h1 class="serif mirror-title text-3xl tracking-[0.35em] mb-1">MIRROR</h1>
+          <p class="serif text-[11px] tracking-widest text-zinc-400">The Digital Pond</p>
+        </div>
+
+        <div class="preset-buttons w-full max-w-xl mt-4 mx-auto flex flex-wrap justify-center items-center gap-2">
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="Mirror, what does stillness mean for me today?">Stillness</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="How do I practice patience when nothing moves?">Patience</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-3 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="What does it mean to become who I already am?">Becoming</button>
+          <button class="preset bg-zinc-900/55 border border-zinc-800 hover:border-emerald-500 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest transition"
+            data-text="Explain: Toby is the people, and the people is Toby. What does it ask of me?">Toby = the People</button>
+        </div>
+
+        <div id="scroll-hint" class="scroll-hint">
+          <span class="chev">⌄</span>
+          <span>Swipe to read</span>
+          <span class="chev">⌃</span>
+        </div>
+
+        <div id="reflection-output" class="space-y-4 opacity-0 transition-opacity duration-500 mt-6">
+          <p id="main-text" class="italic text-[18px] text-zinc-200 leading-relaxed">
+            "Stillness yields truth."
+          </p>
+
+          <div class="space-y-2 text-[10px] uppercase tracking-widest font-bold">
+            <p id="echo-text" class="text-emerald-400">Echo: Stillness yields truth</p>
+            <p id="res-text" class="text-zinc-400">Resonance: Roots deepen.</p>
+          </div>
+
+          <p id="guide-text" class="text-[13px] italic text-zinc-500">
+            What remains when urgency leaves?
+          </p>
+
+          <div class="pt-1" style="font-size:1.35rem; letter-spacing:0.45rem; opacity:.90;">
+            ⏳ ≋ 🍃 🪞
+          </div>
+        </div>
+
+        <div id="share-actions" class="share-actions">
+          <button id="drop-btn" class="share-btn">Drop to Pond 🌊 (Farcaster)</button>
+          <button id="freeze-btn" class="share-btn">Freeze as Leaf 🪶 (NFT)</button>
+        </div>
+
+        <div id="err" class="mt-3 hidden text-[11px] text-red-300">
+          The pond could not hear the ocean. Check endpoint health.
+        </div>
+
+        <div style="height: 26px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shell w-full z-10 space-y-3" style="flex-direction: column; align-items: stretch;">
+    <div class="flex gap-2">
+      <input id="user-input" type="text" placeholder="Inquire the Pond (Type your question… Enter to reflect)"
+        class="flex-grow p-3 text-sm text-emerald-300 placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
+        aria-label="Your inquiry" />
+      <button id="reflect-btn"
+        class="bg-zinc-800 border border-zinc-600 px-6 py-2 text-xs uppercase tracking-widest hover:bg-emerald-600 hover:text-black transition duration-500 rounded-lg"
+        aria-label="Reflect">
+        Reflect
+      </button>
+    </div>
+
+    <div class="flex justify-between items-center text-[10px] text-zinc-500 uppercase tracking-widest">
+      <div class="flex items-center gap-2">
+        🍃 <span id="leaves">Leaves of Stillness: 0</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="history-btn" class="hover:text-white transition">History ↟</button>
+        <button id="starred-btn" class="hover:text-white transition">Starred ★</button>
+        <button id="basescan-btn" class="hover:text-white transition">View Karmic Record on BaseScan ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sheet" class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="px-5 pb-4 flex items-center justify-between">
+      <div class="text-xs uppercase tracking-widest text-zinc-400">Karmic Record (Local)</div>
+      <div class="flex gap-3">
+        <button id="clear-history" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-red-300 transition">Clear</button>
+        <button id="close-sheet" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition">Close</button>
+      </div>
+    </div>
+    <div id="history-list" class="px-5 overflow-auto" style="height: calc(75% - 64px);"></div>
+  </div>
+
+  <!-- ==================== FREEZE (Reflection NFT) MODAL ==================== -->
+  <div id="freeze-modal" class="fixed inset-0 z-[999] hidden items-center justify-center p-4 bg-black/90">
+    <div class="w-full max-w-md rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.28em] text-emerald-400">Freeze as Leaf</div>
+          <div class="serif mirror-title text-xl tracking-[0.22em] mt-1">REFLECTION SEAL</div>
+        </div>
+        <button id="freeze-close" class="text-zinc-500 hover:text-zinc-200 text-xs uppercase tracking-widest">Close</button>
+      </div>
+
+      <div class="mt-4 space-y-3">
+        <div class="text-[10px] uppercase tracking-widest text-zinc-500">Tag</div>
+        <select id="freeze-tag" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm">
+          <option value="STILLNESS">STILLNESS</option>
+          <option value="REMAINING">REMAINING</option>
+          <option value="DOUBT">DOUBT</option>
+          <option value="SILENCE">SILENCE</option>
+        </select>
+
+        <div class="text-[10px] uppercase tracking-widest text-zinc-500">Reflection (preview)</div>
+        <div id="freeze-preview" class="confirm-preview"></div>
+
+        <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
+        <div class="rounded-xl border border-white/10 bg-black/30 p-3">
+          <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button type="button" id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
+            <button type="button" id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
+          </div>
+        </div>
+
+
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
+            Save Draft
+          </button>
+          <button type="button" id="freeze-clear" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:text-red-200 hover:border-red-500/30 transition">
+            Clear
+          </button>
+        </div>
+
+        <div class="mt-2 rounded-xl border border-white/10 bg-black/30 p-3">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] uppercase tracking-widest text-zinc-500">Cooldown</div>
+            <div class="flex items-center gap-2 text-xs text-zinc-400">
+              <input id="freeze-cooldown-min" type="number" min="0" value="1"
+                class="w-20 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs" />
+              min
+            </div>
+          </div>
+          <div class="mt-2 flex gap-2">
+            <button type="button" id="freeze-start" class="flex-1 py-2 rounded-xl bg-emerald-900/30 border border-emerald-800 text-xs uppercase tracking-widest text-emerald-200 hover:bg-emerald-900/45 transition">
+              Start
+            </button>
+            <button type="button" id="freeze-cancel" class="flex-1 py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-zinc-600 transition">
+              Cancel
+            </button>
+          </div>
+          <div class="mt-2 text-xs">
+            <span class="text-zinc-500">Status:</span>
+            <span id="freeze-status" class="ml-2 text-zinc-300">Not started</span>
+          </div>
+        </div>
+
+        <div class="mt-2 rounded-xl border border-white/10 bg-black/30 p-3 space-y-2">
+          <div class="text-[10px] uppercase tracking-widest text-zinc-500">Commit output</div>
+          <div class="text-xs"><span class="text-zinc-500">CID:</span> <span id="freeze-cid" class="text-zinc-200">—</span></div>
+          <div class="text-xs"><span class="text-zinc-500">Encrypted bytes:</span> <span id="freeze-bytes" class="text-zinc-200">—</span></div>
+          <div class="text-xs text-zinc-500">
+            Commit encrypts your reflection locally. Mint is optional.
+          </div>
+        </div>
+
+        <div class="mt-2 rounded-xl border border-emerald-900/30 bg-emerald-950/20 p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] uppercase tracking-widest text-emerald-300">Mint Fee</div>
+            <div class="text-xs text-emerald-200"><span class="font-semibold">1 USDC</span> on Base</div>
+          </div>
+          <div class="text-xs text-emerald-200/90 leading-relaxed">
+            Fee is paid in <span class="font-semibold">USDC</span> (no conversion).
+            Funds route to the <span class="font-semibold">ToadAid Safe</span>:
+            <span class="font-mono text-emerald-200/90">0xe5C1378F91243727a24fa7c64d5286C537D8eAB2</span>
+          </div>
+          <div class="text-xs text-emerald-200/80">
+            This is an <span class="font-semibold">ERC-1155</span> leaf — transferable. You may move it between wallets, or list it if you wish.
+          </div>
+          <div class="text-[10px] uppercase tracking-widest text-emerald-400">
+            NOTE: Set LEAF_CONTRACT in code before minting.
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button type="button" id="freeze-commit" class="py-3 rounded-xl bg-emerald-400 text-black text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+            Commit
+          </button>
+          <button type="button" id="freeze-sign" class="py-3 rounded-xl border border-emerald-700/60 bg-emerald-900/10 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+            Sign Proof
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button type="button" id="freeze-mint" class="py-3 rounded-xl border border-emerald-500/60 bg-emerald-900/25 text-emerald-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+            Mint Leaf (1 USDC)
+          </button>
+          <button type="button" id="freeze-view" class="py-3 rounded-xl border border-zinc-700/60 bg-zinc-900/20 text-zinc-200 text-xs font-semibold uppercase tracking-widest disabled:opacity-30" disabled>
+            View Tx ↗
+          </button>
+        </div>
+
+        <pre id="freeze-payload" class="mt-3 bg-black/30 border border-white/10 rounded-xl p-3 text-xs overflow-auto max-h-56"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== CORE MIRROR FUNCTIONALITY ====================
+    const DEFAULT_API_URL = "https://toadaid.duckdns.org/ask";
+
+    function resolveApiUrl(){
+      try{
+        const p = new URLSearchParams(window.location.search);
+        const v = p.get("api");
+        return (v && v.trim()) ? v.trim() : DEFAULT_API_URL;
+      }catch(e){
+        return DEFAULT_API_URL;
+      }
+    }
+
+    let API_URL = resolveApiUrl();
+
+    function isOpenAIChatCompletions(url){
+      try{ return String(url || "").includes("/v1/chat/completions"); }catch(e){ return false; }
+    }
+
+    function resolveTimeoutMs(){
+      try{
+        const p = new URLSearchParams(window.location.search);
+        const v = p.get("timeout");
+        const n = v ? Number(v) : NaN;
+        if(Number.isFinite(n) && n >= 3000 && n <= 180000) return Math.floor(n);
+      }catch(e){}
+      return 45000;
+    }
+
+    const TIMEOUT_MS = resolveTimeoutMs();
+
+    const KEY_LEAVES = "mirror_leaves";
+    const KEY_HISTORY = "mirror_history_v1";
+    const MANUAL_KEY = "mirror_manual_accepted_v2";
+
+    // Manual functionality (OPTIONAL, no gate)
+    const manualEl = document.getElementById("manual");
+    const manualGlyph = document.getElementById("manual-glyph");
+    const manualAccept = document.getElementById("manual-accept");
+    const manualClose = document.getElementById("manual-close");
+
+    function openManual(){
+      if(!manualEl) return;
+      manualEl.classList.remove("hidden");
+      manualEl.style.display = "flex";
+      manualEl.style.opacity = "1";
+      manualEl.style.pointerEvents = "auto";
+    }
+
+    function closeManual(){
+      if(!manualEl) return;
+      manualEl.style.opacity = "0";
+      manualEl.style.pointerEvents = "none";
+      setTimeout(() => {
+        manualEl.style.display = "none";
+        manualEl.classList.add("hidden");
+      }, 220);
+    }
+
+    function acceptCovenant(){
+      try{ localStorage.setItem(MANUAL_KEY, "yes"); }catch(e){}
+      closeManual();
+    }
+
+    (function initManual(){
+      if(manualEl) manualEl.style.display = "none";
+    })();
+
+    manualGlyph?.addEventListener("click", openManual);
+    manualClose?.addEventListener("click", closeManual);
+    manualAccept?.addEventListener("click", acceptCovenant);
+
+    // Core elements
+    const input = document.getElementById("user-input");
+    const output = document.getElementById("reflection-output");
+    const err = document.getElementById("err");
+    const reflectBtn = document.getElementById("reflect-btn");
+    const leavesEl = document.getElementById("leaves");
+
+    const historyBtn = document.getElementById("history-btn");
+    const sheet = document.getElementById("sheet");
+    const historyList = document.getElementById("history-list");
+
+    const portalEl = document.getElementById("portal");
+    const portalScroll = document.getElementById("portal-scroll");
+    const scrollHint = document.getElementById("scroll-hint");
+
+    const mainText = document.getElementById("main-text");
+    const echoText = document.getElementById("echo-text");
+    const resText  = document.getElementById("res-text");
+    const guideText= document.getElementById("guide-text");
+
+    const tapHeader = document.getElementById("tap-header");
+    const titleTapZone = document.getElementById("title-tap-zone");
+
+    // Safe-guarded listeners (prevents runtime crashes if element IDs change)
+    portalEl?.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
+    portalEl?.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
+    portalEl?.addEventListener("pointercancel",() => portalEl.classList.remove("tilt"));
+
+    function loadLeaves(){
+      const n = Number(localStorage.getItem(KEY_LEAVES) || "0");
+      leavesEl.textContent = `Leaves of Stillness: ${n}`;
+    }
+    function incLeaves(){
+      const n = Number(localStorage.getItem(KEY_LEAVES) || "0") + 1;
+      localStorage.setItem(KEY_LEAVES, String(n));
+      leavesEl.textContent = `Leaves of Stillness: ${n}`;
+    }
+
+    function safeUuid(){
+      try{
+        if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+      }catch(e){}
+      return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+    }
+
+    function getHistory(){
+      try {
+        const raw = JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]");
+        const arr = Array.isArray(raw) ? raw : [];
+        const normalized = arr.map((x, i) => ({
+          id: x?.id || `${String(x?.ts || Date.now())}_${i}`,
+          ts: x?.ts || Date.now(),
+          q:  x?.q || "",
+          a:  x?.a || "",
+          star: !!x?.star
+        }));
+
+        const needsPersist = normalized.some((it, i) => !arr[i]?.id);
+        if (needsPersist) {
+          localStorage.setItem(KEY_HISTORY, JSON.stringify(normalized.slice(0, 30)));
+        }
+        return normalized;
+      } catch(e){
+        return [];
+      }
+    }
+
+    function setHistory(arr){
+      localStorage.setItem(KEY_HISTORY, JSON.stringify(arr.slice(0, 30)));
+    }
+
+    function addHistory(item){
+      const arr = getHistory();
+      arr.unshift({
+        id: item?.id || safeUuid(),
+        ts: item?.ts || Date.now(),
+        q: item?.q || "",
+        a: item?.a || "",
+        star: !!item?.star
+      });
+      setHistory(arr);
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
+    }
+
+    loadLeaves();
+
+    function setLoading(isLoading){
+      if(isLoading) portalEl?.classList.add("listening");
+      else portalEl?.classList.remove("listening");
+      err?.classList.add("hidden");
+
+      if(isLoading){
+        if (output) output.style.opacity = "0";
+        if (reflectBtn){
+          reflectBtn.disabled = true;
+          reflectBtn.textContent = "Listening…";
+          reflectBtn.classList.add("opacity-70");
+        }
+      }else{
+        if (reflectBtn){
+          reflectBtn.disabled = false;
+          reflectBtn.textContent = "Reflect";
+          reflectBtn.classList.remove("opacity-70");
+        }
+      }
+    }
+    function showOutput(){ if (output) output.style.opacity = "1"; }
+
+    function openSheet(mode){
+      window.__historyFilter = mode || window.__historyFilter || "all";
+      renderHistory();
+      sheet?.classList.add("open");
+    }
+    function closeSheet(){ sheet?.classList.remove("open"); }
+
+    function stripTravelerPrefix(s){
+      return s.replace(/^\s*traveler[,：:]?\s*/i, "").trim();
+    }
+
+    function parseMirrorAnswer(raw){
+      let text = String(raw || "").trim();
+
+      text = text
+        .replace(/<\|[^|>]+?\|>\s*/g, "")
+        .replace(/<\/?s>/g, "")
+        .replace(/<[^>]{1,24}>/g, "")
+        .replace(/<\/[^\s>]{1,24}>/g, "")
+        .trim();
+
+      let guide = "";
+      const gMatch = text.match(/Guiding Question:\s*([\s\S]*)$/i);
+      if(gMatch){
+        guide = gMatch[1].trim();
+        text = text.slice(0, gMatch.index).trim();
+      }
+
+      let resonance = "";
+      const rMatch = text.match(/Reflection Resonance:\s*([\s\S]*)$/i);
+      if(rMatch){
+        resonance = rMatch[1].trim();
+        text = text.slice(0, rMatch.index).trim();
+      }
+
+      const main = stripTravelerPrefix(text);
+
+      return {
+        main: main || "Stillness yields truth.",
+        resonance: resonance || "Roots deepen.",
+        guide: guide || "What remains when urgency leaves?"
+      };
+    }
+
+    function localFallback(q){
+      const val = q.toLowerCase();
+      if(val.includes("price") || val.includes("money") || val.includes("pump") || val.includes("moon")){
+        return {
+          main: "The pond does not track the price of ghosts.",
+          echo: "Echo: Canon Shield Active",
+          res:  "Resonance: Attention released.",
+          guide:"What would you ask if no number could save you?"
+        };
+      }
+      return {
+        main: "Every frantic move is a debt to time.",
+        echo: "Echo: Stillness yields truth",
+        res:  "Resonance: Roots deepen.",
+        guide:"What remains when urgency leaves?"
+      };
+    }
+
+    async function askAPI(question){
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      try{
+        if(isOpenAIChatCompletions(API_URL)){
+          const payload = {
+            model: "local-mirror",
+            messages: [
+              { role: "system", content: "You are the Mirror. Answer with calm, reflective tone. Include 'Reflection Resonance:' and end with one 'Guiding Question:'." },
+              { role: "user", content: question }
+            ],
+            max_tokens: 512,
+            temperature: 0.75,
+            top_p: 0.9,
+            stream: false,
+            stop: ["</s>", "<|endoftext|>", "USER:", "###"]
+          };
+
+          const r = await fetch(API_URL, {
+            method: "POST",
+            mode: "cors",
+            cache: "no-store",
+            headers: { "Content-Type":"application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          });
+
+          if(r.status === 429){
+            const err = new Error("QUEUE_BUSY");
+            err.code = 429;
+            throw err;
+          }
+          if(!r.ok) throw new Error("HTTP " + r.status);
+          return await r.json();
+        }
+
+        const payload = { question, user: "miniapp" };
+        const r = await fetch(API_URL, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-store",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+
+        if(r.status === 429){
+          const err = new Error("QUEUE_BUSY");
+          err.code = 429;
+          throw err;
+        }
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        return await r.json();
+      } finally {
+        clearTimeout(t);
+      }
+    }
+
+    function normalizeAnswer(data){
+      if(typeof data === "string") return data;
+      const openai = data?.choices?.[0]?.message?.content;
+      if(openai) return openai;
+      return data?.answer || data?.unified_answer || data?.text || data?.response || "";
+    }
+
+    function updateScrollAffordance(){
+      if(!portalScroll || !scrollHint || !portalEl) return;
+      const over = (portalScroll.scrollHeight - portalScroll.clientHeight) > 16;
+      scrollHint.classList.toggle("show", over);
+      portalEl.classList.toggle("can-scroll", over);
+    }
+
+    window.currentReflection = null;
+    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
+    window.saveCurrentReflection = saveCurrentReflection;
+
+    async function processInquiry(qOverride){
+      const q = (qOverride ?? input?.value ?? "").trim();
+      if(!q) return;
+
+      setLoading(true);
+
+      try{
+        const maxAttempts = 4;
+        let attempt = 0;
+
+        while(true){
+          attempt += 1;
+
+          try{
+            const data = await askAPI(q);
+            const a = normalizeAnswer(data);
+            const parsed = a ? parseMirrorAnswer(a) : null;
+
+            const out = parsed ? {
+              main: parsed.main,
+              echo: "Echo: Stillness yields truth",
+              res:  `Resonance: ${parsed.resonance}`,
+              guide: parsed.guide
+            } : localFallback(q);
+
+            if (mainText) mainText.textContent = `"${out.main}"`;
+            if (echoText) echoText.textContent = out.echo;
+            if (resText)  resText.textContent  = out.res;
+            if (guideText)guideText.textContent= out.guide;
+
+            saveCurrentReflection(q, out.main);
+
+            // Build a local leaf SVG for this reflection (used by Freeze modal)
+            try{
+              const svg = window.__createLeafSVG?.({
+                leafNo: 8,
+                q,
+                a: out.main,
+                resonance: out.res.replace(/^Resonance:\s*/i, "").trim(),
+                guide: out.guide,
+                mode: "POND",
+                epoch: "EPOCH 5"
+              });
+              if(svg) window.currentLeafSvg = svg;
+            }catch(e){}
+
+            incLeaves();
+            addHistory({ ts: Date.now(), q, a: out.main, star: false });
+
+            if (portalScroll) portalScroll.scrollTop = 0;
+
+            showOutput();
+            if (input) input.value = "";
+
+            requestAnimationFrame(updateScrollAffordance);
+            break;
+          }catch(e){
+            if(e.code === 429 && attempt < maxAttempts){
+              await new Promise(r => setTimeout(r, 600 * attempt));
+              continue;
+            }
+            if(e.name === "AbortError" && attempt < maxAttempts){
+              await new Promise(r => setTimeout(r, 500 * attempt));
+              continue;
+            }
+            if(e.message === "Failed to fetch" && attempt < maxAttempts){
+              await new Promise(r => setTimeout(r, 400 * attempt));
+              continue;
+            }
+            console.error("Attempt", attempt, "failed:", e);
+            if(attempt >= maxAttempts){
+              err?.classList.remove("hidden");
+              const out = localFallback(q);
+              if (mainText) mainText.textContent = `"${out.main}"`;
+              if (echoText) echoText.textContent = out.echo;
+              if (resText)  resText.textContent  = out.res;
+              if (guideText)guideText.textContent= out.guide;
+              saveCurrentReflection(q, out.main);
+              showOutput();
+              break;
+            }
+          }
+        }
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    reflectBtn?.addEventListener("click", () => processInquiry());
+    input?.addEventListener("keydown", (e) => { if(e.key === "Enter") processInquiry(); });
+
+    document.querySelectorAll(".preset").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".preset").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const t = btn.getAttribute("data-text") || "";
+        if (input) input.value = t;
+        processInquiry(t);
+      });
+    });
+
+    function renderHistory() {
+      const arr = getHistory();
+      const filter = window.__historyFilter || "all";
+
+      const filtered = arr.filter(item => {
+        if (filter === "starred") return item.star;
+        return true;
+      });
+
+      if (!historyList) return;
+
+      if (filtered.length === 0) {
+        historyList.innerHTML = `<div class="text-center py-10 text-zinc-600 text-sm">No reflections yet</div>`;
+        return;
+      }
+
+      let html = `<div class="space-y-3">`;
+      filtered.forEach((item) => {
+        const date = new Date(item.ts).toLocaleDateString();
+        const time = new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        html += `
+          <div class="p-3 border border-zinc-800 rounded-lg bg-zinc-900/30">
+            <div class="flex justify-between items-start mb-2">
+              <div class="text-xs text-zinc-500">${escapeHtml(date)} ${escapeHtml(time)}</div>
+              <button data-id="${escapeHtml(item.id)}"
+                class="star-toggle text-xs ${item.star ? 'on' : ''}">${item.star ? '★' : '☆'}</button>
+            </div>
+            <div class="text-sm font-semibold text-zinc-300 mb-1">${escapeHtml(item.q)}</div>
+            <div class="text-xs italic text-zinc-400">${escapeHtml(item.a)}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+      historyList.innerHTML = html;
+    }
+
+    // Delegated star toggle (no inline onclick → safer + no quote issues)
+    historyList?.addEventListener("click", (e) => {
+      const btn = e.target?.closest?.("button.star-toggle");
+      if(!btn) return;
+      const id = btn.getAttribute("data-id");
+      if(!id) return;
+
+      const arr = getHistory();
+      const i = arr.findIndex(x => x.id === id);
+      if (i >= 0) {
+        arr[i].star = !arr[i].star;
+        setHistory(arr);
+        renderHistory();
+      }
+    });
+
+    historyBtn?.addEventListener("click", () => openSheet("all"));
+    document.getElementById("starred-btn")?.addEventListener("click", () => openSheet("starred"));
+    document.getElementById("close-sheet")?.addEventListener("click", closeSheet);
+    document.getElementById("clear-history")?.addEventListener("click", () => {
+      if (confirm("Clear all reflection history?")) {
+        localStorage.removeItem(KEY_HISTORY);
+        renderHistory();
+      }
+    });
+
+    const TOADAID_SAFE = "0xe5C1378F91243727a24fa7c64d5286C537D8eAB2";
+
+    function openBaseScanFor(addr){
+      const a = String(addr || "").trim();
+      const target = a ? `https://basescan.org/address/${a}` : `https://basescan.org/address/${TOADAID_SAFE}`;
+      window.open(target, "_blank");
+    }
+
+    document.getElementById("basescan-btn")?.addEventListener("click", () => {
+      const addr = window.__connectedAddress || "";
+      const mode = window.__walletMode || "none";
+
+      if (mode === "Mock") {
+        window.showStatusMessage?.("🔧 Mock wallet mode — connect a real wallet to view BaseScan record.", "info");
+        openBaseScanFor(TOADAID_SAFE);
+        return;
+      }
+
+      openBaseScanFor(addr || TOADAID_SAFE);
+    });
+
+    let expanded = false;
+    function toggleExpand() {
+      expanded = !expanded;
+      document.body.classList.toggle("expanded", expanded);
+
+      const tapPill = tapHeader?.querySelector?.('.tap-pill');
+      if (tapPill) {
+        tapPill.textContent = expanded ? "Tap to Collapse" : "Tap to Expand";
+      }
+
+      setTimeout(updateScrollAffordance, 300);
+    }
+
+    tapHeader?.addEventListener("click", toggleExpand);
+    titleTapZone?.addEventListener("click", toggleExpand);
+
+    setTimeout(() => {
+      // Don't auto-show output; keep initial calm until first response.
+      // (But keep layout stable.)
+      updateScrollAffordance();
+    }, 200);
+
+    portalScroll?.addEventListener("scroll", () => {
+      updateScrollAffordance();
+    }, { passive:true });
+
+    window.addEventListener("resize", () => requestAnimationFrame(updateScrollAffordance));
+
+    function showStatusMessage(message, type = 'info') {
+      const statusDiv = document.createElement('div');
+      statusDiv.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm ${
+        type === 'success' ? 'bg-emerald-900/90 text-emerald-300 border border-emerald-700' :
+        type === 'info' ? 'bg-blue-900/90 text-blue-300 border border-blue-700' :
+        'bg-zinc-900/90 text-zinc-300 border border-zinc-700'
+      } backdrop-blur-sm`;
+      statusDiv.textContent = message;
+      statusDiv.style.transition = 'opacity 0.3s, transform 0.3s';
+      document.body.appendChild(statusDiv);
+
+      setTimeout(() => {
+        statusDiv.style.opacity = '0';
+        statusDiv.style.transform = 'translate(-50%, -20px)';
+        setTimeout(() => statusDiv.remove(), 300);
+      }, 3000);
+    }
+
+    function confirmSend({ title, body, previewText = "", okText="Send", cancelText="Cancel" }) {
+      return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-[999] p-4';
+        modal.innerHTML = `
+          <div class="bg-zinc-900 border border-emerald-800 rounded-xl p-5 max-w-md w-full">
+            <div class="text-emerald-400 mb-2 text-sm uppercase tracking-widest">${escapeHtml(title)}</div>
+            <div class="text-xs text-zinc-300 mb-3 whitespace-pre-wrap">${escapeHtml(body)}</div>
+
+            ${previewText ? `
+              <div class="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Preview (exact cast text)</div>
+              <div class="confirm-preview">${escapeHtml(previewText)}</div>
+            ` : ""}
+
+            <div class="flex gap-2 mt-4">
+              <button class="flex-1 py-2 bg-zinc-800 rounded-lg text-xs hover:bg-zinc-700 cancel-btn">${escapeHtml(cancelText)}</button>
+              <button class="flex-1 py-2 bg-emerald-900/30 border border-emerald-800 rounded-lg text-xs text-emerald-300 hover:bg-emerald-900/50 ok-btn">${escapeHtml(okText)}</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        const cleanup = (val) => { modal.remove(); resolve(val); };
+
+        modal.querySelector('.cancel-btn').addEventListener('click', () => cleanup(false));
+        modal.querySelector('.ok-btn').addEventListener('click', () => cleanup(true));
+        modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(false); });
+      });
+    }
+
+    window.confirmSend = confirmSend;
+    window.showStatusMessage = showStatusMessage;
+  </script>
+
+  <script type="module">
+    // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
+    // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
+    let sdk = null;
+    try {
+      const mod = await import("https://esm.sh/@farcaster/miniapp-sdk");
+      sdk = mod?.sdk || null;
+      if (sdk) {
+        window.__sdk = sdk;
+        if (sdk) { try { await sdk.actions.ready(); } catch (e) {} }
+      }
+    } catch (e) {
+      // Not running in Farcaster; continue with plain web fallbacks.
+      sdk = null;
+      window.__sdk = null;
+    }
+
+    const walletBtn = document.getElementById("wallet-btn");
+    const shareActions = document.getElementById("share-actions");
+    const dropBtn = document.getElementById("drop-btn");
+    const freezeBtn = document.getElementById("freeze-btn");
+
+    let walletConnected = false;
+    let connectedAddress = null;
+    let ethProvider = null;
+
+    function syncWalletGlobals(modeLabel){
+      window.__connectedAddress = connectedAddress;
+      window.__walletMode = modeLabel || (walletConnected ? "Unknown" : "none");
+    }
+    syncWalletGlobals("none");
+
+    async function getProvider() {
+      if (sdk && sdk.wallet && typeof sdk.wallet.getEthereumProvider === "function") {
+        try {
+          const p = await sdk.wallet.getEthereumProvider();
+          if (p) return p;
+        } catch (e) {}
+      }
+      // Fallbacks (Base app / browser wallets)
+      if (window.ethereum) return window.ethereum;
+      if (window?.coinbaseWalletExtension) return window.coinbaseWalletExtension;
+      return null;
+    }
+
+    // ✅ preserve Mock styling + avoid removing wallet-mock unintentionally
+    function setWalletUIConnected(addr, modeLabel) {
+      const shortAddr = `${addr.slice(0,6)}…${addr.slice(-4)}`;
+      walletBtn.textContent = `${shortAddr} (${modeLabel})`;
+
+      walletBtn.classList.remove("wallet-connected", "wallet-mock");
+      if (modeLabel === "Mock") walletBtn.classList.add("wallet-mock");
+      else walletBtn.classList.add("wallet-connected");
+
+      shareActions.classList.add("visible");
+    }
+
+    function setWalletUIDisconnected() {
+      walletConnected = false;
+      connectedAddress = null;
+      walletBtn.textContent = "Connect Wallet";
+      walletBtn.classList.remove("wallet-connected");
+      walletBtn.classList.remove("wallet-mock");
+      shareActions.classList.remove("visible");
+      syncWalletGlobals("none");
+    }
+
+    walletBtn.addEventListener("click", async () => {
+      if (walletConnected) {
+        setWalletUIDisconnected();
+        return;
+      }
+
+      ethProvider = await getProvider();
+
+      if (!ethProvider) {
+        const mockAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        walletConnected = true;
+        connectedAddress = mockAddress;
+        setWalletUIConnected(mockAddress, "Mock");
+        syncWalletGlobals("Mock");
+        window.showStatusMessage?.("🔧 No Mini App wallet provider detected — using Mock.", "info");
+        return;
+      }
+
+      try {
+        const accounts = await ethProvider.request({ method: "eth_requestAccounts" });
+        const addr = (accounts && accounts[0]) ? accounts[0] : null;
+        if (!addr) throw new Error("No address returned");
+
+        walletConnected = true;
+        connectedAddress = addr;
+        const modeLabel = (ethProvider === window.ethereum ? "Browser" : "Base");
+        setWalletUIConnected(addr, modeLabel);
+        syncWalletGlobals(modeLabel);
+        window.showStatusMessage?.("✅ Wallet connected.", "success");
+      } catch (e) {
+        console.error("Wallet connect error:", e);
+        alert("Wallet connection failed: " + (e?.message || "Unknown error"));
+      }
+    });
+
+    dropBtn.addEventListener("click", async () => {
+      if (!walletConnected) {
+        alert("Please connect wallet first.");
+        return;
+      }
+
+      const ref = window.currentReflection || null;
+      if (!ref) {
+        alert("Please generate a reflection first using the input above.");
+        return;
+      }
+
+      const { q, a } = ref;
+
+      const appUrl = "https://toadaid.github.io/pond/";
+      const castText =
+`Q:
+${q}
+
+A:
+${a}
+
+— from Tobyworld Mirror
+${appUrl}`;
+
+      const embeds = [];
+
+      const ok = await window.confirmSend({
+        title: "Drop to Pond",
+        body: "This will open the Farcaster composer with your full Q&A.\nConfirm the exact text below:",
+        previewText: castText,
+        okText: "OK — Open Composer",
+        cancelText: "Cancel"
+      });
+      if (!ok) return;
+      if (sdk && sdk.actions && typeof sdk.actions.composeCast === "function") {
+        try {
+          await sdk.actions.composeCast({ text: castText, embeds });
+          window.showStatusMessage?.("🌊 Composer opened.", "success");
+          return;
+        } catch (e) {
+          console.error("composeCast failed:", e);
+        }
+      }
+      const url = "https://warpcast.com/~/compose?text=" + encodeURIComponent(castText);
+      window.open(url, "_blank");
+      window.showStatusMessage?.("🌊 Opened Warpcast compose.", "success");
+
+    });
+
+    
+    // ==================== LEAF SVG GENERATOR ====================
+    function _xmlEscape(s){
+      return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+
+    function _wrapLines(text, maxChars){
+      const words = String(text||"").split(/\s+/).filter(Boolean);
+      const lines = [];
+      let cur = "";
+      for(const w of words){
+        const next = cur ? (cur + " " + w) : w;
+        if(next.length <= maxChars) cur = next;
+        else { if(cur) lines.push(cur); cur = w; }
+      }
+      if(cur) lines.push(cur);
+      return lines;
+    }
+
+    function _tspans(cx, y, lines, lineH, klass){
+      let out = `<text x="${cx}" y="${y}" text-anchor="middle" class="${klass}">`;
+      lines.forEach((ln,i)=>{ out += `<tspan x="${cx}" dy="${i===0?0:lineH}">${_xmlEscape(ln)}</tspan>`; });
+      out += `</text>`;
+      return out;
+    }
+
+    function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
+      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
+      const aLines = _wrapLines(a, 30).slice(0,6);
+      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
+      const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
+
+      return `
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+
+    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+      .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
+      .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
+      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
+      .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
+    </style>
+  </defs>
+
+  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
+
+  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
+    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
+    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
+    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="300" y1="0" x2="300" y2="600"/>
+  </g>
+
+  <path filter="url(#softGlow)" d="M40 36
+    C30 60, 30 90, 36 120
+    C24 190, 26 300, 38 360
+    C26 440, 40 520, 68 558
+    C120 592, 210 596, 292 590
+    C350 586, 374 542, 380 496
+    C392 414, 388 290, 372 220
+    C386 150, 380 82, 356 48
+    C320 18, 260 18, 200 22
+    C140 18, 80 18, 40 36 Z"
+    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
+
+  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
+
+  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
+  <path d="M200 90
+    C232 92, 254 122, 246 154
+    C238 188, 200 202, 174 188
+    C148 176, 140 144, 156 118
+    C168 100, 184 90, 200 90 Z"
+    fill="#10b981" opacity="0.75"/>
+  <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
+
+  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
+  ${_tspans(200, 238, qLines, 20, "q")}
+
+  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
+  ${_tspans(200, 362, aLines, 22, "a")}
+
+  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+  ${_tspans(200, 522, gLines, 14, "meta")}
+
+  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
+  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
+</svg>
+`.trim();
+    }
+
+    function svgToObjectUrl(svgText){
+      return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
+    }
+
+    async function svgToPngBlob(svgText, w=400, h=600){
+      const url = svgToObjectUrl(svgText);
+      try{
+        const img = new Image();
+        img.decoding = "async";
+        img.src = url;
+        await img.decode();
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        return await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 0.95));
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    function downloadBlob(blob, filename){
+      // NOTE: Some in-app browsers (including Base App) can be picky about programmatic downloads.
+      // We try the normal <a download> path first, then fall back to opening the blob URL.
+      const url = URL.createObjectURL(blob);
+      try{
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.rel = "noopener";
+        a.target = "_blank";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }catch(e){
+        try{ window.open(url, "_blank", "noopener"); }catch(_e){}
+      }
+      setTimeout(() => { try{ URL.revokeObjectURL(url); }catch(e){} }, 2500);
+    }
+
+    // Expose to non-module script
+    window.__createLeafSVG = createLeafSVG;
+
+
+    // ==================== FREEZE FLOW (ERC-1155 + 1 USDC fee) ====================
+    const BASE_CHAIN_ID = "0x2105"; // 8453
+    const USDC_BASE     = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+    const TOADAID_SAFE  = "0xe5C1378F91243727a24fa7c64d5286C537D8eAB2";
+
+    const LEAF_CONTRACT = "0xYOUR_ERC1155_ADDRESS";
+
+    const USDC_DECIMALS = 6;
+    const MINT_FEE      = 1 * 10 ** USDC_DECIMALS;
+
+    const USDC_ABI = [
+      "function allowance(address owner, address spender) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)"
+    ];
+
+    const LEAF_ABI = [
+      "function mintLeaf(address to, string cid, string tag)"
+    ];
+
+    const KEY_FREEZE_DRAFT = "mirror_freeze_draft_v1";
+    const KEY_FREEZE_CD    = "mirror_freeze_cooldown_v1";
+    const KEY_IPFS_STUB    = "mirror_ipfs_stub_v1";
+
+    const freezeModal   = document.getElementById("freeze-modal");
+    const freezeClose   = document.getElementById("freeze-close");
+    const freezeTag     = document.getElementById("freeze-tag");
+    const freezePreview = document.getElementById("freeze-preview");
+
+    const freezeSave    = document.getElementById("freeze-save");
+    const freezeClear   = document.getElementById("freeze-clear");
+    const cdMinInput    = document.getElementById("freeze-cooldown-min");
+    const cdStart       = document.getElementById("freeze-start");
+    const cdCancel      = document.getElementById("freeze-cancel");
+    const cdStatus      = document.getElementById("freeze-status");
+
+    const commitBtn     = document.getElementById("freeze-commit");
+    const signBtn       = document.getElementById("freeze-sign");
+    const mintBtn       = document.getElementById("freeze-mint");
+    const viewBtn       = document.getElementById("freeze-view");
+
+    const cidEl         = document.getElementById("freeze-cid");
+    const bytesEl       = document.getElementById("freeze-bytes");
+    const payloadEl     = document.getElementById("freeze-payload");
+
+    // Leaf preview wiring
+    const leafImg = document.getElementById("leaf-preview-img");
+    const dlSvgBtn = document.getElementById("leaf-download-svg");
+    const dlPngBtn = document.getElementById("leaf-download-png");
+
+    // ============ FIX: Mobile-safe tap bindings (Base App in-app browser) ============
+
+    function bindTap(el, handler){
+      if(!el) return;
+      let last = 0;
+      const wrapped = (ev) => {
+        // de-dupe pointerup+click double firing
+        const now = Date.now();
+        if(now - last < 350) return;
+        last = now;
+        try{ ev.preventDefault?.(); }catch(e){}
+        try{ ev.stopPropagation?.(); }catch(e){}
+        try{ handler(ev); }catch(e){
+          console.error("bindTap handler error:", e);
+          alert("Action failed: " + (e?.message || String(e)));
+        }
+      };
+      el.addEventListener("pointerup", wrapped, { passive: false });
+      el.addEventListener("click", wrapped, { passive: false });
+    }
+
+    // ============ Buttons (Download / Draft / Clear) ============
+
+    // Download SVG button
+    bindTap(dlSvgBtn, () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) {
+        alert("No leaf yet. Generate a reflection first.");
+        return;
+      }
+      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
+      window.showStatusMessage?.("🪶 SVG downloaded.", "success");
+    });
+
+    // Download PNG button
+    bindTap(dlPngBtn, async () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) {
+        alert("No leaf yet. Generate a reflection first.");
+        return;
+      }
+      try {
+        const png = await svgToPngBlob(svg, 400, 600);
+        if(!png) {
+          alert("PNG export failed.");
+          return;
+        }
+        downloadBlob(png, "reflection-leaf.png");
+        window.showStatusMessage?.("🪶 PNG downloaded.", "success");
+      } catch (error) {
+        console.error("PNG export error:", error);
+        alert("Failed to export PNG: " + error.message);
+      }
+    });
+
+    // Save Draft button
+    bindTap(freezeSave, () => {
+      const text = getCurrentReflectionText();
+      if(!text || text.trim() === "") {
+        alert("No reflection to save. Generate a reflection first.");
+        return;
+      }
+      const obj = { 
+        text: text, 
+        tag: freezeTag.value, 
+        saved_at: new Date().toISOString(),
+        svg: window.currentLeafSvg 
+      };
+      saveFreezeDraft(obj);
+      window.showStatusMessage?.("📝 Draft saved locally.", "success");
+      syncPreviewFromDraftOrCurrent();
+    });
+
+    // Clear Draft button
+    bindTap(freezeClear, () => {
+      if(confirm("Clear the saved draft? This cannot be undone.")) {
+        clearFreezeDraft();
+        window.showStatusMessage?.("🗑️ Draft cleared.", "info");
+        syncPreviewFromDraftOrCurrent();
+      }
+    });
+
+    function getCurrentReflectionText(){
+      // The preview text must match the Leaf/NFT content (what you SEE).
+      const ref = window.currentReflection || null;
+      if(!ref) return "";
+
+      const mainDisplayElement = document.getElementById("main-text");
+      let displayedAnswer = (mainDisplayElement?.textContent || ref.a || "").trim();
+      if(displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) displayedAnswer = displayedAnswer.slice(1, -1).trim();
+
+      const resonanceElement = document.getElementById("res-text");
+      let resonanceText = (resonanceElement?.textContent || "").trim();
+      resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
+      if(!resonanceText) resonanceText = "Stillness.";
+
+      const guideElement = document.getElementById("guide-text");
+      const guideText = (guideElement?.textContent || "What remains when urgency leaves?").trim();
+
+      // Keep it human-readable and aligned with the visual leaf
+      return [
+        `Q: ${ref.q}`,
+        "",
+        "REFLECTION",
+        displayedAnswer,
+        "",
+        `RESONANCE: ${resonanceText}`,
+        `GUIDING: ${guideText}`
+      ].join("\n");
+    }
+
+    function refreshLeafPreview(){
+      const ref = window.currentReflection || null;
+      
+      // Get the actual displayed text
+      const mainDisplayElement = document.getElementById("main-text");
+      let displayedAnswer = "";
+      
+      if (mainDisplayElement) {
+        displayedAnswer = mainDisplayElement.textContent || "";
+        // Remove quotation marks if present
+        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
+          displayedAnswer = displayedAnswer.slice(1, -1).trim();
+        }
+      } else if (ref) {
+        displayedAnswer = ref.a || "";
+      }
+      
+      // Get resonance text
+      const resonanceElement = document.getElementById("res-text");
+      let resonanceText = "Stillness.";
+      if (resonanceElement) {
+        resonanceText = resonanceElement.textContent || "Stillness.";
+        // Remove "Resonance: " prefix if present
+        resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
+      }
+      
+      // Get guide text
+      const guideElement = document.getElementById("guide-text");
+      let guideText = "What remains when urgency leaves?";
+      if (guideElement) {
+        guideText = guideElement.textContent || "What remains when urgency leaves?";
+      }
+      
+      const svg = createLeafSVG({
+        leafNo: 8,
+        q: ref?.q || "",
+        a: displayedAnswer,
+        resonance: resonanceText,
+        guide: guideText,
+        mode: "POND",
+        epoch: "EPOCH 5"
+      });
+
+      window.currentLeafSvg = svg;
+
+      try{ if(window.currentLeafSvgUrl) URL.revokeObjectURL(window.currentLeafSvgUrl); }catch(e){}
+      const url = svgToObjectUrl(svg);
+      window.currentLeafSvgUrl = url;
+      if(leafImg) leafImg.src = url;
+    }
+
+    let lastCommitPayload = null;
+    let lastMintTxHash = null;
+
+    function openFreezeModal(){
+      freezeModal.classList.remove("hidden");
+      freezeModal.style.display = "flex";
+      document.body.style.overflow = 'hidden'; // Prevent body scroll
+    }
+    function closeFreezeModal(){
+      freezeModal.classList.add("hidden");
+      freezeModal.style.display = "none";
+      document.body.style.overflow = ''; // Restore body scroll
+    }
+
+    function b64(bytes){
+      let bin = "";
+      bytes.forEach(b => bin += String.fromCharCode(b));
+      return btoa(bin);
+    }
+    function hex(bytes){
+      return [...bytes].map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    async function sha256(bytes){
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return new Uint8Array(digest);
+    }
+    function nowISO(){ return new Date().toISOString(); }
+
+    function loadFreezeDraft(){
+      try{
+        const raw = localStorage.getItem(KEY_FREEZE_DRAFT);
+        if(!raw) return null;
+        return JSON.parse(raw);
+      }catch(e){ return null; }
+    }
+    function saveFreezeDraft(obj){
+      try{ localStorage.setItem(KEY_FREEZE_DRAFT, JSON.stringify(obj)); }catch(e){}
+    }
+    function clearFreezeDraft(){
+      try{ localStorage.removeItem(KEY_FREEZE_DRAFT); }catch(e){}
+    }
+
+    function setCooldown(endMs){
+      try{ localStorage.setItem(KEY_FREEZE_CD, JSON.stringify({ endMs, started_at: nowISO() })); }catch(e){}
+    }
+    function getCooldown(){
+      try{
+        const raw = localStorage.getItem(KEY_FREEZE_CD);
+        if(!raw) return null;
+        return JSON.parse(raw);
+      }catch(e){ return null; }
+    }
+    function clearCooldown(){
+      try{ localStorage.removeItem(KEY_FREEZE_CD); }catch(e){}
+    }
+
+    function syncPreviewFromDraftOrCurrent(){
+      const draft = loadFreezeDraft();
+      const text = draft?.text || getCurrentReflectionText();
+      const tag  = draft?.tag  || "STILLNESS";
+      freezeTag.value = tag;
+      freezePreview.textContent = text || "No reflection found. Generate one first.";
+      
+      // Also update leaf preview if draft has SVG
+      if(draft?.svg) {
+        window.currentLeafSvg = draft.svg;
+        refreshLeafPreview();
+      } else {
+        // Always refresh leaf preview with current reflection
+        refreshLeafPreview();
+      }
+    }
+
+    function updateCooldownUI(){
+      const cd = getCooldown();
+      if(!cd){
+        cdStatus.textContent = "Not started";
+        commitBtn.disabled = true;
+        return;
+      }
+      const remaining = cd.endMs - Date.now();
+      if(remaining <= 0){
+        cdStatus.textContent = "Cooldown complete ✅ You may commit.";
+        commitBtn.disabled = false;
+        return;
+      }
+      const sec = Math.ceil(remaining / 1000);
+      cdStatus.textContent = `Waiting… ${sec}s remaining`;
+      commitBtn.disabled = true;
+    }
+
+    function ipfsStubStore(cid, blobB64){
+      try{
+        const raw = localStorage.getItem(KEY_IPFS_STUB);
+        const db = raw ? JSON.parse(raw) : {};
+        db[cid] = { blobB64, stored_at: nowISO() };
+        localStorage.setItem(KEY_IPFS_STUB, JSON.stringify(db));
+      }catch(e){}
+    }
+
+    async function ensureBaseNetwork(){
+      if(!ethProvider) throw new Error("No wallet provider");
+      const chainId = await ethProvider.request({ method: "eth_chainId" });
+
+      if(chainId === BASE_CHAIN_ID) return;
+
+      try{
+        await ethProvider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BASE_CHAIN_ID }]
+        });
+        return;
+      }catch(e){
+        try{
+          await ethProvider.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: BASE_CHAIN_ID,
+              chainName: "Base",
+              nativeCurrency: { name:"Ether", symbol:"ETH", decimals:18 },
+              rpcUrls: ["https://mainnet.base.org"],
+              blockExplorerUrls: ["https://basescan.org"]
+            }]
+          });
+          return;
+        }catch(e2){
+          throw new Error("Please switch network to Base");
+        }
+      }
+    }
+
+    async function mintLeafOnchain({ cid, tag }){
+      if(!walletConnected || !ethProvider || !connectedAddress){
+        throw new Error("Connect a real wallet to mint.");
+      }
+      if(window.__walletMode === "Mock"){
+        throw new Error("Mock wallet cannot mint. Please connect a real wallet.");
+      }
+      if(!LEAF_CONTRACT || LEAF_CONTRACT === "0xYOUR_ERC1155_ADDRESS"){
+        throw new Error("LEAF_CONTRACT not set.");
+      }
+      if(!cid) throw new Error("Missing CID");
+
+      await ensureBaseNetwork();
+
+      const ethers = await import("https://esm.sh/ethers@6.10.0");
+      const provider = new ethers.BrowserProvider(ethProvider);
+      const signer = await provider.getSigner();
+
+      const usdc = new ethers.Contract(USDC_BASE, USDC_ABI, signer);
+      const leaf = new ethers.Contract(LEAF_CONTRACT, LEAF_ABI, signer);
+
+      const allowance = await usdc.allowance(connectedAddress, LEAF_CONTRACT);
+      if(allowance < BigInt(MINT_FEE)){
+        window.showStatusMessage?.("Approving 1 USDC…", "info");
+        const txApprove = await usdc.approve(LEAF_CONTRACT, MINT_FEE);
+        await txApprove.wait();
+      }
+
+      window.showStatusMessage?.("Minting Leaf…", "info");
+      const tx = await leaf.mintLeaf(connectedAddress, cid, tag);
+      window.showStatusMessage?.("Transaction sent, waiting for confirmation...", "info");
+      
+      const receipt = await tx.wait();
+
+      return { txHash: tx.hash, receipt };
+    }
+
+    async function commitReflection(){
+      const text = (loadFreezeDraft()?.text || getCurrentReflectionText() || "").trim();
+      if(!text){
+        alert("No reflection found. Generate a reflection first, then freeze.");
+        return;
+      }
+
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.generateKey({ name:"AES-GCM", length:256 }, true, ["encrypt","decrypt"]);
+      const iv  = crypto.getRandomValues(new Uint8Array(12));
+      const pt  = enc.encode(text);
+
+      const ctBuf = await crypto.subtle.encrypt({ name:"AES-GCM", iv }, key, pt);
+      const ct = new Uint8Array(ctBuf);
+
+      const digest = await sha256(ct);
+      const cid = "sha256:" + hex(digest);
+
+      ipfsStubStore(cid, b64(ct));
+
+      const payload = {
+        type: "MIRROR_REFLECTION_V1",
+        target: "ERC-1155",
+        chain: "base",
+        wallet: connectedAddress,
+        tag: freezeTag.value,
+        created_at: nowISO(),
+        cid,
+        fee: { token: "USDC", amount: "1.00", decimals: 6, to: TOADAID_SAFE },
+        crypto: {
+          alg: "AES-256-GCM",
+          iv_b64: b64(iv),
+          enc_bytes: ct.length
+        },
+        note: "Encrypted content stored in IPFS stub (localStorage). Replace with real pinning + ERC-1155 mint tx."
+      };
+
+      lastCommitPayload = payload;
+      cidEl.textContent = cid;
+      bytesEl.textContent = String(ct.length);
+      payloadEl.textContent = JSON.stringify(payload, null, 2);
+
+      signBtn.disabled = false;
+      mintBtn.disabled = false;
+      viewBtn.disabled = true;
+      lastMintTxHash = null;
+
+      window.showStatusMessage?.("✅ Reflection committed (encrypted + CID created).", "success");
+    }
+
+    async function signProof(){
+      if(!walletConnected || !ethProvider || !connectedAddress){
+        alert("Connect a real wallet to sign.");
+        return;
+      }
+      if(window.__walletMode === "Mock"){
+        alert("Mock wallet cannot sign. Please connect a real wallet.");
+        return;
+      }
+      if(!lastCommitPayload?.cid){
+        alert("Commit first.");
+        return;
+      }
+
+      const msg =
+`Mirror Reflection Commit Proof
+CID: ${lastCommitPayload.cid}
+TAG: ${lastCommitPayload.tag}
+TIME: ${lastCommitPayload.created_at}
+WALLET: ${connectedAddress}
+NOTE: Proof of commit (separate from mint).`;
+
+      try{
+        const sig = await ethProvider.request({
+          method: "personal_sign",
+          params: [msg, connectedAddress]
+        });
+
+        payloadEl.textContent = JSON.stringify({ ...lastCommitPayload, proof: { method:"personal_sign", signature: sig } }, null, 2);
+        window.showStatusMessage?.("🪞 Proof signed.", "success");
+      }catch(e){
+        console.error("signProof error:", e);
+        alert("Signature failed: " + (e?.message || "Unknown"));
+      }
+    }
+
+    async function mintLeaf(){
+      try{
+        if(!lastCommitPayload?.cid){
+          alert("Commit first.");
+          return;
+        }
+
+        const ok = await window.confirmSend({
+          title: "Mint Leaf (ERC-1155)",
+          body:
+`This mints a transferable ERC-1155 Reflection Leaf on Base.
+
+Fee: 1 USDC
+Recipient: ToadAid Safe
+${TOADAID_SAFE}
+
+You can move it to a new wallet later, or list it.`,
+          previewText: `CID: ${lastCommitPayload.cid}\nTAG: ${lastCommitPayload.tag}`,
+          okText: "OK — Mint",
+          cancelText: "Cancel"
+        });
+
+        if(!ok) return;
+
+        // Disable buttons during minting
+        mintBtn.disabled = true;
+        mintBtn.textContent = "Minting...";
+        
+        const { txHash } = await mintLeafOnchain({ 
+          cid: lastCommitPayload.cid, 
+          tag: lastCommitPayload.tag 
+        });
+
+        lastMintTxHash = txHash;
+        viewBtn.disabled = false;
+
+        payloadEl.textContent = JSON.stringify({ 
+          ...lastCommitPayload, 
+          mint: { 
+            txHash, 
+            explorer: `https://basescan.org/tx/${txHash}` 
+          } 
+        }, null, 2);
+        
+        window.showStatusMessage?.("🪶 Leaf minted on Base.", "success");
+        
+        // Re-enable button
+        mintBtn.disabled = false;
+        mintBtn.textContent = "Mint Leaf (1 USDC)";
+        
+      }catch(e){
+        console.error("mintLeaf error:", e);
+        
+        // Re-enable button on error
+        mintBtn.disabled = false;
+        mintBtn.textContent = "Mint Leaf (1 USDC)";
+        
+        alert("Mint failed: " + (e?.message || "Unknown"));
+      }
+    }
+
+    function viewTx(){
+      if(!lastMintTxHash) return;
+      window.open(`https://basescan.org/tx/${lastMintTxHash}`, "_blank");
+    }
+
+    freezeClose?.addEventListener("click", closeFreezeModal);
+    freezeModal?.addEventListener("click", (e) => { if(e.target === freezeModal) closeFreezeModal(); });
+
+    cdStart?.addEventListener("click", () => {
+      const mins = Number(cdMinInput.value || "0");
+      const endMs = Date.now() + Math.max(0, mins) * 60_000;
+      setCooldown(endMs);
+      updateCooldownUI();
+    });
+    cdCancel?.addEventListener("click", () => {
+      clearCooldown();
+      updateCooldownUI();
+    });
+
+    commitBtn?.addEventListener("click", commitReflection);
+    signBtn?.addEventListener("click", signProof);
+    mintBtn?.addEventListener("click", mintLeaf);
+    viewBtn?.addEventListener("click", viewTx);
+
+    freezeBtn.addEventListener("click", async () => {
+      if (!walletConnected) {
+        alert("Please connect wallet first.");
+        return;
+      }
+
+      const ref = window.currentReflection || null;
+      if (!ref) {
+        alert("Please generate a reflection first using the input above.");
+        return;
+      }
+
+      cidEl.textContent = "—";
+      bytesEl.textContent = "—";
+      payloadEl.textContent = "";
+      signBtn.disabled = true;
+      mintBtn.disabled = true;
+      viewBtn.disabled = true;
+      lastCommitPayload = null;
+      lastMintTxHash = null;
+
+      syncPreviewFromDraftOrCurrent();
+      updateCooldownUI();
+      refreshLeafPreview();
+      openFreezeModal();
+    });
+
+    setInterval(updateCooldownUI, 1000);
+  </script>
+</body>
+</html>
