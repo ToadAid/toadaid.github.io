@@ -446,7 +446,36 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
-  </style>
+
+    /* LEAF PREVIEW */
+    .leaf-preview-shell{ border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; background: rgba(0,0,0,0.25); padding: 12px; }
+    .leaf-preview-title{ font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 8px; }
+    .leaf-preview-sub{ font-size: 9px; color: rgba(255,255,255,0.25); margin-bottom: 8px; }
+    .leaf-preview-img{ width: 100%; height: auto; display: block; border-radius: 14px; }
+    .leaf-preview-actions{ display:flex; gap:10px; justify-content:center; margin-top: 10px; }
+    .leaf-btn { 
+      font-size: 10px; 
+      letter-spacing: .1em; 
+      text-transform: uppercase; 
+      padding: 8px 14px; 
+      border-radius: 9999px; 
+      border: 1px solid rgba(255,255,255,0.14); 
+      background: rgba(255,255,255,0.04); 
+      color: rgba(255,255,255,0.65); 
+      transition: all .3s ease; 
+      cursor: pointer; 
+    }
+    .leaf-btn:hover { 
+      background: rgba(255,255,255,0.08); 
+      box-shadow: 0 0 20px rgba(255,255,255,0.08); 
+      color: #fff; 
+    }
+
+    .no-scroll{ overflow: hidden !important; }
+  
+  /* Center the Leaf SVG in its card */
+  #leafPreview svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+</style>
 </head>
 
 <body>
@@ -611,7 +640,7 @@
 
   <!-- ==================== FREEZE (Reflection NFT) MODAL ==================== -->
   <div id="freeze-modal" class="fixed inset-0 z-[999] hidden items-center justify-center p-4 bg-black/90">
-    <div class="w-full max-w-md rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
+    <div class="modal-card w-full max-w-md rounded-2xl border border-emerald-900/40 bg-zinc-950/70 backdrop-blur-xl p-5">
       <div class="flex items-start justify-between gap-3">
         <div>
           <div class="text-[10px] uppercase tracking-[0.28em] text-emerald-400">Freeze as Leaf</div>
@@ -621,6 +650,19 @@
       </div>
 
       <div class="mt-4 space-y-3">
+        <div class="leaf-preview-shell">
+          <div class="leaf-preview-title">LEAF (VISUAL PREVIEW)</div>
+          <div class="leaf-preview-sub">Your reflection is rendered locally as an SVG leaf.</div>
+          <div class="mt-3 rounded-xl overflow-hidden border border-white/10 bg-black/20">
+            <div id="leaf-preview-container"></div>
+          </div>
+          <div class="leaf-preview-actions">
+            <button id="leaf-dl-svg" class="leaf-btn">Download SVG</button>
+            <button id="leaf-dl-png" class="leaf-btn">Download PNG</button>
+          </div>
+        </div>
+
+        
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Tag</div>
         <select id="freeze-tag" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm">
           <option value="STILLNESS">STILLNESS</option>
@@ -632,15 +674,7 @@
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Reflection (preview)</div>
         <div id="freeze-preview" class="confirm-preview"></div>
 
-        <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
-        <div class="rounded-xl border border-white/10 bg-black/30 p-3">
-          <img id="leaf-preview-img" class="w-full rounded-xl border border-white/10" alt="Leaf preview"/>
-          <div class="grid grid-cols-2 gap-2 mt-3">
-            <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
-            <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
-          </div>
-        </div>
-
+        
 
         <div class="grid grid-cols-2 gap-2">
           <button id="freeze-save" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">
@@ -820,6 +854,34 @@
     const tapHeader = document.getElementById("tap-header");
     const titleTapZone = document.getElementById("title-tap-zone");
 
+    // Store the complete reflection
+    window.currentReflection = null;
+    function saveCurrentReflection(q, main, resonance, guide) { 
+      window.currentReflection = { 
+        q, 
+        main,
+        resonance: resonance || "Roots deepen.",
+        guide: guide || "What remains when urgency leaves?"
+      }; 
+    }
+
+    window.currentLeafText = "";
+
+    function buildLeafText(inquiry, main, resonance, guide) {
+      const q = (inquiry || "").trim();
+      const m = (main || "").trim();
+      const r = (resonance || "").trim();
+      const g = (guide || "").trim();
+
+      const lines = [];
+      if (q) lines.push(q);
+      if (m) lines.push(m);
+      if (r) lines.push(r);
+      if (g) lines.push(`Guiding Question: ${g}`);
+      return lines.join('\n\n').trim();
+    }
+    window.saveCurrentReflection = saveCurrentReflection;
+
     // Safe-guarded listeners (prevents runtime crashes if element IDs change)
     portalEl?.addEventListener("pointerdown", () => portalEl.classList.add("tilt"));
     portalEl?.addEventListener("pointerup",   () => portalEl.classList.remove("tilt"));
@@ -846,13 +908,25 @@
       try {
         const raw = JSON.parse(localStorage.getItem(KEY_HISTORY) || "[]");
         const arr = Array.isArray(raw) ? raw : [];
-        const normalized = arr.map((x, i) => ({
-          id: x?.id || `${String(x?.ts || Date.now())}_${i}`,
-          ts: x?.ts || Date.now(),
-          q:  x?.q || "",
-          a:  x?.a || "",
-          star: !!x?.star
-        }));
+        const normalized = arr.map((x, i) => {
+          const q = x?.q || "";
+          const main = x?.main || x?.a || "";
+          const resonance = x?.resonance || "";
+          const guide = x?.guide || "";
+          const leaf = x?.leaf || "";
+          const preview = x?.preview || (main || "").slice(0, 96);
+          return {
+            id: x?.id || `${String(x?.ts || Date.now())}_${i}`,
+            ts: x?.ts || Date.now(),
+            q,
+            main,
+            resonance,
+            guide,
+            leaf,
+            preview,
+            star: !!x?.star,
+          };
+        });
 
         const needsPersist = normalized.some((it, i) => !arr[i]?.id);
         if (needsPersist) {
@@ -868,14 +942,30 @@
       localStorage.setItem(KEY_HISTORY, JSON.stringify(arr.slice(0, 30)));
     }
 
-    function addHistory(item){
-      const arr = getHistory();
-      arr.unshift({
-        id: item?.id || safeUuid(),
-        ts: item?.ts || Date.now(),
-        q: item?.q || "",
-        a: item?.a || "",
-        star: !!item?.star
+    function addHistory(item) {
+        const q = (item?.q || "").trim();
+        const main = (item?.main || item?.a || "").trim();
+        const resonance = (item?.resonance || "").trim();
+        const guide = (item?.guide || "").trim();
+        const leaf = (item?.leaf || window.currentLeafText || "").trim();
+        const preview = (item?.preview || main || leaf).replace(/\s+/g, " ").slice(0, 96);
+
+        const rec = {
+          id: item?.id || `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          ts: item?.ts || Date.now(),
+          q,
+          main,
+          resonance,
+          guide,
+          leaf,
+          preview,
+          star: !!item?.star,
+        };
+
+        const arr = getHistory();
+        arr.unshift(rec);
+        setHistory(arr.slice(0, 50));
+        renderHistory();
       });
       setHistory(arr);
     }
@@ -1045,10 +1135,6 @@
       portalEl.classList.toggle("can-scroll", over);
     }
 
-    window.currentReflection = null;
-    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
-    window.saveCurrentReflection = saveCurrentReflection;
-
     async function processInquiry(qOverride){
       const q = (qOverride ?? input?.value ?? "").trim();
       if(!q) return;
@@ -1079,7 +1165,9 @@
             if (resText)  resText.textContent  = out.res;
             if (guideText)guideText.textContent= out.guide;
 
-            saveCurrentReflection(q, out.main);
+            // Store the complete reflection
+            saveCurrentReflection(q, out.main, out.res, out.guide);
+        window.currentLeafText = buildLeafText(q, out.main, out.res, out.guide);
 
             // Build a local leaf SVG for this reflection (used by Freeze modal)
             try{
@@ -1126,7 +1214,8 @@
               if (echoText) echoText.textContent = out.echo;
               if (resText)  resText.textContent  = out.res;
               if (guideText)guideText.textContent= out.guide;
-              saveCurrentReflection(q, out.main);
+              saveCurrentReflection(q, out.main, out.res, out.guide);
+        window.currentLeafText = buildLeafText(q, out.main, out.res, out.guide);
               showOutput();
               break;
             }
@@ -1179,7 +1268,7 @@
                 class="star-toggle text-xs ${item.star ? 'on' : ''}">${item.star ? '★' : '☆'}</button>
             </div>
             <div class="text-sm font-semibold text-zinc-300 mb-1">${escapeHtml(item.q)}</div>
-            <div class="text-xs italic text-zinc-400">${escapeHtml(item.a)}</div>
+            <div class="text-xs italic text-zinc-400">${escapeHtml(item.preview || item.main || item.a || "")}</div>
           </div>
         `;
       });
@@ -1359,7 +1448,7 @@
       return null;
     }
 
-    // ✅ preserve Mock styling + avoid removing wallet-mock unintentionally
+    // ✅ Fix: preserve Mock styling + avoid removing wallet-mock unintentionally
     function setWalletUIConnected(addr, modeLabel) {
       const shortAddr = `${addr.slice(0,6)}…${addr.slice(-4)}`;
       walletBtn.textContent = `${shortAddr} (${modeLabel})`;
@@ -1428,7 +1517,7 @@
         return;
       }
 
-      const { q, a } = ref;
+      const { q, main } = ref;
 
       const appUrl = "https://toadaid.github.io/pond/";
       const castText =
@@ -1436,7 +1525,7 @@
 ${q}
 
 A:
-${a}
+${main}
 
 — from Tobyworld Mirror
 ${appUrl}`;
@@ -1486,111 +1575,155 @@ ${appUrl}`;
       return lines;
     }
 
-    function _tspans(cx, y, lines, lineH, klass){
-      let out = `<text x="${cx}" y="${y}" text-anchor="middle" class="${klass}">`;
+    function _tspans(cx, y, lines, lineH, klass, fontSize, maxWidth){
+      let out = `<text x="${cx}" y="${y}" text-anchor="middle" class="${klass}"`;
+      if(maxWidth) out += ` style="max-width: ${maxWidth}px"`;
+      out += `>`;
       lines.forEach((ln,i)=>{ out += `<tspan x="${cx}" dy="${i===0?0:lineH}">${_xmlEscape(ln)}</tspan>`; });
       out += `</text>`;
       return out;
     }
 
+    // Dynamic font sizing based on text length
+    function calculateFontSize(text, baseSize, minSize, maxCharsPerLine){
+      const words = text.split(/\s+/);
+      const avgWordLength = words.reduce((sum, w) => sum + w.length, 0) / words.length;
+      const estimatedLines = Math.ceil(text.length / maxCharsPerLine);
+      
+      // Reduce font size for longer text
+      if (estimatedLines > 3) return Math.max(minSize, baseSize - 2);
+      if (estimatedLines > 2) return Math.max(minSize, baseSize - 1);
+      return baseSize;
+    }
+
     function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
-      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
-
-      // --- Auto-fit reflection text ---
-      // If the reflection runs long, allow more lines and shrink type/line-height.
-      const aAll = _wrapLines(a, 30);
-      let aLines = aAll.slice(0,6);
-      let aClass = "a";
-      let aLineH = 22;
-      if(aAll.length > 6){
-        aLines = aAll.slice(0,9);
-        aClass = "aSmall";
-        aLineH = 18;
-      }
-
-      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
-      const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
+      // Calculate font sizes based on text length
+      const qFontSize = calculateFontSize(q, 14, 11, 28);
+      const aFontSize = calculateFontSize(a, 16, 12, 30);
+      const guideFontSize = calculateFontSize(guide, 9, 8, 36);
+      
+      const qLines = _wrapLines(`Q: ${q}`, 32).slice(0,4);
+      const aLines = _wrapLines(a, 34).slice(0,8);
+      const gLines = _wrapLines(`Guiding: ${guide}`, 36).slice(0,3);
+      
+      // Cleaner, more integrated sigil
+      const sigilParts = ["🪞", "🌊", "🌀", "🍃", "⏳", "≋", "🪶"];
+      const sigil = sigilParts.slice(0, 5).join(" ");
 
       return `
-<svg viewBox="0 0 400 600" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
-      <stop offset="0%" stop-color="#064e3b"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </radialGradient>
+    <svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Better gradients -->
+        <radialGradient id="pondDepth" cx="50%" cy="40%" r="75%">
+          <stop offset="0%" stop-color="#0a261d" stop-opacity="0.95"/>
+          <stop offset="45%" stop-color="#052016" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#010a07" stop-opacity="1"/>
+        </radialGradient>
 
-    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
-      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
-      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
-    </linearGradient>
+        <linearGradient id="goldVein" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.9"/>
+          <stop offset="40%" stop-color="#eab308" stop-opacity="0.6"/>
+          <stop offset="80%" stop-color="#d97706" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#92400e" stop-opacity="0.2"/>
+        </linearGradient>
 
-    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="2.2" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
+        <linearGradient id="emeraldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#10b981" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#047857" stop-opacity="0.3"/>
+        </linearGradient>
 
-    <style>
-      .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
-      .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
-      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
-      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
-      .aSmall { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 15px; font-style: italic; }
-      .aSmall { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 15px; font-style: italic; }
-      .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
-      .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
-    </style>
-  </defs>
+        <!-- Subtle texture -->
+        <pattern id="paperTexture" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+          <rect width="20" height="20" fill="#020617" opacity="0.98"/>
+          <path d="M0,0 L20,20 M20,0 L0,20" stroke="#0f172a" stroke-width="0.3" opacity="0.08"/>
+        </pattern>
 
-  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
+        <!-- Better filter -->
+        <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="glow"/>
+          <feMerge>
+            <feMergeNode in="glow"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
 
-  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
-    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
-    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
-    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
-    <line x1="300" y1="0" x2="300" y2="600"/>
-  </g>
+        <style>
+          .title { font-family: 'Cinzel', serif; fill:#fef3c7; font-size: 13px; letter-spacing: 4px; font-weight: 600; }
+          .labelG { font-family: 'Cinzel', serif; fill:#a7f3d0; font-size: 11px; letter-spacing: 2px; font-weight: 500; }
+          .labelY { font-family: 'Cinzel', serif; fill:#fde68a; font-size: 11px; letter-spacing: 2px; font-weight: 500; }
+          .q { font-family: 'Cinzel', serif; fill:#d1d5db; font-style: italic; }
+          .a { font-family: 'Cinzel', serif; fill="#f9fafb"; font-style: italic; font-weight: 500; }
+          .meta { font-family: 'Inter', system-ui, sans-serif; fill="#94a3b8"; }
+          .tiny { font-family: 'Inter', system-ui, sans-serif; fill="#64748b"; font-size: 8px; letter-spacing: 1px; }
+          .sigil { font-family: 'Cinzel', serif; fill="#d1d5db; font-size: 14px; letter-spacing: 2px; opacity: 0.9; }
+        </style>
+      </defs>
 
-  <path filter="url(#softGlow)" d="M40 36
-    C30 60, 30 90, 36 120
-    C24 190, 26 300, 38 360
-    C26 440, 40 520, 68 558
-    C120 592, 210 596, 292 590
-    C350 586, 374 542, 380 496
-    C392 414, 388 290, 372 220
-    C386 150, 380 82, 356 48
-    C320 18, 260 18, 200 22
-    C140 18, 80 18, 40 36 Z"
-    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
+      <!-- Background with texture -->
+      <rect width="400" height="600" rx="24" fill="url(#paperTexture)"/>
+      <rect width="400" height="600" rx="24" fill="url(#pondDepth)"/>
 
-  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
+      <!-- Subtle background elements (less distracting) -->
+      <g opacity="0.04" stroke="#10b981" stroke-width="0.4">
+        <circle cx="200" cy="300" r="180"/>
+        <circle cx="200" cy="300" r="120"/>
+        <circle cx="200" cy="300" r="60"/>
+      </g>
 
-  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
-  <path d="M200 90
-    C232 92, 254 122, 246 154
-    C238 188, 200 202, 174 188
-    C148 176, 140 144, 156 118
-    C168 100, 184 90, 200 90 Z"
-    fill="#10b981" opacity="0.75"/>
-  <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
+      <!-- Main leaf shape (softer, more organic) -->
+      <path filter="url(#softGlow)" d="M80 80
+        C40 140, 30 200, 40 260
+        C20 340, 60 420, 120 480
+        C180 540, 260 560, 320 520
+        C380 480, 390 400, 360 320
+        C380 240, 360 160, 300 100
+        C240 40, 160 40, 80 80 Z"
+        fill="none" stroke="url(#goldVein)" stroke-width="2.5" opacity="0.7"/>
 
-  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
-  ${_tspans(200, 238, qLines, 20, "q")}
+      <!-- Organic vein patterns -->
+      <g opacity="0.15" stroke="url(#emeraldGlow)" stroke-width="0.8">
+        <path d="M200 100 C180 180, 160 240, 140 300" fill="none"/>
+        <path d="M200 100 C220 180, 240 240, 260 300" fill="none"/>
+        <path d="M140 300 C120 360, 140 420, 180 460" fill="none"/>
+        <path d="M260 300 C280 360, 260 420, 220 460" fill="none"/>
+      </g>
 
-  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
-  ${_tspans(200, 362, aLines, aLineH, aClass)}
+      <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
 
-  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-  ${_tspans(200, 522, gLines, 14, "meta")}
+      <!-- Central emblem (better design) -->
+      <circle cx="200" cy="150" r="52" fill="#10b981" opacity="0.08"/>
+      <circle cx="200" cy="150" r="46" fill="none" stroke="url(#goldVein)" stroke-width="1.2" opacity="0.6"/>
+      
+      <!-- Leaf number in a nicer arrangement -->
+      <text x="200" y="155" text-anchor="middle" font-family="Cinzel" font-size="38" fill="#d1fae5" opacity="0.4" font-weight="600">${leafNo}</text>
+      <text x="200" y="175" text-anchor="middle" font-family="Inter" font-size="10" fill="#a7f3d0" opacity="0.7" letter-spacing="1px">LEAF</text>
 
-  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
-  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
-</svg>
-`.trim();
+      <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
+      ${_tspans(200, 238, qLines, 18, "q", qFontSize, 320)}
+
+      <text x="200" y="300" text-anchor="middle" class="labelY">REFLECTION</text>
+      ${_tspans(200, 332, aLines, 20, "a", aFontSize, 340)}
+
+      <text x="200" y="480" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+      ${_tspans(200, 502, gLines, 13, "meta", guideFontSize, 360)}
+
+      <!-- Better sigil arrangement -->
+      <g transform="translate(200, 540)">
+        <circle r="18" fill="none" stroke="url(#goldVein)" stroke-width="1" opacity="0.4"/>
+        <text y="5" text-anchor="middle" class="sigil">${sigil}</text>
+      </g>
+
+      <text x="200" y="582" text-anchor="middle" class="tiny">SEALED IN POND · ${_xmlEscape(epoch)}</text>
+      
+      <!-- Add inline styles for dynamic font sizing -->
+      <style>
+        .q { font-size: ${qFontSize}px; }
+        .a { font-size: ${aFontSize}px; }
+        .meta { font-size: ${guideFontSize}px; }
+      </style>
+    </svg>
+    `.trim();
     }
 
     function svgToObjectUrl(svgText){
@@ -1652,54 +1785,60 @@ ${appUrl}`;
     const KEY_FREEZE_CD    = "mirror_freeze_cooldown_v1";
     const KEY_IPFS_STUB    = "mirror_ipfs_stub_v1";
 
-    const freezeModal   = document.getElementById("freeze-modal");
-    const freezeClose   = document.getElementById("freeze-close");
-    const freezeTag     = document.getElementById("freeze-tag");
-    const freezePreview = document.getElementById("freeze-preview");
+    // ==================== LEAF SVG (IN-MODAL) ====================
+    const leafContainer = document.getElementById("leaf-preview-container");
+    const dlSvgBtn  = document.getElementById("leaf-dl-svg");
+    const dlPngBtn  = document.getElementById("leaf-dl-png");
 
-    const freezeSave    = document.getElementById("freeze-save");
-    const freezeClear   = document.getElementById("freeze-clear");
-    const cdMinInput    = document.getElementById("freeze-cooldown-min");
-    const cdStart       = document.getElementById("freeze-start");
-    const cdCancel      = document.getElementById("freeze-cancel");
-    const cdStatus      = document.getElementById("freeze-status");
+    let __lastLeafSvg = "";
 
-    const commitBtn     = document.getElementById("freeze-commit");
-    const signBtn       = document.getElementById("freeze-sign");
-    const mintBtn       = document.getElementById("freeze-mint");
-    const viewBtn       = document.getElementById("freeze-view");
+    function refreshLeafPreview(){
+      if (!leafContainer) return;
 
-    const cidEl         = document.getElementById("freeze-cid");
-    const bytesEl       = document.getElementById("freeze-bytes");
-    const payloadEl     = document.getElementById("freeze-payload");
+      const ref = window.currentReflection || { q: "", a: "", resonance: "", guide: "" };
+      const q = (ref.q || "").trim();
+      const a = (ref.a || "").trim();
+      const resonance = (ref.resonance || "").replace(/^Resonance:\s*/i, "").trim();
+      const guide = (ref.guide || "").trim();
+      
+      const freezeTagEl = document.getElementById("freeze-tag");
+      const tag = freezeTagEl ? freezeTagEl.value : "STILLNESS";
+      const epoch = "EPOCH 5";
+      const n = Number(localStorage.getItem(KEY_LEAVES) || "0") + 1;
 
-    // Leaf preview wiring
-    const leafImg = document.getElementById("leaf-preview-img");
-    const dlSvgBtn = document.getElementById("leaf-download-svg");
-    const dlPngBtn = document.getElementById("leaf-download-png");
-
-    // ============ FIX: Add event listeners for the broken buttons ============
-
-    // Download SVG button
-    dlSvgBtn?.addEventListener("click", () => {
-      const svg = window.currentLeafSvg;
-      if(!svg) {
-        alert("No leaf yet. Generate a reflection first.");
-        return;
+      const svg = createLeafSVG({ 
+        leafNo: n, 
+        q, 
+        a, 
+        resonance: resonance || "Stillness.", 
+        guide: guide || "What remains when urgency leaves?", 
+        mode: "POND", 
+        epoch 
+      });
+      __lastLeafSvg = svg;
+      leafContainer.innerHTML = svg;
+      
+      // Also update the preview text to match exactly what's in the NFT
+      const freezePreview = document.getElementById("freeze-preview");
+      if (freezePreview) {
+        freezePreview.textContent = `Inquiry:\n${q}\n\nReflection:\n${a}\n\nReflection Resonance:\n${resonance || "Stillness."}\n\nGuiding Question:\n${guide || "What remains when urgency leaves?"}`;
       }
-      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
-      window.showStatusMessage?.("🪶 SVG downloaded.", "success");
+    }
+
+    dlSvgBtn?.addEventListener("click", ()=>{
+      if (!__lastLeafSvg) refreshLeafPreview();
+      if (__lastLeafSvg) {
+        downloadBlob(new Blob([__lastLeafSvg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
+        window.showStatusMessage?.("🪶 SVG downloaded.", "success");
+      }
     });
 
-    // Download PNG button
     dlPngBtn?.addEventListener("click", async () => {
-      const svg = window.currentLeafSvg;
-      if(!svg) {
-        alert("No leaf yet. Generate a reflection first.");
-        return;
-      }
+      if (!__lastLeafSvg) refreshLeafPreview();
+      if (!__lastLeafSvg) return;
+
       try {
-        const png = await svgToPngBlob(svg, 400, 600);
+        const png = await svgToPngBlob(__lastLeafSvg, 400, 600);
         if(!png) {
           alert("PNG export failed.");
           return;
@@ -1712,101 +1851,11 @@ ${appUrl}`;
       }
     });
 
-    // Save Draft button
-    freezeSave?.addEventListener("click", () => {
-      const text = getCurrentReflectionText();
-      if(!text || text.trim() === "") {
-        alert("No reflection to save. Generate a reflection first.");
-        return;
-      }
-      const obj = { 
-        text: text, 
-        tag: freezeTag.value, 
-        saved_at: new Date().toISOString(),
-        svg: window.currentLeafSvg 
-      };
-      saveFreezeDraft(obj);
-      window.showStatusMessage?.("📝 Draft saved locally.", "success");
-      syncPreviewFromDraftOrCurrent();
-    });
-
-    // Clear Draft button
-    freezeClear?.addEventListener("click", () => {
-      if(confirm("Clear the saved draft? This cannot be undone.")) {
-        clearFreezeDraft();
-        window.showStatusMessage?.("🗑️ Draft cleared.", "info");
-        syncPreviewFromDraftOrCurrent();
-      }
-    });
-
-    function getDisplayedAnswer(){
-      const ref = window.currentReflection || null;
-      if(!ref) return "";
-      const mainDisplayElement = document.getElementById("main-text");
-      let displayedAnswer = "";
-      if (mainDisplayElement) {
-        displayedAnswer = mainDisplayElement.textContent || "";
-        // Remove quotation marks if present
-        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
-          displayedAnswer = displayedAnswer.slice(1, -1).trim();
-        }
-      } else {
-        displayedAnswer = ref.a || "";
-      }
-      return displayedAnswer;
-    }
-
-    function getResonanceText(){
-      const resonanceElement = document.getElementById("res-text");
-      let resonanceText = "Stillness.";
-      if (resonanceElement) {
-        resonanceText = resonanceElement.textContent || "Stillness.";
-        resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
-      }
-      return resonanceText;
-    }
-
-    function getGuideText(){
-      const guideElement = document.getElementById("guide-text");
-      return (guideElement ? (guideElement.textContent || "") : "") || "What remains when urgency leaves?";
-    }
-
-    // Text preview inside the Freeze modal should match what the Leaf (SVG/NFT) will actually carry.
+    // Get the exact text that will be in the NFT
     function getCurrentReflectionText(){
       const ref = window.currentReflection || null;
       if(!ref) return "";
-
-      const displayedAnswer = getDisplayedAnswer();
-      const resonanceText = getResonanceText();
-      const guideText = getGuideText();
-
-      // Mirror the same structure as the SVG (Inquiry + Reflection + Resonance + Guiding)
-      return `INQUIRY: ${ref.q}\n\nREFLECTION: ${displayedAnswer}\n\nRESONANCE: ${resonanceText}\n\nGUIDING: ${guideText}`;
-    }
-
-    function refreshLeafPreview(){
-      const ref = window.currentReflection || null;
-      
-      const displayedAnswer = getDisplayedAnswer();
-      const resonanceText = getResonanceText();
-      const guideText = getGuideText();
-      
-      const svg = createLeafSVG({
-        leafNo: 8,
-        q: ref?.q || "",
-        a: displayedAnswer,
-        resonance: resonanceText,
-        guide: guideText,
-        mode: "POND",
-        epoch: "EPOCH 5"
-      });
-
-      window.currentLeafSvg = svg;
-
-      try{ if(window.currentLeafSvgUrl) URL.revokeObjectURL(window.currentLeafSvgUrl); }catch(e){}
-      const url = svgToObjectUrl(svg);
-      window.currentLeafSvgUrl = url;
-      if(leafImg) leafImg.src = url;
+      return `Q: ${ref.q}\n\nA: ${ref.main}\n\nResonance: ${ref.resonance}\n\nGuiding Question: ${ref.guide}`;
     }
 
     let lastCommitPayload = null;
@@ -1815,12 +1864,12 @@ ${appUrl}`;
     function openFreezeModal(){
       freezeModal.classList.remove("hidden");
       freezeModal.style.display = "flex";
-      document.body.style.overflow = 'hidden'; // Prevent body scroll
+      document.body.classList.add("no-scroll");
     }
     function closeFreezeModal(){
       freezeModal.classList.add("hidden");
       freezeModal.style.display = "none";
-      document.body.style.overflow = ''; // Restore body scroll
+      document.body.classList.remove("no-scroll");
     }
 
     function b64(bytes){
@@ -1869,35 +1918,32 @@ ${appUrl}`;
       const draft = loadFreezeDraft();
       const text = draft?.text || getCurrentReflectionText();
       const tag  = draft?.tag  || "STILLNESS";
-      freezeTag.value = tag;
-      freezePreview.textContent = text || "No reflection found. Generate one first.";
+      const freezeTagEl = document.getElementById("freeze-tag");
+      if (freezeTagEl) freezeTagEl.value = tag;
       
-      // Also update leaf preview if draft has SVG
-      if(draft?.svg) {
-        window.currentLeafSvg = draft.svg;
-        refreshLeafPreview();
-      } else {
-        // Always refresh leaf preview with current reflection
-        refreshLeafPreview();
-      }
+      const freezePreviewEl = document.getElementById("freeze-preview");
+      if (freezePreviewEl) freezePreviewEl.textContent = text || "No reflection found. Generate one first.";
     }
 
     function updateCooldownUI(){
       const cd = getCooldown();
+      const cdStatus = document.getElementById("freeze-status");
+      const commitBtn = document.getElementById("freeze-commit");
+      
       if(!cd){
-        cdStatus.textContent = "Not started";
-        commitBtn.disabled = true;
+        if (cdStatus) cdStatus.textContent = "Not started";
+        if (commitBtn) commitBtn.disabled = true;
         return;
       }
       const remaining = cd.endMs - Date.now();
       if(remaining <= 0){
-        cdStatus.textContent = "Cooldown complete ✅ You may commit.";
-        commitBtn.disabled = false;
+        if (cdStatus) cdStatus.textContent = "Cooldown complete ✅ You may commit.";
+        if (commitBtn) commitBtn.disabled = false;
         return;
       }
       const sec = Math.ceil(remaining / 1000);
-      cdStatus.textContent = `Waiting… ${sec}s remaining`;
-      commitBtn.disabled = true;
+      if (cdStatus) cdStatus.textContent = `Waiting… ${sec}s remaining`;
+      if (commitBtn) commitBtn.disabled = true;
     }
 
     function ipfsStubStore(cid, blobB64){
@@ -1970,8 +2016,6 @@ ${appUrl}`;
 
       window.showStatusMessage?.("Minting Leaf…", "info");
       const tx = await leaf.mintLeaf(connectedAddress, cid, tag);
-      window.showStatusMessage?.("Transaction sent, waiting for confirmation...", "info");
-      
       const receipt = await tx.wait();
 
       return { txHash: tx.hash, receipt };
@@ -1997,12 +2041,15 @@ ${appUrl}`;
 
       ipfsStubStore(cid, b64(ct));
 
+      const freezeTagEl = document.getElementById("freeze-tag");
+      const tag = freezeTagEl ? freezeTagEl.value : "STILLNESS";
+
       const payload = {
         type: "MIRROR_REFLECTION_V1",
         target: "ERC-1155",
         chain: "base",
         wallet: connectedAddress,
-        tag: freezeTag.value,
+        tag: tag,
         created_at: nowISO(),
         cid,
         fee: { token: "USDC", amount: "1.00", decimals: 6, to: TOADAID_SAFE },
@@ -2015,13 +2062,21 @@ ${appUrl}`;
       };
 
       lastCommitPayload = payload;
-      cidEl.textContent = cid;
-      bytesEl.textContent = String(ct.length);
-      payloadEl.textContent = JSON.stringify(payload, null, 2);
+      
+      const cidEl = document.getElementById("freeze-cid");
+      const bytesEl = document.getElementById("freeze-bytes");
+      const payloadEl = document.getElementById("freeze-payload");
+      const signBtn = document.getElementById("freeze-sign");
+      const mintBtn = document.getElementById("freeze-mint");
+      const viewBtn = document.getElementById("freeze-view");
+      
+      if (cidEl) cidEl.textContent = cid;
+      if (bytesEl) bytesEl.textContent = String(ct.length);
+      if (payloadEl) payloadEl.textContent = JSON.stringify(payload, null, 2);
 
-      signBtn.disabled = false;
-      mintBtn.disabled = false;
-      viewBtn.disabled = true;
+      if (signBtn) signBtn.disabled = false;
+      if (mintBtn) mintBtn.disabled = false;
+      if (viewBtn) viewBtn.disabled = true;
       lastMintTxHash = null;
 
       window.showStatusMessage?.("✅ Reflection committed (encrypted + CID created).", "success");
@@ -2055,7 +2110,10 @@ NOTE: Proof of commit (separate from mint).`;
           params: [msg, connectedAddress]
         });
 
-        payloadEl.textContent = JSON.stringify({ ...lastCommitPayload, proof: { method:"personal_sign", signature: sig } }, null, 2);
+        const payloadEl = document.getElementById("freeze-payload");
+        if (payloadEl) {
+          payloadEl.textContent = JSON.stringify({ ...lastCommitPayload, proof: { method:"personal_sign", signature: sig } }, null, 2);
+        }
         window.showStatusMessage?.("🪞 Proof signed.", "success");
       }catch(e){
         console.error("signProof error:", e);
@@ -2087,9 +2145,12 @@ You can move it to a new wallet later, or list it.`,
 
         if(!ok) return;
 
-        // Disable buttons during minting
-        mintBtn.disabled = true;
-        mintBtn.textContent = "Minting...";
+        const mintBtn = document.getElementById("freeze-mint");
+        const viewBtn = document.getElementById("freeze-view");
+        const payloadEl = document.getElementById("freeze-payload");
+        
+        if (mintBtn) mintBtn.disabled = true;
+        if (mintBtn) mintBtn.textContent = "Minting...";
         
         const { txHash } = await mintLeafOnchain({ 
           cid: lastCommitPayload.cid, 
@@ -2097,28 +2158,35 @@ You can move it to a new wallet later, or list it.`,
         });
 
         lastMintTxHash = txHash;
-        viewBtn.disabled = false;
+        if (viewBtn) viewBtn.disabled = false;
 
-        payloadEl.textContent = JSON.stringify({ 
-          ...lastCommitPayload, 
-          mint: { 
-            txHash, 
-            explorer: `https://basescan.org/tx/${txHash}` 
-          } 
-        }, null, 2);
+        if (payloadEl) {
+          payloadEl.textContent = JSON.stringify({ 
+            ...lastCommitPayload, 
+            mint: { 
+              txHash, 
+              explorer: `https://basescan.org/tx/${txHash}` 
+            } 
+          }, null, 2);
+        }
         
         window.showStatusMessage?.("🪶 Leaf minted on Base.", "success");
         
         // Re-enable button
-        mintBtn.disabled = false;
-        mintBtn.textContent = "Mint Leaf (1 USDC)";
+        if (mintBtn) {
+          mintBtn.disabled = false;
+          mintBtn.textContent = "Mint Leaf (1 USDC)";
+        }
         
       }catch(e){
         console.error("mintLeaf error:", e);
         
         // Re-enable button on error
-        mintBtn.disabled = false;
-        mintBtn.textContent = "Mint Leaf (1 USDC)";
+        const mintBtn = document.getElementById("freeze-mint");
+        if (mintBtn) {
+          mintBtn.disabled = false;
+          mintBtn.textContent = "Mint Leaf (1 USDC)";
+        }
         
         alert("Mint failed: " + (e?.message || "Unknown"));
       }
@@ -2129,11 +2197,48 @@ You can move it to a new wallet later, or list it.`,
       window.open(`https://basescan.org/tx/${lastMintTxHash}`, "_blank");
     }
 
+    // Event listeners for freeze modal
+    const freezeClose = document.getElementById("freeze-close");
+    const freezeModal = document.getElementById("freeze-modal");
+    const freezeSave = document.getElementById("freeze-save");
+    const freezeClear = document.getElementById("freeze-clear");
+    const cdStart = document.getElementById("freeze-start");
+    const cdCancel = document.getElementById("freeze-cancel");
+    const cdMinInput = document.getElementById("freeze-cooldown-min");
+    const commitBtn = document.getElementById("freeze-commit");
+    const signBtn = document.getElementById("freeze-sign");
+    const mintBtn = document.getElementById("freeze-mint");
+    const viewBtn = document.getElementById("freeze-view");
+    const freezeTag = document.getElementById("freeze-tag");
+
     freezeClose?.addEventListener("click", closeFreezeModal);
     freezeModal?.addEventListener("click", (e) => { if(e.target === freezeModal) closeFreezeModal(); });
 
+    freezeSave?.addEventListener("click", () => {
+      const obj = { 
+        text: getCurrentReflectionText(), 
+        tag: freezeTag ? freezeTag.value : "STILLNESS", 
+        saved_at: nowISO() 
+      };
+      saveFreezeDraft(obj);
+      window.showStatusMessage?.("📝 Draft saved locally.", "success");
+      syncPreviewFromDraftOrCurrent();
+    });
+
+    freezeTag?.addEventListener("change", () => {
+      refreshLeafPreview();
+    });
+
+    freezeClear?.addEventListener("click", () => {
+      if(confirm("Clear the saved draft? This cannot be undone.")) {
+        clearFreezeDraft();
+        window.showStatusMessage?.("🗑️ Draft cleared.", "info");
+        syncPreviewFromDraftOrCurrent();
+      }
+    });
+
     cdStart?.addEventListener("click", () => {
-      const mins = Number(cdMinInput.value || "0");
+      const mins = Number(cdMinInput ? cdMinInput.value : "0");
       const endMs = Date.now() + Math.max(0, mins) * 60_000;
       setCooldown(endMs);
       updateCooldownUI();
@@ -2160,12 +2265,18 @@ You can move it to a new wallet later, or list it.`,
         return;
       }
 
-      cidEl.textContent = "—";
-      bytesEl.textContent = "—";
-      payloadEl.textContent = "";
-      signBtn.disabled = true;
-      mintBtn.disabled = true;
-      viewBtn.disabled = true;
+      const cidEl = document.getElementById("freeze-cid");
+      const bytesEl = document.getElementById("freeze-bytes");
+      const payloadEl = document.getElementById("freeze-payload");
+      
+      if (cidEl) cidEl.textContent = "—";
+      if (bytesEl) bytesEl.textContent = "—";
+      if (payloadEl) payloadEl.textContent = "";
+      
+      if (signBtn) signBtn.disabled = true;
+      if (mintBtn) mintBtn.disabled = true;
+      if (viewBtn) viewBtn.disabled = true;
+      
       lastCommitPayload = null;
       lastMintTxHash = null;
 
