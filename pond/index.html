@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Mirror | The Digital Pond</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Ethers UMD (more compatible with mobile webviews than ESM imports) -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400&display=swap');
@@ -636,7 +634,7 @@
 
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
         <div class="rounded-xl border border-white/10 bg-black/30 p-3">
-          <img id="leaf-preview-img" class="max-w-[400px] w-full mx-auto rounded-xl border border-white/10" alt="Leaf preview"/>
+          <img id="leaf-preview-img" class="max-w-full w-auto max-h-[560px] mx-auto block rounded-xl border border-white/10 object-contain" alt="Leaf preview"/>
           <div class="grid grid-cols-2 gap-2 mt-3">
             <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
             <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
@@ -1048,16 +1046,7 @@
     }
 
     window.currentReflection = null;
-    function saveCurrentReflection(q, out) {
-      const main = (out?.main ?? out?.a ?? out ?? "").toString();
-      const res  = (out?.res ?? "").toString();
-      const gq   = (out?.guide ?? out?.gq ?? "").toString();
-      const text = [
-        main.trim(),
-        gq.trim() ? `Guiding Question: ${gq.trim()}` : "",
-      ].filter(Boolean).join("\n\n");
-      window.currentReflection = { q, a: main, res, gq, text, t: Date.now() };
-    }
+    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
     window.saveCurrentReflection = saveCurrentReflection;
 
     async function processInquiry(qOverride){
@@ -1090,7 +1079,7 @@
             if (resText)  resText.textContent  = out.res;
             if (guideText)guideText.textContent= out.guide;
 
-      saveCurrentReflection(q, out);
+            saveCurrentReflection(q, out.main);
 
             // Build a local leaf SVG for this reflection (used by Freeze modal)
             try{
@@ -1104,6 +1093,8 @@
                 epoch: "EPOCH 5"
               });
               if(svg) window.currentLeafSvg = svg;
+              // Keep Freeze preview text in sync with the SAME reflection used for the SVG
+              window.__leafPreviewData = { inquiry: q, reflection: out.main, guide: out.guide };
             }catch(e){}
 
             incLeaves();
@@ -1325,12 +1316,22 @@
     window.showStatusMessage = showStatusMessage;
   </script>
 
-  <script>
-  (async () => {
-    // Farcaster Miniapp SDK: optional, but dynamic ESM imports break in some
-    // in-app webviews. We keep the page fully functional without it.
-    const sdk = null;
-    window.__sdk = null;
+  <script type="module">
+    // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
+    // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
+    let sdk = null;
+    try {
+      const mod = await import("https://esm.sh/@farcaster/miniapp-sdk");
+      sdk = mod?.sdk || null;
+      if (sdk) {
+        window.__sdk = sdk;
+        if (sdk) { try { await sdk.actions.ready(); } catch (e) {} }
+      }
+    } catch (e) {
+      // Not running in Farcaster; continue with plain web fallbacks.
+      sdk = null;
+      window.__sdk = null;
+    }
 
     const walletBtn = document.getElementById("wallet-btn");
     const shareActions = document.getElementById("share-actions");
@@ -1495,27 +1496,13 @@ ${appUrl}`;
     }
 
     function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
-      // Allow longer reflections; grow the leaf instead of shrinking fonts.
-      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,4);
-      const aLines = _wrapLines(a, 30).slice(0,14);
-      const gLines = _wrapLines(`Guiding Question: ${guide}`, 34).slice(0,4);
-
-      // Dynamic height so longer reflections don't overlap the footer.
-      const reflectionStartY = 362;
-      const afterReflectionY = reflectionStartY + Math.max(0, (aLines.length - 1)) * 22;
-
-      const resonanceY = afterReflectionY + 64;
-      const guidingStartY = resonanceY + 22;
-      const sigilY = guidingStartY + Math.max(1, gLines.length) * 18 + 28;
-      const verifiedY = sigilY + 18;
-
-      const H = Math.max(600, verifiedY + 28);
-      const cardH = H - 32; // rect starts at y=16
-      const bottomY = H - 42;
+      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
+      const aLines = _wrapLines(a, 30).slice(0,6);
+      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
       const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
       return `
-<svg width="400" height="${H}" viewBox="0 0 400 ${H}" xmlns="http://www.w3.org/2000/svg">
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%" stop-color="#064e3b"/>
@@ -1547,13 +1534,13 @@ ${appUrl}`;
     </style>
   </defs>
 
-  <rect width="400" height="${H}" rx="26" fill="url(#pondGrad)"/>
+  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
 
   <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
     <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
     <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
-    <line x1="100" y1="0" x2="100" y2="${H}"/><line x1="200" y1="0" x2="200" y2="${H}"/>
-    <line x1="300" y1="0" x2="300" y2="${H}"/>
+    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="300" y1="0" x2="300" y2="600"/>
   </g>
 
   <path filter="url(#softGlow)" d="M40 36
@@ -1585,11 +1572,11 @@ ${appUrl}`;
   <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
   ${_tspans(200, 362, aLines, 22, "a")}
 
-  <text x="200" y="${resonanceY}" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
-  ${_tspans(200, guidingStartY, gLines, 14, "meta")}
+  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+  ${_tspans(200, 522, gLines, 14, "meta")}
 
-  <text x="200" y="${sigilY}" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
-  <text x="200" y="${verifiedY}" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
+  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
+  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
 </svg>
 `.trim();
     }
@@ -1598,11 +1585,7 @@ ${appUrl}`;
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=400, h=null){
-      if (!h) {
-        const m = /viewBox\s*=\s*"0\s+0\s+\d+\s+(\d+)"/i.exec(svgText);
-        h = m ? parseInt(m[1], 10) : 600;
-      }
+    async function svgToPngBlob(svgText, w=400, h=600){
       const url = svgToObjectUrl(svgText);
       try{
         const img = new Image();
@@ -1780,8 +1763,7 @@ ${appUrl}`;
           displayedAnswer = displayedAnswer.slice(1, -1).trim();
         }
       } else if (ref) {
-        // Keep preview text aligned with the NFT card (main + guiding question)
-        displayedAnswer = ref.text || ref.a || "";
+        displayedAnswer = ref.a || "";
       }
       
       // Get resonance text
@@ -1876,19 +1858,16 @@ ${appUrl}`;
 
     function syncPreviewFromDraftOrCurrent(){
       const draft = loadFreezeDraft();
-      const text = draft?.text || getCurrentReflectionText();
-      const tag  = draft?.tag  || "STILLNESS";
-      freezeTag.value = tag;
-      freezePreview.textContent = text || "No reflection found. Generate one first.";
-      
-      // Also update leaf preview if draft has SVG
-      if(draft?.svg) {
-        window.currentLeafSvg = draft.svg;
-        refreshLeafPreview();
-      } else {
-        // Always refresh leaf preview with current reflection
-        refreshLeafPreview();
+      const currentText = getCurrentReflectionText();
+      let text = currentText;
+      // Only prefer a draft if it matches the current SVG (prevents stale / hard-coded preview text)
+      if(draft?.svg && window.currentLeafSvg && draft.svg === window.currentLeafSvg && typeof draft.text === 'string' && draft.text.trim()){
+        text = draft.text.trim();
       }
+      const tag  = (draft?.tag || 'STILLNESS');
+      freezeTag.value = tag;
+      freezePreview.textContent = text || 'No reflection found. Generate one first.';
+      refreshLeafPreview();
     }
 
     function updateCooldownUI(){
@@ -1963,8 +1942,7 @@ ${appUrl}`;
 
       await ensureBaseNetwork();
 
-      const ethers = window.ethers;
-      if (!ethers || !ethers.BrowserProvider) throw new Error("ethers not available");
+      const ethers = await import("https://esm.sh/ethers@6.10.0");
       const provider = new ethers.BrowserProvider(ethProvider);
       const signer = await provider.getSigner();
 
@@ -2186,11 +2164,6 @@ You can move it to a new wallet later, or list it.`,
     });
 
     setInterval(updateCooldownUI, 1000);
-
-  })().catch((err) => {
-    // Never let init failures break button wiring in constrained webviews.
-    console.error("Miniapp init error:", err);
-  });
   </script>
 </body>
 </html>
