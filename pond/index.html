@@ -634,7 +634,7 @@
 
         <div class="text-[10px] uppercase tracking-widest text-zinc-500">Leaf (visual preview)</div>
         <div class="rounded-xl border border-white/10 bg-black/30 p-3">
-          <img id="leaf-preview-img" class="block mx-auto w-full max-w-[380px] h-auto rounded-xl border border-white/10" alt="Leaf preview"/>
+          <img id="leaf-preview-img" class="max-w-full w-auto max-h-[560px] mx-auto block rounded-xl border border-white/10 object-contain" alt="Leaf preview"/>
           <div class="grid grid-cols-2 gap-2 mt-3">
             <button id="leaf-download-svg" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download SVG</button>
             <button id="leaf-download-png" class="py-2 rounded-xl border border-zinc-800 bg-zinc-900/30 text-xs uppercase tracking-widest hover:border-emerald-500/40 transition">Download PNG</button>
@@ -1079,9 +1079,7 @@
             if (resText)  resText.textContent  = out.res;
             if (guideText)guideText.textContent= out.guide;
 
-            
-    window.__leafPreviewData = { q: q, a: out.main, resonance: out.res, guide: out.guide };
-saveCurrentReflection(q, out.main);
+            saveCurrentReflection(q, out.main);
 
             // Build a local leaf SVG for this reflection (used by Freeze modal)
             try{
@@ -1095,6 +1093,8 @@ saveCurrentReflection(q, out.main);
                 epoch: "EPOCH 5"
               });
               if(svg) window.currentLeafSvg = svg;
+              // Keep Freeze preview text in sync with the SAME reflection used for the SVG
+              window.__leafPreviewData = { inquiry: q, reflection: out.main, guide: out.guide };
             }catch(e){}
 
             incLeaves();
@@ -1316,58 +1316,7 @@ saveCurrentReflection(q, out.main);
     window.showStatusMessage = showStatusMessage;
   </script>
 
-  <script>
-  (async function(){
-    // ==================== HELPER FUNCTIONS ====================
-    async function sha256(buffer) {
-      const hash = await crypto.subtle.digest('SHA-256', buffer);
-      return new Uint8Array(hash);
-    }
-
-    function hex(bytes) {
-      return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function b64(bytes) {
-      return btoa(String.fromCharCode(...bytes));
-    }
-
-    function nowISO() {
-      return new Date().toISOString();
-    }
-
-    // ==================== WALLET & FREEZE STATE ====================
-    let lastCommitPayload = null;
-    let lastMintTxHash = null;
-    let walletConnected = false;
-    let connectedAddress = null;
-    let ethProvider = null;
-
-    // ==================== FREEZE MODAL FUNCTIONS ====================
-    function openFreezeModal() {
-      const modal = document.getElementById('freeze-modal');
-      if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-          modal.style.opacity = '1';
-          setupFreezeModalListeners(); // Setup listeners when modal opens
-          refreshLeafPreview(); // Refresh preview when modal opens
-        }, 10);
-      }
-    }
-
-    function closeFreezeModal() {
-      const modal = document.getElementById('freeze-modal');
-      if (modal) {
-        modal.style.opacity = '0';
-        setTimeout(() => {
-          modal.style.display = 'none';
-          modal.classList.add('hidden');
-        }, 300);
-      }
-    }
-
+  <script type="module">
     // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
     // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
     let sdk = null;
@@ -1388,6 +1337,10 @@ saveCurrentReflection(q, out.main);
     const shareActions = document.getElementById("share-actions");
     const dropBtn = document.getElementById("drop-btn");
     const freezeBtn = document.getElementById("freeze-btn");
+
+    let walletConnected = false;
+    let connectedAddress = null;
+    let ethProvider = null;
 
     function syncWalletGlobals(modeLabel){
       window.__connectedAddress = connectedAddress;
@@ -1542,63 +1495,88 @@ ${appUrl}`;
       return out;
     }
 
-function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
-      // Wrap lines first so we can auto-grow the SVG height (no clipping).
-      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,4);
-      const aLines = _wrapLines(a, 30).slice(0,12);
-      const gLines = _wrapLines(guide, 30); // do NOT truncate guiding question
-
-      // Estimate required height: base layout + extra for long guiding questions.
-      const baseH = 600;
-      const extra = Math.max(0, (gLines.length - 2)) * 18;
-      const H = Math.max(baseH, baseH + extra);
-      const W = 400;
-
-      // Content positions are fixed; increasing H simply reveals more vertical room.
-      const leafPath = `M200 20 C120 60 40 160 40 ${H-140} C40 ${H-70} 120 ${H-40} 200 ${H-40} C280 ${H-40} 360 ${H-70} 360 ${H-140} C360 160 280 60 200 20 Z`;
-
-      // Build text blocks
-      const qText = qLines.map((ln,i)=>`<text x="80" y="${160 + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
-      const aText = aLines.map((ln,i)=>`<text x="80" y="${240 + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
-
-      // Guiding question block starts at y=520 and can extend (height grows as needed)
-      const gStartY = 520;
-      const gText = gLines.map((ln,i)=>`<text x="80" y="${gStartY + i*18}" class="txt">${_xmlEscape(ln)}</text>`).join("\n");
+    function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="What remains when urgency leaves?", mode="POND", epoch="EPOCH 5" }){
+      const qLines = _wrapLines(`Q: ${q}`, 28).slice(0,3);
+      const aLines = _wrapLines(a, 30).slice(0,6);
+      const gLines = _wrapLines(`Guiding: ${guide}`, 34).slice(0,2);
+      const sigil  = `🪞 ${leafNo} 🌊 🌀 🍃 ⏳ ≋`;
 
       return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0b2c25"/>
-      <stop offset="1" stop-color="#07201b"/>
+    <radialGradient id="pondGrad" cx="50%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+
+    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6c27a" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#e6c27a" stop-opacity="0.85"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/>
+
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
+
+    <style>
+      .title { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 4px; }
+      .labelG { font-family: 'Cinzel', serif; fill:#10b981; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .labelY { font-family: 'Cinzel', serif; fill:#e6c27a; font-size: 12px; letter-spacing: 2px; opacity:0.85; }
+      .q { font-family: 'Cinzel', serif; fill:#e5e7eb; font-size: 16px; font-style: italic; }
+      .a { font-family: 'Cinzel', serif; fill:#ffffff; font-size: 18px; font-style: italic; }
+      .meta { font-family: Inter, system-ui, sans-serif; fill:#94a3b8; font-size: 10px; }
+      .tiny { font-family: Inter, system-ui, sans-serif; fill:#64748b; font-size: 9px; }
+    </style>
   </defs>
 
-  <rect width="100%" height="100%" fill="url(#g)"/>
+  <rect width="400" height="600" rx="26" fill="url(#pondGrad)"/>
 
-  <path d="${leafPath}" fill="#0f3b31" opacity="0.94" filter="url(#shadow)"/>
-  <path d="${leafPath}" fill="none" stroke="#1b6b57" stroke-width="2" opacity="0.65"/>
+  <g opacity="0.08" stroke="#10b981" stroke-width="0.6">
+    <line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="240" x2="400" y2="240"/>
+    <line x1="0" y1="360" x2="400" y2="360"/><line x1="0" y1="480" x2="400" y2="480"/>
+    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="300" y1="0" x2="300" y2="600"/>
+  </g>
 
-  <text x="200" y="76" text-anchor="middle" font-size="16" fill="#b9f5e5" font-family="Inter, system-ui">Freeze as Leaf • #${leafNo}</text>
-  <text x="200" y="98" text-anchor="middle" font-size="12" fill="#79d8c2" font-family="Inter, system-ui">${_xmlEscape(mode)} • ${_xmlEscape(epoch)}</text>
+  <path filter="url(#softGlow)" d="M40 36
+    C30 60, 30 90, 36 120
+    C24 190, 26 300, 38 360
+    C26 440, 40 520, 68 558
+    C120 592, 210 596, 292 590
+    C350 586, 374 542, 380 496
+    C392 414, 388 290, 372 220
+    C386 150, 380 82, 356 48
+    C320 18, 260 18, 200 22
+    C140 18, 80 18, 40 36 Z"
+    fill="none" stroke="url(#goldEdge)" stroke-width="2.2" opacity="0.55"/>
 
-  <text x="200" y="130" text-anchor="middle" font-size="14" fill="#d8fff6" font-family="Inter, system-ui">Reflection</text>
+  <text x="200" y="62" text-anchor="middle" class="title">REFLECTION LEAF · ${_xmlEscape(mode)}</text>
 
-  ${qText}
+  <circle cx="200" cy="132" r="58" fill="#10b981" opacity="0.12"/>
+  <path d="M200 90
+    C232 92, 254 122, 246 154
+    C238 188, 200 202, 174 188
+    C148 176, 140 144, 156 118
+    C168 100, 184 90, 200 90 Z"
+    fill="#10b981" opacity="0.75"/>
+  <text x="200" y="152" text-anchor="middle" font-family="Cinzel" font-size="44" fill="#eafff7" opacity="0.35">${leafNo}</text>
 
-  <text x="200" y="220" text-anchor="middle" font-size="13" fill="#d8fff6" font-family="Inter, system-ui">A:</text>
-  ${aText}
+  <text x="200" y="210" text-anchor="middle" class="labelG">INQUIRY</text>
+  ${_tspans(200, 238, qLines, 20, "q")}
 
-  <text x="200" y="470" text-anchor="middle" font-size="12" fill="#79d8c2" font-family="Inter, system-ui">${_xmlEscape(resonance)}</text>
+  <text x="200" y="330" text-anchor="middle" class="labelY">REFLECTION</text>
+  ${_tspans(200, 362, aLines, 22, "a")}
 
-  <text x="200" y="500" text-anchor="middle" font-size="13" fill="#d8fff6" font-family="Inter, system-ui">Guiding Question</text>
-  ${gText}
+  <text x="200" y="500" text-anchor="middle" class="tiny">${_xmlEscape(resonance)}</text>
+  ${_tspans(200, 522, gLines, 14, "meta")}
 
-  <text x="200" y="${H-56}" text-anchor="middle" font-size="11" fill="#79d8c2" font-family="Inter, system-ui">🪞 🌊 🍃 🌀</text>
-  <text x="200" y="${H-34}" text-anchor="middle" font-size="10" fill="#4fbda3" font-family="Inter, system-ui">tobyworld • mirror</text>
+  <text x="200" y="560" text-anchor="middle" font-size="18" fill="#d1d5db" opacity="0.9">${_xmlEscape(sigil)}</text>
+  <text x="200" y="582" text-anchor="middle" class="tiny">VERIFIED IN POND · ${_xmlEscape(epoch)}</text>
 </svg>
 `.trim();
     }
@@ -1607,16 +1585,7 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
       return URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }));
     }
 
-    async function svgToPngBlob(svgText, w=null, h=null){
-      // If width/height not provided, parse them from the SVG so taller leaves export correctly
-      if (!w || !h){
-        const mW = svgText.match(/\bwidth="(\d+(?:\.\d+)?)"/i);
-        const mH = svgText.match(/\bheight="(\d+(?:\.\d+)?)"/i);
-        if (mW) w = parseFloat(mW[1]);
-        if (mH) h = parseFloat(mH[1]);
-      }
-      w = w || 400;
-      h = h || 600;
+    async function svgToPngBlob(svgText, w=400, h=600){
       const url = svgToObjectUrl(svgText);
       try{
         const img = new Image();
@@ -1653,7 +1622,7 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
     const USDC_BASE     = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
     const TOADAID_SAFE  = "0xe5C1378F91243727a24fa7c64d5286C537D8eAB2";
 
-    const LEAF_CONTRACT = "0xYOUR_ERC1155_ADDRESS"; // SET THIS TO YOUR CONTRACT ADDRESS
+    const LEAF_CONTRACT = "0xYOUR_ERC1155_ADDRESS";
 
     const USDC_DECIMALS = 6;
     const MINT_FEE      = 1 * 10 ** USDC_DECIMALS;
@@ -1697,140 +1666,167 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
     const dlSvgBtn = document.getElementById("leaf-download-svg");
     const dlPngBtn = document.getElementById("leaf-download-png");
 
-    // ============ FREEZE MODAL LISTENER SETUP ============
-    function setupFreezeModalListeners() {
-      // Download SVG button
-      dlSvgBtn?.addEventListener("click", () => {
-        const svg = window.currentLeafSvg;
-        if(!svg) {
-          alert("No leaf yet. Generate a reflection first.");
-          return;
-        }
-        downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
-        window.showStatusMessage?.("🪶 SVG downloaded.", "success");
-      });
+    // ============ FIX: Add event listeners for the broken buttons ============
 
-      // Download PNG button
-      dlPngBtn?.addEventListener("click", async () => {
-        const svg = window.currentLeafSvg;
-        if(!svg) {
-          alert("No leaf yet. Generate a reflection first.");
-          return;
-        }
-        try {
-          const png = await svgToPngBlob(svg, 400, 600);
-          if(!png) {
-            alert("PNG export failed.");
-            return;
-          }
-          downloadBlob(png, "reflection-leaf.png");
-          window.showStatusMessage?.("🪶 PNG downloaded.", "success");
-        } catch (error) {
-          console.error("PNG export error:", error);
-          alert("Failed to export PNG: " + error.message);
-        }
-      });
+    // Download SVG button
+    dlSvgBtn?.addEventListener("click", () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) {
+        alert("No leaf yet. Generate a reflection first.");
+        return;
+      }
+      downloadBlob(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}), "reflection-leaf.svg");
+      window.showStatusMessage?.("🪶 SVG downloaded.", "success");
+    });
 
-      // Save Draft button
-      freezeSave?.addEventListener("click", () => {
-        const text = getCurrentReflectionText();
-        if(!text || text.trim() === "") {
-          alert("No reflection to save. Generate a reflection first.");
+    // Download PNG button
+    dlPngBtn?.addEventListener("click", async () => {
+      const svg = window.currentLeafSvg;
+      if(!svg) {
+        alert("No leaf yet. Generate a reflection first.");
+        return;
+      }
+      try {
+        const png = await svgToPngBlob(svg, 400, 600);
+        if(!png) {
+          alert("PNG export failed.");
           return;
         }
-        const obj = { 
-          text: text, 
-          tag: freezeTag.value, 
-          saved_at: nowISO(),
-          svg: window.currentLeafSvg 
-        };
-        saveFreezeDraft(obj);
-        window.showStatusMessage?.("📝 Draft saved locally.", "success");
+        downloadBlob(png, "reflection-leaf.png");
+        window.showStatusMessage?.("🪶 PNG downloaded.", "success");
+      } catch (error) {
+        console.error("PNG export error:", error);
+        alert("Failed to export PNG: " + error.message);
+      }
+    });
+
+    // Save Draft button
+    freezeSave?.addEventListener("click", () => {
+      const text = getCurrentReflectionText();
+      if(!text || text.trim() === "") {
+        alert("No reflection to save. Generate a reflection first.");
+        return;
+      }
+      const obj = { 
+        text: text, 
+        tag: freezeTag.value, 
+        saved_at: new Date().toISOString(),
+        svg: window.currentLeafSvg 
+      };
+      saveFreezeDraft(obj);
+      window.showStatusMessage?.("📝 Draft saved locally.", "success");
+      syncPreviewFromDraftOrCurrent();
+    });
+
+    // Clear Draft button
+    freezeClear?.addEventListener("click", () => {
+      if(confirm("Clear the saved draft? This cannot be undone.")) {
+        clearFreezeDraft();
+        window.showStatusMessage?.("🗑️ Draft cleared.", "info");
         syncPreviewFromDraftOrCurrent();
-      });
-
-      // Clear Draft button
-      freezeClear?.addEventListener("click", () => {
-        if(confirm("Clear the saved draft? This cannot be undone.")) {
-          clearFreezeDraft();
-          window.showStatusMessage?.("🗑️ Draft cleared.", "info");
-          syncPreviewFromDraftOrCurrent();
-        }
-      });
-
-      // Remove duplicate event listeners before adding new ones
-      const freezeCloseClean = document.getElementById('freeze-close');
-      const freezeCommitClean = document.getElementById('freeze-commit');
-      const freezeSignClean = document.getElementById('freeze-sign');
-      const freezeMintClean = document.getElementById('freeze-mint');
-      const freezeViewClean = document.getElementById('freeze-view');
-      const cdStartClean = document.getElementById('freeze-start');
-      const cdCancelClean = document.getElementById('freeze-cancel');
-
-      // Clone and replace to remove old listeners
-      if (freezeCloseClean) {
-        const newFreezeClose = freezeCloseClean.cloneNode(true);
-        freezeCloseClean.parentNode.replaceChild(newFreezeClose, freezeCloseClean);
-        newFreezeClose.addEventListener("click", closeFreezeModal);
       }
-
-      if (freezeCommitClean) {
-        const newFreezeCommit = freezeCommitClean.cloneNode(true);
-        freezeCommitClean.parentNode.replaceChild(newFreezeCommit, freezeCommitClean);
-        newFreezeCommit.addEventListener("click", commitReflection);
-      }
-
-      if (freezeSignClean) {
-        const newFreezeSign = freezeSignClean.cloneNode(true);
-        freezeSignClean.parentNode.replaceChild(newFreezeSign, freezeSignClean);
-        newFreezeSign.addEventListener("click", signProof);
-      }
-
-      if (freezeMintClean) {
-        const newFreezeMint = freezeMintClean.cloneNode(true);
-        freezeMintClean.parentNode.replaceChild(newFreezeMint, freezeMintClean);
-        newFreezeMint.addEventListener("click", mintLeaf);
-      }
-
-      if (freezeViewClean) {
-        const newFreezeView = freezeViewClean.cloneNode(true);
-        freezeViewClean.parentNode.replaceChild(newFreezeView, freezeViewClean);
-        newFreezeView.addEventListener("click", viewTx);
-      }
-
-      if (cdStartClean) {
-        const newCdStart = cdStartClean.cloneNode(true);
-        cdStartClean.parentNode.replaceChild(newCdStart, cdStartClean);
-        newCdStart.addEventListener("click", startCooldown);
-      }
-
-      if (cdCancelClean) {
-        const newCdCancel = cdCancelClean.cloneNode(true);
-        cdCancelClean.parentNode.replaceChild(newCdCancel, cdCancelClean);
-        newCdCancel.addEventListener("click", cancelCooldown);
-      }
-
-      // Modal backdrop click
-      freezeModal?.addEventListener("click", (e) => { 
-        if(e.target === freezeModal) closeFreezeModal(); 
-      });
-    }
+    });
 
     function getCurrentReflectionText(){
-      // Use the SAME fields that the Leaf SVG uses (so preview text always matches the SVG).
-      const data = window.__leafPreviewData || {};
-      const q = (data.q || window.currentReflection?.q || '').trim();
-      const a = (data.a || '').trim();
-      // IMPORTANT: The freeze preview text must match the SVG leaf content.
-      // The leaf card renders: inquiry, reflection, and guiding question (with label added by leaf_svg.js).
-      // The upper preview should therefore show the reflection + the labeled guiding question (no Q/A headers).
-      const guide = (data.guide || '').trim();
-
-      const parts = [];
-      if(a) parts.push(a);
-      if(guide) parts.push(`Guiding Question: ${guide}`);
-      return parts.join("\n\n").trim();
+      const ref = window.currentReflection || null;
+      if(!ref) return "";
+      
+      // Get the actual displayed text from the main-text element
+      const mainDisplayElement = document.getElementById("main-text");
+      let displayedAnswer = "";
+      
+      if (mainDisplayElement) {
+        displayedAnswer = mainDisplayElement.textContent || "";
+        // Remove quotation marks if present
+        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
+          displayedAnswer = displayedAnswer.slice(1, -1).trim();
+        }
+      } else {
+        // Fallback to the stored answer
+        displayedAnswer = ref.a || "";
+      }
+      
+      return `Q: ${ref.q}\n\nA: ${displayedAnswer}\n\n— Tobyworld Mirror`;
     }
+
+    function refreshLeafPreview(){
+      const ref = window.currentReflection || null;
+      
+      // Get the actual displayed text
+      const mainDisplayElement = document.getElementById("main-text");
+      let displayedAnswer = "";
+      
+      if (mainDisplayElement) {
+        displayedAnswer = mainDisplayElement.textContent || "";
+        // Remove quotation marks if present
+        if (displayedAnswer.startsWith('"') && displayedAnswer.endsWith('"')) {
+          displayedAnswer = displayedAnswer.slice(1, -1).trim();
+        }
+      } else if (ref) {
+        displayedAnswer = ref.a || "";
+      }
+      
+      // Get resonance text
+      const resonanceElement = document.getElementById("res-text");
+      let resonanceText = "Stillness.";
+      if (resonanceElement) {
+        resonanceText = resonanceElement.textContent || "Stillness.";
+        // Remove "Resonance: " prefix if present
+        resonanceText = resonanceText.replace(/^Resonance:\s*/i, "").trim();
+      }
+      
+      // Get guide text
+      const guideElement = document.getElementById("guide-text");
+      let guideText = "What remains when urgency leaves?";
+      if (guideElement) {
+        guideText = guideElement.textContent || "What remains when urgency leaves?";
+      }
+      
+      const svg = createLeafSVG({
+        leafNo: 8,
+        q: ref?.q || "",
+        a: displayedAnswer,
+        resonance: resonanceText,
+        guide: guideText,
+        mode: "POND",
+        epoch: "EPOCH 5"
+      });
+
+      window.currentLeafSvg = svg;
+
+      try{ if(window.currentLeafSvgUrl) URL.revokeObjectURL(window.currentLeafSvgUrl); }catch(e){}
+      const url = svgToObjectUrl(svg);
+      window.currentLeafSvgUrl = url;
+      if(leafImg) leafImg.src = url;
+    }
+
+    let lastCommitPayload = null;
+    let lastMintTxHash = null;
+
+    function openFreezeModal(){
+      freezeModal.classList.remove("hidden");
+      freezeModal.style.display = "flex";
+      document.body.style.overflow = 'hidden'; // Prevent body scroll
+    }
+    function closeFreezeModal(){
+      freezeModal.classList.add("hidden");
+      freezeModal.style.display = "none";
+      document.body.style.overflow = ''; // Restore body scroll
+    }
+
+    function b64(bytes){
+      let bin = "";
+      bytes.forEach(b => bin += String.fromCharCode(b));
+      return btoa(bin);
+    }
+    function hex(bytes){
+      return [...bytes].map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    async function sha256(bytes){
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return new Uint8Array(digest);
+    }
+    function nowISO(){ return new Date().toISOString(); }
 
     function loadFreezeDraft(){
       try{
@@ -1861,20 +1857,25 @@ function createLeafSVG({ leafNo=8, q="", a="", resonance="Stillness.", guide="Wh
     }
 
     function syncPreviewFromDraftOrCurrent(){
+      // Source of truth: whatever is rendered into the Leaf SVG (main + guiding question).
+      // We intentionally DO NOT show a stale saved draft text here, because that can drift
+      // from the current SVG and create the "preview mismatch" bug.
+
       const draft = loadFreezeDraft();
-      const text = draft?.text || getCurrentReflectionText();
-      const tag  = draft?.tag  || "STILLNESS";
+
+      const main = (mainText?.textContent || '').trim();
+      let guide = (guideText?.textContent || '').trim();
+      guide = guide.replace(/^Guiding\s*Question\s*:\s*/i, '').trim();
+
+      let text = main;
+      if (guide) text = `${main}\n\nGuiding Question: ${guide}`;
+
+      const tag = (draft?.tag || 'STILLNESS');
       freezeTag.value = tag;
-      freezePreview.textContent = text || "No reflection found. Generate one first.";
-      
-      // Also update leaf preview if draft has SVG
-      if(draft?.svg) {
-        window.currentLeafSvg = draft.svg;
-        refreshLeafPreview();
-      } else {
-        // Always refresh leaf preview with current reflection
-        refreshLeafPreview();
-      }
+
+      // Keep preview text exactly aligned with SVG content.
+      freezePreview.textContent = text || 'No reflection found. Generate one first.';
+      refreshLeafPreview();
     }
 
     function updateCooldownUI(){
@@ -2124,68 +2125,25 @@ You can move it to a new wallet later, or list it.`,
       window.open(`https://basescan.org/tx/${lastMintTxHash}`, "_blank");
     }
 
-    function startCooldown() {
+    freezeClose?.addEventListener("click", closeFreezeModal);
+    freezeModal?.addEventListener("click", (e) => { if(e.target === freezeModal) closeFreezeModal(); });
+
+    cdStart?.addEventListener("click", () => {
       const mins = Number(cdMinInput.value || "0");
       const endMs = Date.now() + Math.max(0, mins) * 60_000;
       setCooldown(endMs);
       updateCooldownUI();
-    }
-
-    function cancelCooldown() {
+    });
+    cdCancel?.addEventListener("click", () => {
       clearCooldown();
       updateCooldownUI();
-    }
+    });
 
-    function refreshLeafPreview() {
-      // Get data from the latest reflection
-      const data = window.__leafPreviewData || {};
-      const q = data.q || '';
-      const a = data.a || '';
-      // Clean resonance text (remove "Resonance: " prefix)
-      const resonance = (data.resonance || '').replace(/^Resonance:\s*/i, "").trim();
-      const guide = data.guide || '';
+    commitBtn?.addEventListener("click", commitReflection);
+    signBtn?.addEventListener("click", signProof);
+    mintBtn?.addEventListener("click", mintLeaf);
+    viewBtn?.addEventListener("click", viewTx);
 
-      // If no data, clear the preview
-      if (!q && !a) {
-        if(leafImg) leafImg.src = "";
-        return;
-      }
-
-      // Create the SVG using the same data
-      const svg = createLeafSVG({
-        leafNo: 8,
-        q: q,
-        a: a,
-        resonance: resonance,
-        guide: guide,
-        mode: "POND",
-        epoch: "EPOCH 5"
-      });
-
-      // Store the SVG
-      window.currentLeafSvg = svg;
-
-      // Clean up any previous object URL
-      if (window.currentLeafSvgUrl) {
-        try {
-          URL.revokeObjectURL(window.currentLeafSvgUrl);
-        } catch(e) {
-          // Ignore errors
-        }
-      }
-      
-      // Create new object URL for the preview image
-      const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
-      window.currentLeafSvgUrl = url;
-      
-      // Update the image element
-      if(leafImg) {
-        leafImg.src = url;
-        leafImg.style.display = 'block';
-      }
-    }
-
-    // ==================== INITIALIZE FREEZE BUTTON ====================
     freezeBtn.addEventListener("click", async () => {
       if (!walletConnected) {
         alert("Please connect wallet first.");
@@ -2209,14 +2167,11 @@ You can move it to a new wallet later, or list it.`,
 
       syncPreviewFromDraftOrCurrent();
       updateCooldownUI();
-      refreshLeafPreview();  
+      refreshLeafPreview();
       openFreezeModal();
     });
 
-    // Initial setup
     setInterval(updateCooldownUI, 1000);
-  
-  })();
-</script>
+  </script>
 </body>
 </html>
