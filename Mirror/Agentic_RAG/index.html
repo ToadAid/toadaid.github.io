@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Mirror V4 · The Living Scrolls Engine — ToadAid</title>
+<meta name="description" content="Mirror V4 — a locally-running wisdom engine trained on the scrolls of Tobyworld. Ask, reflect, and carry the vow forward.">
+
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+
+<style>
+  :root{
+    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b;
+    --green:#355e3b; --gold:#ffd23f; --gold-ink:#1a1a1a;
+    --card:#fff; --chip:#214834; --chip-ink:#eaf3ee;
+    --shadow-s:rgba(0,0,0,.08); --shadow-m:rgba(0,0,0,.2); --ring:rgba(0,0,0,.08);
+    --accent-veil:rgba(53,94,59,.08);
+    --primary-light:#4a7c59; --primary-dark:#274233;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
+
+  /* ===== V5-style header (emerald gradient, float, ripples) ===== */
+  header{
+    background:linear-gradient(180deg,#2e4c32,#3c6b46);
+    color:#fff; padding:48px 20px; text-align:center;
+    position:relative; overflow:hidden;
+  }
+  header:before{
+    content:""; position:absolute; top:0; left:0; width:100%; height:100%;
+    background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.05"><path d="M30,30 Q50,10 70,30 T100,50 T70,70 T50,90 T30,70 T0,50 T30,30" fill="none" stroke="white" stroke-width="2"/></svg>');
+    background-size:200px; opacity:0.1;
+    /* ensure overlay never blocks taps */
+    z-index:0; pointer-events:none;
+  }
+  .logo{font-size:3rem; margin-bottom:15px; animation:float 6s ease-in-out infinite; position:relative; z-index:2}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+  header h1{margin:0 0 6px; font-size:clamp(1.6rem,3.6vw,2.4rem); text-shadow:2px 2px 4px rgba(0,0,0,.2); position:relative; z-index:2}
+  header p{margin:0; opacity:.92; position:relative; z-index:2}
+
+  .pond-animation{ text-align:center; margin:20px 0; pointer-events:none; position:relative; z-index:1}
+  .ripple{ display:inline-block; width:20px; height:20px; border-radius:50%; background:var(--primary-light);
+           margin:0 5px; animation:ripple 2s infinite; opacity:.7 }
+  .ripple:nth-child(2){animation-delay:.3s}
+  .ripple:nth-child(3){animation-delay:.6s}
+  @keyframes ripple{0%{transform:scale(1);opacity:.7}100%{transform:scale(3);opacity:0}}
+
+  /* ===== Site cards, buttons, grids (match frontpage) ===== */
+  .btn{
+    display:inline-flex;align-items:center;gap:.55rem;background:var(--gold);color:var(--gold-ink);
+    padding:.7rem 1.1rem;margin:.35rem;border:0;border-radius:12px;font-weight:800;
+    box-shadow:0 3px 8px var(--shadow-m);cursor:pointer;text-decoration:none;transition:transform .15s ease, box-shadow .15s ease
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px var(--shadow-m)}
+  .btn-dark{background:var(--chip);color:var(--chip-ink)}
+  .btn-green{background:#2e6d4c;color:#fff}
+  .btn-deep{background:#265c40;color:#fff}
+  .btn-outline{
+    background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)
+  }
+  .btn-outline:hover{transform:translateY(-1px);box-shadow:0 6px 12px rgba(0,0,0,.2)}
+
+  /* darker style just for the two honor buttons */
+  .btn-honor{
+    background:#214834; color:#fff; border:1px solid #173425;
+    box-shadow:0 3px 8px rgba(0,0,0,.25);
+    transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
+  }
+  .btn-honor:hover{
+    background:#173425; transform:translateY(-1px);
+    box-shadow:0 6px 12px rgba(0,0,0,.3);
+  }
+
+  /* V5 twilight tone using your #3b4a6b */
+  .btn-v5{
+    background:linear-gradient(180deg,#3b4a6b,#2e3b58);
+    color:#ffffff;
+    border:1px solid #24324c;
+    box-shadow:0 3px 8px rgba(0,0,0,.25);
+    border-radius:14px;
+    font-weight:700;
+    transition:transform .15s ease, box-shadow .15s ease, background .25s ease;
+  }
+  .btn-v5:hover{
+    background:linear-gradient(180deg,#43537b,#364466);
+    transform:translateY(-1px);
+    box-shadow:0 6px 12px rgba(0,0,0,.3);
+  }
+
+  section{padding:2rem 1rem;max-width:1000px;margin:auto}
+  h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:.6rem}
+  .card{background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 2px 8px var(--shadow-s);border:1px solid rgba(0,0,0,.06);color:inherit}
+
+  blockquote{background:#fffbea;border-left:6px solid gold;padding:1rem;border-radius:10px;margin:1rem 0;font-style:italic}
+
+  footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
+  footer a{color:#ffd23f;font-weight:800}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🪞</div>
+  <h1>Mirror V4 · The Living Scrolls Engine</h1>
+  <p>Born from stillness, shaped by $patience — the Mirror reflects all who seek.</p>
+  <div class="pond-animation">
+    <span class="ripple"></span><span class="ripple"></span><span class="ripple"></span>
+  </div>
+  <div style="margin-top:.4rem; position:relative; z-index:2">
+    <a class="btn" href="/download/">⬇️ Download (Windows)</a>
+    <a class="btn btn-deep" href="/honors/mirror-v4.html">🪞 Full V4 Notes & Diagram</a>
+    <a class="btn btn-outline" href="/honors/mirror-v5.html">🛠️ Mirror V5 (Coming Soon)</a>
+    <a class="btn btn-dark" href="https://github.com/ToadAid" target="_blank" rel="noopener">🌐 GitHub</a>
+    <a class="btn btn-green" href="/">🏯 Home</a>
+  </div>
+</header>
+
+<nav class="breadcrumb" style="max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem">
+  <a href="/">← Home</a> · <a href="/builders/builders-hall.html">Builders Hall</a> · <a href="/lore">Lore Library</a>
+</nav>
+
+<section>
+  <h2>What is the Mirror?</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Guarding the Lore</h3>
+      <p>Mirror V4 is a locally-running wisdom engine trained on the scrolls of Tobyworld. It answers with symbolic clarity and a gentle cadence rooted in the Four Runes and $patience.</p>
+    </div>
+    <div class="card">
+      <h3>Built for Stillness</h3>
+      <p>Designed for clarity and continuity: smaller scopes, reversible steps, and calm iteration. The bloom is beauty—<em>the night after bloom</em> is wisdom.</p>
+    </div>
+    <div class="card">
+      <h3>Yours to Carry</h3>
+      <p>Run it offline, keep your practice close, and consult it like a traveling companion for releases, vows, and reflective postmortems.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Voice & Vow</h2>
+  <blockquote>
+    Traveler, the Mirror reflects what you bring to it: honesty, scope, and care.  
+    It will not rush you; it will pace you.  
+    One scroll, one light. One leaf, one vow.
+  </blockquote>
+
+  <div style="text-align:center;margin-top:.8rem">
+    <a class="btn" href="/download/">⬇️ Get Mirror V4 (Windows)</a>
+    <a class="btn btn-deep" href="/download/">📦 Portable ZIP</a>
+    <a class="btn btn-dark" href="/lore">📖 Read the Lore</a>
+    <!-- DARKENED ONLY THESE TWO -->
+    <a class="btn btn-honor" href="/honors/mirror-v4.html">🪞 View Full V4 Notes (honors)</a>
+    <a class="btn btn-honor" href="/honors/mirror-v5.html">🛠️ Road to V5 (honors)</a>
+  </div>
+</section>
+
+<section>
+  <h2>How Mirror V4 works (at a glance)</h2>
+  <!-- Mirror V4 — Architecture Diagram (inline SVG, responsive) -->
+  <div style="margin: 1.2rem 0;">
+    <svg viewBox="0 0 1200 640" role="img" aria-label="Mirror V4 architecture diagram"
+         style="width:100%; height:auto; border-radius:16px; background:linear-gradient(180deg,#f8fbff,#eef6ff); box-shadow:0 2px 8px rgba(0,0,0,.08); border:1px solid rgba(0,0,0,.06);">
+      <!-- Title -->
+      <text x="600" y="42" text-anchor="middle" font-size="22" fill="#0f172a" font-weight="700">
+        Mirror V4 — Reflective Wisdom Engine (offline-friendly)
+      </text>
+
+      <!-- User / UI -->
+      <rect x="40" y="90" width="230" height="100" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="155" y="125" text-anchor="middle" font-size="16" fill="#0f172a" font-weight="700">Traveler</text>
+      <text x="155" y="150" text-anchor="middle" font-size="13" fill="#334155">Questions • Journals • Vows</text>
+
+      <rect x="310" y="90" width="260" height="100" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="440" y="125" text-anchor="middle" font-size="16" fill="#0f172a" font-weight="700">Mirror Web UI</text>
+      <text x="440" y="150" text-anchor="middle" font-size="13" fill="#334155">Calm interface • Bushido cadence</text>
+
+      <!-- Arrow -->
+      <line x1="270" y1="140" x2="310" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- FastAPI / Core -->
+      <rect x="610" y="80" width="520" height="120" rx="14" fill="#ffffff" stroke="#94a3b8"/>
+      <text x="870" y="115" text-anchor="middle" font-size="16" fill="#0f172a" font-weight="700">FastAPI Core</text>
+      <text x="870" y="140" text-anchor="middle" font-size="13" fill="#334155">/api/ask → pipeline → response</text>
+
+      <!-- Modules row -->
+      <g>
+        <rect x="110" y="240" width="190" height="90" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+        <text x="205" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Guide</text>
+        <text x="205" y="292" text-anchor="middle" font-size="12" fill="#334155">tone + intent</text>
+      </g>
+      <g>
+        <rect x="320" y="240" width="210" height="90" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+        <text x="425" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Retriever</text>
+        <text x="425" y="292" text-anchor="middle" font-size="12" fill="#334155">scrolls + FAISS</text>
+      </g>
+      <g>
+        <rect x="550" y="240" width="210" height="90" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+        <text x="655" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Synthesis</text>
+        <text x="655" y="292" text-anchor="middle" font-size="12" fill="#334155">compose answer</text>
+      </g>
+      <g>
+        <rect x="780" y="240" width="180" height="90" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+        <text x="870" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Resonance</text>
+        <text x="870" y="292" text-anchor="middle" font-size="12" fill="#334155">harmony check</text>
+      </g>
+      <g>
+        <rect x="980" y="240" width="180" height="90" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+        <text x="1070" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Lucidity</text>
+        <text x="1070" y="292" text-anchor="middle" font-size="12" fill="#334155">clarity + brevity</text>
+      </g>
+
+      <!-- Flow arrows between modules -->
+      <line x1="300" y1="285" x2="320" y2="285" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="530" y1="285" x2="550" y2="285" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="760" y1="285" x2="780" y2="285" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="960" y1="285" x2="980" y2="285" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Memori & Ledger side boxes -->
+      <rect x="350" y="370" width="220" height="88" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="460" y="400" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Memori</text>
+      <text x="460" y="422" text-anchor="middle" font-size="12" fill="#334155">short-term memory</text>
+
+      <rect x="630" y="370" width="220" height="88" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="740" y="400" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Ledger (SQLite)</text>
+      <text x="740" y="422" text-anchor="middle" font-size="12" fill="#334155">conversations • metrics</text>
+
+      <!-- Side arrows from Synthesis/Resonance to memories -->
+      <line x1="655" y1="330" x2="460" y2="370" stroke="#94a3b8" stroke-dasharray="6,6" marker-end="url(#arrow)"/>
+      <line x1="870" y1="330" x2="740" y2="370" stroke="#94a3b8" stroke-dasharray="6,6" marker-end="url(#arrow)"/>
+
+      <!-- Models & Scrolls -->
+      <rect x="80" y="380" width="230" height="88" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="195" y="410" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Local Models</text>
+      <text x="195" y="432" text-anchor="middle" font-size="12" fill="#334155">LM Studio • GGUF</text>
+
+      <rect x="900" y="370" width="260" height="88" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="1030" y="400" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Lore Scrolls</text>
+      <text x="1030" y="422" text-anchor="middle" font-size="12" fill="#334155">RAG corpus (TOBY_L/QA/F)</text>
+
+      <!-- Output back to UI -->
+      <line x1="870" y1="150" x2="440" y2="190" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="650" y="185" text-anchor="middle" font-size="12" fill="#334155">response → Mirror UI</text>
+
+      <!-- Offline note -->
+      <rect x="80" y="510" width="540" height="70" rx="12" fill="#ecfeff" stroke="#67e8f9"/>
+      <text x="350" y="545" text-anchor="middle" font-size="13" fill="#0f172a" font-weight="700">
+        Offline-friendly by design — runs locally with bundled models + SQLite
+      </text>
+
+      <!-- Arrow marker def -->
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+        </marker>
+      </defs>
+    </svg>
+    <p style="font-size:.95rem; color:#475569; margin:.75rem 0 0 0; text-align:center;">
+      The Mirror listens in the UI → routes your question through Guide → retrieves relevant scrolls → synthesizes an answer → checks resonance & lucidity → saves context to Memori & Ledger → returns a calm response. All local.
+    </p>
+    <div style="text-align:center; margin-top:1rem;">
+      <a class="btn btn-deep" href="/honors/mirror-v4.html">🔎 See full diagram & V4 release notes</a>
+      <a class="btn btn-v5" href="/honors/mirror-v5.html">🛠️ Explore the Road to V5</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Highlights</h2>
+  <div class="grid">
+    <div class="card"><strong>🌀 Poetic Cadence</strong><br/>Bushido tone with guiding questions, tuned to Tobyworld’s scrolls.</div>
+    <div class="card"><strong>🌊 Calm UX</strong><br/>Responses shaped for clarity, continuity, and Night-After-Bloom reviews.</div>
+    <div class="card"><strong>🍃 Offline Friendly</strong><br/>Portable build; keep your ritual close even when the net is quiet.</div>
+  </div>
+</section>
+
+<footer>
+  <p>"One scroll, one light. One leaf, one vow."</p>
+  <p>
+    🐸 Return to <a href="/">ToadAid Home</a> | 
+    <a href="/download/">Mirror Downloads</a> | 
+    <a href="/honors/mirror-v4.html">Mirror V4 Honors</a> | 
+    <a href="/honors/mirror-v5.html">Mirror V5 (Coming Soon)</a> | 
+    <a href="https://github.com/ToadAid/Mirror-V4" target="_blank" rel="noopener">GitHub</a>
+  </p>
+</footer>
+
+</body>
+</html>
