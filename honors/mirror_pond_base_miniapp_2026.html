@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Mirror Pond — Base Miniapp Artifact (2026) | Mirror Honors</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Honors record of the Mirror Pond Base miniapp — a quiet offering kept as proof of craft, not promotion." />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="Mirror Pond — Base Miniapp Artifact (2026)" />
+  <meta property="og:description" content="Kept as an artifact of stillness. Proof without persuasion." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://toadaid.github.io/honors/mirror_pond_base_miniapp_2026.html" />
+  <meta property="og:image" content="https://toadaid.github.io/assets/art/mirror-pond-base-miniapp-2026.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Mirror Pond — Base Miniapp Artifact (2026)" />
+  <meta name="twitter:description" content="One pond opens. Many may follow." />
+  <meta name="twitter:image" content="https://toadaid.github.io/assets/art/mirror-pond-base-miniapp-2026.jpg" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/assets/icons/site.webmanifest">
+  <meta name="theme-color" content="#2c3e50" />
+
+  <!-- Base styles (same as Creator Seal) -->
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/mobile.css">
+
+  <!-- marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+  :root{
+    --bg:#0f172a; --ink:#e2e8f0; --accent:#60a5fa; --paper:#1e293b; --muted:#94a3b8;
+    --quantum-light:#3b82f6; --quantum-dark:#1e40af; --temporal-glow:#8b5cf6; --cosmic-shift:#06b6d4;
+    --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#581c87 100%);color:#fff;padding:56px 20px;text-align:center;position:relative;overflow:hidden;}
+  header:before{
+    content:"";position:absolute;top:0;left:0;width:100%;height:100%;
+    background:
+      radial-gradient(circle at 20% 80%,rgba(59,130,246,0.10)0%,transparent 50%),
+      radial-gradient(circle at 80% 20%,rgba(139,92,246,0.10)0%,transparent 50%),
+      radial-gradient(circle at 40% 40%,rgba(6,182,212,0.06)0%,transparent 50%);
+    animation:pulse 8s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes pulse{0%,100%{opacity:.5}50%{opacity:.85}}
+  h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3rem)}
+  .subtitle{opacity:.92}
+  nav.breadcrumb{max-width:1100px;margin:0 auto;padding:12px 22px 0;font-size:1rem}
+  nav.breadcrumb a{opacity:.9}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 22px 60px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;justify-content:center}
+  .btn{
+    display:inline-block;padding:10px 14px;background:var(--quantum-light);color:#fff;border-radius:10px;
+    border:1px solid rgba(96,165,250,.35);box-shadow:0 6px 16px rgba(59,130,246,.35);transition:.25s;
+  }
+  .btn:hover{background:var(--quantum-dark);transform:translateY(-1px)}
+  .card{
+    background:linear-gradient(145deg,#1e293b,#0f172a);
+    border-radius:18px;border:1px solid rgba(96,165,250,.25);
+    box-shadow:0 12px 32px rgba(0,0,0,.35);padding:22px 20px;margin-bottom:18px;
+  }
+  .prose{max-width:860px;margin:0 auto}
+  .prose h2{margin:28px 0 12px;color:#93c5fd;border-bottom:2px solid var(--quantum-light);padding-bottom:8px;}
+  .prose h3{margin:20px 0 10px;color:#60a5fa}
+  blockquote{margin:20px 0;padding:16px 18px;border-left:4px solid var(--quantum-light);background:rgba(59,130,246,0.1);border-radius:12px;font-style:italic;}
+  .verify{display:inline-flex;align-items:center;gap:8px;font-size:.92rem;margin:8px 0 0}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}
+  .figure{margin:18px auto 8px;max-width:860px}
+  .figure img{
+    width:100%;
+    height:auto;
+    border-radius:16px;
+    border:1px solid rgba(96,165,250,.25);
+    box-shadow:0 16px 36px rgba(0,0,0,.45);
+    background:#0b1220;
+  }
+  .caption{
+    text-align:center;
+    color:var(--muted);
+    font-size:.92rem;
+    margin-top:10px;
+    opacity:.9;
+  }
+  .pill-row{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0 0;
+  }
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 12px;border-radius:999px;
+    background:rgba(59,130,246,0.10);
+    border:1px solid rgba(96,165,250,.22);
+    color:#dbeafe;font-size:.92rem;
+  }
+  </style>
+</head>
+
+<body>
+<header>
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo;
+    <a href="/honors/">Honors (All Verdicts)</a> &raquo;
+    <span aria-current="page">History</span>
+  </nav>
+
+  <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🌊🪞</div>
+  <h1>Mirror Pond — Base Miniapp Artifact</h1>
+  <p class="subtitle">
+    Kept as proof of craft • Not promotion • 2026
+  </p>
+
+  <div class="toolbar">
+    <a class="btn" href="/honors/">← Honors</a>
+    <a class="btn" href="/honors/mirror_pond_base_miniapp_2026.md" download>Download .md</a>
+  </div>
+
+  <div id="verify" class="verify mono"></div>
+  <noscript>
+    JavaScript disabled: cannot verify or render markdown.
+    <a href="/honors/mirror_pond_base_miniapp_2026.md">Open the .md</a>
+  </noscript>
+</header>
+
+<main class="wrap">
+  <article class="card prose">
+    <div class="figure">
+      <!--
+        Place the screenshot at:
+        /assets/art/mirror-pond-base-miniapp-2026.jpg
+        (Use the MIRROR miniapp screen capture — the "natural habitat" proof.)
+      -->
+      <img
+        src="/assets/art/mirror-pond-base-miniapp-2026.jpg"
+        alt="Mirror Pond Base miniapp — live interface proof"
+        loading="lazy"
+      />
+      <div class="caption">
+        Kept as an artifact of stillness. Not everything that works must be announced.
+      </div>
+      <div class="pill-row" aria-hidden="true">
+        <span class="pill">🪞 Reflection</span>
+        <span class="pill">🌊 Stillness</span>
+        <span class="pill">🍃 Craft</span>
+        <span class="pill">🌀 Time</span>
+      </div>
+    </div>
+
+    <div id="content">Loading history record…</div>
+  </article>
+</main>
+
+<!-- Markdown fetch + SHA-256 verification (identical logic) -->
+<script>
+(async () => {
+  const FILE = "/honors/mirror_pond_base_miniapp_2026.md";
+  // Fill this after you finalize the .md in repo:
+  const EXPECTED_HASH = "REPLACE_WITH_SHA256_OF_MD";
+
+  const toHex = (buffer) =>
+    Array.from(new Uint8Array(buffer))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+
+  const setVerify = (state, actualHex) => {
+    const el = document.getElementById("verify");
+    if (!el) return;
+    const cls = state === "ok" ? "ok" : state === "warn" ? "warn" : "err";
+    el.className = `verify mono ${cls}`;
+    const icon = state === "ok" ? "✔" : state === "warn" ? "⚠" : "✖";
+    el.innerHTML =
+      `<span>${icon}</span> <strong>SHA-256</strong> <code>${(actualHex || "").toLowerCase()}</code>`;
+  };
+
+  try {
+    const res = await fetch(FILE, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md = await res.text();
+
+    const enc = new TextEncoder().encode(md);
+    const digest = await crypto.subtle.digest("SHA-256", enc);
+    const hex = toHex(digest);
+
+    if (EXPECTED_HASH && EXPECTED_HASH !== "REPLACE_WITH_SHA256_OF_MD") {
+      if (hex.toLowerCase() === EXPECTED_HASH.toLowerCase()) setVerify("ok", hex);
+      else setVerify("warn", hex);
+    } else {
+      // Hash not configured yet — show warn with actual so you can paste it in.
+      setVerify("warn", hex);
+    }
+
+    const html = marked.parse(md, { mangle:false, headerIds:false });
+    document.getElementById("content").innerHTML = html;
+  } catch (err) {
+    setVerify("err", "unavailable");
+    document.getElementById("content").innerHTML =
+      `Could not load record. <a href="${FILE}">Open raw .md</a>`;
+  }
+})();
+</script>
+</body>
+</html>
