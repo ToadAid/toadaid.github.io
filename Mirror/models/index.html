@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror Models · Registry — ToadAid</title>
+<meta name="description" content="A quiet ledger of open Mirror releases: models and runtime artifacts published to the commons.">
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<meta name="theme-color" content="#355e3b" />
+<style>
+  :root{
+    --bg:#f5f1e6; --ink:#2f2f2f; --accent:#355e3b; --paper:#fffdf6; --muted:#6b6b6b;
+    --green:#355e3b; --gold:#ffd23f; --gold-ink:#1a1a1a;
+    --card:#fff; --chip:#214834; --chip-ink:#eaf3ee;
+    --shadow-s:rgba(0,0,0,.08); --shadow-m:rgba(0,0,0,.2); --ring:rgba(0,0,0,.08);
+    --accent-veil:rgba(53,94,59,.08);
+    --primary-light:#4a7c59; --primary-dark:#274233;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
+
+  /* ===== V5-style header (emerald gradient, float, ripples) ===== */
+  header{
+    background:linear-gradient(180deg,#2e4c32,#3c6b46);
+    color:#fff; padding:48px 20px; text-align:center;
+    position:relative; overflow:hidden;
+  }
+  header:before{
+    content:""; position:absolute; top:0; left:0; width:100%; height:100%;
+    background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.05"><path d="M30,30 Q50,10 70,30 T100,50 T70,70 T50,90 T30,70 T0,50 T30,30" fill="none" stroke="white" stroke-width="2"/></svg>');
+    background-size:200px; opacity:0.1;
+    /* ensure overlay never blocks taps */
+    z-index:0; pointer-events:none;
+  }
+  .logo{font-size:3rem; margin-bottom:15px; animation:float 6s ease-in-out infinite; position:relative; z-index:2}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+  header h1{margin:0 0 6px; font-size:clamp(1.6rem,3.6vw,2.4rem); text-shadow:2px 2px 4px rgba(0,0,0,.2); position:relative; z-index:2}
+  header p{margin:0; opacity:.92; position:relative; z-index:2}
+
+  .pond-animation{ text-align:center; margin:20px 0; pointer-events:none; position:relative; z-index:1}
+  .ripple{ display:inline-block; width:20px; height:20px; border-radius:50%; background:var(--primary-light);
+           margin:0 5px; animation:ripple 2s infinite; opacity:.7 }
+  .ripple:nth-child(2){animation-delay:.3s}
+  .ripple:nth-child(3){animation-delay:.6s}
+  @keyframes ripple{0%{transform:scale(1);opacity:.7}100%{transform:scale(3);opacity:0}}
+
+  /* ===== Site cards, buttons, grids (match frontpage) ===== */
+  .btn{
+    display:inline-flex;align-items:center;gap:.55rem;background:var(--gold);color:var(--gold-ink);
+    padding:.7rem 1.1rem;margin:.35rem;border:0;border-radius:12px;font-weight:800;
+    box-shadow:0 3px 8px var(--shadow-m);cursor:pointer;text-decoration:none;transition:transform .15s ease, box-shadow .15s ease
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 12px var(--shadow-m)}
+  .btn-dark{background:var(--chip);color:var(--chip-ink)}
+  .btn-green{background:#2e6d4c;color:#fff}
+  .btn-deep{background:#265c40;color:#fff}
+  .btn-outline{
+    background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)
+  }
+  .btn-outline:hover{transform:translateY(-1px);box-shadow:0 6px 12px rgba(0,0,0,.2)}
+
+  /* darker style just for the two honor buttons */
+  .btn-honor{
+    background:#214834; color:#fff; border:1px solid #173425;
+    box-shadow:0 3px 8px rgba(0,0,0,.25);
+    transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
+  }
+  .btn-honor:hover{
+    background:#173425; transform:translateY(-1px);
+    box-shadow:0 6px 12px rgba(0,0,0,.3);
+  }
+
+  /* V5 twilight tone using your #3b4a6b */
+  .btn-v5{
+    background:linear-gradient(180deg,#3b4a6b,#2e3b58);
+    color:#ffffff;
+    border:1px solid #24324c;
+    box-shadow:0 3px 8px rgba(0,0,0,.25);
+    border-radius:14px;
+    font-weight:700;
+    transition:transform .15s ease, box-shadow .15s ease, background .25s ease;
+  }
+  .btn-v5:hover{
+    background:linear-gradient(180deg,#43537b,#364466);
+    transform:translateY(-1px);
+    box-shadow:0 6px 12px rgba(0,0,0,.3);
+  }
+
+  section{padding:2rem 1rem;max-width:1000px;margin:auto}
+  h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:.6rem}
+  .card{background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 2px 8px var(--shadow-s);border:1px solid rgba(0,0,0,.06);color:inherit}
+
+  blockquote{background:#fffbea;border-left:6px solid gold;padding:1rem;border-radius:10px;margin:1rem 0;font-style:italic}
+
+  footer{background:var(--green);color:#fff;text-align:center;padding:2rem 1rem;margin-top:2rem}
+  footer a{color:#ffd23f;font-weight:800}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🤗</div>
+  <h1>Mirror Models · Registry</h1>
+  <p>Open releases kept as artifacts — a quiet ledger for the commons.</p>
+  <div class="pond-animation">
+    <span class="ripple"></span><span class="ripple"></span><span class="ripple"></span>
+  </div>
+  <div style="margin-top:.4rem; position:relative; z-index:2">
+    <a class="btn btn-dark" href="https://huggingface.co/Toadaid" target="_blank" rel="noopener">🤗 Hugging Face /Toadaid</a>
+    <a class="btn btn-deep" href="/pond/">🌊 Enter the Pond</a>
+    <a class="btn btn-green" href="/Mirror/" >🏯 Home</a>
+  </div>
+</header>
+
+
+<nav class="breadcrumb" style="max-width:1000px;margin:0 auto;padding:10px 18px 0;font-size:.95rem">
+  <a href="/Mirror/" >← Home</a> · <a href="/pond/">Pond</a> · <a href="/honors/">Honors</a>
+</nav>
+
+<main>
+
+<section>
+  <h2>Model Registry</h2>
+  <blockquote>
+    This is not a leaderboard. Not a promise.  
+    Only what exists, where it lives, and how it may be carried.
+  </blockquote>
+
+  <div class="grid">
+    <div class="card">
+      <h3>🪞 Toadaid/tobyworld-mirror-v2</h3>
+      <p><strong>Purpose:</strong> reflective cadence + lore-aligned answers.</p>
+      <p><strong>Format:</strong> Text Generation · 7B</p>
+      <p><strong>Use:</strong> offline reflection, scroll study, calm Q&A.</p>
+      <div style="margin-top:.8rem">
+        <a class="btn btn-dark" href="https://huggingface.co/Toadaid/tobyworld-mirror-v2" target="_blank" rel="noopener">View →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🌊 Toadaid/mirror-pond</h3>
+      <p><strong>Purpose:</strong> pond runtime artifact (local-first interface + pipeline).</p>
+      <p><strong>Format:</strong> Text Generation</p>
+      <p><strong>Use:</strong> host the Digital Pond, reproduce the calm UX.</p>
+      <div style="margin-top:.8rem">
+        <a class="btn btn-dark" href="https://huggingface.co/Toadaid/mirror-pond" target="_blank" rel="noopener">View →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🍃 GGUF Releases</h3>
+      <p><strong>Purpose:</strong> offline portability + preservation.</p>
+      <p><strong>Format:</strong> GGUF quantizations (LM Studio / llama.cpp)</p>
+      <p><strong>Use:</strong> keep practice local, keep the Mirror durable.</p>
+      <div style="margin-top:.8rem">
+        <a class="btn btn-dark" href="https://huggingface.co/Toadaid" target="_blank" rel="noopener">Browse all →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🧾 What to include (per release)</h3>
+      <p>When you update or add a model, pin the record with:</p>
+      <ul style="margin-left:1.1rem">
+        <li><strong>Date</strong> + version tag</li>
+        <li><strong>Format</strong> (GGUF / HF / runtime)</li>
+        <li><strong>Recommended use</strong> (1 sentence)</li>
+        <li><strong>License</strong></li>
+        <li><strong>SHA-256</strong> (preferred)</li>
+      </ul>
+      <div style="margin-top:.8rem">
+        <a class="btn btn-honor" href="/honors/">Keep signed records →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Posture</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Proof without persuasion</h3>
+      <p>
+        We do not use downloads, likes, or rankings as signals.
+        The only signal is a maintained artifact others can run.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Stillness-first updates</h3>
+      <p>
+        Updates are added when they are ready, not when they are loud.
+        If a detail is unknown, we say so — the pond does not invent.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Link back to the pond</h3>
+      <p>
+        The registry is a ledger. The pond is the practice.
+        Keep the doorway on the main page; keep the details here.
+      </p>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:.8rem">
+    <a class="btn btn-green" href="/pond/">🌊 Enter the Pond</a>
+    <a class="btn btn-dark" href="https://huggingface.co/Toadaid" target="_blank" rel="noopener">🤗 Hugging Face</a>
+  </div>
+</section>
+
+</main>
+<footer>
+  <p>"One scroll, one light. One leaf, one vow."</p>
+  <p>
+    🐸 Return to <a href="/Mirror/" >ToadAid Home</a> | 
+    <a href="/download/">Mirror Downloads</a> | 
+    <a href="/honors/mirror-v4.html">Mirror V4 Honors</a> | 
+    <a href="/honors/mirror-v5.html">Mirror V5 (Coming Soon)</a> | 
+    <a href="https://github.com/ToadAid/Mirror-V4" target="_blank" rel="noopener">GitHub</a>
+  </p>
+</footer>
+</body>
+</html>
