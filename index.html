@@ -43,10 +43,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Ubuntu,sans-serif;bac
 .banner{
   position:relative;
   width:100%;
-  aspect-ratio: 16 / 5;   /* matches 1920×600 */
+  aspect-ratio: 16 / 5;          /* matches 1920×600 */
+  max-height:600px;              /* prevents desktop overstretch */
   background:
     linear-gradient(rgba(0,0,0,.12), rgba(0,0,0,.22)),
-    url('banner.jpg') center / cover no-repeat;
+    url('banner.jpg') center 62% / cover no-repeat;
   display:flex;
   flex-direction:column;
   justify-content:center;
@@ -55,6 +56,13 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Ubuntu,sans-serif;bac
   color:#fff;
   padding:1.2rem 1rem;
   box-shadow:0 2px 10px var(--shadow-m);
+}
+
+/* Fine-tune ONLY on large screens */
+@media (min-width: 900px){
+  .banner{
+    background-position: center 62%;
+  }
 }
 
 .banner h1{
