@@ -41,16 +41,33 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Ubuntu,sans-serif;bac
 
 /* Banner */
 .banner{
-  position:relative;width:100%;min-height:260px;
+  position:relative;
+  width:100%;
+  aspect-ratio: 16 / 5;   /* matches 1920×600 */
   background:
     linear-gradient(rgba(0,0,0,.12), rgba(0,0,0,.22)),
-    url('banner.jpg') center/cover no-repeat;
-  display:flex;flex-direction:column;justify-content:center;align-items:center;
-  text-align:center;color:#fff;padding:1.2rem 1rem;box-shadow:0 2px 10px var(--shadow-m);
+    url('banner.jpg') center / cover no-repeat;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  color:#fff;
+  padding:1.2rem 1rem;
+  box-shadow:0 2px 10px var(--shadow-m);
 }
-@media (min-width:768px){ .banner{min-height:360px} }
-.banner h1{font-size:clamp(1.9rem,4.6vw,2.8rem);text-shadow:0 2px 8px rgba(0,0,0,.55);font-weight:700}
-.banner p{font-size:clamp(1rem,2.2vw,1.2rem);margin-top:.45rem;text-shadow:0 1px 4px rgba(0,0,0,.45)}
+
+.banner h1{
+  font-size:clamp(1.9rem,4.6vw,2.8rem);
+  text-shadow:0 2px 8px rgba(0,0,0,.55);
+  font-weight:700;
+}
+
+.banner p{
+  font-size:clamp(1rem,2.2vw,1.2rem);
+  margin-top:.45rem;
+  text-shadow:0 1px 4px rgba(0,0,0,.45);
+}
 
 /* Translate bar & buttons */
 .translate-bar{background:var(--gold);color:var(--gold-ink);padding:.65rem 1rem;text-align:center;font-weight:700}
