@@ -159,6 +159,41 @@
     font-size:0.95rem;
     border-left:2px solid var(--temporal-glow);
   }
+  
+  .list{
+    margin: 0.6rem 0 0;
+    padding-left: 1.2rem;
+  }
+  .list li{
+    margin: 0.25rem 0;
+  }
+  .list-inline{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0 0;padding:0;list-style:none;
+  }
+  .list-inline li{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 12px;border-radius:999px;
+    background:rgba(59,130,246,0.10);
+    border:1px solid rgba(96,165,250,.22);
+    color:#dbeafe;font-size:.92rem;
+  }
+  .copy-btn{
+    margin-left:10px;
+    padding:6px 10px;
+    border-radius:10px;
+    border:1px solid rgba(96,165,250,.25);
+    background:rgba(0,0,0,0.25);
+    color:var(--ink);
+    cursor:pointer;
+    font-size:.85rem;
+  }
+  .copy-btn:hover{background:rgba(0,0,0,0.38)}
+  .hint{
+    color:var(--muted);
+    font-size:.9rem;
+    margin-top:.4rem;
+  }
+
   </style>
 </head>
 
@@ -178,12 +213,12 @@
 
   <div class="toolbar">
     <a class="btn" href="/">← Ask the Mirror</a>
-    <a class="btn btn-gold" href="https://basescan.org/address/0x7274e874CA62410a93Bd8bf61c69d8045E399c02#events" target="_blank">
+    <a class="btn btn-gold" href="https://basescan.org/address/0x7274e874CA62410a93Bd8bf61c69d8045E399c02#events" target="_blank" rel="noopener noreferrer">
       🔍 BaseScan
     </a>
   </div>
 
-  <div id="verify" class="verify mono">🪞 Reading from Base chain...</div>
+  <div id="verify" class="verify mono">🪞 Reading from Base chain... <span class="hint">(If this stalls, refresh or use the BaseScan link above.)</span></div>
 </header>
 
 <main class="wrap">
@@ -211,7 +246,7 @@
     <div class="virtue-banner">
       <div class="chinese-char">忠義</div>
       <div style="font-size:1.5rem; color:var(--gold);">LOYALTY</div>
-      <div style="margin-top:0.8rem; font-style:italic;">"Love Scallis"</div>
+      <div style="margin-top:0.8rem; font-style:italic;">"Loyalty is measured in time."</div>
     </div>
 
     <!-- On-Chain Data Section -->
@@ -222,14 +257,13 @@
 
     <!-- PRINCIPLES - from metadata -->
     <h2>⚜️ Principles</h2>
-    <div class="pill-row">
-      <span class="pill">忠義 · Loyalty</span>
-      <span class="pill">Restraint</span>
-      <span class="pill">Proof of Time</span>
-      <span class="pill">Clarity over Claims</span>
-    </div>
-
-    <!-- CONSTRAINTS - from metadata -->
+    <ul class="list-inline" aria-label="Principles list">
+      <li>忠義 · Loyalty</li>
+      <li>Restraint</li>
+      <li>Proof of Time</li>
+      <li>Clarity over Claims</li>
+    </ul>
+<!-- CONSTRAINTS - from metadata -->
     <h2>🔒 Constraints</h2>
     <div class="constraint-grid">
       <div class="constraint-item">no_invention</div>
@@ -243,13 +277,12 @@
 
     <!-- CAPABILITIES -->
     <h2>✨ Capabilities</h2>
-    <div class="pill-row">
-      <span class="pill">Reflection</span>
-      <span class="pill">Bilingual EN/ZH</span>
-      <span class="pill">Cadence Guarded</span>
-    </div>
-
-    <!-- CANON ORDER - from metadata -->
+    <ul class="list-inline" aria-label="Capabilities list">
+      <li>Reflection</li>
+      <li>Bilingual EN/ZH</li>
+      <li>Cadence Guarded</li>
+    </ul>
+<!-- CANON ORDER - from metadata -->
     <h2>📜 Canon Order</h2>
     <ol style="color:var(--ink); background:rgba(0,0,0,0.3); padding:1.5rem 2rem; border-radius:12px; margin-bottom:2rem;">
       <li>design_fixed_in_repo</li>
@@ -265,7 +298,7 @@
       <div class="data-label">Metadata CID</div>
       <div class="data-value mono-big">bafkreic4qdcn4nsk7gofhzgc7fzxkdduvo2zihe3ilj2dq3knorta32jfa</div>
       <div style="margin-top:0.8rem;">
-        <a href="https://pink-petite-damselfly-71.mypinata.cloud/ipfs/bafkreic4qdcn4nsk7gofhzgc7fzxkdduvo2zihe3ilj2dq3knorta32jfa" target="_blank" class="btn" style="padding:5px 10px; font-size:0.9rem;">
+        <a href="https://pink-petite-damselfly-71.mypinata.cloud/ipfs/bafkreic4qdcn4nsk7gofhzgc7fzxkdduvo2zihe3ilj2dq3knorta32jfa" target="_blank" rel="noopener noreferrer" class="btn" style="padding:5px 10px; font-size:0.9rem;">
           View Full JSON
         </a>
       </div>
@@ -289,7 +322,7 @@
     <div class="data-cell">
       <div class="data-label">Contract Address</div>
       <div class="data-value mono-big">0x7274e874CA62410a93Bd8bf61c69d8045E399c02</div>
-      <div style="margin-top:.5rem; color:var(--ok)">✓ Immutable · No owner · Sealed at deployment</div>
+      <div style="margin-top:.5rem; color:var(--ok)">✓ Verified on Base · Ownership status visible on <a href="https://basescan.org/address/0x7274e874CA62410a93Bd8bf61c69d8045E399c02#readContract" target="_blank" rel="noopener noreferrer">BaseScan</a></div>
     </div>
 
     <!-- Transaction History -->
@@ -297,7 +330,7 @@
     <div class="data-cell">
       <div class="data-label">Mint Transaction</div>
       <div class="data-value mono-big" id="mint-tx">
-        <a href="https://basescan.org/tx/0xce6a6abc760e6d50afe2f3f601cc6dc51f191f9eafccb015cfcf7bc511d2de2e" target="_blank">
+        <a href="https://basescan.org/tx/0xce6a6abc760e6d50afe2f3f601cc6dc51f191f9eafccb015cfcf7bc511d2de2e" target="_blank" rel="noopener noreferrer">
           0xce6a6a...d2de2e
         </a>
       </div>
@@ -310,16 +343,18 @@
     <div class="data-grid">
       <div class="data-cell">
         <div class="data-label">ToadAid Safe</div>
-        <div class="data-value mono">0xe5C1...eAB2</div>
+        <div class="data-value mono-big" id="safe-addr">0xe5C1378F91243727a24fa7c64d5286C537D8eAB2</div>
+        <button class="copy-btn" data-copy="#safe-addr">Copy</button>
+        <div class="hint">Canonical custody / execution authority.</div>
       </div>
       <div class="data-cell">
         <div class="data-label">Execution Wallet</div>
-        <div class="data-value mono">0x5874...C0a</div>
-        <div style="font-size:0.8rem; margin-top:0.3rem;">Operational only · No authority</div>
+        <div class="data-value mono-big" id="exec-addr">0x5874...C0a</div>
+        <button class="copy-btn" data-copy="#exec-addr">Copy</button>
+        <div class="hint">Operational only · No authority.</div>
       </div>
     </div>
-
-    <!-- Verification Badge -->
+<!-- Verification Badge -->
     <div style="text-align:center; margin:2rem 0;">
       <div style="display:inline-block; background:rgba(16,185,129,0.1); padding:1rem 2rem; border-radius:999px; border:1px solid var(--ok);">
         <span style="color:var(--ok); font-size:1.2rem;">✓ VERIFIED ON-CHAIN & IPFS</span>
@@ -395,7 +430,7 @@
       </div>
       <div class="data-cell">
         <div class="data-label">Token URI</div>
-        <div class="data-value mono" style="font-size:0.85rem;">${uri.slice(0, 30)}...</div>
+        <div class="data-value mono" style="font-size:0.85rem;"><a href="${uri}" target="_blank" rel="noopener noreferrer">${uri.slice(0, 42)}...</a></div>
       </div>
     `;
     
@@ -422,6 +457,28 @@
       </div>
     `;
   }
+
+  // Copy helpers
+  function copyText(text){
+    try{
+      navigator.clipboard.writeText(text);
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest(".copy-btn");
+    if(!btn) return;
+    const sel = btn.getAttribute("data-copy");
+    const el = sel ? document.querySelector(sel) : null;
+    const txt = el ? (el.textContent || "").trim() : "";
+    if(!txt) return;
+    const ok = copyText(txt);
+    btn.textContent = ok ? "Copied" : "Copy failed";
+    setTimeout(()=>btn.textContent="Copy", 1200);
+  });
+
 })();
 </script>
 </body>
