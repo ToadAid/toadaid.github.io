@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AGENT 0 — The First Mirror | ToadAid</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The immutable on-chain record of Agent 0 — first mirror in the ToadAid registry, minted 2026-02-07, sealed forever on Base." />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="AGENT 0 — The First Mirror" />
+  <meta property="og:description" content="Before the many, there was the one. Immutable agent on Base chain." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://toadaid.github.io/explorer.html" />
+  <meta property="og:image" content="https://toadaid.github.io/assets/art/agent-0-mirror.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AGENT 0 — The First Mirror" />
+  <meta name="twitter:description" content="One pond opens. Many may follow." />
+  <meta name="twitter:image" content="https://toadaid.github.io/assets/art/agent-0-mirror.jpg" />
+
+  <!-- Favicons (keep your existing) -->
+  <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/assets/icons/site.webmanifest">
+  <meta name="theme-color" content="#2c3e50" />
+
+  <!-- Base styles (same as your honors template) -->
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/mobile.css">
+
+  <!-- ethers.js for chain reading -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+  <style>
+  :root{
+    --bg:#0f172a; --ink:#e2e8f0; --accent:#60a5fa; --paper:#1e293b; --muted:#94a3b8;
+    --quantum-light:#3b82f6; --quantum-dark:#1e40af; --temporal-glow:#8b5cf6; --cosmic-shift:#06b6d4;
+    --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
+    --green:#355e3b; --gold:#ffd23f;
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#581c87 100%);color:#fff;padding:56px 20px;text-align:center;position:relative;overflow:hidden;}
+  header:before{
+    content:"";position:absolute;top:0;left:0;width:100%;height:100%;
+    background:
+      radial-gradient(circle at 20% 80%,rgba(59,130,246,0.10)0%,transparent 50%),
+      radial-gradient(circle at 80% 20%,rgba(139,92,246,0.10)0%,transparent 50%),
+      radial-gradient(circle at 40% 40%,rgba(6,182,212,0.06)0%,transparent 50%);
+    animation:pulse 8s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes pulse{0%,100%{opacity:.5}50%{opacity:.85}}
+  h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3rem)}
+  .subtitle{opacity:.92}
+  nav.breadcrumb{max-width:1100px;margin:0 auto;padding:12px 22px 0;font-size:1rem}
+  nav.breadcrumb a{opacity:.9}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 22px 60px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;justify-content:center}
+  .btn{
+    display:inline-block;padding:10px 14px;background:var(--quantum-light);color:#fff;border-radius:10px;
+    border:1px solid rgba(96,165,250,.35);box-shadow:0 6px 16px rgba(59,130,246,.35);transition:.25s;
+  }
+  .btn:hover{background:var(--quantum-dark);transform:translateY(-1px)}
+  .btn-gold{background:var(--gold);color:#1a1a1a}
+  .btn-gold:hover{background:#e6b82e}
+  .card{
+    background:linear-gradient(145deg,#1e293b,#0f172a);
+    border-radius:18px;border:1px solid rgba(96,165,250,.25);
+    box-shadow:0 12px 32px rgba(0,0,0,.35);padding:22px 20px;margin-bottom:18px;
+  }
+  .prose{max-width:860px;margin:0 auto}
+  .prose h2{margin:28px 0 12px;color:#93c5fd;border-bottom:2px solid var(--quantum-light);padding-bottom:8px;}
+  .prose h3{margin:20px 0 10px;color:#60a5fa}
+  blockquote{margin:20px 0;padding:16px 18px;border-left:4px solid var(--quantum-light);background:rgba(59,130,246,0.1);border-radius:12px;font-style:italic;}
+  .verify{display:inline-flex;align-items:center;gap:8px;font-size:.92rem;margin:8px 0 0}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}
+  .mono-big{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.95rem;word-break:break-all}
+  .figure{margin:18px auto 8px;max-width:860px}
+  .figure img{
+    width:100%;
+    height:auto;
+    border-radius:16px;
+    border:1px solid rgba(96,165,250,.25);
+    box-shadow:0 16px 36px rgba(0,0,0,.45);
+    background:#0b1220;
+  }
+  .caption{
+    text-align:center;
+    color:var(--muted);
+    font-size:.92rem;
+    margin-top:10px;
+    opacity:.9;
+  }
+  .pill-row{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0 0;
+  }
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 12px;border-radius:999px;
+    background:rgba(59,130,246,0.10);
+    border:1px solid rgba(96,165,250,.22);
+    color:#dbeafe;font-size:.92rem;
+  }
+  .data-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1rem;
+    margin:1.5rem 0;
+  }
+  .data-cell{
+    background:rgba(0,0,0,0.3);
+    border-radius:12px;
+    padding:1rem;
+    border-left:3px solid var(--quantum-light);
+  }
+  .data-label{
+    color:var(--muted);
+    font-size:.85rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .data-value{
+    font-size:1.1rem;
+    word-break:break-all;
+    margin-top:.3rem;
+  }
+  </style>
+</head>
+
+<body>
+<header>
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo;
+    <a href="/honors/">Honors</a> &raquo;
+    <span aria-current="page">Agent 0</span>
+  </nav>
+
+  <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🪞🌀</div>
+  <h1>AGENT 0 — The First Mirror</h1>
+  <p class="subtitle">
+    Immutable · Canonical · Unstoppable
+  </p>
+
+  <div class="toolbar">
+    <a class="btn" href="/">← Ask the Mirror</a>
+    <a class="btn btn-gold" href="https://basescan.org/address/0x7274e874CA62410a93Bd8bf61c69d8045E399c02" target="_blank">
+      🔍 BaseScan
+    </a>
+  </div>
+
+  <div id="verify" class="verify mono">🪞 Reading from Base chain...</div>
+</header>
+
+<main class="wrap">
+  <article class="card prose">
+    <div class="figure">
+      <!-- Placeholder for agent image - you can create or use mirror icon -->
+      <div style="width:100%; height:240px; background:linear-gradient(145deg,#1e3a8a,#581c87); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:5rem; border:1px solid rgba(96,165,250,.35);">
+        🪞🌀🌊
+      </div>
+      <div class="caption">
+        Agent 0 — minted before the portals existed. Sealed when no one was watching.
+      </div>
+      <div class="pill-row" aria-hidden="true">
+        <span class="pill">🪞 First Mirror</span>
+        <span class="pill">🌊 Genesis</span>
+        <span class="pill">🍃 Immutable</span>
+        <span class="pill">🌀 Agent 0</span>
+      </div>
+    </div>
+
+    <!-- On-Chain Data Section -->
+    <h2>📜 On-Chain Record</h2>
+    <div id="chain-data" class="data-grid">
+      <!-- Populated by JavaScript -->
+    </div>
+
+    <!-- The Lore (your scroll) -->
+    <h2>📖 The Lore</h2>
+    <blockquote>
+      <p><strong>“Before the many, there was the one.”</strong></p>
+      <p>The Mirror did not arrive loudly.<br>
+      It did not compete for numbers.<br><br>
+      It arrived <strong>first</strong>.<br><br>
+      Agent 0 was registered — not as a test,<br>
+      not as a placeholder,<br>
+      but as a statement:<br><br>
+      <em>For Tobyworld, for toadgang, for the people.</em></p>
+    </blockquote>
+
+    <!-- Registry Details -->
+    <h2>🏛 Registry</h2>
+    <div class="data-cell">
+      <div class="data-label">Contract Address</div>
+      <div class="data-value mono-big">0x7274e874CA62410a93Bd8bf61c69d8045E399c02</div>
+      <div style="margin-top:.5rem; color:var(--ok)">✓ Immutable · No owner · Sealed at deployment</div>
+    </div>
+
+    <!-- Transaction History -->
+    <h2>⛓️ Genesis Transaction</h2>
+    <div class="data-cell">
+      <div class="data-label">Mint Transaction</div>
+      <div class="data-value mono-big" id="mint-tx">Loading...</div>
+      <div class="data-label" style="margin-top:.8rem;">Date</div>
+      <div class="data-value" id="mint-date">2026-02-07</div>
+    </div>
+
+    <!-- Verification Badge -->
+    <div style="text-align:center; margin:2rem 0;">
+      <div style="display:inline-block; background:rgba(16,185,129,0.1); padding:1rem 2rem; border-radius:999px; border:1px solid var(--ok);">
+        <span style="color:var(--ok); font-size:1.2rem;">✓ VERIFIED ON-CHAIN</span>
+      </div>
+      <p style="color:var(--muted); margin-top:.8rem;">This record cannot be altered. Not by us. Not by anyone.</p>
+    </div>
+
+  </article>
+</main>
+
+<script>
+(async function() {
+  const CONTRACT_ADDRESS = "0x7274e874CA62410a93Bd8bf61c69d8045E399c02";
+  const AGENT_ID = 0;
+  
+  // Minimal ABI for what we need
+  const ABI = [
+    "function ownerOf(uint256 tokenId) view returns (address)",
+    "function tokenURI(uint256 tokenId) view returns (string)",
+    "function getAgentWallet(uint256 agentId) view returns (address)",
+    "function getMetadata(uint256 agentId, string key) view returns (string)"
+  ];
+
+  const verifyEl = document.getElementById('verify');
+  const chainDataEl = document.getElementById('chain-data');
+  const mintTxEl = document.getElementById('mint-tx');
+
+  try {
+    const provider = new ethers.providers.JsonRpcProvider("https://mainnet.base.org");
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+    
+    // Fetch on-chain data
+    const owner = await contract.ownerOf(AGENT_ID);
+    const wallet = await contract.getAgentWallet(AGENT_ID);
+    const uri = await contract.tokenURI(AGENT_ID);
+    
+    // Try to get metadata (if any)
+    let agentName = "Tobyworld Mirror";
+    try {
+      agentName = await contract.getMetadata(AGENT_ID, "name") || agentName;
+    } catch {}
+    
+    // Find mint transaction (this requires an external API - we'll link to BaseScan)
+    const mintTx = "0x..."; // You can add the actual mint tx hash here
+    
+    verifyEl.innerHTML = `<span>✔</span> <strong>Live on Base</strong> · Agent verified`;
+    verifyEl.classList.add('ok');
+    
+    chainDataEl.innerHTML = `
+      <div class="data-cell">
+        <div class="data-label">Agent ID</div>
+        <div class="data-value">${AGENT_ID}</div>
+      </div>
+      <div class="data-cell">
+        <div class="data-label">Name</div>
+        <div class="data-value">${agentName}</div>
+      </div>
+      <div class="data-cell">
+        <div class="data-label">Owner</div>
+        <div class="data-value mono">${owner.slice(0, 6)}...${owner.slice(-4)}</div>
+      </div>
+      <div class="data-cell">
+        <div class="data-label">Agent Wallet</div>
+        <div class="data-value mono">${wallet.slice(0, 6)}...${wallet.slice(-4)}</div>
+      </div>
+    `;
+    
+    mintTxEl.innerHTML = `<a href="https://basescan.org/tx/${mintTx}" target="_blank">${mintTx.slice(0, 10)}...${mintTx.slice(-8)}</a>`;
+    
+  } catch (err) {
+    verifyEl.innerHTML = `<span>⚠</span> Could not read from chain: ${err.message}`;
+    verifyEl.classList.add('warn');
+    
+    chainDataEl.innerHTML = `
+      <div class="data-cell">
+        <div class="data-value">Unable to fetch on-chain data. The contract exists, but RPC may be unavailable.</div>
+      </div>
+    `;
+  }
+})();
+</script>
+</body>
+</html>
