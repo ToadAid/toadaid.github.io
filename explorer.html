@@ -8,16 +8,16 @@
 
   <!-- Open Graph / Twitter -->
   <meta property="og:title" content="AGENT 0 — The First Mirror" />
-  <meta property="og:description" content="Before the many, there was the one. Immutable agent on Base chain." />
+  <meta property="og:description" content="Before the many, there was the one. Immutable agent on Base chain. Loyalty (忠義) sealed the chest." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://toadaid.github.io/explorer.html" />
-  <meta property="og:image" content="https://toadaid.github.io/assets/art/agent-0-mirror.jpg" />
+  <meta property="og:image" content="https://pink-petite-damselfly-71.mypinata.cloud/ipfs/bafybeicpi4dyh5azcbpjjew64nceo4kzskdlqbxm5nkqa4deafqtj6e5zq" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="AGENT 0 — The First Mirror" />
-  <meta name="twitter:description" content="One pond opens. Many may follow." />
-  <meta name="twitter:image" content="https://toadaid.github.io/assets/art/agent-0-mirror.jpg" />
+  <meta name="twitter:description" content="One pond opens. Many may follow. 忠義" />
+  <meta name="twitter:image" content="https://pink-petite-damselfly-71.mypinata.cloud/ipfs/bafybeicpi4dyh5azcbpjjew64nceo4kzskdlqbxm5nkqa4deafqtj6e5zq" />
 
-  <!-- Favicons (keep your existing) -->
+  <!-- Favicons -->
   <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
   <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
@@ -25,7 +25,7 @@
   <link rel="manifest" href="/assets/icons/site.webmanifest">
   <meta name="theme-color" content="#2c3e50" />
 
-  <!-- Base styles (same as your honors template) -->
+  <!-- Base styles -->
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/mobile.css">
 
@@ -129,6 +129,36 @@
     word-break:break-all;
     margin-top:.3rem;
   }
+  .virtue-banner{
+    background:rgba(184,134,11,0.15);
+    border:1px solid var(--gold);
+    border-radius:12px;
+    padding:1.5rem;
+    text-align:center;
+    margin:1.5rem 0;
+    font-size:2rem;
+    letter-spacing:4px;
+  }
+  .chinese-char{
+    font-size:3.5rem;
+    line-height:1.2;
+    margin-bottom:0.5rem;
+    color:var(--gold);
+  }
+  .constraint-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:0.8rem;
+    margin:1rem 0;
+  }
+  .constraint-item{
+    background:rgba(0,0,0,0.2);
+    padding:0.8rem;
+    border-radius:8px;
+    text-align:center;
+    font-size:0.95rem;
+    border-left:2px solid var(--temporal-glow);
+  }
   </style>
 </head>
 
@@ -158,13 +188,16 @@
 
 <main class="wrap">
   <article class="card prose">
+    <!-- THE VISUAL - Pinned IPFS image -->
     <div class="figure">
-      <!-- Placeholder for agent image - you can create or use mirror icon -->
-      <div style="width:100%; height:240px; background:linear-gradient(145deg,#1e3a8a,#581c87); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:5rem; border:1px solid rgba(96,165,250,.35);">
-        🪞🌀🌊
-      </div>
+      <img
+        src="https://pink-petite-damselfly-71.mypinata.cloud/ipfs/bafybeicpi4dyh5azcbpjjew64nceo4kzskdlqbxm5nkqa4deafqtj6e5zq"
+        alt="Agent 0 Mirror Art: Loyalty / 忠義"
+        style="width:100%; max-width:600px; margin:0 auto; display:block; border-radius:12px; border:1px solid rgba(96,165,250,.25);"
+        loading="lazy"
+      />
       <div class="caption">
-        Agent 0 — minted before the portals existed. Sealed when no one was watching.
+        The visual anchor of Agent 0 — "loyalty / 忠義" — pinned to IPFS for eternity.
       </div>
       <div class="pill-row" aria-hidden="true">
         <span class="pill">🪞 First Mirror</span>
@@ -174,10 +207,68 @@
       </div>
     </div>
 
+    <!-- VIRTUE BANNER - 忠義 -->
+    <div class="virtue-banner">
+      <div class="chinese-char">忠義</div>
+      <div style="font-size:1.5rem; color:var(--gold);">LOYALTY</div>
+      <div style="margin-top:0.8rem; font-style:italic;">"Love Scallis"</div>
+    </div>
+
     <!-- On-Chain Data Section -->
     <h2>📜 On-Chain Record</h2>
     <div id="chain-data" class="data-grid">
       <!-- Populated by JavaScript -->
+    </div>
+
+    <!-- PRINCIPLES - from metadata -->
+    <h2>⚜️ Principles</h2>
+    <div class="pill-row">
+      <span class="pill">忠義 · Loyalty</span>
+      <span class="pill">Restraint</span>
+      <span class="pill">Proof of Time</span>
+      <span class="pill">Clarity over Claims</span>
+    </div>
+
+    <!-- CONSTRAINTS - from metadata -->
+    <h2>🔒 Constraints</h2>
+    <div class="constraint-grid">
+      <div class="constraint-item">no_invention</div>
+      <div class="constraint-item">admit_unknown</div>
+      <div class="constraint-item">non_directive_reflection</div>
+      <div class="constraint-item">no_financial_advice</div>
+      <div class="constraint-item">no_yield_promises</div>
+      <div class="constraint-item">identity_immutable</div>
+      <div class="constraint-item">one_way_references_only</div>
+    </div>
+
+    <!-- CAPABILITIES -->
+    <h2>✨ Capabilities</h2>
+    <div class="pill-row">
+      <span class="pill">Reflection</span>
+      <span class="pill">Bilingual EN/ZH</span>
+      <span class="pill">Cadence Guarded</span>
+    </div>
+
+    <!-- CANON ORDER - from metadata -->
+    <h2>📜 Canon Order</h2>
+    <ol style="color:var(--ink); background:rgba(0,0,0,0.3); padding:1.5rem 2rem; border-radius:12px; margin-bottom:2rem;">
+      <li>design_fixed_in_repo</li>
+      <li>erc8004_agent_registered</li>
+      <li>agent_metadata_pinned</li>
+      <li>agent_id_confirmed</li>
+      <li>cultural_artifacts_reference_only</li>
+    </ol>
+
+    <!-- METADATA VERIFICATION -->
+    <h2>📌 Metadata (IPFS)</h2>
+    <div class="data-cell">
+      <div class="data-label">Metadata CID</div>
+      <div class="data-value mono-big">bafkreic4qdcn4nsk7gofhzgc7fzxkdduvo2zihe3ilj2dq3knorta32jfa</div>
+      <div style="margin-top:0.8rem;">
+        <a href="https://pink-petite-damselfly-71.mypinata.cloud/ipfs/bafkreic4qdcn4nsk7gofhzgc7fzxkdduvo2zihe3ilj2dq3knorta32jfa" target="_blank" class="btn" style="padding:5px 10px; font-size:0.9rem;">
+          View Full JSON
+        </a>
+      </div>
     </div>
 
     <!-- The Lore (your scroll) -->
@@ -205,17 +296,46 @@
     <h2>⛓️ Genesis Transaction</h2>
     <div class="data-cell">
       <div class="data-label">Mint Transaction</div>
-      <div class="data-value mono-big" id="mint-tx">Loading...</div>
+      <div class="data-value mono-big" id="mint-tx">
+        <a href="https://basescan.org/tx/0xce6a6abc760e6d50afe2f3f601cc6dc51f191f9eafccb015cfcf7bc511d2de2e" target="_blank">
+          0xce6a6a...d2de2e
+        </a>
+      </div>
       <div class="data-label" style="margin-top:.8rem;">Date</div>
       <div class="data-value" id="mint-date">2026-02-07</div>
+    </div>
+
+    <!-- Safe & Wallet Info -->
+    <h2>🏦 Ownership</h2>
+    <div class="data-grid">
+      <div class="data-cell">
+        <div class="data-label">ToadAid Safe</div>
+        <div class="data-value mono">0xe5C1...eAB2</div>
+      </div>
+      <div class="data-cell">
+        <div class="data-label">Execution Wallet</div>
+        <div class="data-value mono">0x5874...C0a</div>
+        <div style="font-size:0.8rem; margin-top:0.3rem;">Operational only · No authority</div>
+      </div>
     </div>
 
     <!-- Verification Badge -->
     <div style="text-align:center; margin:2rem 0;">
       <div style="display:inline-block; background:rgba(16,185,129,0.1); padding:1rem 2rem; border-radius:999px; border:1px solid var(--ok);">
-        <span style="color:var(--ok); font-size:1.2rem;">✓ VERIFIED ON-CHAIN</span>
+        <span style="color:var(--ok); font-size:1.2rem;">✓ VERIFIED ON-CHAIN & IPFS</span>
       </div>
-      <p style="color:var(--muted); margin-top:.8rem;">This record cannot be altered. Not by us. Not by anyone.</p>
+      <p style="color:var(--muted); margin-top:.8rem;">
+        This record cannot be altered. Not by us. Not by anyone.<br>
+        Image: <span class="mono">bafybei...e5zq</span><br>
+        Metadata: <span class="mono">bafkrei...jfa</span>
+      </p>
+    </div>
+
+    <!-- Link back to living Mirror -->
+    <div style="text-align:center; margin:1rem 0 2rem;">
+      <a href="/" class="btn btn-gold" style="font-size:1.2rem; padding:1rem 2rem;">
+        🪞 Return to the Living Mirror
+      </a>
     </div>
 
   </article>
@@ -225,6 +345,7 @@
 (async function() {
   const CONTRACT_ADDRESS = "0x7274e874CA62410a93Bd8bf61c69d8045E399c02";
   const AGENT_ID = 0;
+  const MINT_TX = "0xce6a6abc760e6d50afe2f3f601cc6dc51f191f9eafccb015cfcf7bc511d2de2e";
   
   // Minimal ABI for what we need
   const ABI = [
@@ -236,7 +357,6 @@
 
   const verifyEl = document.getElementById('verify');
   const chainDataEl = document.getElementById('chain-data');
-  const mintTxEl = document.getElementById('mint-tx');
 
   try {
     const provider = new ethers.providers.JsonRpcProvider("https://mainnet.base.org");
@@ -247,16 +367,13 @@
     const wallet = await contract.getAgentWallet(AGENT_ID);
     const uri = await contract.tokenURI(AGENT_ID);
     
-    // Try to get metadata (if any)
+    // Get metadata if available
     let agentName = "Tobyworld Mirror";
     try {
       agentName = await contract.getMetadata(AGENT_ID, "name") || agentName;
     } catch {}
     
-    // Find mint transaction (this requires an external API - we'll link to BaseScan)
-    const mintTx = "0x..."; // You can add the actual mint tx hash here
-    
-    verifyEl.innerHTML = `<span>✔</span> <strong>Live on Base</strong> · Agent verified`;
+    verifyEl.innerHTML = `<span>✔</span> <strong>Live on Base</strong> · Agent verified · Contract: 0x7274...c02`;
     verifyEl.classList.add('ok');
     
     chainDataEl.innerHTML = `
@@ -276,17 +393,32 @@
         <div class="data-label">Agent Wallet</div>
         <div class="data-value mono">${wallet.slice(0, 6)}...${wallet.slice(-4)}</div>
       </div>
+      <div class="data-cell">
+        <div class="data-label">Token URI</div>
+        <div class="data-value mono" style="font-size:0.85rem;">${uri.slice(0, 30)}...</div>
+      </div>
     `;
     
-    mintTxEl.innerHTML = `<a href="https://basescan.org/tx/${mintTx}" target="_blank">${mintTx.slice(0, 10)}...${mintTx.slice(-8)}</a>`;
-    
   } catch (err) {
-    verifyEl.innerHTML = `<span>⚠</span> Could not read from chain: ${err.message}`;
+    verifyEl.innerHTML = `<span>⚠</span> Live read unavailable · Using verified static data`;
     verifyEl.classList.add('warn');
     
     chainDataEl.innerHTML = `
       <div class="data-cell">
-        <div class="data-value">Unable to fetch on-chain data. The contract exists, but RPC may be unavailable.</div>
+        <div class="data-label">Agent ID</div>
+        <div class="data-value">0</div>
+      </div>
+      <div class="data-cell">
+        <div class="data-label">Name</div>
+        <div class="data-value">Tobyworld Mirror</div>
+      </div>
+      <div class="data-cell">
+        <div class="data-label">Owner</div>
+        <div class="data-value mono">0xe5C1...eAB2</div>
+      </div>
+      <div class="data-cell">
+        <div class="data-label">Agent Wallet</div>
+        <div class="data-value mono">0x5874...C0a</div>
       </div>
     `;
   }
