@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>AGENT 0 — The First Mirror | ToadAid</title>
+  <title>Mirror Agent 0 — Registry Record</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="The immutable on-chain record of Agent 0 — first mirror in the ToadAid registry, minted 2026-02-07, sealed forever on Base." />
 
@@ -194,7 +194,22 @@
     margin-top:.4rem;
   }
 
-  </style>
+  
+  .badge-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0 0;}
+  .badge{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size:.82rem;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid rgba(96,165,250,.24);
+    background:rgba(15,23,42,.55);
+    color:rgba(226,232,240,.95);
+  }
+  .badge strong{color:rgba(219,234,254,.98);font-weight:600}
+  .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .section-title small{color:var(--muted);font-size:.85rem;}
+
+</style>
 </head>
 
 <body>
@@ -206,12 +221,16 @@
   </nav>
 
   <div style="font-size:3.2rem;margin-bottom:10px" aria-hidden="true">🪞🌀</div>
-  <h1>AGENT 0 — The First Mirror</h1>
-  <p class="subtitle">
-    Immutable · Canonical · Unstoppable
-  </p>
+  <h1>Mirror Agent 0</h1>
+  <p class="subtitle">Protocol Registry Record · ERC‑8004 Agent Identity · Base Mainnet</p>
 
-  <div class="toolbar">
+  
+    <div class="badge-row" aria-label="Registry badges">
+      <span class="badge"><strong>chain</strong>: base</span>
+      <span class="badge"><strong>agentId</strong>: 0</span>
+      <span class="badge"><strong>status</strong>: active</span>
+    </div>
+<div class="toolbar">
     <a class="btn" href="/">← Ask the Mirror</a>
     <a class="btn btn-gold" href="https://basescan.org/address/0x7274e874CA62410a93Bd8bf61c69d8045E399c02#events" target="_blank" rel="noopener noreferrer">
       🔍 BaseScan
@@ -256,12 +275,14 @@
     </div>
 
     <!-- PRINCIPLES - from metadata -->
-    <h2>⚜️ Principles</h2>
-    <ul class="list-inline" aria-label="Principles list">
+    <div class="section-title"><h2>⚜️ Policy</h2><small>read‑only</small></div>
+    <ul class="list-inline" aria-label="Policy list">
       <li>忠義 · Loyalty</li>
+      <li>Loyalty is measured in time.</li>
       <li>Restraint</li>
       <li>Proof of Time</li>
       <li>Clarity over Claims</li>
+      <li>No financial promise</li>
     </ul>
 <!-- CONSTRAINTS - from metadata -->
     <h2>🔒 Constraints</h2>
@@ -276,12 +297,13 @@
     </div>
 
     <!-- CAPABILITIES -->
-    <h2>✨ Capabilities</h2>
+    <div class="section-title"><h2>✨ Interfaces</h2><small>read‑only</small></div>
     <ul class="list-inline" aria-label="Capabilities list">
       <li>Reflection</li>
       <li>Bilingual EN/ZH</li>
       <li>Cadence Guarded</li>
-    </ul>
+    
+      <li>OpenAI‑compatible API</li></ul>
 <!-- CANON ORDER - from metadata -->
     <h2>📜 Canon Order</h2>
     <ol style="color:var(--ink); background:rgba(0,0,0,0.3); padding:1.5rem 2rem; border-radius:12px; margin-bottom:2rem;">
@@ -339,7 +361,7 @@
     </div>
 
     <!-- Safe & Wallet Info -->
-    <h2>🏦 Ownership</h2>
+    <div class="section-title"><h2>🏦 Custody</h2><small>read‑only</small></div>
     <div class="data-grid">
       <div class="data-cell">
         <div class="data-label">ToadAid Safe</div>
@@ -369,11 +391,22 @@
     <!-- Link back to living Mirror -->
     <div style="text-align:center; margin:1rem 0 2rem;">
       <a href="/" class="btn btn-gold" style="font-size:1.2rem; padding:1rem 2rem;">
-        🪞 Return to the Living Mirror
+        🪞 Return to Mirror
       </a>
     </div>
 
   </article>
+
+  <div class="card">
+    <div class="section-title"><h2>🛡️ Integrity</h2><small>read‑only</small></div>
+    <ul class="list">
+      <li><strong>Scope:</strong> Documentation of Agent 0 identity only.</li>
+      <li><strong>Custody:</strong> Authority resides with the ToadAid Safe.</li>
+      <li><strong>Claims:</strong> No ownership promise · No yield promise · No investment solicitation.</li>
+      <li><strong>Verification:</strong> Use BaseScan links on this page as source of truth.</li>
+    </ul>
+  </div>
+
 </main>
 
 <script>
