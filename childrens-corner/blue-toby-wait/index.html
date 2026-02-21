@@ -1,1 +1,182 @@
-.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Toby's First Wait | Tadpole Academy</title>
+    <style>
+        :root {
+            --water: #e0f7fa;
+            --deep-water: #006064;
+            --lily: #81c784;
+            --lotus: #f06292;
+            --toby: #29b6f6;
+            --font: 'Comic Sans MS', 'Chalkboard SE', sans-serif; /* Friendly font */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--water);
+            font-family: var(--font);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--deep-water);
+            transition: background-color 3s ease;
+        }
+
+        h1 { margin-bottom: 10px; font-size: 2em; text-align: center;}
+        p { font-size: 1.2em; max-width: 600px; text-align: center; line-height: 1.6; margin: 20px;}
+
+        #stage {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            background: #b2ebf2;
+            border-radius: 50%;
+            border: 8px solid #4dd0e1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Characters */
+        #toby {
+            font-size: 80px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 2;
+            filter: drop-shadow(0 5px 0 rgba(0,0,0,0.1));
+        }
+        
+        #lotus {
+            position: absolute;
+            font-size: 0px;
+            bottom: 40px;
+            opacity: 0;
+            transition: all 3s ease;
+            z-index: 1;
+        }
+
+        #fly {
+            position: absolute;
+            font-size: 30px;
+            top: 20px;
+            left: 20px;
+            animation: buzz 0.5s infinite alternate;
+            cursor: pointer;
+            transition: all 0.5s;
+        }
+
+        /* Controls */
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: transform 0.1s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+        }
+
+        button:active { transform: translateY(4px); box-shadow: none; }
+
+        #btn-chase { background: #ffccbc; color: #d84315; }
+        #btn-wait { background: #c8e6c9; color: #2e7d32; }
+
+        /* Animations */
+        @keyframes buzz { from { transform: translateX(0); } to { transform: translateX(5px) rotate(10deg); } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes bloom { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1.5); opacity: 1; } }
+
+        .hidden { display: none !important; }
+        .breathe { animation: float 3s infinite ease-in-out; }
+
+    </style>
+</head>
+<body>
+
+    <h1 id="title">Blue Toby's First Wait</h1>
+    <p id="story">The pond is quiet. A noisy fly is buzzing. <br>What should Toby do?</p>
+
+    <div id="stage">
+        <div id="fly">🪰</div>
+        <div id="lotus">🌸</div>
+        <div id="toby">🐸</div>
+    </div>
+
+    <div class="btn-group" id="controls">
+        <button id="btn-chase" onclick="chase()">Chase!</button>
+        <button id="btn-wait" onclick="wait()">Wait...</button>
+    </div>
+
+    <script>
+        const toby = document.getElementById('toby');
+        const fly = document.getElementById('fly');
+        const lotus = document.getElementById('lotus');
+        const story = document.getElementById('story');
+        const stage = document.getElementById('stage');
+        const body = document.body;
+        const btnChase = document.getElementById('btn-chase');
+        const btnWait = document.getElementById('btn-wait');
+
+        let patienceLevel = 0;
+
+        function chase() {
+            // Chaos
+            toby.style.transform = "translate(50px, -50px) rotate(20deg)";
+            fly.style.transform = "translate(200px, -200px)";
+            stage.style.background = "#ffccbc"; // Angry red
+            story.innerText = "Toby jumped! But the fly was too fast.\nThe water is muddy now.";
+            
+            setTimeout(() => {
+                toby.style.transform = "none";
+                fly.style.transform = "none";
+                stage.style.background = "#b2ebf2";
+                story.innerText = "The fly came back. It is still buzzing.";
+            }, 2000);
+        }
+
+        function wait() {
+            // Stillness
+            btnChase.classList.add('hidden');
+            btnWait.innerText = "Breathe...";
+            toby.classList.add('breathe');
+            story.innerText = "Toby sits very still. He breathes deep.\nThe fly is buzzing, but Toby does not move.";
+            body.style.backgroundColor = "#e8f5e9"; // Calm green
+
+            setTimeout(() => {
+                story.innerText = "The water is clearing...\nSomething is growing.";
+                btnWait.innerText = "Wait longer...";
+                
+                setTimeout(() => {
+                    // Bloom
+                    fly.style.display = "none"; // Fly leaves (bored)
+                    lotus.style.fontSize = "100px";
+                    lotus.style.opacity = "1";
+                    toby.innerText = "😌"; // Zen face
+                    stage.style.background = "#e1bee7"; // Magical purple
+                    story.innerHTML = "Look! Because Toby waited, the <b>Taboshi Bloom</b> appeared.<br>It is better than a fly.";
+                    btnWait.innerText = "Play Again";
+                    btnWait.setAttribute('onclick', 'location.reload()');
+                }, 3000);
+
+            }, 2000);
+        }
+    </script>
+
+</body>
+</html>
