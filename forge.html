@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ToadAid — Forge Identity (ERC-8004) | Hybrid Mint</title>
+  <title>ToadAid — Identity Forge (ERC-8004) | Hybrid Mint</title>
   <style>
     :root{
       --bg:#0b1020;
@@ -157,6 +157,7 @@
       border:1px solid rgba(255,255,255,.08);
       border-radius:14px;
       padding:12px;
+      max-height:300px;
     }
     .status{
       font-size:12px;
@@ -203,6 +204,95 @@
     }
     a{ color: var(--accent2); text-decoration:none }
     a:hover{ text-decoration:underline }
+
+    /* Modal for WalletConnect QR */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: var(--panel);
+      border: 1px solid var(--accent);
+      border-radius: 24px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .modal-header {
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: var(--accent2);
+    }
+    #qrContainer {
+      background: white;
+      padding: 16px;
+      border-radius: 20px;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+    }
+    .close-modal {
+      margin-top: 20px;
+      background: transparent;
+      border: 1px solid var(--line);
+      width: 100%;
+    }
+    .wallet-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .wallet-option {
+      background: rgba(255,255,255,.1);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .wallet-option:hover {
+      background: rgba(74,163,255,.2);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .wallet-option img {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 8px;
+    }
+    .wallet-option span {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: var(--muted);
+    }
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--line);
+    }
+    .divider span {
+      padding: 0 10px;
+    }
   </style>
 </head>
 <body>
@@ -211,7 +301,7 @@
     <div class="logo" aria-hidden="true"></div>
     <div>
       <h1>ToadAid Identity Forge — Hybrid Mint</h1>
-      <div class="sub">ERC-8004 registration on Base · Toadgang & Public proxies 🪞🌊🍃</div>
+      <div class="sub">ERC-8004 registration on Base · Registry Router & Reputation Route 🪞🌊🍃</div>
     </div>
   </div>
 
@@ -237,16 +327,16 @@
       <div class="proxy-selector">
         <div class="title">🪜 Select Minting Registry</div>
         <div class="toggle" style="margin-bottom:8px; background:rgba(74,163,255,.1);">
-          <input type="checkbox" id="useToadgangProxy" checked />
+          <input type="checkbox" id="useRegistryRouter" checked />
           <div>
-            <div style="font-weight:800; color:var(--accent2);">🌊 Mint on Toadgang Proxy (Community)</div>
-            <div class="sub">Ownerless · Open mint for Toadgang · Recommended</div>
+            <div style="font-weight:800; color:var(--accent2);">📋 Registry Router Proxy</div>
+            <div class="sub">Main registry router · Recommended for most mints</div>
           </div>
         </div>
         <div class="proxy-details" id="proxyDetails">
-          <strong>Toadgang Proxy:</strong> 0x6d5D9c8345e0881033E1cc961BAde399b28dA74B<br>
-          <strong>Public Proxy:</strong> 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432<br>
-          <strong>Bedrock Implementation:</strong> 0x7274e874ca62410a93bd8bf61c69d8045e399c02
+          <strong>Registry Router:</strong> 0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0<br>
+          <strong>Reputation Route:</strong> 0x94D7B431dD8eAFc9E1b71624DF0a90468622537a<br>
+          <strong>Network:</strong> Base Mainnet (Chain ID: 8453)
         </div>
       </div>
 
@@ -310,7 +400,7 @@
         <button class="smallbtn" id="btnCopyUri">Copy Data URI</button>
         <button class="smallbtn" id="btnCopyJson">Copy JSON</button>
         <span class="pill" id="contractPill">
-          <span id="proxyName">Toadgang Proxy</span>
+          <span id="proxyName">Registry Router</span>
         </span>
       </div>
 
@@ -340,25 +430,52 @@
 
 <footer>
   <div style="margin-bottom:12px">
-    <strong>🪞 Hybrid Minting Architecture</strong>
+    <strong>🪞 Hybrid Minting Architecture — Updated Contracts (Feb 2026)</strong>
   </div>
   <ul style="margin:8px 0 12px 20px; opacity:0.9">
-    <li><strong>🌊 Toadgang Proxy (selected by default):</strong> <code>0x6d5D9c8345e0881033E1cc961BAde399b28dA74B</code> — Community-owned, ownerless, open mint for Toadgang. Verified proxy pointing to bedrock.</li>
-    <li><strong>🏛️ Public Proxy:</strong> <code>0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</code> — The main ERC-8004 registry used by 8004agents.ai.</li>
+    <li><strong>📋 Registry Router (selected by default):</strong> <code>0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0</code> — Main registration entry point</li>
+    <li><strong>⭐ Reputation Route:</strong> <code>0x94D7B431dD8eAFc9E1b71624DF0a90468622537a</code> — Reputation management contract</li>
   </ul>
-  <p style="margin-top:12px; background:rgba(0,0,0,.3); padding:10px; border-radius:12px;">
-    <strong>Bedrock Implementation:</strong> <code>0x7274e874ca62410a93bd8bf61c69d8045e399c02</code><br>
-    <span style="font-size:11px;">Immutable · Ownership renounced · Agents 0 & 1 live here forever · Both proxies delegate to this logic.</span>
-  </p>
   <p style="margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
-    This page calls ERC-8004 Identity Registry proxies on Base. It does not copy or depend on any third-party frontend.  
-    Choose your registry above — Toadgang proxy is community-owned and open for all Toadgang members.
+    This page calls ERC-8004 Identity Registry contracts on Base. Supports both browser wallets (MetaMask, etc.) and mobile wallets via WalletConnect QR.
   </p>
 </footer>
 
+<!-- WalletConnect Modal -->
+<div id="walletModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">🔌 Connect Wallet</div>
+    
+    <div class="wallet-options">
+      <div class="wallet-option" id="optionBrowser">
+        <div style="font-size:24px; margin-bottom:8px;">🦊</div>
+        <span>Browser Wallet</span>
+        <small style="color:var(--muted); font-size:10px; display:block;">MetaMask, Rabby, etc.</small>
+      </div>
+      <div class="wallet-option" id="optionWalletConnect">
+        <div style="font-size:24px; margin-bottom:8px;">📱</div>
+        <span>WalletConnect</span>
+        <small style="color:var(--muted); font-size:10px; display:block;">Mobile wallets</small>
+      </div>
+    </div>
+
+    <div class="divider">
+      <span>or</span>
+    </div>
+
+    <div id="wcSection" style="display: none;">
+      <div id="qrContainer"></div>
+      <p style="font-size:12px; color:var(--muted);">Scan with your mobile wallet</p>
+    </div>
+
+    <button class="close-modal" id="closeModal">Cancel</button>
+  </div>
+</div>
+
 <script type="module">
-  // Ethers v6 via CDN
+  // Ethers v6 and WalletConnect via CDN
   import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.13.4/+esm";
+  import WalletConnectProvider from "https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.17.0/+esm";
 
   // Base mainnet
   const BASE_CHAIN_ID = 8453;
@@ -370,10 +487,9 @@
     blockExplorerUrls: ["https://basescan.org"]
   };
 
-  // Proxy addresses
-  const PUBLIC_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
-  const TOADGANG_PROXY = "0x6d5D9c8345e0881033E1cc961BAde399b28dA74B";
-  const BEDROCK_IMPL = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
+  // NEW CONTRACT ADDRESSES
+  const REGISTRY_ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";
+  const REPUTATION_ROUTE = "0x94D7B431dD8eAFc9E1b71624DF0a90468622537a";
 
   // Minimal ABI for register(string)
   const ABI = [
@@ -397,7 +513,7 @@
   const x402In = $("x402");
   const endpointIn = $("endpoint");
   const endpointTypeIn = $("endpointType");
-  const useToadgangProxy = $("useToadgangProxy");
+  const useRegistryRouter = $("useRegistryRouter");
 
   const jsonOut = $("jsonOut");
   const uriOut = $("uriOut");
@@ -408,7 +524,16 @@
   const btnCopyUri = $("btnCopyUri");
   const btnCopyJson = $("btnCopyJson");
 
+  // Modal elements
+  const modal = $("walletModal");
+  const optionBrowser = $("optionBrowser");
+  const optionWalletConnect = $("optionWalletConnect");
+  const wcSection = $("wcSection");
+  const qrContainer = $("qrContainer");
+  const closeModal = $("closeModal");
+
   let provider, signer;
+  let walletConnectProvider = null;
 
   function setStatus(kind, text){
     statusText.textContent = text;
@@ -416,13 +541,13 @@
   }
 
   function getContractAddress() {
-    return useToadgangProxy.checked ? TOADGANG_PROXY : PUBLIC_PROXY;
+    return useRegistryRouter.checked ? REGISTRY_ROUTER : REPUTATION_ROUTE;
   }
 
   function updateContractDisplay() {
-    const useToadgang = useToadgangProxy.checked;
-    proxyName.textContent = useToadgang ? "Toadgang Proxy" : "Public Proxy";
-    contractPill.style.borderColor = useToadgang ? "var(--accent2)" : "var(--accent)";
+    const useRouter = useRegistryRouter.checked;
+    proxyName.textContent = useRouter ? "Registry Router" : "Reputation Route";
+    contractPill.style.borderColor = useRouter ? "var(--accent2)" : "var(--accent)";
   }
 
   function buildMetadata(){
@@ -476,48 +601,151 @@
   }
 
   // Live preview
-  [nameIn, descIn, imageIn, activeIn, x402In, endpointIn, endpointTypeIn, useToadgangProxy].forEach(el=>{
+  [nameIn, descIn, imageIn, activeIn, x402In, endpointIn, endpointTypeIn, useRegistryRouter].forEach(el=>{
     el.addEventListener("input", updateMintButton);
     el.addEventListener("change", updateMintButton);
   });
 
-  async function ensureBase(){
-    const eth = window.ethereum;
-    if(!eth) throw new Error("No wallet found. Install a Web3 wallet extension.");
-    const chainId = await eth.request({ method: "eth_chainId" });
-
-    if(parseInt(chainId, 16) !== BASE_CHAIN_ID){
-      try{
-        await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_PARAMS.chainId }]});
-      }catch(e){
-        // If the chain is not added yet
-        if(e && (e.code === 4902 || String(e.message||"").includes("Unrecognized chain"))){
-          await eth.request({ method: "wallet_addEthereumChain", params: [BASE_PARAMS]});
-        } else {
-          throw e;
+  async function ensureBase(providerToUse) {
+    try {
+      const network = await providerToUse.getNetwork();
+      if (Number(network.chainId) !== BASE_CHAIN_ID) {
+        throw new Error(`Please switch to Base network (Chain ID: ${BASE_CHAIN_ID})`);
+      }
+    } catch (error) {
+      // For browser wallets, try to switch
+      if (window.ethereum) {
+        try {
+          await window.ethereum.request({ 
+            method: "wallet_switchEthereumChain", 
+            params: [{ chainId: BASE_PARAMS.chainId }]
+          });
+        } catch (e) {
+          if (e.code === 4902) {
+            await window.ethereum.request({ 
+              method: "wallet_addEthereumChain", 
+              params: [BASE_PARAMS]
+            });
+          } else {
+            throw e;
+          }
         }
+      } else {
+        throw error;
       }
     }
   }
 
-  btnConnect.addEventListener("click", async ()=>{
-    try{
-      setStatus("warn", "Connecting…");
-      await ensureBase();
+  // Connect with browser wallet
+  async function connectBrowserWallet() {
+    try {
+      setStatus("warn", "Connecting to browser wallet...");
+      
+      if (!window.ethereum) {
+        throw new Error("No browser wallet found. Please install MetaMask or use WalletConnect.");
+      }
 
       provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
+      
+      await ensureBase(provider);
+      
       signer = await provider.getSigner();
-
       const addr = await signer.getAddress();
+      
       addrPill.textContent = `Wallet: ${addr.slice(0,6)}…${addr.slice(-4)}`;
       netPill.textContent = "Network: Base (8453)";
-
+      
       setStatus("good", "Ready. Forge when your details are set.");
       updateMintButton();
-    }catch(err){
+      
+      modal.style.display = "none";
+    } catch (err) {
       console.error(err);
-      setStatus("bad", err?.message || "Connect failed.");
+      setStatus("bad", err?.message || "Connection failed.");
+    }
+  }
+
+  // Connect with WalletConnect
+  async function connectWalletConnect() {
+    try {
+      setStatus("warn", "Initializing WalletConnect...");
+      
+      // Show QR section
+      wcSection.style.display = "block";
+      qrContainer.innerHTML = "<p style='color:var(--muted)'>Initializing...</p>";
+      
+      // Initialize WalletConnect provider
+      walletConnectProvider = await WalletConnectProvider.default.init({
+        projectId: "YOUR_WALLETCONNECT_PROJECT_ID", // You'll need to get this from walletconnect.com
+        metadata: {
+          name: "ToadAid Identity Forge",
+          description: "ERC-8004 Identity Registration",
+          url: window.location.origin,
+          icons: ["https://avatars.githubusercontent.com/u/37784886"]
+        },
+        chains: [BASE_CHAIN_ID],
+        showQrModal: true,
+        qrModalOptions: {
+          themeVariables: {
+            "--wcm-z-index": "1000",
+            "--wcm-background-color": "#0f1733",
+            "--wcm-accent-color": "#4aa3ff"
+          }
+        }
+      });
+
+      // For QR code display
+      if (walletConnectProvider.provider.onDisplayUri) {
+        walletConnectProvider.provider.onDisplayUri((uri) => {
+          // You can generate QR code here if needed
+          qrContainer.innerHTML = `<p style="color:var(--accent2)">Scan with your wallet</p>`;
+        });
+      }
+
+      // Connect
+      await walletConnectProvider.connect();
+      
+      provider = new ethers.BrowserProvider(walletConnectProvider);
+      await ensureBase(provider);
+      
+      signer = await provider.getSigner();
+      const addr = await signer.getAddress();
+      
+      addrPill.textContent = `Wallet: ${addr.slice(0,6)}…${addr.slice(-4)} (WC)`;
+      netPill.textContent = "Network: Base (8453)";
+      
+      setStatus("good", "Connected via WalletConnect");
+      updateMintButton();
+      
+      modal.style.display = "none";
+    } catch (err) {
+      console.error(err);
+      setStatus("bad", err?.message || "WalletConnect failed.");
+      wcSection.style.display = "none";
+    }
+  }
+
+  // Show connection modal
+  btnConnect.addEventListener("click", () => {
+    modal.style.display = "flex";
+    wcSection.style.display = "none";
+  });
+
+  optionBrowser.addEventListener("click", connectBrowserWallet);
+  
+  optionWalletConnect.addEventListener("click", connectWalletConnect);
+  
+  closeModal.addEventListener("click", () => {
+    modal.style.display = "none";
+    wcSection.style.display = "none";
+  });
+
+  // Click outside modal to close
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      wcSection.style.display = "none";
     }
   });
 
@@ -528,7 +756,7 @@
       if(!ok) return;
 
       const contractAddress = getContractAddress();
-      setStatus("warn", `Forging identity on ${useToadgangProxy.checked ? 'Toadgang' : 'Public'} proxy…`);
+      setStatus("warn", `Forging identity on ${useRegistryRouter.checked ? 'Registry Router' : 'Reputation Route'}…`);
 
       const contract = new ethers.Contract(contractAddress, ABI, signer);
       const tx = await contract.register(uri);
@@ -546,8 +774,8 @@
         }catch(_){}
       }
 
-      const proxyType = useToadgangProxy.checked ? 'Toadgang' : 'Public';
-      setStatus("good", agentId ? `Forged on ${proxyType} proxy. Agent ID: ${agentId}` : `Forged on ${proxyType} proxy. Confirm on BaseScan.`);
+      const contractType = useRegistryRouter.checked ? 'Registry Router' : 'Reputation Route';
+      setStatus("good", agentId ? `Forged on ${contractType}. Agent ID: ${agentId}` : `Forged on ${contractType}. Confirm on BaseScan.`);
     }catch(err){
       console.error(err);
       setStatus("bad", err?.shortMessage || err?.message || "Transaction failed.");
@@ -564,6 +792,13 @@
     const { json } = buildMetadata();
     await navigator.clipboard.writeText(json);
     setStatus("good", "JSON copied.");
+  });
+
+  // Check for existing connection on load
+  window.addEventListener("load", async () => {
+    if (window.ethereum && window.ethereum.selectedAddress) {
+      await connectBrowserWallet();
+    }
   });
 
   // Initial render
