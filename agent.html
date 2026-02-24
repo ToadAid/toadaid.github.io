@@ -219,7 +219,7 @@
     <span class="pill" id="netPill">Network: —</span>
     <span class="pill" id="addrPill">Wallet: —</span>
     <button class="smallbtn" id="btnConnect">Connect (Browser)</button>
-    <button class="smallbtn" id="btnWC">WalletConnect</button>
+    <button class="smallbtn" id="btnWC">Connect (WalletConnect / QR)</button>
     <button class="primary smallbtn" id="btnMint" disabled>Forge Identity</button>
   </div>
 </header>
@@ -522,8 +522,8 @@
 
   btnWC.addEventListener("click", async ()=>{
     try{
-      setStatus("warn", "Opening WalletConnect…");
-      await connectWalletConnect();
+      setStatus("warn", "Opening Connect (WalletConnect / QR)…");
+      await connectConnect (WalletConnect / QR)();
       const addr = await signer.getAddress();
       addrPill.textContent = `Wallet: ${addr.slice(0,6)}…${addr.slice(-4)}`;
       netPill.textContent = "Network: Base (8453)";
@@ -531,7 +531,7 @@
       updateMintButton();
     }catch(err){
       console.error(err);
-      setStatus("bad", err?.message || "WalletConnect failed");
+      setStatus("bad", err?.message || "Connect (WalletConnect / QR) failed");
     }
   });
 
@@ -584,33 +584,33 @@
   });
 
   // -------------------------
-  // WalletConnect helpers (QR)
+  // Connect (WalletConnect / QR) helpers (QR)
   // -------------------------
   function saveWCProjectId(v){ try{ localStorage.setItem("wc_project_id", v||""); }catch{} }
-  function loadWCProjectId(){ try{ return localStorage.getItem("wc_project_id")||""; }catch{ return ""; } }
+  function loadWCProjectId(){ try{ return localStorage.getItem("wc_project_id")||"2cfe60c563270cfaeeaa124b6cdd6ec2"; }catch{ return "2cfe60c563270cfaeeaa124b6cdd6ec2"; } }
 
   function initWCProjectIdField(){
     const f = $("wcProjectId");
     if(!f) return;
-    f.value = loadWCProjectId();
+    f.value = loadWCProjectId() || "2cfe60c563270cfaeeaa124b6cdd6ec2";
     f.addEventListener("change", ()=> saveWCProjectId(f.value.trim()));
   }
 
   async function connectInjected(){
-    if(!window.ethereum) throw new Error("No injected wallet found. Use WalletConnect.");
+    if(!window.ethereum) throw new Error("No injected wallet found. Use Connect (WalletConnect / QR).");
     await ensureBase();
     provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     signer = await provider.getSigner();
   }
 
-  async function connectWalletConnect(){
+  async function connectConnect (WalletConnect / QR)(){
     const projectId = ($("wcProjectId")?.value || loadWCProjectId() || "").trim();
-    if(!projectId) throw new Error("Missing WalletConnect projectId. Paste it in Advanced → WalletConnect Project ID.");
+    if(!projectId) throw new Error("Missing Connect (WalletConnect / QR) projectId. Paste it in Advanced → Connect (WalletConnect / QR) Project ID.");
     saveWCProjectId(projectId);
 
     if(typeof EthereumProvider === "undefined"){
-      throw new Error("WalletConnect library not loaded.");
+      throw new Error("Connect (WalletConnect / QR) library not loaded.");
     }
 
     const wc = await EthereumProvider.init({
