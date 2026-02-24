@@ -2,313 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ToadAid — Forge Identity (ERC-8004)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Toadgang Identity — Forge Agent (MPASS Gate)</title>
   <style>
-    :root{
-      --bg:#0b1020;
-      --panel:#0f1733;
-      --panel2:#0b1430;
-      --text:#e8eeff;
-      --muted:#9bb0ff;
-      --line:rgba(255,255,255,.08);
-      --accent:#4aa3ff;
-      --accent2:#67f3c4;
-      --warn:#ffcc66;
-      --bad:#ff6b6b;
-      --good:#5cff95;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r:18px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    :root { color-scheme: dark; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+           background:#0b0f14; color:#e7eef7; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px 60px; }
+    h1 { font-size: 22px; margin: 0 0 10px; }
+    .sub { color:#9fb0c3; font-size: 13px; margin-bottom: 18px; line-height: 1.45; }
+    .grid { display:grid; grid-template-columns: 1.2fr 0.8fr; gap:16px; }
+    .card { background:#101823; border:1px solid #1f2a3a; border-radius: 14px; padding: 14px; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+    .tag { font-size:12px; padding: 4px 8px; border-radius: 999px; border:1px solid #2a3a52; color:#bcd0ea; }
+    label { display:block; font-size:12px; color:#b7c7da; margin: 10px 0 6px; }
+    input, textarea, select {
+      width:100%; box-sizing: border-box; border-radius:10px; border:1px solid #26344a;
+      background:#0b121b; color:#e7eef7; padding: 10px 11px; font-size: 14px;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:var(--sans);
-      background: radial-gradient(1200px 700px at 20% 10%, rgba(74,163,255,.18), transparent 55%),
-                  radial-gradient(900px 600px at 80% 20%, rgba(103,243,196,.12), transparent 60%),
-                  radial-gradient(800px 600px at 50% 90%, rgba(155,176,255,.10), transparent 55%),
-                  var(--bg);
-      color:var(--text);
+    textarea { min-height: 92px; resize: vertical; }
+    button {
+      border:0; border-radius: 12px; padding: 11px 14px; font-weight: 700;
+      background:#2cff9a; color:#062113; cursor:pointer;
     }
-    header{
-      padding:28px 18px 14px;
-      max-width:1200px; margin:0 auto;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-    }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-    }
-    .logo{
-      width:38px; height:38px; border-radius:12px;
-      background: linear-gradient(135deg, rgba(74,163,255,.9), rgba(103,243,196,.9));
-      box-shadow: var(--shadow);
-      position:relative;
-    }
-    .logo:after{
-      content:"🪞";
-      position:absolute; inset:0;
-      display:grid; place-items:center;
-      font-size:18px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
-    }
-    h1{ font-size:18px; margin:0; letter-spacing:.2px}
-    .sub{ font-size:12.5px; color:var(--muted); margin-top:3px}
-    .top-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    button{
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      transition:.15s ease;
-      font-weight:600;
-    }
-    button:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09) }
-    button.primary{
-      background: linear-gradient(135deg, rgba(74,163,255,.95), rgba(103,243,196,.85));
-      color:#041024;
-      border:0;
-    }
-    button.primary:hover{ filter:brightness(1.05) }
-    .pill{
-      font-family:var(--mono);
-      font-size:12px;
-      padding:8px 10px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      color:var(--muted);
-      background: rgba(0,0,0,.18);
-      white-space:nowrap;
-    }
-    main{
-      max-width:1200px; margin:0 auto;
-      padding: 0 18px 40px;
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:16px;
-    }
-    @media (max-width: 980px){
-      main{grid-template-columns:1fr}
-    }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card .hd{
-      padding:14px 16px;
-      border-bottom:1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      background: rgba(0,0,0,.18);
-    }
-    .card .hd .t{
-      font-weight:800; letter-spacing:.2px
-    }
-    .card .bd{ padding:16px }
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    @media (max-width: 720px){
-      .grid{grid-template-columns:1fr}
-    }
-    label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin: 0 0 6px;
-    }
-    input, textarea, select{
-      width:100%;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      color:var(--text);
-      padding:11px 12px;
-      outline:none;
-    }
-    textarea{ min-height:110px; resize:vertical; line-height:1.35 }
-    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .toggle{
-      display:flex; align-items:center; gap:10px;
-      padding:10px 12px; border:1px solid var(--line);
-      border-radius:14px; background: rgba(0,0,0,.18);
-    }
-    .toggle input{ width:auto }
-    .hint{
-      margin-top:10px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.35;
-    }
-    .hint strong{ color: var(--text) }
-    .mono{
-      font-family: var(--mono);
-      font-size: 12px;
-      line-height:1.45;
-      color: #dce6ff;
-      white-space:pre;
-      overflow:auto;
-      background: rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:14px;
-      padding:12px;
-    }
-    .status{
-      font-size:12px;
-      color:var(--muted);
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    }
-    .dot{ width:8px; height:8px; border-radius:999px; background:rgba(255,255,255,.25) }
-    .dot.good{ background: var(--good) }
-    .dot.bad{ background: var(--bad) }
-    .dot.warn{ background: var(--warn) }
-    .smallbtn{
-      padding:8px 10px;
-      border-radius:12px;
-      font-size:12px;
-      font-weight:700;
-    }
-    footer{
-      max-width:1200px; margin:0 auto;
-      padding: 0 18px 20px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-    a{ color: var(--accent2); text-decoration:none }
-    a:hover{ text-decoration:underline }
+    button.secondary { background:#1f2a3a; color:#e7eef7; border:1px solid #2a3a52; }
+    button:disabled { opacity:0.55; cursor:not-allowed; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .muted { color:#9fb0c3; }
+    .ok { color:#2cff9a; }
+    .bad { color:#ff6b6b; }
+    .small { font-size:12px; }
+    .hr { height:1px; background:#1f2a3a; margin: 12px 0; }
+    img { width:100%; border-radius: 12px; border:1px solid #1f2a3a; background:#0b121b; }
+    a { color:#8fd3ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <div class="logo" aria-hidden="true"></div>
-    <div>
-      <h1>ToadAid Identity Forge</h1>
-      <div class="sub">ERC-8004 registration on Base — clean rails, subtle Mirror. 🪞🌊🍃</div>
+  <div class="wrap">
+    <h1>Toadgang Identity — Forge Agent (MPASS Gate)</h1>
+    <div class="sub">
+      This page mints an ERC-8004 agent through the <span class="mono">ToadgangRegistryRouter</span> (so the MPASS gate is enforced).
+      <br/>
+      Gate: <span class="mono">MPASS ERC-20</span> balance ≥ <span class="mono">1e18</span> (1 token).
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="row">
+          <span class="tag">Network: Base</span>
+          <span id="netTag" class="tag">Wallet: —</span>
+          <span id="gateTag" class="tag">Gate: —</span>
+        </div>
+
+        <label>Agent URI (recommended: pinned JSON on IPFS)</label>
+        <input id="agentUri" class="mono" placeholder="ipfs://bafy... (or leave empty to auto-generate data: URI from the fields below)" />
+
+        <div class="hr"></div>
+
+        <div class="row">
+          <button id="btnConnect" class="secondary">Connect (Browser Wallet)</button>
+          <button id="btnWalletConnect" class="secondary">Connect (WalletConnect QR)</button>
+          <button id="btnForge" disabled>Forge Agent</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div id="status" class="small muted">Ready.</div>
+
+        <div class="hr"></div>
+
+        <div class="small">
+          <div><span class="muted">Registry Router:</span> <span class="mono" id="routerAddr"></span></div>
+          <div><span class="muted">MPASS:</span> <span class="mono" id="mpassAddr"></span></div>
+          <div><span class="muted">ERC-8004 Registry (proxy):</span> <span class="mono" id="registryAddr"></span></div>
+          <div><span class="muted">Reputation Router:</span> <span class="mono" id="repAddr"></span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>Optional metadata (used only if Agent URI is empty)</label>
+
+        <label>Name</label>
+        <input id="name" value="Toadgang Agent" />
+
+        <label>Description</label>
+        <textarea id="desc">MPASS-gated agent identity. The chain records. The pond interprets. 🪞🌊</textarea>
+
+        <label>Image (IPFS gateway URL or https URL)</label>
+        <input id="imageUrl" class="mono" placeholder="https://.../ipfs/<CID>  (or ipfs://CID)" />
+
+        <label>External URL</label>
+        <input id="externalUrl" class="mono" placeholder="https://toadaid.github.io" />
+
+        <label>Attributes (JSON array)</label>
+        <textarea id="attrs" class="mono">[
+  {"trait_type":"Gate","value":"MPASS ≥ 1"},
+  {"trait_type":"Chain","value":"Base"},
+  {"trait_type":"Role","value":"Toadgang Identity"}
+]</textarea>
+
+        <div class="hr"></div>
+        <div class="small muted">
+          If you already pinned a JSON file, paste its <span class="mono">ipfs://&lt;CID&gt;</span> in “Agent URI” and ignore this panel.
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="top-actions">
-    <span class="pill" id="netPill">Network: —</span>
-    <span class="pill" id="addrPill">Wallet: —</span>
-    <button class="smallbtn" id="btnConnect">Connect</button>
-    <button class="primary smallbtn" id="btnMint" disabled>Forge Identity</button>
-  </div>
-</header>
-
-<main>
-  <section class="card">
-    <div class="hd">
-      <div class="t">Identity Details</div>
-      <div class="status" id="statusLine">
-        <span class="dot warn" id="statusDot"></span>
-        <span id="statusText">Connect wallet to begin.</span>
-      </div>
-    </div>
-    <div class="bd">
-      <div class="grid">
-        <div>
-          <label>Agent Name *</label>
-          <input id="name" placeholder="Mirror Engineer / Lore Guardian / Builder Agent…" maxlength="100" />
-        </div>
-        <div>
-          <label>Image URL (optional)</label>
-          <input id="image" placeholder="https://… or ipfs://…" />
-        </div>
-      </div>
-
-      <div style="margin-top:12px">
-        <label>Description *</label>
-        <textarea id="desc" placeholder="What does this agent do? How can others interact with it? (short + clear)"></textarea>
-      </div>
-
-      <div style="margin-top:12px" class="grid">
-        <div class="toggle">
-          <input type="checkbox" id="active" checked />
-          <div>
-            <div style="font-weight:800">Active</div>
-            <div class="sub">Mark as operational / accepting requests.</div>
-          </div>
-        </div>
-
-        <div class="toggle">
-          <input type="checkbox" id="x402" />
-          <div>
-            <div style="font-weight:800">HTTP 402 Support</div>
-            <div class="sub">Payment required support flag (optional).</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top:12px" class="grid">
-        <div>
-          <label>Endpoint URL (optional)</label>
-          <input id="endpoint" placeholder="https://toadaid.duckdns.org/mcp (or /ask)" />
-          <div class="hint">
-            Tip: for public endpoints, use a gateway or rate-limited key. Don’t expose raw private services.
-          </div>
-        </div>
-
-        <div>
-          <label>Endpoint Type</label>
-          <select id="endpointType">
-            <option value="web">Web</option>
-            <option value="mcp">MCP</option>
-            <option value="custom">Custom</option>
-          </select>
-          <div class="hint">
-            This is stored inside the metadata JSON (not onchain key/value pairs).
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top:14px" class="row">
-        <button class="smallbtn" id="btnCopyUri">Copy Data URI</button>
-        <button class="smallbtn" id="btnCopyJson">Copy JSON</button>
-        <span class="pill" id="contractPill">Contract: 0x8004A…a432 (Base)</span>
-      </div>
-
-      <div class="hint" style="margin-top:12px">
-        <strong>Hybrid principle:</strong> the chain records the identity. The pond adds meaning later. 🪞
-      </div>
-    </div>
-  </section>
-
-  <aside class="card">
-    <div class="hd">
-      <div class="t">Generated Metadata</div>
-      <div class="row">
-        <span class="pill" id="bytePill">—</span>
-      </div>
-    </div>
-    <div class="bd">
-      <div class="sub" style="margin-bottom:8px">
-        Live preview of what will be encoded into a <strong>data:application/json;base64</strong> URI and passed to <span style="font-family:var(--mono)">register(agentURI)</span>.
-      </div>
-      <pre class="mono" id="jsonOut">{}</pre>
-      <div class="sub" style="margin:12px 0 8px">Agent URI (data URI)</div>
-      <pre class="mono" id="uriOut">data:application/json;base64,…</pre>
-    </div>
-  </aside>
-</main>
-
-<footer>
-  <div>
-    This page calls the public ERC-8004 Identity Registry proxy on Base.
-    It does not copy or depend on any third-party frontend.
-    If you want a “ToadAid-owned registry” later, we can deploy our own proxy after we confirm the initializer + ownership pattern safely.
-  </div>
-</footer>
 
 <script type="module">
-  // Ethers v6 via CDN (simple + reliable for GitHub Pages)
   import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.13.4/+esm";
+  import EthereumProvider from "https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.13.0/+esm";
 
   // Base mainnet
   const BASE_CHAIN_ID = 8453;
@@ -320,186 +124,250 @@
     blockExplorerUrls: ["https://basescan.org"]
   };
 
-  // ERC-8004 identity proxy used by 8004agents.ai (per your screenshot)
-  const IDENTITY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
+  // WalletConnect (QR) — set your WC Project ID (cloud.walletconnect.com)
+  // You can also set it via:
+  //   1) querystring:  ?wc=YOUR_PROJECT_ID
+  //   2) localStorage: localStorage.setItem("WC_PROJECT_ID","YOUR_PROJECT_ID")
+  const WC_PROJECT_ID =
+    new URLSearchParams(location.search).get("wc") ||
+    localStorage.getItem("WC_PROJECT_ID") ||
+    "";
 
-  // Minimal ABI for register(string)
-  const ABI = [
-    "function register(string agentURI) external returns (uint256 agentId)",
-    "event Registered(uint256 indexed agentId, string agentURI, address indexed owner)"
+  // Contracts (Base)
+  const ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";              // ToadgangRegistryRouter (MPASS gate)
+  const MPASS  = "0xdB9e64465d4B5fbc7Ee9091C459094eFC7dF5cdE";              // MPASS ERC-20
+  const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";       // ERC-8004 registry proxy
+  const REP_ROUTER = "0x94D7B431dD8eAFc9E1b71624DF0a90468622537a";           // ToadgangReputationRouter
+
+  // Gate policy (mirror what you set onchain)
+  const MIN_BALANCE = 10n ** 18n; // 1e18
+
+  // Minimal ABIs
+  const ROUTER_ABI = [
+    "function forge(string agentURI) external returns (uint256 agentId)",
+    "function paused() view returns (bool)",
+    "function gateToken() view returns (address)",
+    "function gateType() view returns (uint8)",
+    "function minBalance() view returns (uint256)"
   ];
+  const ERC20_ABI = ["function balanceOf(address) view returns (uint256)"];
 
+  // UI
   const $ = (id) => document.getElementById(id);
+  const netTag = $("netTag");
+  const gateTag = $("gateTag");
+  const status = $("status");
+  $("routerAddr").textContent = ROUTER;
+  $("mpassAddr").textContent = MPASS;
+  $("registryAddr").textContent = REGISTRY_PROXY;
+  $("repAddr").textContent = REP_ROUTER;
 
-  const netPill = $("netPill");
-  const addrPill = $("addrPill");
-  const statusDot = $("statusDot");
-  const statusText = $("statusText");
-
-  const nameIn = $("name");
-  const descIn = $("desc");
-  const imageIn = $("image");
-  const activeIn = $("active");
-  const x402In = $("x402");
-  const endpointIn = $("endpoint");
-  const endpointTypeIn = $("endpointType");
-
-  const jsonOut = $("jsonOut");
-  const uriOut = $("uriOut");
-  const bytePill = $("bytePill");
-
-  const btnConnect = $("btnConnect");
-  const btnMint = $("btnMint");
-  const btnCopyUri = $("btnCopyUri");
-  const btnCopyJson = $("btnCopyJson");
-
-  let provider, signer;
-
-  function setStatus(kind, text){
-    statusText.textContent = text;
-    statusDot.className = "dot " + (kind === "good" ? "good" : kind === "bad" ? "bad" : "warn");
+  // Insert quick WC hint in status if missing Project ID
+  function wcHint() {
+    if (WC_PROJECT_ID) return "";
+    return " WalletConnect disabled (missing WC Project ID).";
   }
 
-  function buildMetadata(){
-    const name = (nameIn.value || "").trim();
-    const description = (descIn.value || "").trim();
-    const image = (imageIn.value || "").trim();
-    const active = !!activeIn.checked;
-    const x402Support = !!x402In.checked;
+  let provider, signer, user;
+  let wcProvider = null; // WalletConnect EthereumProvider
 
-    const endpoint = (endpointIn.value || "").trim();
-    const endpointType = endpointTypeIn.value;
+  function setStatus(msg, cls="muted") {
+    status.className = "small " + cls;
+    status.textContent = msg;
+  }
 
-    const meta = {
-      type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
-      name,
-      description,
-      image,
-      active,
-      x402Support
+  function toHttpIfIpfs(uri) {
+    if (!uri) return uri;
+    if (uri.startsWith("ipfs://")) {
+      const cid = uri.replace("ipfs://", "");
+      return `https://ipfs.io/ipfs/${cid}`;
+    }
+    return uri;
+  }
+
+  function buildDataUriFromFields() {
+    const name = $("name").value.trim();
+    const description = $("desc").value.trim();
+    const imageRaw = $("imageUrl").value.trim();
+    const image = toHttpIfIpfs(imageRaw);
+    const external_url = $("externalUrl").value.trim();
+
+    let attributes = [];
+    try { attributes = JSON.parse($("attrs").value || "[]"); } catch { attributes = []; }
+
+    const obj = { name, description, image };
+    if (external_url) obj.external_url = external_url;
+    if (Array.isArray(attributes) && attributes.length) obj.attributes = attributes;
+
+    const json = JSON.stringify(obj);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    return `data:application/json;base64,${b64}`;
+  }
+
+  async function refreshGateStatus() {
+    if (!provider || !user) return;
+
+    const router = new ethers.Contract(ROUTER, ROUTER_ABI, provider);
+    const paused = await router.paused();
+    const gateToken = await router.gateToken();
+    const minBal = await router.minBalance();
+
+    // Basic sanity: router is configured to our MPASS + 1e18
+    const configuredOk = (gateToken.toLowerCase() === MPASS.toLowerCase()) && (minBal === MIN_BALANCE);
+
+    const mpass = new ethers.Contract(MPASS, ERC20_ABI, provider);
+    const bal = await mpass.balanceOf(user);
+
+    const hasGate = bal >= MIN_BALANCE;
+
+    // Tags
+    netTag.textContent = `Wallet: ${user.slice(0,6)}…${user.slice(-4)}`;
+    gateTag.textContent = paused
+      ? "Gate: router paused"
+      : hasGate
+        ? "Gate: MPASS OK"
+        : "Gate: need MPASS";
+
+    $("btnForge").disabled = paused || !hasGate;
+
+    if (!configuredOk) {
+      setStatus("Warning: router gate config onchain doesn't match expected MPASS + 1e18.", "bad");
+      return;
+    }
+
+    if (paused) setStatus("Router is paused. Unpause via Safe before forging.", "bad");
+    else if (!hasGate) setStatus("This wallet does not meet the MPASS gate (need ≥ 1e18).", "bad");
+    else setStatus("Gate satisfied. Ready to forge." + wcHint(), "ok");
+  }
+
+  async function connectInjected() {
+    const eth = window.ethereum;
+    if (!eth) throw new Error("No browser wallet found. Install MetaMask / Rabby, or use WalletConnect.");
+    const chainIdHex = await eth.request({ method: "eth_chainId" });
+    const chainId = Number(chainIdHex);
+    if (chainId !== BASE_CHAIN_ID) {
+      try {
+        await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_PARAMS.chainId }] });
+      } catch (e) {
+        await eth.request({ method: "wallet_addEthereumChain", params: [BASE_PARAMS] });
+      }
+    }
+
+    provider = new ethers.BrowserProvider(eth);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    user = await signer.getAddress();
+  }
+
+  async function connectWalletConnect() {
+    if (!WC_PROJECT_ID) {
+      throw new Error("WalletConnect Project ID missing. Add ?wc=YOUR_PROJECT_ID to the URL or set localStorage.WC_PROJECT_ID.");
+    }
+    wcProvider = await EthereumProvider.init({
+      projectId: WC_PROJECT_ID,
+      chains: [BASE_CHAIN_ID],
+      showQrModal: true,
+      rpcMap: {
+        [BASE_CHAIN_ID]: "https://mainnet.base.org"
+      }
+    });
+
+    // Opens QR modal
+    await wcProvider.enable();
+
+    provider = new ethers.BrowserProvider(wcProvider);
+    signer = await provider.getSigner();
+    user = await signer.getAddress();
+
+    // Optional: handle disconnect UI
+    wcProvider.on("disconnect", () => {
+      provider = null; signer = null; user = null; wcProvider = null;
+      netTag.textContent = "Wallet: —";
+      gateTag.textContent = "Gate: —";
+      $("btnForge").disabled = true;
+      setStatus("Disconnected.", "muted");
+    });
+  }
+
+  $("btnConnect").onclick = async () => {
+    try {
+      setStatus("Connecting browser wallet…");
+      await connectInjected();
+      setStatus("Connected.", "ok");
+      await refreshGateStatus();
+    } catch (e) {
+      console.error(e);
+      setStatus((e?.message || String(e)) + wcHint(), "bad");
+    }
+  };
+
+  // WalletConnect button (QR)
+  const btnWC = document.getElementById("btnWalletConnect");
+  if (btnWC) {
+    btnWC.onclick = async () => {
+      try {
+        setStatus("Opening WalletConnect…");
+        await connectWalletConnect();
+        setStatus("Connected (WalletConnect).", "ok");
+        await refreshGateStatus();
+      } catch (e) {
+        console.error(e);
+        setStatus(e?.message || String(e), "bad");
+      }
     };
 
-    // subtle mirror additions (non-breaking)
-    meta.tags = ["toadaid", "mirror", "erc-8004", "base"];
-    meta.symbols = ["🪞","🌊","🍃","🌀"];
-
-    if(endpoint){
-      meta.endpoints = [{
-        type: endpointType,
-        url: endpoint,
-        version: "1.0.0"
-      }];
-    } else {
-      meta.endpoints = [];
-    }
-
-    const json = JSON.stringify(meta, null, 2);
-    const b64 = btoa(unescape(encodeURIComponent(json)));
-    const uri = `data:application/json;base64,${b64}`;
-
-    jsonOut.textContent = json;
-    uriOut.textContent = uri;
-
-    bytePill.textContent = `data URI bytes: ~${uri.length}`;
-    return { json, uri, ok: name.length > 0 && description.length > 0 };
-  }
-
-  function updateMintButton(){
-    const { ok } = buildMetadata();
-    btnMint.disabled = !(ok && signer);
-  }
-
-  // Live preview
-  [nameIn, descIn, imageIn, activeIn, x402In, endpointIn, endpointTypeIn].forEach(el=>{
-    el.addEventListener("input", updateMintButton);
-    el.addEventListener("change", updateMintButton);
-  });
-
-  async function ensureBase(){
-    const eth = window.ethereum;
-    if(!eth) throw new Error("No wallet found. Install a Web3 wallet extension.");
-    const chainId = await eth.request({ method: "eth_chainId" });
-
-    if(parseInt(chainId, 16) !== BASE_CHAIN_ID){
-      try{
-        await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_PARAMS.chainId }]});
-      }catch(e){
-        // If the chain is not added yet
-        if(e && (e.code === 4902 || String(e.message||"").includes("Unrecognized chain"))){
-          await eth.request({ method: "wallet_addEthereumChain", params: [BASE_PARAMS]});
-        } else {
-          throw e;
-        }
-      }
+    // Disable visually if no project id
+    if (!WC_PROJECT_ID) {
+      btnWC.disabled = true;
+      btnWC.title = "Set WalletConnect Project ID to enable QR connect.";
     }
   }
 
-  btnConnect.addEventListener("click", async ()=>{
-    try{
-      setStatus("warn", "Connecting…");
-      await ensureBase();
+  $("btnForge").onclick = async () => {
+    try {
+      if (!signer) throw new Error("Connect wallet first.");
+      const router = new ethers.Contract(ROUTER, ROUTER_ABI, signer);
 
-      provider = new ethers.BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      signer = await provider.getSigner();
+      let agentURI = $("agentUri").value.trim();
+      if (!agentURI) agentURI = buildDataUriFromFields();
 
-      const addr = await signer.getAddress();
-      addrPill.textContent = `Wallet: ${addr.slice(0,6)}…${addr.slice(-4)}`;
-      netPill.textContent = "Network: Base (8453)";
+      setStatus("Submitting forge()… confirm in wallet.", "muted");
+      const tx = await router.forge(agentURI);
+      setStatus(`Pending: ${tx.hash}`, "muted");
 
-      setStatus("good", "Ready. Forge when your details are set.");
-      updateMintButton();
-    }catch(err){
-      console.error(err);
-      setStatus("bad", err?.message || "Connect failed.");
-    }
-  });
+      const rcpt = await tx.wait();
 
-  btnMint.addEventListener("click", async ()=>{
-    try{
-      if(!signer) return;
-      const { uri, ok } = buildMetadata();
-      if(!ok) return;
-
-      setStatus("warn", "Forging identity onchain…");
-
-      const contract = new ethers.Contract(IDENTITY_PROXY, ABI, signer);
-      const tx = await contract.register(uri);
-      setStatus("warn", `Submitted. Waiting… (${tx.hash.slice(0,10)}…)`);
-
-      const receipt = await tx.wait();
-      // Try to extract agentId from Registered event
+      // Decode Forged event
       let agentId = null;
-      for(const log of receipt.logs){
-        try{
-          const parsed = contract.interface.parseLog(log);
-          if(parsed && parsed.name === "Registered"){
-            agentId = parsed.args.agentId?.toString?.() ?? null;
-          }
-        }catch(_){}
-      }
+      try {
+        const iface = new ethers.Interface([
+          "event Forged(address indexed user,uint256 indexed agentId,address indexed registry,string agentURI)"
+        ]);
+        for (const log of rcpt.logs) {
+          if (log.address.toLowerCase() !== ROUTER.toLowerCase()) continue;
+          try {
+            const parsed = iface.parseLog(log);
+            if (parsed && parsed.name === "Forged") {
+              agentId = parsed.args.agentId;
+              break;
+            }
+          } catch {}
+        }
+      } catch {}
 
-      setStatus("good", agentId ? `Forged. Agent ID: ${agentId}` : "Forged. Confirm on BaseScan.");
-    }catch(err){
-      console.error(err);
-      setStatus("bad", err?.shortMessage || err?.message || "Transaction failed.");
+      const explorer = `https://basescan.org/tx/${tx.hash}`;
+      if (agentId !== null) setStatus(`Forged ✅ agentId = ${agentId.toString()} | ${explorer}`, "ok");
+      else setStatus(`Forged ✅ | ${explorer}`, "ok");
+
+      await refreshGateStatus();
+    } catch (e) {
+      console.error(e);
+      setStatus(e?.shortMessage || e?.message || String(e), "bad");
     }
-  });
+  };
 
-  btnCopyUri.addEventListener("click", async ()=>{
-    const { uri } = buildMetadata();
-    await navigator.clipboard.writeText(uri);
-    setStatus("good", "Agent URI copied.");
-  });
-
-  btnCopyJson.addEventListener("click", async ()=>{
-    const { json } = buildMetadata();
-    await navigator.clipboard.writeText(json);
-    setStatus("good", "JSON copied.");
-  });
-
-  // Initial render
-  buildMetadata();
+  // On load: show WC status hint
+  setStatus("Ready." + wcHint(), "muted");
 </script>
 </body>
 </html>
