@@ -36,6 +36,7 @@
       padding:28px 18px 14px;
       max-width:1200px; margin:0 auto;
       display:flex; align-items:center; justify-content:space-between; gap:12px;
+      position: relative;
     }
     .brand{
       display:flex; align-items:center; gap:10px;
@@ -54,7 +55,7 @@
     }
     h1{ font-size:18px; margin:0; letter-spacing:.2px}
     .sub{ font-size:12.5px; color:var(--muted); margin-top:3px}
-    .top-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .top-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; position: relative;}
     button{
       border:1px solid var(--line);
       background: rgba(255,255,255,.06);
@@ -81,6 +82,39 @@
       color:var(--muted);
       background: rgba(0,0,0,.18);
       white-space:nowrap;
+      cursor: pointer;
+      position: relative;
+    }
+    /* Dropdown for disconnect */
+    .wallet-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 40px;
+      background: var(--panel);
+      min-width: 160px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      z-index: 1001;
+      box-shadow: var(--shadow);
+    }
+    .dropdown-content button {
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+    }
+    .dropdown-content button:hover {
+      background: rgba(255,255,255,.1);
+    }
+    .wallet-dropdown:hover .dropdown-content {
+      display: block;
     }
     main{
       max-width:1200px; margin:0 auto;
@@ -302,11 +336,6 @@
       color: var(--accent2);
       margin-top: 8px;
     }
-    .wc-error {
-      color: var(--bad);
-      font-size: 11px;
-      margin-top: 8px;
-    }
   </style>
 </head>
 <body>
@@ -321,7 +350,12 @@
 
   <div class="top-actions">
     <span class="pill" id="netPill">Network: —</span>
-    <span class="pill" id="addrPill">Wallet: —</span>
+    <div class="wallet-dropdown" id="walletDropdown" style="display: none;">
+      <span class="pill" id="addrPill">Wallet: —</span>
+      <div class="dropdown-content">
+        <button id="btnDisconnect">Disconnect</button>
+      </div>
+    </div>
     <button class="smallbtn" id="btnConnect">Connect</button>
     <button class="primary smallbtn" id="btnMint" disabled>Forge Identity</button>
   </div>
@@ -527,6 +561,7 @@
   const statusText = $("statusText");
   const proxyName = $("proxyName");
   const contractPill = $("contractPill");
+  const walletDropdown = $("walletDropdown");
 
   const nameIn = $("name");
   const descIn = $("desc");
@@ -545,6 +580,7 @@
   const btnMint = $("btnMint");
   const btnCopyUri = $("btnCopyUri");
   const btnCopyJson = $("btnCopyJson");
+  const btnDisconnect = $("btnDisconnect");
 
   // Modal elements
   const modal = $("walletModal");
@@ -557,6 +593,7 @@
 
   let provider, signer;
   let wcProvider = null;
+  let walletType = null; // 'browser' or 'wc'
 
   function setStatus(kind, text){
     statusText.textContent = text;
@@ -630,13 +667,44 @@
     }
   });
 
-  async function ensureBase() {
+  // Disconnect function
+  async function disconnect() {
     try {
-      if (!provider) return;
+      if (wcProvider) {
+        await wcProvider.disconnect();
+        wcProvider = null;
+      }
+      provider = null;
+      signer = null;
+      walletType = null;
       
-      const network = await provider.getNetwork();
+      addrPill.textContent = "Wallet: —";
+      netPill.textContent = "Network: —";
+      walletDropdown.style.display = "none";
+      btnConnect.style.display = "block";
+      
+      setStatus("warn", "Wallet disconnected");
+      updateMintButton();
+    } catch (err) {
+      console.error("Disconnect error:", err);
+    }
+  }
+
+  btnDisconnect.addEventListener("click", disconnect);
+
+  // Update UI after connection
+  function updateWalletUI(address, type) {
+    addrPill.textContent = `Wallet: ${address.slice(0,6)}…${address.slice(-4)}${type === 'wc' ? ' (WC)' : ''}`;
+    netPill.textContent = "Network: Base (8453)";
+    walletDropdown.style.display = "inline-block";
+    btnConnect.style.display = "none";
+  }
+
+  async function ensureBase(providerToUse) {
+    try {
+      const network = await providerToUse.getNetwork();
       if (Number(network.chainId) !== BASE_CHAIN_ID) {
-        if (window.ethereum) {
+        if (window.ethereum && walletType === 'browser') {
           try {
             await window.ethereum.request({ 
               method: "wallet_switchEthereumChain", 
@@ -653,7 +721,7 @@
             }
           }
         } else {
-          throw new Error(`Please switch to Base network`);
+          throw new Error(`Please switch to Base network in your wallet`);
         }
       }
     } catch (error) {
@@ -674,13 +742,13 @@
       provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       
-      await ensureBase();
+      await ensureBase(provider);
       
       signer = await provider.getSigner();
       const addr = await signer.getAddress();
       
-      addrPill.textContent = `Wallet: ${addr.slice(0,6)}…${addr.slice(-4)}`;
-      netPill.textContent = "Network: Base (8453)";
+      walletType = 'browser';
+      updateWalletUI(addr, 'browser');
       
       setStatus("good", "Ready. Forge when your details are set.");
       updateMintButton();
@@ -750,16 +818,13 @@
       provider = new ethers.BrowserProvider(wcProvider);
       
       // Check network
-      const network = await provider.getNetwork();
-      if (Number(network.chainId) !== BASE_CHAIN_ID) {
-        throw new Error(`Please switch to Base network in your wallet`);
-      }
+      await ensureBase(provider);
       
       signer = await provider.getSigner();
       const addr = await signer.getAddress();
       
-      addrPill.textContent = `Wallet: ${addr.slice(0,6)}…${addr.slice(-4)} (WC)`;
-      netPill.textContent = "Network: Base (8453)";
+      walletType = 'wc';
+      updateWalletUI(addr, 'wc');
       
       setStatus("good", "Connected via WalletConnect");
       updateMintButton();
@@ -772,6 +837,7 @@
       wcSection.style.display = "none";
       if (wcProvider) {
         try { await wcProvider.disconnect(); } catch(e) {}
+        wcProvider = null;
       }
     }
   }
