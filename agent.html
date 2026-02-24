@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ToadAid — Forge Identity (ERC-8004) | Hybrid Mint</title>
+  <title>ToadAid — Forge Agent ID (ERC-8004) | MPASS Gate</title>
   <style>
     :root{
       --bg:#0b1020;
@@ -210,7 +210,7 @@
   <div class="brand">
     <div class="logo" aria-hidden="true"></div>
     <div>
-      <h1>ToadAid Identity Forge — Hybrid Mint</h1>
+      <h1>ToadAid Identity Forge — MPASS‑Gated Forge</h1>
       <div class="sub">ERC-8004 registration on Base · Toadgang & Public proxies 🪞🌊🍃</div>
     </div>
   </div>
@@ -240,12 +240,12 @@
         <div class="toggle" style="margin-bottom:8px; background:rgba(74,163,255,.1);">
           <input type="checkbox" id="useToadgangProxy" checked />
           <div>
-            <div style="font-weight:800; color:var(--accent2);">🌊 Mint on Toadgang Proxy (Community)</div>
+            <div style="font-weight:800; color:var(--accent2);">🌊 Mint on Toadgang Registry Router (Community)</div>
             <div class="sub">Ownerless · Open mint for Toadgang · Recommended</div>
           </div>
         </div>
         <div class="proxy-details" id="proxyDetails">
-          <strong>Toadgang Proxy:</strong> 0x6d5D9c8345e0881033E1cc961BAde399b28dA74B<br>
+          <strong>Toadgang Registry Router:</strong> 0x6d5D9c8345e0881033E1cc961BAde399b28dA74B<br>
           <strong>Public Proxy:</strong> 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432<br>
           <strong>Bedrock Implementation:</strong> 0x7274e874ca62410a93bd8bf61c69d8045e399c02
         </div>
@@ -311,7 +311,7 @@
         <button class="smallbtn" id="btnCopyUri">Copy Data URI</button>
         <button class="smallbtn" id="btnCopyJson">Copy JSON</button>
         <span class="pill" id="contractPill">
-          <span id="proxyName">Toadgang Proxy</span>
+          <span id="proxyName">Toadgang Registry Router</span>
         </span>
       </div>
 
@@ -341,10 +341,10 @@
 
 <footer>
   <div style="margin-bottom:12px">
-    <strong>🪞 Hybrid Minting Architecture</strong>
+    <strong>🪞 MPASS‑Gated Forgeing Architecture</strong>
   </div>
   <ul style="margin:8px 0 12px 20px; opacity:0.9">
-    <li><strong>🌊 Toadgang Proxy (selected by default):</strong> <code>0x6d5D9c8345e0881033E1cc961BAde399b28dA74B</code> — Community-owned, ownerless, open mint for Toadgang. Verified proxy pointing to bedrock.</li>
+    <li><strong>🌊 Toadgang Registry Router (selected by default):</strong> <code>0x6d5D9c8345e0881033E1cc961BAde399b28dA74B</code> — Community-owned, ownerless, open mint for Toadgang. Verified proxy pointing to bedrock.</li>
     <li><strong>🏛️ Public Proxy:</strong> <code>0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</code> — The main ERC-8004 registry used by 8004agents.ai.</li>
   </ul>
   <p style="margin-top:12px; background:rgba(0,0,0,.3); padding:10px; border-radius:12px;">
@@ -352,8 +352,8 @@
     <span style="font-size:11px;">Immutable · Ownership renounced · Agents 0 & 1 live here forever · Both proxies delegate to this logic.</span>
   </p>
   <p style="margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
-    This page calls ERC-8004 Identity Registry proxies on Base. It does not copy or depend on any third-party frontend.  
-    Choose your registry above — Toadgang proxy is community-owned and open for all Toadgang members.
+    This page forges ERC‑8004 Agent IDs on Base via the canonical registry proxy. It does not depend on any third‑party frontend.  
+    Choose the router above — the Toadgang router is Safe‑owned and MPASS‑gated for Toadgang members.
   </p>
 </footer>
 
@@ -424,7 +424,7 @@
 
   function updateContractDisplay() {
     const useToadgang = useToadgangProxy.checked;
-    proxyName.textContent = useToadgang ? "Toadgang Proxy" : "Public Proxy";
+    proxyName.textContent = useToadgang ? "Toadgang Registry Router" : "Public Proxy";
     contractPill.style.borderColor = useToadgang ? "var(--accent2)" : "var(--accent)";
   }
 
