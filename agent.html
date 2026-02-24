@@ -302,10 +302,13 @@
 </div>
 
 <!-- Add libraries -->
+<script src="https://unpkg.com/qrcode@1.5.1/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
-<script src="https://unpkg.com/@walletconnect/ethereum-provider@2.15.0/dist/umd/index.min.js"></script>
 <!-- Use Reown AppKit CDN (new version) -->
-<script>
+<script src="https://cdn.jsdelivr.net/npm/@reown/appkit@1.6.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@reown/appkit-adapter-wagmi@1.6.0/dist/index.umd.js"></script>
+
+<script type="module">
 (function(){
   // Your WalletConnect project ID
   const WC_PROJECT_ID = "c86752a13a29b19d308dc10fb72b820f";
@@ -474,50 +477,81 @@
     modal.style.display = "none";
   }
 
-  
-  async function connectWalletConnect(){
+  // FIXED: Using Reown AppKit for WalletConnect v2
+    async function connectWalletConnect(){
     try{
-      setStatus("warn", "Opening WalletConnect…");
+      // Make sure the WalletConnect section is visible
+      if(wcSection) wcSection.style.display = "block";
 
-      const EthereumProvider = window.WalletConnectEthereumProvider?.EthereumProvider;
-      if(!EthereumProvider){
-        throw new Error("WalletConnect library not loaded. Disable adblock and refresh.");
+      if(!WC_PROJECT_ID){
+        setStatus("err","Missing WalletConnect projectId. Set WC_PROJECT_ID in the script.");
+        return;
       }
+
+      setStatus("warn","Connecting via WalletConnect… (desktop QR / mobile deep-link)");
+      const ethers = window.ethers;
+
+      // Load provider module lazily (works on GitHub Pages; avoids global init issues)
+      const mod = await import("https://unpkg.com/@walletconnect/ethereum-provider@2.17.5/dist/index.es.js");
+      const EthereumProvider = mod.EthereumProvider;
 
       if(!walletConnectProvider){
         walletConnectProvider = await EthereumProvider.init({
           projectId: WC_PROJECT_ID,
           chains: [BASE_CHAIN_ID],
+          optionalChains: [BASE_CHAIN_ID],
           showQrModal: true,
-          rpcMap: {
-            [BASE_CHAIN_ID]: "https://mainnet.base.org"
+          rpcMap: { [BASE_CHAIN_ID]: BASE_PARAMS.rpcUrls[0] },
+          methods: [
+            "eth_chainId",
+            "eth_accounts",
+            "eth_requestAccounts",
+            "eth_sendTransaction",
+            "personal_sign",
+            "eth_signTypedData",
+            "eth_signTypedData_v4"
+          ],
+          events: ["accountsChanged","chainChanged","disconnect"]
+        });
+
+        walletConnectProvider.on("accountsChanged",(accs)=>{
+          if(accs && accs[0]){
+            currentAccount = accs[0];
+            addrPill.textContent = shortAddr(currentAccount);
           }
+        });
+
+        walletConnectProvider.on("chainChanged",(chainIdHex)=>{
+          const cid = parseInt(chainIdHex,16);
+          netPill.textContent = (cid === BASE_CHAIN_ID) ? `Base (${BASE_CHAIN_ID})` : `Chain ${cid}`;
+        });
+
+        walletConnectProvider.on("disconnect",()=>{
+          disconnect();
         });
       }
 
+      // Triggers QR (desktop) or wallet deep-link (mobile)
       await walletConnectProvider.connect();
 
-      const bp = new ethers.BrowserProvider(walletConnectProvider);
-      signer = await bp.getSigner();
-      provider = bp;
+      eip1193 = walletConnectProvider;
+      provider = new ethers.BrowserProvider(eip1193);
+      signer = await provider.getSigner();
+      currentAccount = await signer.getAddress();
+
+      // Basic network check
+      const net = await provider.getNetwork();
+      netPill.textContent = (Number(net.chainId) === BASE_CHAIN_ID) ? `Base (${BASE_CHAIN_ID})` : `Chain ${net.chainId}`;
+      addrPill.textContent = shortAddr(currentAccount);
+
       connectMode = "walletconnect";
-
-      const addr = await signer.getAddress();
-      addrPill.textContent = "Wallet: " + shortAddr(addr);
-      netPill.textContent = "Network: Base (8453)";
-      btnConnect.style.display = "none";
-      btnDisconnect.style.display = "inline-block";
-
-      setStatus("good", "Connected (WalletConnect). Ready to forge / attest.");
       updateButtons();
-      modal.style.display = "none";
-
-    }catch(err){
-      console.error(err);
-      setStatus("bad", err.message || "WalletConnect failed.");
+      setStatus("good","Connected. Ready to forge / attest.");
+    }catch(e){
+      console.error(e);
+      setStatus("err", `WalletConnect failed: ${e?.message || e}`);
     }
   }
-
 
   async function disconnect(){
     try{ 
