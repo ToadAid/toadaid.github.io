@@ -302,12 +302,9 @@
 </div>
 
 <!-- Add libraries -->
-<script src="https://unpkg.com/qrcode@1.5.1/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<script src="https://unpkg.com/@walletconnect/ethereum-provider@2.15.0/dist/umd/index.min.js"></script>
 <!-- Use Reown AppKit CDN (new version) -->
-<script src="https://cdn.jsdelivr.net/npm/@reown/appkit@1.6.0/dist/index.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@reown/appkit-adapter-wagmi@1.6.0/dist/index.umd.js"></script>
-
 <script>
 (function(){
   // Your WalletConnect project ID
@@ -477,54 +474,50 @@
     modal.style.display = "none";
   }
 
-  // FIXED: Using Reown AppKit for WalletConnect v2
+  
   async function connectWalletConnect(){
-    try {
-      setStatus("warn", "Initializing WalletConnect…");
-      
-      // Show QR section
-      wcSection.style.display = "block";
-      qrContainer.innerHTML = "<p style='color:var(--muted)'>Initializing WalletConnect...</p>";
-      wcStatus.textContent = "Preparing connection...";
+    try{
+      setStatus("warn", "Opening WalletConnect…");
 
-      // For demo purposes, since we can't easily use AppKit in static HTML,
-      // we'll use a simpler approach that works with your project ID
-      const walletConnectUri = `wc:${Math.random().toString(36).substring(2, 15)}@2?relay-protocol=irn&symKey=${Math.random().toString(36).substring(2, 30)}`;
-      
-      wcStatus.textContent = "Scan with your mobile wallet";
-      
-      // Generate QR code
-      qrContainer.innerHTML = '';
-      QRCode.toCanvas(walletConnectUri, { 
-        width: 250,
-        margin: 2
-      }, function(err, canvas) {
-        if (err) {
-          qrContainer.innerHTML = "<p style='color:var(--bad)'>Failed to generate QR</p>";
-          return;
-        }
-        qrContainer.appendChild(canvas);
-        
-        // Add instructions
-        const link = document.createElement('p');
-        link.style.marginTop = '10px';
-        link.style.fontSize = '10px';
-        link.innerHTML = `<a href="${walletConnectUri}" target="_blank" style="color:var(--accent2)">Open in wallet app →</a>`;
-        qrContainer.appendChild(link);
-        
-        // Simulate connection after scan (in real app, you'd listen for events)
-        setTimeout(() => {
-          // For demo, we'll show a message
-          wcStatus.textContent = "After scanning, the wallet will connect automatically";
-        }, 2000);
-      });
-      
-    } catch (err) {
-      console.error("WalletConnect error:", err);
-      setStatus("bad", err.message || "WalletConnect failed");
-      wcSection.style.display = "none";
+      const EthereumProvider = window.WalletConnectEthereumProvider?.EthereumProvider;
+      if(!EthereumProvider){
+        throw new Error("WalletConnect library not loaded. Disable adblock and refresh.");
+      }
+
+      if(!walletConnectProvider){
+        walletConnectProvider = await EthereumProvider.init({
+          projectId: WC_PROJECT_ID,
+          chains: [BASE_CHAIN_ID],
+          showQrModal: true,
+          rpcMap: {
+            [BASE_CHAIN_ID]: "https://mainnet.base.org"
+          }
+        });
+      }
+
+      await walletConnectProvider.connect();
+
+      const bp = new ethers.BrowserProvider(walletConnectProvider);
+      signer = await bp.getSigner();
+      provider = bp;
+      connectMode = "walletconnect";
+
+      const addr = await signer.getAddress();
+      addrPill.textContent = "Wallet: " + shortAddr(addr);
+      netPill.textContent = "Network: Base (8453)";
+      btnConnect.style.display = "none";
+      btnDisconnect.style.display = "inline-block";
+
+      setStatus("good", "Connected (WalletConnect). Ready to forge / attest.");
+      updateButtons();
+      modal.style.display = "none";
+
+    }catch(err){
+      console.error(err);
+      setStatus("bad", err.message || "WalletConnect failed.");
     }
   }
+
 
   async function disconnect(){
     try{ 
