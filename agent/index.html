@@ -393,7 +393,7 @@
   
   // Forged event signature - you need to get this from your contract
   // This is a placeholder - you must replace with actual event hash!
-  const FORGED_EVENT_SIG = "0x12b5b0c0d9e3f9a8c0d0e0f0a0b0c0d0e0f0a0b0";
+  const FORGED_EVENT_SIG = "0x433b1a743df29cafbb6a1974d6683ffdf634082f8fada01f1ef9c57713ab8894";
   
   // ===== DOM ELEMENTS =====
   const $ = (id) => document.getElementById(id);
@@ -474,7 +474,7 @@
         address: REGISTRY_ROUTER,
         fromBlock: "0x0",
         toBlock: "latest",
-        topics: [] // Add [FORGED_EVENT_SIG] when you have the real signature
+        topics: [FORGED_EVENT_SIG] // Add [FORGED_EVENT_SIG] when you have the real signature
       }]);
       
       console.log("Found logs:", logs.length);
