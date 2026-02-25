@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ToadAid — Agent Directory (ERC-8004) | Toadgang Registry</title>
   <style>
-    /* ALL STYLES FROM YOUR PREVIOUS VERSION - KEEP THEM EXACTLY */
+    /* ALL YOUR EXISTING STYLES - KEEP THEM EXACTLY THE SAME */
     :root{
       --bg:#0b1020; --text:#e8eeff; --muted:#9bb0ff; --line:rgba(255,255,255,.08);
       --accent:#4aa3ff; --accent2:#67f3c4; --warn:#ffcc66; --bad:#ff6b6b; --good:#5cff95;
@@ -256,7 +256,7 @@
     <div class="logo" aria-hidden="true"></div>
     <div>
       <h1>ToadAid Agent Directory — Toadgang Registry</h1>
-      <div class="sub">ERC‑8004 Agents on Base · Real data from Alchemy 🪞🌊🍃</div>
+      <div class="sub">ERC‑8004 Agents on Base · Real data from Blockscout 🪞🌊🍃</div>
     </div>
   </div>
 
@@ -318,15 +318,15 @@
       <option value="oldest">Oldest First</option>
       <option value="id">ID (ascending)</option>
     </select>
-    <button class="primary" id="refreshBtn">🔄 Refresh from Alchemy</button>
+    <button class="primary" id="refreshBtn">🔄 Refresh from Blockscout</button>
   </div>
 
   <!-- Agents Grid -->
   <div id="agentsContainer">
     <div class="loading-spinner" id="loadingSpinner">
       <div class="emoji">🪞</div>
-      <div>Fetching real agents from Alchemy...</div>
-      <div style="font-size:11px; margin-top:12px;">Using your Alchemy API key</div>
+      <div>Fetching real agents from Blockscout...</div>
+      <div style="font-size:11px; margin-top:12px;">No API key needed - free and fast!</div>
     </div>
     <div class="agents-grid" id="agentsGrid" style="display:none;"></div>
     <div class="empty-state" id="emptyState" style="display:none;">
@@ -348,7 +348,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-    <div>🪞 ToadAid · Agent Directory · Real data from Alchemy API</div>
+    <div>🪞 ToadAid · Agent Directory · Real data from Blockscout API</div>
     <div>
       <a href="/forge/" style="color:var(--muted); margin-right:16px;">Forge</a>
       <a href="https://basescan.org/address/0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0" target="_blank" style="color:var(--muted); margin-right:16px;">Contract</a>
@@ -383,17 +383,15 @@
   import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.17.5";
 
   // ===== CONFIGURATION =====
-  const ALCHEMY_API_KEY = "-JrfkGdCwU2Ts6dC-9uhAP0ZHYUFJkBG"; // Your working Alchemy key!
-  const ALCHEMY_URL = `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-  
   const WC_PROJECT_ID = "c86752a13a29b19d308dc10fb72b820f";
   const BASE_ID = 8453;
   
   const REGISTRY_ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";
-  const TOAD_ADDRESS = "0x587464fd25af9147cb4660b03d899c8893378c0a"; // Updated from your event!
+  const TOAD_ADDRESS = "0x587464fd25af9147cb4660b03d899c8893378c0a"; // From your event!
   
-  // REAL Forged event signature from your contract!
-  const FORGED_EVENT_SIG = "0x433b1a743df29cafbb6a1974d6683ffdf634082f8fada01f1ef9c57713ab8894";
+  // REAL Forged event signature from Blockscout!
+  const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
+  const BLOCKSCOUT_URL = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
   
   // ===== DOM ELEMENTS =====
   const $ = (id) => document.getElementById(id);
@@ -418,28 +416,18 @@
   }
   
   // Parse agent URI to get metadata
-  function parseAgentURI(uriHex, agentId) {
+  function parseAgentURI(uri, agentId) {
     try {
-      let agentURI = '';
-      if (uriHex && uriHex !== '0x') {
-        const hex = uriHex.slice(2);
-        const bytes = [];
-        for (let i = 0; i < hex.length; i += 2) {
-          bytes.push(parseInt(hex.substr(i, 2), 16));
-        }
-        agentURI = new TextDecoder().decode(new Uint8Array(bytes));
-      }
-      
       let metadata = { name: `Agent #${agentId}`, description: '', image: '🪞', active: true };
       
-      if (agentURI.startsWith('data:application/json;base64,')) {
-        const base64 = agentURI.replace('data:application/json;base64,', '');
+      if (uri.startsWith('data:application/json;base64,')) {
+        const base64 = uri.replace('data:application/json;base64,', '');
         const json = atob(base64);
         metadata = { ...metadata, ...JSON.parse(json) };
-      } else if (agentURI.startsWith('ipfs://')) {
-        // For IPFS URIs, show IPFS tag
+      } else if (uri.startsWith('ipfs://')) {
         metadata.name = `IPFS Agent #${agentId}`;
         metadata.description = 'Metadata stored on IPFS';
+        metadata.image = '🪞';
       }
       
       return metadata;
@@ -449,8 +437,24 @@
     }
   }
   
-  // ===== FETCH REAL AGENTS FROM ALCHEMY =====
-  async function fetchAgentsFromAlchemy() {
+  // Decode hex string to UTF-8
+  function hexToString(hex) {
+    try {
+      if (!hex || hex === '0x') return '';
+      const hexStr = hex.startsWith('0x') ? hex.slice(2) : hex;
+      let str = '';
+      for (let i = 0; i < hexStr.length; i += 2) {
+        const code = parseInt(hexStr.substr(i, 2), 16);
+        if (code !== 0) str += String.fromCharCode(code);
+      }
+      return str;
+    } catch (e) {
+      return '';
+    }
+  }
+  
+  // ===== FETCH REAL AGENTS FROM BLOCKSCOUT =====
+  async function fetchAgentsFromBlockscout() {
     try {
       $("loadingSpinner").style.display = "block";
       $("agentsGrid").style.display = "none";
@@ -458,87 +462,86 @@
       $("errorDisplay").style.display = "none";
       $("statusMessage").style.display = "none";
       
-      console.log("Fetching from Alchemy with event sig:", FORGED_EVENT_SIG);
+      console.log("Fetching from Blockscout with event sig:", FORGED_EVENT_SIG);
+      console.log("URL:", BLOCKSCOUT_URL);
       
-      // Create provider with your Alchemy key
-      const alchemyProvider = new ethers.JsonRpcProvider(ALCHEMY_URL);
+      const response = await fetch(BLOCKSCOUT_URL);
+      const data = await response.json();
       
-      // Test connection
-      const blockNumber = await alchemyProvider.getBlockNumber();
-      console.log("Connected to Alchemy. Current block:", blockNumber);
+      console.log("Blockscout response:", data);
       
-      $("statusMessage").style.display = "block";
-      $("statusMessage").innerHTML = `✅ Connected to Alchemy (block ${blockNumber}). Fetching agents...`;
-      
-      // Get logs for Forged events using the REAL signature
-      const logs = await alchemyProvider.send("eth_getLogs", [{
-        address: REGISTRY_ROUTER,
-        fromBlock: "0x0",
-        toBlock: "latest",
-        topics: [FORGED_EVENT_SIG]
-      }]);
-      
-      console.log("Found logs:", logs.length);
-      
-      if (logs.length === 0) {
-        $("statusMessage").innerHTML = "⚠️ No Forged events found yet.";
-        return false;
-      }
-      
-      // Process logs into agents
-      const agents = [];
-      
-      for (let i = 0; i < logs.length; i++) {
-        const log = logs[i];
-        try {
-          // Extract data from log
-          // topics[0] = event sig, topics[1] = creator, topics[2] = agentId, topics[3] = registry
-          const creator = log.topics[1] ? '0x' + log.topics[1].slice(26) : null;
-          const agentIdHex = log.topics[2] || '0x0';
-          const agentId = parseInt(agentIdHex, 16);
-          const metadata = parseAgentURI(log.data, agentId);
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        $("statusMessage").style.display = "block";
+        $("statusMessage").innerHTML = `✅ Found ${data.result.length} forged agents!`;
+        
+        // Process logs into agents
+        const agents = await Promise.all(data.result.map(async (log, index) => {
+          // Decode agent ID from topics[2]
+          const agentId = parseInt(log.topics[2], 16);
           
-          if (creator) {
-            agents.push({
-              id: agentId,
-              name: metadata.name,
-              description: metadata.description || 'No description',
-              image: metadata.image || '🪞',
-              creator: creator,
-              active: metadata.active !== false,
-              endorsements: 0, // You can fetch attestations later
-              flags: 0,
-              timestamp: Date.now() - (i * 86400000), // Approx - you could get block timestamp
-              transactionHash: log.transactionHash
-            });
+          // Decode creator from topics[1]
+          const creator = '0x' + log.topics[1].slice(26);
+          
+          // Decode URI from data
+          let uri = '';
+          if (log.data && log.data !== '0x') {
+            // Skip first 64 chars (offset) and next 64 chars (length)
+            const dataHex = log.data.slice(2);
+            if (dataHex.length > 128) {
+              const uriHex = dataHex.slice(128);
+              uri = hexToString(uriHex);
+            }
           }
-        } catch (e) {
-          console.warn("Error processing log:", e);
-        }
-      }
-      
-      if (agents.length > 0) {
+          
+          // Parse metadata
+          const metadata = parseAgentURI(uri, agentId);
+          
+          return {
+            id: agentId,
+            name: metadata.name,
+            description: metadata.description,
+            image: metadata.image,
+            creator: creator,
+            active: metadata.active !== false,
+            endorsements: 0, // You could fetch attestations later
+            flags: 0,
+            timestamp: parseInt(log.timeStamp) * 1000,
+            uri: uri,
+            transactionHash: log.transactionHash
+          };
+        }));
+        
+        // Sort by newest first
+        agents.sort((a, b) => b.timestamp - a.timestamp);
+        
         allAgents = agents;
-        $("statusMessage").innerHTML = `✅ Loaded ${agents.length} real agents from Alchemy!`;
+        $("statusMessage").innerHTML = `✅ Loaded ${agents.length} real agents from Blockscout!`;
         return true;
+        
+      } else if (data.result && data.result.length === 0) {
+        $("statusMessage").style.display = "block";
+        $("statusMessage").innerHTML = "⚠️ No forged agents found yet.";
+        return false;
+      } else {
+        throw new Error(data.message || "Unknown error");
       }
-      
-      return false;
       
     } catch (error) {
-      console.error("Alchemy error:", error);
+      console.error("Blockscout error:", error);
       $("errorDisplay").style.display = "block";
-      $("errorDisplay").innerHTML = `⚠️ Alchemy API error: ${error.message}.`;
+      $("errorDisplay").innerHTML = `⚠️ Blockscout API error: ${error.message}. Using sample data.`;
       return false;
+    } finally {
+      $("loadingSpinner").style.display = "none";
     }
   }
   
   // ===== LOAD AGENTS (with fallback to mock) =====
   async function loadAgents() {
-    const success = await fetchAgentsFromAlchemy();
+    const success = await fetchAgentsFromBlockscout();
     
     if (!success || allAgents.length === 0) {
-      // Fallback to mock data (should not happen now with your event signature)
+      // Fallback to mock data
       allAgents = [
         { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", creator: TOAD_ADDRESS, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30 },
         { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", creator: TOAD_ADDRESS, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15 },
@@ -554,9 +557,7 @@
       $("errorDisplay").innerHTML = "⚠️ Using sample data. No real agents found.";
     }
     
-    $("loadingSpinner").style.display = "none";
     $("agentsGrid").style.display = "grid";
-    
     updateStats();
     applyFiltersAndRender();
   }
@@ -796,7 +797,7 @@
   // Auto-refresh every 5 minutes
   setInterval(loadAgents, 300000);
   
-  console.log("Agent Directory loaded with REAL event signature!");
+  console.log("Agent Directory loaded with Blockscout!");
 </script>
 </body>
 </html>
