@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>How to Mint — Toadgang Identity</title>
+  <style>
+:root{
+      --bg:#0b1020; --text:#e8eeff; --muted:#9bb0ff; --line:rgba(255,255,255,.08);
+      --accent:#4aa3ff; --accent2:#67f3c4; --warn:#ffcc66; --bad:#ff6b6b; --good:#5cff95;
+      --shadow: 0 10px 30px rgba(0,0,0,.35); --r:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--sans); color:var(--text);
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(74,163,255,.18), transparent 55%),
+                  radial-gradient(900px 600px at 80% 20%, rgba(103,243,196,.12), transparent 60%),
+                  radial-gradient(800px 600px at 50% 90%, rgba(155,176,255,.10), transparent 55%),
+                  var(--bg);
+    }
+    header{padding:28px 18px 14px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+    .brand{display:flex; align-items:center; gap:10px;}
+    .logo{width:38px; height:38px; border-radius:12px; background: linear-gradient(135deg, rgba(74,163,255,.9), rgba(103,243,196,.9)); box-shadow: var(--shadow); position:relative;}
+    .logo:after{content:"🪞"; position:absolute; inset:0; display:grid; place-items:center; font-size:18px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));}
+    h1{ font-size:18px; margin:0; letter-spacing:.2px}
+    .sub{ font-size:12.5px; color:var(--muted); margin-top:3px}
+    .top-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    button{border:1px solid var(--line); background: rgba(255,255,255,.06); color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer; transition:.15s ease; font-weight:600;}
+    button:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09) }
+    button.primary{background: linear-gradient(135deg, rgba(74,163,255,.95), rgba(103,243,196,.85)); color:#041024; border:0;}
+    button.primary:hover{ filter:brightness(1.05) }
+    button.danger{ border-color: rgba(255,107,107,.5); }
+    button:disabled{ opacity:0.4; cursor:not-allowed; }
+    .pill{font-family:var(--mono); font-size:12px; padding:8px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background: rgba(0,0,0,.18); white-space:nowrap; cursor: pointer;}
+    .badge{font-family:var(--mono); font-size:10px; padding:4px 8px; border-radius:20px; background:rgba(74,163,255,.2); color:var(--accent2);}
+    main{max-width:1200px; margin:0 auto; padding: 0 18px 40px; display:grid; grid-template-columns: 1.1fr .9fr; gap:16px;}
+    @media (max-width: 980px){ main{grid-template-columns:1fr} }
+    .card{background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); overflow:hidden;}
+    .card .hd{padding:14px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:10px; background: rgba(0,0,0,.18);}
+    .card .hd .t{ font-weight:800; letter-spacing:.2px }
+    .card .bd{ padding:16px }
+    .grid{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
+    @media (max-width: 720px){ .grid{grid-template-columns:1fr} }
+    label{display:block; font-size:12px; color:var(--muted); margin: 0 0 6px;}
+    input, textarea, select{width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.10); background: rgba(0,0,0,.18); color:var(--text); padding:11px 12px; outline:none;}
+    textarea{ min-height:110px; resize:vertical; line-height:1.35 }
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .toggle{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background: rgba(0,0,0,.18);}
+    .toggle input{ width:auto }
+    .hint{ margin-top:10px; color:var(--muted); font-size:12px; line-height:1.35; }
+    .hint strong{ color: var(--text) }
+    .mono{font-family: var(--mono); font-size: 12px; line-height:1.45; color: #dce6ff; white-space:pre; overflow:auto; background: rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px; max-height:300px;}
+    .status{font-size:12px; color:var(--muted); display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .dot{ width:8px; height:8px; border-radius:999px; background:rgba(255,255,255,.25) }
+    .dot.good{ background: var(--good); box-shadow:0 0 8px var(--good); }
+    .dot.bad{ background: var(--bad) }
+    .dot.warn{ background: var(--warn) }
+    .smallbtn{ padding:8px 10px; border-radius:12px; font-size:12px; font-weight:700; }
+    .proxy-selector{background: rgba(0,0,0,.22); border:1px solid var(--accent); border-radius:14px; padding:16px; margin-bottom:16px;}
+    .proxy-selector .title{ font-weight:800; margin-bottom:8px; color:var(--accent2); }
+    .proxy-details{font-family:var(--mono); font-size:11px; background:rgba(0,0,0,.3); padding:8px; border-radius:10px; margin-top:8px; word-break:break-all;}
+    .tabs{ display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+    .tab{padding:10px 12px; border-radius:14px; border:1px solid var(--line); background: rgba(0,0,0,.18); cursor:pointer; user-select:none; font-weight:800; font-size:12px;}
+    .tab.active{ border-color: var(--accent2); background: rgba(103,243,196,.12); }
+    .gas-estimate{ font-size:11px; color:var(--muted); margin-top:8px; text-align:right; }
+    .recent-item{ padding:8px; border-bottom:1px solid var(--line); font-size:11px; display:flex; justify-content:space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .recent-item:last-child{ border-bottom:0; }
+    .token-balance{ background:rgba(103,243,196,.1); border-radius:12px; padding:4px 10px; font-size:11px; display:inline-block; margin-bottom:8px; word-break: break-word; }
+    footer{max-width:1200px; margin:0 auto; padding: 0 18px 30px; color: var(--muted); font-size: 12px; line-height: 1.5;}
+    /* Modal */
+    .modal{display:none; position:fixed; inset:0; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items:center; justify-content:center; z-index:1000;}
+    .modal-content{background: #0f1733; border: 1px solid var(--accent); border-radius: 24px; padding: 22px; max-width: 420px; width: 92%; text-align: center; box-shadow: var(--shadow);}
+    .modal-header{ font-weight: 900; margin-bottom: 12px; color: var(--accent2); }
+    .wallet-options{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin: 12px 0 6px; }
+    .wallet-option{background: rgba(255,255,255,.1); border: 1px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; transition: all 0.2s;}
+    .wallet-option:hover{background: rgba(74,163,255,.2); border-color: var(--accent); transform: translateY(-2px);}
+    .wallet-option span{ display:block; font-size:12px; font-weight:800; }
+    .wallet-option small{ color:var(--muted); font-size:10px; display:block; margin-top:4px; }
+    .close-modal{ margin-top: 12px; background: transparent; border: 1px solid var(--line); width: 100%; }
+
+
+  /* ===== Guide page additions ===== */
+  .hero h1{ margin: 0 0 6px 0; }
+  .hero p{ margin: 0; opacity: .85; }
+
+  .guide-grid{
+    display:grid;
+    grid-template-columns: 1.15fr .85fr;
+    gap: 16px;
+    align-items:start;
+    margin-top: 16px;
+  }
+  @media (max-width: 980px){
+    .guide-grid{ grid-template-columns: 1fr; }
+  }
+
+  .steps{ display:flex; flex-direction:column; gap: 12px; }
+  .step{
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.03);
+    padding: 14px;
+  }
+  .step h3{ margin: 0 0 8px 0; font-size: 16px; }
+  .step .meta{ font-size: 13px; opacity: .8; margin-bottom: 10px; }
+  .step ol{ margin: 0; padding-left: 18px; }
+  .step li{ margin: 8px 0; }
+
+  .callouts{ display:flex; flex-direction:column; gap: 12px; }
+  .callout{
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.03);
+    padding: 14px;
+  }
+  .callout h3{ margin: 0 0 8px 0; font-size: 16px; }
+  .callout p{ margin: 0; opacity: .85; }
+  .callout ul{ margin: 10px 0 0 0; padding-left: 18px; }
+  .callout li{ margin: 8px 0; }
+
+  details{
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.03);
+    padding: 12px 14px;
+  }
+  details summary{
+    cursor:pointer;
+    list-style:none;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight: 600;
+  }
+  details summary::-webkit-details-marker{ display:none; }
+  details .content{ margin-top: 10px; opacity:.92; }
+  .kbd{
+    display:inline-block;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    opacity: .9;
+  }
+  .muted{ opacity: .75; }
+  .row{
+    display:flex; gap: 10px; flex-wrap: wrap; align-items:center;
+  }
+  a.inline{
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity: .9;
+  }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">🪞</div>
+        <div>
+          <div class="title">Toadgang Identity</div>
+          <div class="subtitle">How to Mint · Public instructions · Same theme, zero hype 🪞🌊</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <span class="pill" id="netPill">Network: Base (8453)</span>
+        <span class="pill" id="modePill">Mode: Read‑only guide</span>
+        <a class="smallbtn" href="/forge/" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">← Back to Forge</a>
+        <a class="primary smallbtn" href="/agent/" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">Open Directory</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="card hero" style="grid-column: 1 / -1;">
+        <h1>Mint Instructions</h1>
+        <p>
+          You will pin <span class="kbd">image</span> + <span class="kbd">agentURI.json</span> to IPFS, then forge the Agent through the Router.
+          No promises. Just record. 🪞🌊
+        </p>
+        <div class="row" style="margin-top:12px;">
+          <span class="pill">Router: 0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0</span>
+          <span class="pill">Registry: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</span>
+          <span class="pill">Gate: MPASS ≥ 1.0 (1e18 raw)</span>
+        </div>
+      </div>
+
+      <div class="guide-grid" style="grid-column: 1 / -1;">
+        <!-- LEFT: steps -->
+        <div class="steps">
+          <div class="step">
+            <h3>1) Prepare the assets</h3>
+            <div class="meta">What you need before touching the Forge.</div>
+            <ol>
+              <li>Pick an Agent cover image (<span class="kbd">PNG</span> or <span class="kbd">JPG</span>). Keep it square if possible.</li>
+              <li>Create <span class="kbd">agentURI.json</span> (metadata). You already have a canonical template.</li>
+              <li class="muted">Tip: Keep the description factual. Avoid claims. The directory is an archive, not marketing.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>2) Pin the image to IPFS</h3>
+            <div class="meta">Result: an <span class="kbd">ipfs://IMAGE_CID</span> URI.</div>
+            <ol>
+              <li>Open a pinning service (examples): <a class="inline" href="https://app.pinata.cloud/" target="_blank" rel="noreferrer">Pinata</a>, <a class="inline" href="https://nft.storage/" target="_blank" rel="noreferrer">nft.storage</a>, <a class="inline" href="https://web3.storage/" target="_blank" rel="noreferrer">web3.storage</a>.</li>
+              <li>Upload your image and pin it.</li>
+              <li>Copy the CID and form the URI:
+                <div class="mono" style="margin-top:10px;">ipfs://&lt;IMAGE_CID&gt;</div>
+              </li>
+              <li>Put that URI into <span class="kbd">agentURI.json</span> under the <span class="kbd">image</span> field.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>3) Pin agentURI.json to IPFS</h3>
+            <div class="meta">Result: an <span class="kbd">ipfs://METADATA_CID</span> URI — this is the Agent URI.</div>
+            <ol>
+              <li>Upload <span class="kbd">agentURI.json</span> to your pinning service and pin it.</li>
+              <li>Copy the metadata CID and form the Agent URI:
+                <div class="mono" style="margin-top:10px;">ipfs://&lt;METADATA_CID&gt;</div>
+              </li>
+              <li>This <span class="kbd">ipfs://METADATA_CID</span> string is what you paste into the Forge as the Agent URI.</li>
+            </ol>
+          </div>
+
+          
+<div class="step">
+  <h3>Where to Pin (Recommended Services)</h3>
+  <div class="meta">Public IPFS pinning providers</div>
+  <ol>
+    <li><strong>Pinata</strong> → https://app.pinata.cloud/</li>
+    <li><strong>nft.storage</strong> → https://nft.storage/</li>
+    <li><strong>web3.storage</strong> → https://web3.storage/</li>
+  </ol>
+  <div class="muted">
+    Pin image first → update JSON → pin JSON second.<br>
+    Do not reverse this order.
+  </div>
+</div>
+
+
+          <div class="step">
+            <h3>4) Forge the Agent on Base</h3>
+            <div class="meta">Result: an onchain Agent ID + logs.</div>
+            <ol>
+              <li>Open <a class="inline" href="/forge/" target="_self">/forge/</a> and ensure wallet is on Base (8453).</li>
+              <li>Ensure your wallet holds <span class="kbd">MPASS ≥ 1.0</span> (raw <span class="kbd">1e18</span>).</li>
+              <li>Paste <span class="kbd">ipfs://METADATA_CID</span> into the Agent URI input.</li>
+              <li>Confirm transaction.</li>
+              <li>After mint, open the directory and verify the Agent appears:
+                <div class="mono" style="margin-top:10px;">/agent/?id=&lt;AGENT_ID&gt;</div>
+              </li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>5) Verify (professional checklist)</h3>
+            <div class="meta">Proof, not vibes.</div>
+            <ol>
+              <li>Transaction exists on an explorer (BaseScan / Blockscout).</li>
+              <li>Directory shows: creator, tx hash, timestamp.</li>
+              <li>Metadata loads: name, description, image.</li>
+              <li class="muted">If metadata fails, the Agent can still exist — the directory will show log proof.</li>
+            </ol>
+          </div>
+
+          
+          <details open>
+            <summary>Finalized agentURI.json (Genesis Production Agent)</summary>
+            <div class="content">
+              <div class="muted">
+                ✔ Step 1: Replace nothing unless customizing.<br>
+                ✔ Step 2: Save this file exactly as <span class="kbd">agentURI.json</span>.<br>
+                ✔ Step 3: Pin your NFT image FIRST.<br>
+                ✔ Step 4: Ensure the <span class="kbd">image</span> field contains your image CID.<br>
+                ✔ Step 5: Then pin this JSON file to IPFS and copy its CID.
+              </div>
+              <pre class="mono" style="margin-top:10px; white-space: pre-wrap;">{
+  "name": "Toadgang Identity — Genesis Agent",
+  "description": "Genesis production Agent minted through the Toadgang Registry Router on Base. Gated by MPASS (ERC-20) ≥ 1.0 and registered in the canonical ERC-8004 Identity Registry. This NFT represents the first live, production identity forged through the Pond Door. No promises. Just record. 🪞🌊",
+  "image": "ipfs://bafybeig4zhi4xaqsb6hh5yd4kdggawgobsvmncb5q7rz35movqjz5g2esy",
+  "external_url": "https://basescan.org/address/0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0",
+  "attributes": [
+    { "trait_type": "Chain", "value": "Base" },
+    { "trait_type": "Chain ID", "value": "8453" },
+    { "trait_type": "System", "value": "Toadgang Identity" },
+    { "trait_type": "Role", "value": "Genesis Production Agent" },
+    { "trait_type": "Gate Token", "value": "MPASS" },
+    { "trait_type": "Gate Type", "value": "ERC-20" },
+    { "trait_type": "Min Balance (raw)", "value": "1000000000000000000" },
+    { "trait_type": "Min Balance (MPASS)", "value": "1.0" },
+    { "trait_type": "Router", "value": "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0" },
+    { "trait_type": "Registry", "value": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432" }
+  ]
+}</pre>
+              <div class="muted" style="margin-top:12px;">
+                After pinning:<br>
+                • Image → gives IMAGE_CID<br>
+                • agentURI.json → gives METADATA_CID<br><br>
+                Paste this into Forge:<br>
+                <div class="mono">ipfs://METADATA_CID</div>
+              </div>
+            </div>
+          </details>
+
+
+          <details>
+            <summary>Troubleshooting</summary>
+            <div class="content">
+              <ul>
+                <li><strong>“Agent does not exist”</strong> — check tx hash first. If tx exists, the Agent exists; metadata/URI may be missing or slow.</li>
+                <li><strong>Image not loading</strong> — try a different IPFS gateway, or confirm the image CID is pinned.</li>
+                <li><strong>MPASS gate fails</strong> — confirm your MPASS balance is ≥ 1.0 and you’re on Base.</li>
+                <li><strong>Slow list load</strong> — use <span class="kbd">Refresh</span> and wait; Blockscout can rate-limit. Cached results will speed up repeat loads.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+
+        <!-- RIGHT: callouts -->
+        <div class="callouts">
+          <div class="callout">
+            <h3>Links</h3>
+            <ul>
+              <li><a class="inline" href="/forge/" target="_self">Forge</a> (wallet required)</li>
+              <li><a class="inline" href="/agent/" target="_self">Agent Directory</a> (read‑only)</li>
+              <li><a class="inline" href="https://basescan.org/address/0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0" target="_blank" rel="noreferrer">Router on BaseScan</a></li>
+              <li><a class="inline" href="https://basescan.org/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432" target="_blank" rel="noreferrer">Registry Proxy on BaseScan</a></li>
+              <li><a class="inline" href="https://basescan.org/token/0xdb9e64465d4b5fbc7ee9091c459094efc7df5cde" target="_blank" rel="noreferrer">MPASS token on BaseScan</a></li>
+            </ul>
+          </div>
+
+          <div class="callout">
+            <h3>Professional defaults</h3>
+            <p>Keep the record clean:</p>
+            <ul>
+              <li>No financial language.</li>
+              <li>No promises of future actions.</li>
+              <li>Metadata is factual, reproducible, verifiable.</li>
+              <li>When unsure, say “unknown” — never invent.</li>
+            </ul>
+          </div>
+
+          <div class="callout">
+            <h3>Suggested external_url</h3>
+            <p class="muted">For a clean “identity landing”, you can point to your directory:</p>
+            <div class="mono" style="margin-top:10px;">https://toadaid.github.io/agent/?id=&lt;AGENT_ID&gt;</div>
+            <p style="margin-top:10px;" class="muted">Or keep BaseScan for pure onchain reference.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1; text-align:center; opacity:.85;">
+        The pond does not promise. It only records. 🪞🌊
+      </div>
+    </main>
+  </div>
+</body>
+</html>
