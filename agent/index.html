@@ -248,6 +248,107 @@
       border-top:1px solid var(--line); padding-top:20px;
       margin-top:20px;
     }
+    
+    /* Detail view styles */
+    .detail-container {
+      background: rgba(0,0,0,.22);
+      border-radius: 24px;
+      padding: 24px;
+      margin-top: 20px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .detail-image {
+      background: rgba(0,0,0,.3);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+    }
+    .detail-image img {
+      max-width: 100%;
+      border-radius: 16px;
+    }
+    .detail-image-placeholder {
+      font-size: 120px;
+    }
+    .detail-info {
+      padding: 20px;
+    }
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .detail-id {
+      font-family: var(--mono);
+      font-size: 16px;
+      background: rgba(74,163,255,.2);
+      padding: 6px 12px;
+      border-radius: 30px;
+      color: var(--accent);
+    }
+    .detail-name {
+      font-size: 36px;
+      font-weight: 800;
+      margin: 0 0 16px;
+      background: linear-gradient(135deg, #fff, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .detail-creator {
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-bottom: 20px;
+      word-break: break-all;
+    }
+    .detail-description {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .attributes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .attribute-item {
+      background: rgba(0,0,0,.3);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .attribute-trait {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .attribute-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+    }
+    .detail-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .detail-uri {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      word-break: break-all;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
@@ -255,8 +356,8 @@
   <div class="brand">
     <div class="logo" aria-hidden="true"></div>
     <div>
-      <h1>ToadAid Agent Directory — Toadgang Registry</h1>
-      <div class="sub">ERC‑8004 Agents on Base · Real data from Blockscout 🪞🌊🍃</div>
+      <h1 id="pageTitle">ToadAid Agent Directory — Toadgang Registry</h1>
+      <div class="sub" id="pageSubtitle">ERC‑8004 Agents on Base · Real data from Blockscout 🪞🌊🍃</div>
     </div>
   </div>
 
@@ -273,12 +374,12 @@
   <div class="nav-links" style="margin-bottom:24px;">
     <a href="/" class="nav-link">🏠 Home</a>
     <a href="/forge/" class="nav-link">🔨 Forge</a>
-    <a href="/agent/" class="nav-link active">📋 Directory</a>
+    <a href="/agent/" class="nav-link active" id="directoryLink">📋 Directory</a>
     <a href="#" class="nav-link" id="statsLink">📊 Stats</a>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-bar">
+  <!-- Stats (hidden in detail mode) -->
+  <div class="stats-bar" id="statsBar">
     <div class="stat-card">
       <div class="stat-number" id="totalAgents">—</div>
       <div class="stat-label">Total Agents</div>
@@ -297,12 +398,8 @@
     </div>
   </div>
 
-  <!-- Status Message -->
-  <div id="statusMessage" class="success-message" style="display:none;"></div>
-  <div id="errorDisplay" class="error-message" style="display:none;"></div>
-
-  <!-- Filters -->
-  <div class="filter-bar">
+  <!-- Filters (hidden in detail mode) -->
+  <div class="filter-bar" id="filterBar">
     <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by name, description, or agent ID...">
     <select class="filter-select" id="creatorFilter">
       <option value="all">All Creators</option>
@@ -321,11 +418,15 @@
     <button class="primary" id="refreshBtn">🔄 Refresh from Blockscout</button>
   </div>
 
-  <!-- Agents Grid -->
+  <!-- Status Message -->
+  <div id="statusMessage" class="success-message" style="display:none;"></div>
+  <div id="errorDisplay" class="error-message" style="display:none;"></div>
+
+  <!-- Agents Grid (used for both directory and detail) -->
   <div id="agentsContainer">
     <div class="loading-spinner" id="loadingSpinner">
       <div class="emoji">🪞</div>
-      <div>Fetching real agents from Blockscout...</div>
+      <div id="loadingMessage">Fetching real agents from Blockscout...</div>
       <div style="font-size:11px; margin-top:12px;">No API key needed - free and fast!</div>
     </div>
     <div class="agents-grid" id="agentsGrid" style="display:none;"></div>
@@ -336,7 +437,7 @@
     </div>
   </div>
 
-  <!-- Pagination -->
+  <!-- Pagination (hidden in detail mode) -->
   <div class="pagination" id="pagination" style="display:none;">
     <div class="page-btn" id="prevPage">←</div>
     <div class="page-btn active" id="page1">1</div>
@@ -346,7 +447,7 @@
   </div>
 </main>
 
-<footer>
+<footer id="mainFooter">
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
     <div>🪞 ToadAid · Agent Directory · Real data from Blockscout API</div>
     <div>
@@ -387,7 +488,8 @@
   const BASE_ID = 8453;
   
   const REGISTRY_ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";
-  const TOAD_ADDRESS = "0x587464fd25af9147cb4660b03d899c8893378c0a"; // From your event!
+  const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
+  const TOAD_ADDRESS = "0x587464fd25af9147cb4660b03d899c8893378c0a";
   
   // REAL Forged event signature from Blockscout!
   const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
@@ -396,12 +498,28 @@
   // ===== DOM ELEMENTS =====
   const $ = (id) => document.getElementById(id);
   
+  // ===== CHECK URL FOR AGENT ID =====
+  const path = window.location.pathname;
+  const pathParts = path.split('/').filter(p => p);
+  const lastPart = pathParts[pathParts.length - 1];
+  const isDetailView = lastPart && !isNaN(parseInt(lastPart)) && path.includes('/agent/');
+  const agentId = isDetailView ? parseInt(lastPart) : null;
+  
+  console.log("URL path:", path, "Agent ID:", agentId);
+  
   // ===== STATE =====
   let allAgents = [];
   let filteredAgents = [];
   let currentPage = 1;
   const pageSize = 12;
   let provider, signer, wcProvider;
+  
+  // IPFS gateways
+  const IPFS_GATEWAYS = [
+    "https://ipfs.io/ipfs/",
+    "https://cloudflare-ipfs.com/ipfs/",
+    "https://gateway.pinata.cloud/ipfs/"
+  ];
   
   // ===== HELPER FUNCTIONS =====
   function formatTimeAgo(timestamp) {
@@ -437,6 +555,19 @@
     }
   }
   
+  // Fetch from IPFS with fallback gateways
+  async function fetchFromIPFS(ipfsHash) {
+    for (const gateway of IPFS_GATEWAYS) {
+      try {
+        const response = await fetch(gateway + ipfsHash);
+        if (response.ok) return await response.json();
+      } catch (e) {
+        console.warn(`Gateway ${gateway} failed:`, e);
+      }
+    }
+    return null;
+  }
+  
   // Decode hex string to UTF-8
   function hexToString(hex) {
     try {
@@ -453,6 +584,162 @@
     }
   }
   
+  // ===== LOAD SINGLE AGENT DETAIL =====
+  async function loadSingleAgent(id) {
+    try {
+      $("loadingSpinner").style.display = "block";
+      $("agentsGrid").style.display = "none";
+      $("errorDisplay").style.display = "none";
+      $("statsBar").style.display = "none";
+      $("filterBar").style.display = "none";
+      $("pagination").style.display = "none";
+      $("pageTitle").textContent = `Agent #${id} — ToadAid Registry`;
+      $("pageSubtitle").textContent = "ERC‑8004 Agent Details · Real data from IPFS 🪞";
+      $("loadingMessage").textContent = `Loading agent #${id} from blockchain and IPFS...`;
+      
+      // Connect to Base
+      const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+      
+      // Get agent URI from contract
+      const registry = new ethers.Contract(REGISTRY_PROXY, [
+        "function agentURI(uint256) view returns (string)"
+      ], provider);
+      
+      let uri;
+      try {
+        uri = await registry.agentURI(id);
+        console.log("Agent URI from contract:", uri);
+      } catch (e) {
+        throw new Error(`Agent #${id} does not exist`);
+      }
+      
+      // Get transaction from Blockscout
+      const response = await fetch(BLOCKSCOUT_URL);
+      const data = await response.json();
+      
+      let creator = null;
+      let timestamp = null;
+      let txHash = null;
+      
+      if (data.status === "1" && data.result) {
+        const log = data.result.find(l => parseInt(l.topics[2], 16) === id);
+        if (log) {
+          creator = '0x' + log.topics[1].slice(26);
+          timestamp = parseInt(log.timeStamp) * 1000;
+          txHash = log.transactionHash;
+        }
+      }
+      
+      // Parse metadata
+      let metadata = {
+        name: `Agent #${id}`,
+        description: "No description available",
+        image: "🪞",
+        attributes: []
+      };
+      
+      if (uri.startsWith('ipfs://')) {
+        const ipfsHash = uri.replace('ipfs://', '');
+        const ipfsData = await fetchFromIPFS(ipfsHash);
+        if (ipfsData) {
+          metadata = { ...metadata, ...ipfsData };
+        }
+      } else if (uri.startsWith('data:application/json;base64,')) {
+        try {
+          const base64 = uri.replace('data:application/json;base64,', '');
+          const json = atob(base64);
+          metadata = { ...metadata, ...JSON.parse(json) };
+        } catch (e) {}
+      }
+      
+      const isToadgang = creator && creator.toLowerCase() === TOAD_ADDRESS.toLowerCase();
+      
+      // Build image HTML
+      let imageHtml = '<div class="detail-image-placeholder">🪞</div>';
+      if (metadata.image) {
+        if (metadata.image.startsWith('http')) {
+          imageHtml = `<img src="${metadata.image}" alt="${metadata.name}" />`;
+        } else if (metadata.image.startsWith('ipfs://')) {
+          const ipfsHash = metadata.image.replace('ipfs://', '');
+          imageHtml = `<img src="https://ipfs.io/ipfs/${ipfsHash}" alt="${metadata.name}" />`;
+        }
+      }
+      
+      // Build attributes HTML
+      let attributesHtml = '';
+      if (metadata.attributes && metadata.attributes.length > 0) {
+        attributesHtml = metadata.attributes.map(attr => `
+          <div class="attribute-item">
+            <div class="attribute-trait">${attr.trait_type || 'Attribute'}</div>
+            <div class="attribute-value">${attr.value}</div>
+          </div>
+        `).join('');
+      }
+      
+      // Render detail view
+      $("agentsGrid").innerHTML = `
+        <div style="grid-column: span 12;">
+          <div class="detail-container">
+            <div class="detail-grid">
+              <div class="detail-image">
+                ${imageHtml}
+              </div>
+              <div class="detail-info">
+                <div class="detail-header">
+                  <span class="detail-id">#${id}</span>
+                  ${isToadgang ? '<span class="toadgang-tag" style="font-size:14px;">🐸 TOADGANG</span>' : ''}
+                </div>
+                <h1 class="detail-name">${metadata.name}</h1>
+                <div class="detail-creator">Created by: ${creator || 'Unknown'}</div>
+                <div class="detail-description">${metadata.description}</div>
+                
+                ${attributesHtml ? `
+                  <div style="font-weight:600; margin:20px 0 10px;">Attributes</div>
+                  <div class="attributes-grid">
+                    ${attributesHtml}
+                  </div>
+                ` : ''}
+                
+                <div class="detail-actions">
+                  <a href="/forge/?tab=attest&agentId=${id}" class="nav-link" style="background:linear-gradient(135deg, rgba(74,163,255,.2), rgba(103,243,196,.2));">⭐ Attest This Agent</a>
+                  <a href="/agent/" class="nav-link">📋 Back to Directory</a>
+                </div>
+                
+                <div class="detail-uri">
+                  <strong>Agent URI:</strong> ${uri}
+                </div>
+                ${txHash ? `
+                  <div class="detail-uri" style="margin-top:8px;">
+                    <strong>Transaction:</strong> <a href="https://basescan.org/tx/${txHash}" target="_blank" style="color:var(--accent2);">${txHash.slice(0,10)}…${txHash.slice(-8)}</a>
+                  </div>
+                ` : ''}
+                ${timestamp ? `
+                  <div class="detail-uri" style="margin-top:8px;">
+                    <strong>Timestamp:</strong> ${new Date(timestamp).toLocaleString()}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      $("loadingSpinner").style.display = "none";
+      $("agentsGrid").style.display = "grid";
+      
+    } catch (error) {
+      console.error("Error loading agent:", error);
+      $("loadingSpinner").style.display = "none";
+      $("errorDisplay").style.display = "block";
+      $("errorDisplay").innerHTML = `❌ ${error.message}`;
+      $("statsBar").style.display = "grid";
+      $("filterBar").style.display = "flex";
+      $("pagination").style.display = "flex";
+      $("pageTitle").textContent = "ToadAid Agent Directory — Toadgang Registry";
+      $("pageSubtitle").textContent = "ERC‑8004 Agents on Base · Real data from Blockscout 🪞🌊🍃";
+    }
+  }
+  
   // ===== FETCH REAL AGENTS FROM BLOCKSCOUT =====
   async function fetchAgentsFromBlockscout() {
     try {
@@ -463,29 +750,20 @@
       $("statusMessage").style.display = "none";
       
       console.log("Fetching from Blockscout with event sig:", FORGED_EVENT_SIG);
-      console.log("URL:", BLOCKSCOUT_URL);
       
       const response = await fetch(BLOCKSCOUT_URL);
       const data = await response.json();
-      
-      console.log("Blockscout response:", data);
       
       if (data.status === "1" && data.result && data.result.length > 0) {
         $("statusMessage").style.display = "block";
         $("statusMessage").innerHTML = `✅ Found ${data.result.length} forged agents!`;
         
-        // Process logs into agents
-        const agents = await Promise.all(data.result.map(async (log, index) => {
-          // Decode agent ID from topics[2]
+        const agents = await Promise.all(data.result.map(async (log) => {
           const agentId = parseInt(log.topics[2], 16);
-          
-          // Decode creator from topics[1]
           const creator = '0x' + log.topics[1].slice(26);
           
-          // Decode URI from data
           let uri = '';
           if (log.data && log.data !== '0x') {
-            // Skip first 64 chars (offset) and next 64 chars (length)
             const dataHex = log.data.slice(2);
             if (dataHex.length > 128) {
               const uriHex = dataHex.slice(128);
@@ -493,7 +771,6 @@
             }
           }
           
-          // Parse metadata
           const metadata = parseAgentURI(uri, agentId);
           
           return {
@@ -503,7 +780,7 @@
             image: metadata.image,
             creator: creator,
             active: metadata.active !== false,
-            endorsements: 0, // You could fetch attestations later
+            endorsements: 0,
             flags: 0,
             timestamp: parseInt(log.timeStamp) * 1000,
             uri: uri,
@@ -511,9 +788,7 @@
           };
         }));
         
-        // Sort by newest first
         agents.sort((a, b) => b.timestamp - a.timestamp);
-        
         allAgents = agents;
         $("statusMessage").innerHTML = `✅ Loaded ${agents.length} real agents from Blockscout!`;
         return true;
@@ -536,12 +811,11 @@
     }
   }
   
-  // ===== LOAD AGENTS (with fallback to mock) =====
+  // ===== LOAD AGENTS FOR DIRECTORY =====
   async function loadAgents() {
     const success = await fetchAgentsFromBlockscout();
     
     if (!success || allAgents.length === 0) {
-      // Fallback to mock data
       allAgents = [
         { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", creator: TOAD_ADDRESS, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30 },
         { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", creator: TOAD_ADDRESS, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15 },
@@ -626,7 +900,7 @@
     const totalPages = Math.ceil(filteredAgents.length / pageSize);
     
     grid.innerHTML = paginated.map(agent => `
-      <div class="agent-card" onclick="window.location.href='/agent/${agent.id}/'">
+      <div class="agent-card" onclick="window.location.href='/agent/${agent.id}'">
         <div class="agent-header">
           <span class="agent-id">#${agent.id}</span>
           <span class="agent-badge">${agent.active ? '🟢 Active' : '⚫ Inactive'}</span>
@@ -668,21 +942,21 @@
   }
   
   // ===== EVENT LISTENERS =====
-  $("searchInput").addEventListener("input", applyFiltersAndRender);
-  $("creatorFilter").addEventListener("change", applyFiltersAndRender);
-  $("statusFilter").addEventListener("change", applyFiltersAndRender);
-  $("sortFilter").addEventListener("change", applyFiltersAndRender);
+  $("searchInput")?.addEventListener("input", applyFiltersAndRender);
+  $("creatorFilter")?.addEventListener("change", applyFiltersAndRender);
+  $("statusFilter")?.addEventListener("change", applyFiltersAndRender);
+  $("sortFilter")?.addEventListener("change", applyFiltersAndRender);
   
-  $("refreshBtn").addEventListener("click", loadAgents);
+  $("refreshBtn")?.addEventListener("click", loadAgents);
   
-  $("prevPage").addEventListener("click", () => {
+  $("prevPage")?.addEventListener("click", () => {
     if (currentPage > 1) {
       currentPage--;
       renderAgents();
     }
   });
   
-  $("nextPage").addEventListener("click", () => {
+  $("nextPage")?.addEventListener("click", () => {
     const totalPages = Math.ceil(filteredAgents.length / pageSize);
     if (currentPage < totalPages) {
       currentPage++;
@@ -690,26 +964,26 @@
     }
   });
   
-  $("page1").addEventListener("click", () => {
+  $("page1")?.addEventListener("click", () => {
     currentPage = parseInt($("page1").textContent);
     renderAgents();
   });
   
-  $("page2").addEventListener("click", () => {
+  $("page2")?.addEventListener("click", () => {
     if ($("page2").textContent) {
       currentPage = parseInt($("page2").textContent);
       renderAgents();
     }
   });
   
-  $("page3").addEventListener("click", () => {
+  $("page3")?.addEventListener("click", () => {
     if ($("page3").textContent) {
       currentPage = parseInt($("page3").textContent);
       renderAgents();
     }
   });
   
-  $("statsLink").addEventListener("click", (e) => {
+  $("statsLink")?.addEventListener("click", (e) => {
     e.preventDefault();
     alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase()).length}\nActive: ${allAgents.filter(a => a.active).length}`);
   });
@@ -792,12 +1066,20 @@
   };
   
   // ===== INIT =====
-  loadAgents();
+  if (isDetailView) {
+    // Show single agent detail
+    $("statsBar").style.display = "none";
+    $("filterBar").style.display = "none";
+    $("pagination").style.display = "none";
+    loadSingleAgent(agentId);
+  } else {
+    // Show directory
+    loadAgents();
+    // Auto-refresh every 5 minutes
+    setInterval(loadAgents, 300000);
+  }
   
-  // Auto-refresh every 5 minutes
-  setInterval(loadAgents, 300000);
-  
-  console.log("Agent Directory loaded with Blockscout!");
+  console.log("Agent Directory loaded with Blockscout!", isDetailView ? `Showing detail for #${agentId}` : "Showing directory");
 </script>
 </body>
 </html>
