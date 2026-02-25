@@ -64,6 +64,10 @@
     .tabs{ display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
     .tab{padding:10px 12px; border-radius:14px; border:1px solid var(--line); background: rgba(0,0,0,.18); cursor:pointer; user-select:none; font-weight:800; font-size:12px;}
     .tab.active{ border-color: var(--accent2); background: rgba(103,243,196,.12); }
+    .gas-estimate{ font-size:11px; color:var(--muted); margin-top:8px; text-align:right; }
+    .recent-item{ padding:8px; border-bottom:1px solid var(--line); font-size:11px; display:flex; justify-content:space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .recent-item:last-child{ border-bottom:0; }
+    .token-balance{ background:rgba(103,243,196,.1); border-radius:12px; padding:4px 10px; font-size:11px; display:inline-block; margin-bottom:8px; word-break: break-word; }
     footer{max-width:1200px; margin:0 auto; padding: 0 18px 30px; color: var(--muted); font-size: 12px; line-height: 1.5;}
     /* Modal */
     .modal{display:none; position:fixed; inset:0; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items:center; justify-content:center; z-index:1000;}
@@ -75,10 +79,41 @@
     .wallet-option span{ display:block; font-size:12px; font-weight:800; }
     .wallet-option small{ color:var(--muted); font-size:10px; display:block; margin-top:4px; }
     .close-modal{ margin-top: 12px; background: transparent; border: 1px solid var(--line); width: 100%; }
-    .gas-estimate{ font-size:11px; color:var(--muted); margin-top:8px; text-align:right; }
-    .recent-item{ padding:8px; border-bottom:1px solid var(--line); font-size:11px; display:flex; justify-content:space-between; }
-    .recent-item:last-child{ border-bottom:0; }
-    .token-balance{ background:rgba(103,243,196,.1); border-radius:12px; padding:4px 10px; font-size:11px; display:inline-block; margin-bottom:8px; }
+  
+    /* ===== Mobile fit + scroll fixes ===== */
+    html, body { width: 100%; overflow-x: hidden; }
+    body { -webkit-text-size-adjust: 100%; touch-action: pan-y; }
+
+    /* Prevent long pills/addresses from forcing horizontal scroll */
+    .pill { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    .proxy-details { word-break: break-word; overflow-wrap: anywhere; }
+    .mono { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+    /* Header: allow wrapping and stack on small screens */
+    header { flex-wrap: wrap; }
+    @media (max-width: 560px){
+      header{ flex-direction: column; align-items: flex-start; }
+      .top-actions{ width: 100%; justify-content: flex-start; }
+      .top-actions > *{ flex: 1 1 auto; }
+      button.smallbtn, button.primary.smallbtn{ width: 100%; }
+      .tabs{ width: 100%; }
+      main{ padding-left: 14px; padding-right: 14px; }
+    }
+
+    /* Recent panel spans 2 columns on desktop; on mobile keep natural flow */
+    @media (max-width: 980px){
+      main{ grid-template-columns: 1fr !important; }
+      main > .card[style*="grid-column"]{ grid-column: auto !important; }
+    }
+
+    /* Wallet connect modal options: single column on narrow screens */
+    @media (max-width: 420px){
+      .wallet-options{ grid-template-columns: 1fr; }
+    }
+
+    /* iOS Safari: avoid backdrop-filter scroll jank by enabling native momentum scrolling */
+    .modal{ -webkit-overflow-scrolling: touch; }
+
   </style>
 </head>
 <body>
