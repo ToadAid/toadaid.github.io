@@ -34,6 +34,7 @@
     button.danger{ border-color: rgba(255,107,107,.5); }
     button:disabled{ opacity:0.4; cursor:not-allowed; }
     .pill{font-family:var(--mono); font-size:12px; padding:8px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background: rgba(0,0,0,.18); white-space:nowrap; cursor: pointer;}
+    .badge{font-family:var(--mono); font-size:10px; padding:4px 8px; border-radius:20px; background:rgba(74,163,255,.2); color:var(--accent2);}
     main{max-width:1200px; margin:0 auto; padding: 0 18px 40px; display:grid; grid-template-columns: 1.1fr .9fr; gap:16px;}
     @media (max-width: 980px){ main{grid-template-columns:1fr} }
     .card{background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); overflow:hidden;}
@@ -74,6 +75,10 @@
     .wallet-option span{ display:block; font-size:12px; font-weight:800; }
     .wallet-option small{ color:var(--muted); font-size:10px; display:block; margin-top:4px; }
     .close-modal{ margin-top: 12px; background: transparent; border: 1px solid var(--line); width: 100%; }
+    .gas-estimate{ font-size:11px; color:var(--muted); margin-top:8px; text-align:right; }
+    .recent-item{ padding:8px; border-bottom:1px solid var(--line); font-size:11px; display:flex; justify-content:space-between; }
+    .recent-item:last-child{ border-bottom:0; }
+    .token-balance{ background:rgba(103,243,196,.1); border-radius:12px; padding:4px 10px; font-size:11px; display:inline-block; margin-bottom:8px; }
   </style>
 </head>
 <body>
@@ -112,8 +117,14 @@
           <strong>Reputation Router (attest):</strong> <span id="addrRep"></span><br>
           <strong>MPASS (ERC‑20 gate):</strong> <span id="addrMPASS"></span><br>
           <strong>Registry Proxy (ERC‑8004):</strong> <span id="addrRegistry"></span><br>
+          <strong>Base Implementation:</strong> 0x7274e874ca62410a93bd8bf61c69d8045e399c02<br>
           <strong>Network:</strong> Base Mainnet (Chain ID: 8453)
         </div>
+      </div>
+
+      <!-- MPASS Balance Display -->
+      <div id="mpassBalanceContainer" style="display:none; margin-bottom:12px;">
+        <div class="token-balance" id="mpassBalance">💰 MPASS Balance: —</div>
       </div>
 
       <div class="tabs">
@@ -186,6 +197,9 @@
           <span class="pill" id="contractPill">Calls: <span style="font-family:var(--mono)">forge(string)</span></span>
         </div>
 
+        <!-- Gas Estimate -->
+        <div class="gas-estimate" id="gasEstimate"></div>
+
         <div class="hint" style="margin-top:12px">
           <strong>Hybrid principle:</strong> the chain records the identity. The pond adds meaning later. 🪞
         </div>
@@ -196,6 +210,7 @@
           <div>
             <label>Agent ID *</label>
             <input id="agentId" placeholder="e.g. 19173" />
+            <button class="smallbtn" id="btnCheckAgent" style="margin-top:5px; width:100%;">Check if exists</button>
           </div>
           <div>
             <label>Kind *</label>
@@ -248,12 +263,24 @@
       <pre class="mono" id="uriOut">data:application/json;base64,…</pre>
     </div>
   </aside>
+
+  <!-- Recent Forges Panel -->
+  <div class="card" style="grid-column: span 2;">
+    <div class="hd">
+      <div class="t">📜 Recently Forged</div>
+      <span class="badge" id="recentCount">0</span>
+    </div>
+    <div class="bd" id="recentForges">
+      <div class="sub">Connect wallet to see history</div>
+    </div>
+  </div>
 </main>
 
 <footer>
   <ul style="margin:8px 0 12px 20px; opacity:0.9">
     <li><strong>Forge</strong> mints an ERC‑8004 Agent ID through the Registry Router (MPASS‑gated onchain).</li>
     <li><strong>Attest</strong> emits reputation events for any agentId (also MPASS‑gated).</li>
+    <li><strong>Agent 0 & 1</strong> live forever in the Base implementation contract.</li>
   </ul>
   <p style="margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
     If buttons do nothing, open DevTools → Console. This page is pure static HTML and works on GitHub Pages.
@@ -308,6 +335,7 @@
   const REPUTATION_ROUTER = "0x94D7B431dD8eAFc9E1b71624DF0a90468622537a";
   const MPASS_ERC20 = "0xdb9e64465d4b5fbc7ee9091c459094efc7df5cde";
   const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
+  const BASE_IMPL = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
 
   // ABIs
   const ROUTER_ABI = [
@@ -317,6 +345,14 @@
   const REP_ABI = [
     "function attest(uint256 agentId,uint16 kind,string refURI,uint96 weight) external",
     "event Attested(uint256 indexed agentId,address indexed attester,uint16 indexed kind,string refURI,uint96 weight,uint64 timestamp)"
+  ];
+  const MPASS_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function symbol() view returns (string)",
+    "function decimals() view returns (uint8)"
+  ];
+  const REGISTRY_ABI = [
+    "function agentURI(uint256) view returns (string)"
   ];
 
   // DOM elements
@@ -333,6 +369,7 @@
   const btnAttest = $("btnAttest");
   const btnCopyUri = $("btnCopyUri");
   const btnCopyJson = $("btnCopyJson");
+  const btnCheckAgent = $("btnCheckAgent");
   
   const tabForge = $("tabForge");
   const tabAttest = $("tabAttest");
@@ -361,6 +398,12 @@
   const optionBrowser = $("optionBrowser");
   const optionWalletConnect = $("optionWalletConnect");
   const closeModal = $("closeModal");
+  
+  const mpassBalanceContainer = $("mpassBalanceContainer");
+  const mpassBalance = $("mpassBalance");
+  const gasEstimate = $("gasEstimate");
+  const recentForges = $("recentForges");
+  const recentCount = $("recentCount");
 
   // Set contract addresses in UI
   $("addrForge").textContent = REGISTRY_ROUTER;
@@ -372,11 +415,21 @@
   let provider = null;
   let signer = null;
   let wcProvider = null;
+  let recentForgeList = JSON.parse(localStorage.getItem('recentForges') || '[]');
 
   // Helper functions
   function setStatus(kind, text) {
     statusText.textContent = text;
     statusDot.className = "dot " + kind;
+    
+    // Auto-clear success messages after 5 seconds
+    if (kind === "good") {
+      setTimeout(() => {
+        if (statusText.textContent === text) {
+          statusText.textContent = "Connected. Ready to forge/attest.";
+        }
+      }, 5000);
+    }
   }
 
   function shortAddr(addr) {
@@ -425,6 +478,115 @@
     btnAttest.disabled = !(!!signer && aid.length > 0);
   }
 
+  // Check MPASS Balance
+  async function checkMPASSBalance() {
+    if (!signer || !provider) return;
+    
+    try {
+      const addr = await signer.getAddress();
+      const mpassContract = new ethers.Contract(MPASS_ERC20, MPASS_ABI, provider);
+      const balance = await mpassContract.balanceOf(addr);
+      const decimals = await mpassContract.decimals();
+      const symbol = await mpassContract.symbol();
+      
+      const formattedBalance = ethers.formatUnits(balance, decimals);
+      mpassBalanceContainer.style.display = "block";
+      mpassBalance.innerHTML = `💰 ${symbol} Balance: ${formattedBalance}`;
+      
+      if (balance === 0n) {
+        mpassBalance.style.background = "rgba(255,107,107,.2)";
+        setStatus("warn", "⚠️ No MPASS tokens - forge will fail!");
+      } else {
+        mpassBalance.style.background = "rgba(103,243,196,.1)";
+      }
+    } catch (err) {
+      console.error("Balance check failed:", err);
+    }
+  }
+
+  // Estimate Gas
+  async function estimateGas() {
+    if (!signer) return;
+    
+    try {
+      const pinned = (pinnedUriIn.value || "").trim();
+      const { uri, ok } = buildMetadata();
+      const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
+      
+      if (!(pinned && isValidUri(pinned)) && !ok) return;
+      
+      const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
+      const gasEstimate = await contract.forge.estimateGas(agentURI);
+      const feeData = await provider.getFeeData();
+      
+      const gasCost = gasEstimate * (feeData.gasPrice || 0n);
+      const ethCost = ethers.formatEther(gasCost);
+      
+      gasEstimate.innerHTML = `⛽ Estimated gas: ${gasEstimate.toString()} (~${ethCost} ETH)`;
+    } catch (err) {
+      // Silent fail for gas estimation
+    }
+  }
+
+  // Check if agent exists
+  async function checkAgentExists() {
+    const agentId = (agentIdIn.value || "").trim();
+    if (!agentId || !provider) {
+      setStatus("warn", "Enter Agent ID first");
+      return;
+    }
+    
+    try {
+      const registry = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+      const uri = await registry.agentURI(agentId);
+      
+      if (uri && uri.length > 0) {
+        setStatus("good", `✅ Agent ${agentId} exists!`);
+        
+        // Show preview in console
+        console.log(`Agent ${agentId} URI:`, uri);
+      } else {
+        setStatus("warn", `❌ Agent ${agentId} not found`);
+      }
+    } catch (err) {
+      setStatus("bad", `Agent ${agentId} not found`);
+    }
+  }
+
+  // Add to recent forges
+  function addToRecentForges(agentId, name, txHash) {
+    const newForge = {
+      agentId,
+      name: name || "Unnamed Agent",
+      txHash,
+      timestamp: Date.now(),
+      url: `https://basescan.org/tx/${txHash}`
+    };
+    
+    recentForgeList.unshift(newForge);
+    if (recentForgeList.length > 5) recentForgeList.pop();
+    
+    localStorage.setItem('recentForges', JSON.stringify(recentForgeList));
+    updateRecentForges();
+  }
+
+  function updateRecentForges() {
+    if (recentForgeList.length === 0) {
+      recentForges.innerHTML = '<div class="sub">No recent forges</div>';
+      recentCount.textContent = '0';
+      return;
+    }
+    
+    recentForges.innerHTML = recentForgeList.map(f => `
+      <div class="recent-item">
+        <span><strong>#${f.agentId}</strong> ${f.name}</span>
+        <a href="${f.url}" target="_blank" style="color:var(--accent2)">🔗</a>
+      </div>
+    `).join('');
+    
+    recentCount.textContent = recentForgeList.length;
+  }
+
   async function initSession(s, p) {
     signer = s;
     provider = p;
@@ -437,6 +599,9 @@
     btnConnect.style.display = "none";
     btnDisconnect.style.display = "inline-block";
     modal.style.display = "none";
+    
+    await checkMPASSBalance();
+    await estimateGas();
     
     setStatus("good", "Connected. Ready to forge/attest.");
     updateButtons();
@@ -475,7 +640,7 @@
     }
   }
 
-  // Connect via WalletConnect (working version from part 2)
+  // Connect via WalletConnect
   async function connectWalletConnect() {
     try {
       setStatus("warn", "Opening WalletConnect QR...");
@@ -525,6 +690,8 @@
     netPill.textContent = "Network: —";
     btnConnect.style.display = "inline-block";
     btnDisconnect.style.display = "none";
+    mpassBalanceContainer.style.display = "none";
+    gasEstimate.innerHTML = "";
     
     setStatus("warn", "Disconnected.");
     updateButtons();
@@ -550,6 +717,15 @@
     if (el) {
       el.addEventListener("input", updateButtons);
       el.addEventListener("change", updateButtons);
+    }
+  });
+
+  // Additional listeners for gas estimation
+  [nameIn, descIn, pinnedUriIn].forEach(el => {
+    if (el) {
+      el.addEventListener("input", () => {
+        if (signer) estimateGas();
+      });
     }
   });
 
@@ -582,6 +758,8 @@
 
   btnDisconnect.addEventListener("click", disconnect);
 
+  btnCheckAgent.addEventListener("click", checkAgentExists);
+
   btnForge.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -589,17 +767,23 @@
       const pinned = (pinnedUriIn.value || "").trim();
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
+      const agentName = nameIn.value || "Unnamed Agent";
       
       if (!(pinned && isValidUri(pinned)) && !ok) {
         throw new Error("Fill required fields or paste pinned ipfs:// URI");
       }
+
+      // Loading state
+      const originalText = btnForge.innerHTML;
+      btnForge.innerHTML = '⏳ Forging...';
+      btnForge.disabled = true;
 
       setStatus("warn", "Forging identity…");
       
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
       const tx = await contract.forge(agentURI);
       
-      setStatus("warn", `Submitted. Waiting… (${tx.hash.slice(0,10)}…)`);
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       const receipt = await tx.wait();
 
       // Try to extract agentId from event
@@ -610,18 +794,30 @@
           if (parsed && parsed.name === "Forged") {
             agentId = parsed.args.agentId.toString();
             break;
-          }
+        }
         } catch (_) {}
       }
       
       if (agentId) {
         agentIdIn.value = agentId;
+        addToRecentForges(agentId, agentName, tx.hash);
         updateButtons();
+        
+        // Show success with link
+        const txLink = `https://basescan.org/tx/${tx.hash}`;
+        setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
+        statusText.innerHTML = `✅ Forged! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+      } else {
+        setStatus("good", "Forged! Check BaseScan.");
       }
       
-      setStatus("good", agentId ? `Forged! Agent ID: ${agentId}` : "Forged! Check BaseScan.");
+      // Reset button
+      btnForge.innerHTML = originalText;
+      btnForge.disabled = false;
       
     } catch (err) {
+      btnForge.innerHTML = 'Forge Identity';
+      btnForge.disabled = false;
       setStatus("bad", err.shortMessage || err.message || "Forge failed");
     }
   });
@@ -635,17 +831,40 @@
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
 
+      // Check if agent exists first
+      try {
+        const registry = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+        await registry.agentURI(agentId);
+      } catch {
+        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
+          return;
+        }
+      }
+
+      // Loading state
+      const originalText = btnAttest.innerHTML;
+      btnAttest.innerHTML = '⏳ Attesting...';
+      btnAttest.disabled = true;
+
       setStatus("warn", "Attesting…");
       
       const contract = new ethers.Contract(REPUTATION_ROUTER, REP_ABI, signer);
       const tx = await contract.attest(agentId, kind, refURI, weight);
       
-      setStatus("warn", `Submitted. Waiting… (${tx.hash.slice(0,10)}…)`);
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       await tx.wait();
       
-      setStatus("good", "Attested! Event is on BaseScan.");
+      const txLink = `https://basescan.org/tx/${tx.hash}`;
+      setStatus("good", `✅ Attested!`);
+      statusText.innerHTML = `✅ Attested! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View Event]</a>`;
+      
+      // Reset button
+      btnAttest.innerHTML = originalText;
+      btnAttest.disabled = false;
       
     } catch (err) {
+      btnAttest.innerHTML = 'Attest';
+      btnAttest.disabled = false;
       setStatus("bad", err.shortMessage || err.message || "Attest failed");
     }
   });
@@ -664,12 +883,22 @@
     setStatus("good", "JSON copied.");
   });
 
+  // Auto-reconnect if previously connected (simplified)
+  window.addEventListener("load", () => {
+    // Check if we have a recent connection in localStorage
+    // This is simplified - in production you'd use a more robust method
+    if (window.ethereum && window.ethereum.selectedAddress) {
+      connectBrowser();
+    }
+  });
+
   // Initial render
   buildMetadata();
   updateButtons();
   showForge();
+  updateRecentForges();
 
-  console.log("ToadAid Forge loaded with working WalletConnect!");
+  console.log("ToadAid Forge loaded with all features!");
 </script>
 </body>
 </html>
