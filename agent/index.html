@@ -337,7 +337,16 @@
       font-weight: 600;
       color: var(--accent2);
     }
-    .detail-actions {
+    
+    /* Fix long values (addresses / hashes) overlapping in attribute cards */
+    .attribute-item { min-width: 0; }
+    .attribute-value{
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      line-height: 1.15;
+      font-size: 12.5px;
+    }
+.detail-actions {
       display: flex;
       gap: 12px;
       margin-top: 24px;
@@ -375,6 +384,11 @@
       .agents-grid{
         grid-template-columns: 1fr;
       }
+    }
+
+
+    @media (max-width: 560px){
+      .attributes-grid{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
     }
 
 </style>
