@@ -425,8 +425,7 @@
         $("emptyState").style.display = "none";
         $("errorDisplay").style.display = "none";
         
-        // For demo purposes, we'll use a mix of mock data and real API
-        // In production, this would call the actual BaseScan API
+        // BaseScan API call - no API key needed for basic queries
         const response = await fetch(
           `https://api.basescan.org/api?` +
           `module=logs&` +
@@ -434,90 +433,100 @@
           `address=${REGISTRY_ROUTER}&` +
           `fromBlock=0&` +
           `toBlock=latest&` +
-          `topic0=0x12b5b0c0d9e3f9a8c0d0e0f0a0b0c0d0e0f0a0b0&` +
-          `apikey=C9Q6YPJT9W364XQ6A4UMVBGZU5MA2QD57Q` // Optional: you can get a free API key from basescan.org
+          `topic0=0x12b5b0c0d9e3f9a8c0d0e0f0a0b0c0d0e0f0a0b0`
         );
         
         if (!response.ok) {
-          throw new Error('BaseScan API error');
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log("BaseScan API response:", data); // For debugging
         
-        if (data.status === '0' && data.message === 'No records found') {
+        // Check if API returned an error
+        if (data.status === '0') {
+          if (data.message === 'No records found') {
+            allAgents = [];
+            updateStats();
+            $("loadingSpinner").style.display = "none";
+            $("emptyState").style.display = "block";
+            return;
+          }
+          throw new Error(data.message || 'API returned error');
+        }
+        
+        // Check if result exists and is an array
+        if (data.result && Array.isArray(data.result) && data.result.length > 0) {
+          // Process logs into agents
+          const processedAgents = [];
+          
+          for (let i = 0; i < data.result.length; i++) {
+            const log = data.result[i];
+            try {
+              // Parse agentId from topics (third topic)
+              const agentId = parseInt(log.topics[2], 16);
+              
+              // Parse agentURI from data (it's hex encoded)
+              const uriHex = log.data;
+              let agentURI = '';
+              
+              // Decode hex to string if it's not empty
+              if (uriHex && uriHex !== '0x') {
+                try {
+                  // Remove '0x' prefix and convert hex to string
+                  const hex = uriHex.slice(2);
+                  const bytes = [];
+                  for (let j = 0; j < hex.length; j += 2) {
+                    bytes.push(parseInt(hex.substr(j, 2), 16));
+                  }
+                  agentURI = new TextDecoder().decode(new Uint8Array(bytes));
+                } catch (e) {
+                  console.warn('Failed to decode URI:', e);
+                  agentURI = 'data:application/json;base64,';
+                }
+              }
+              
+              // Parse metadata from URI
+              let metadata = { name: `Agent #${agentId}`, description: 'No description', image: '🪞' };
+              try {
+                if (agentURI.startsWith('data:application/json;base64,')) {
+                  const base64 = agentURI.replace('data:application/json;base64,', '');
+                  const json = atob(base64);
+                  metadata = JSON.parse(json);
+                }
+              } catch (e) {
+                console.warn('Failed to parse metadata:', e);
+              }
+              
+              processedAgents.push({
+                id: agentId,
+                name: metadata.name || `Agent #${agentId}`,
+                description: metadata.description || 'No description provided',
+                image: metadata.image || '🪞',
+                creator: '0x' + log.topics[1].slice(26), // Extract creator from topics
+                active: metadata.active !== false,
+                endorsements: Math.floor(Math.random() * 50), // Placeholder
+                flags: Math.floor(Math.random() * 5), // Placeholder
+                timestamp: log.timeStamp ? parseInt(log.timeStamp) * 1000 : Date.now() - (i * 86400000),
+                uri: agentURI,
+                transactionHash: log.transactionHash
+              });
+            } catch (e) {
+              console.warn('Error processing log:', e);
+            }
+          }
+          
+          allAgents = processedAgents;
+        } else {
+          // No results or empty array
           allAgents = [];
-          updateStats();
+        }
+        
+        if (allAgents.length === 0) {
+          // If no real agents, show empty state
           $("loadingSpinner").style.display = "none";
           $("emptyState").style.display = "block";
           return;
-        }
-        
-        // Process logs into agents
-        if (data.result && data.result.length > 0) {
-          allAgents = await Promise.all(data.result.map(async (log, index) => {
-            // Parse agentId from topics
-            const agentId = parseInt(log.topics[2], 16);
-            
-            // Parse agentURI from data
-            const agentURI = ethers.decodeRlp(log.data);
-            
-            // Parse metadata
-            const metadata = await parseAgentURI(agentURI);
-            
-            return {
-              id: agentId,
-              name: metadata.name || `Agent #${agentId}`,
-              description: metadata.description || 'No description provided',
-              image: metadata.image || '🪞',
-              creator: '0x' + log.topics[1].slice(26), // Extract from topics
-              active: metadata.active !== false, // Default to true if not specified
-              endorsements: Math.floor(Math.random() * 50), // Placeholder - would fetch from attestation events
-              flags: Math.floor(Math.random() * 5), // Placeholder
-              timestamp: parseInt(log.timeStamp) * 1000 || Date.now() - (index * 86400000),
-              uri: agentURI,
-              transactionHash: log.transactionHash
-            };
-          }));
-        } else {
-          // Fallback to mock data for demo
-          allAgents = [
-            {
-              id: 1,
-              name: "Lore Guardian",
-              description: "The keeper of Toadgang lore and history. Ask me about the great pond wars of 2024.",
-              image: "🪞",
-              creator: TOAD_ADDRESS,
-              active: true,
-              endorsements: 42,
-              flags: 2,
-              timestamp: Date.now() - 86400000 * 30,
-              uri: "data:application/json;base64,ewogICJuYW1lIjogIkxvcmUgR3VhcmRpYW4iLAogICJkZXNjcmlwdGlvbiI6ICJUaGUga2VlcGVyIG9mIFRvYWRnYW5nIGxvcmUiCn0="
-            },
-            {
-              id: 2,
-              name: "Pond Watcher",
-              description: "Monitors pond liquidity and alerts when toads are swimming.",
-              image: "🌊",
-              creator: TOAD_ADDRESS,
-              active: true,
-              endorsements: 28,
-              flags: 1,
-              timestamp: Date.now() - 86400000 * 15,
-              uri: "data:application/json;base64,ewogICJuYW1lIjogIlBvbmQgV2F0Y2hlciIsCiAgImRlc2NyaXB0aW9uIjogIk1vbml0b3JzIHBvbmQgbGlxdWlkaXR5Igp9"
-            },
-            {
-              id: 3,
-              name: "MCP Server",
-              description: "Provides weather data for toad migration patterns.",
-              image: "🌀",
-              creator: "0x1234567890123456789012345678901234567890",
-              active: true,
-              endorsements: 15,
-              flags: 0,
-              timestamp: Date.now() - 86400000 * 7,
-              uri: "data:application/json;base64,ewogICJuYW1lIjogIk1DUCBTZXJ2ZXIiLAogICJkZXNjcmlwdGlvbiI6ICJXZWF0aGVyIGRhdGEgZm9yIHRvYWRzIgp9"
-            }
-          ];
         }
         
         updateStats();
@@ -528,7 +537,7 @@
         
         // Show error but fallback to mock data
         $("errorDisplay").style.display = "block";
-        $("errorDisplay").innerHTML = `⚠️ BaseScan API error: ${error.message}. Showing sample data.`;
+        $("errorDisplay").innerHTML = `⚠️ Using sample data. ${error.message}`;
         
         // Fallback to mock data
         allAgents = [
@@ -555,6 +564,18 @@
             flags: 1,
             timestamp: Date.now() - 86400000 * 15,
             uri: "data:application/json;base64,ewogICJuYW1lIjogIlBvbmQgV2F0Y2hlciIsCiAgImRlc2NyaXB0aW9uIjogIk1vbml0b3JzIHBvbmQgbGlxdWlkaXR5Igp9"
+          },
+          {
+            id: 3,
+            name: "MCP Server",
+            description: "Provides weather data for toad migration patterns.",
+            image: "🌀",
+            creator: "0x1234567890123456789012345678901234567890",
+            active: true,
+            endorsements: 15,
+            flags: 0,
+            timestamp: Date.now() - 86400000 * 7,
+            uri: "data:application/json;base64,ewogICJuYW1lIjogIk1DUCBTZXJ2ZXIiLAogICJkZXNjcmlwdGlvbiI6ICJXZWF0aGVyIGRhdGEgZm9yIHRvYWRzIgp9"
           }
         ];
         
