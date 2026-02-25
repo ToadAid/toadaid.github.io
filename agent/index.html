@@ -391,6 +391,61 @@
       .attributes-grid{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
     }
 
+
+    /* ===== Directory controls (search / filters / paging) ===== */
+    .controls{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin: 12px 0 18px 0;
+      align-items:center;
+    }
+    .controls input[type="search"]{
+      flex: 1 1 260px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: #fff;
+      outline: none;
+    }
+    .controls select{
+      flex: 0 0 auto;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: #fff;
+      outline:none;
+    }
+    .pager{
+      display:flex; gap:10px; flex-wrap:wrap;
+      align-items:center;
+      justify-content: space-between;
+      margin: 10px 0 18px 0;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+    }
+    .pager .left, .pager .right{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .pager .meta{ opacity:.8; font-size: 13px; }
+    .pager button{
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      cursor:pointer;
+    }
+    .pager button:disabled{ opacity:.4; cursor:not-allowed; }
+
+    @media (max-width: 560px){
+      .controls input[type="search"]{ flex-basis: 100%; }
+      .pager{ gap: 8px; }
+      .pager .left, .pager .right{ width: 100%; justify-content: space-between; }
+    }
+
 </style>
 </head>
 <body>
@@ -408,6 +463,34 @@
     <span class="pill" id="modePill">Mode: Read‑only</span>
   </div>
 </header>
+
+  <div class="controls">
+    <input id="q" type="search" placeholder="Search: agent id, creator, name, tag…" autocomplete="off" />
+    <select id="sort">
+      <option value="new">Newest</option>
+      <option value="old">Oldest</option>
+      <option value="id_asc">ID ↑</option>
+      <option value="id_desc">ID ↓</option>
+      <option value="name">Name A→Z</option>
+    </select>
+    <select id="attest">
+      <option value="all">Attestation: All</option>
+      <option value="attested">Attested</option>
+      <option value="unattested">Not attested</option>
+      <option value="unknown">Unknown</option>
+    </select>
+    <select id="pageSize">
+      <option value="24">24 / page</option>
+      <option value="48" selected>48 / page</option>
+      <option value="96">96 / page</option>
+    </select>
+    <button class="smallbtn" id="btnRefresh" title="Refresh from Blockscout">Refresh</button>
+  </div>
+<div class="mini-legend" style="opacity:.75;font-size:13px;margin-top:-6px;">
+  Tip: Attestation filter is ready; wire it when attestation index is live.
+</div>
+  <div class="pager" id="pagerTop"></div>
+
 
 <main>
   <!-- Navigation -->
@@ -470,6 +553,7 @@
       <div style="font-size:11px; margin-top:12px;">No API key needed - free and fast!</div>
     </div>
     <div class="agents-grid" id="agentsGrid" style="display:none;"></div>
+  <div class=\"pager\" id=\"pagerBottom\"></div>
     <div class="empty-state" id="emptyState" style="display:none;">
       <div class="emoji">🪞</div>
       <div style="font-size:18px; margin-bottom:8px;">No agents found on chain</div>
@@ -944,10 +1028,14 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
     
     filteredAgents = filtered;
     currentPage = 1;
-    renderAgents();
-  }
+    ALL_AGENTS = agentsData || ALL_AGENTS;
+    saveCache(ALL_AGENTS);
+    applyFilters();
+}
   
-  function renderAgents() {
+  function renderAgents(list){
+    const agents = Array.isArray(list) ? list : (ALL_AGENTS || []);
+
     const grid = $("agentsGrid");
     const pagination = $("pagination");
     
