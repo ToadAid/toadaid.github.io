@@ -499,15 +499,24 @@
   const $ = (id) => document.getElementById(id);
   
   // ===== CHECK URL FOR AGENT ID =====
-  const path = window.location.pathname;
-  const pathParts = path.split('/').filter(p => p);
-  const lastPart = pathParts[pathParts.length - 1];
-  const isDetailView = lastPart && !isNaN(parseInt(lastPart)) && path.includes('/agent/');
-  const agentId = isDetailView ? parseInt(lastPart) : null;
-  
-  console.log("URL path:", path, "Agent ID:", agentId);
-  
-  // ===== STATE =====
+// Prefer query param: /agent/?id=19173 (GitHub Pages safe)
+// Fallback: /agent/19173 (works only with /agent/404.html redirect)
+const params = new URLSearchParams(window.location.search);
+const qId = params.get("id");
+
+const path = window.location.pathname;
+const pathParts = path.split("/").filter(Boolean);
+const lastPart = pathParts[pathParts.length - 1];
+
+const parsedQueryId = qId && /^\d+$/.test(qId) ? parseInt(qId, 10) : null;
+const parsedPathId = lastPart && /^\d+$/.test(lastPart) && path.includes("/agent/") ? parseInt(lastPart, 10) : null;
+
+const agentId = parsedQueryId ?? parsedPathId;
+const isDetailView = Number.isInteger(agentId);
+
+console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
+
+// ===== STATE =====
   let allAgents = [];
   let filteredAgents = [];
   let currentPage = 1;
@@ -900,7 +909,7 @@
     const totalPages = Math.ceil(filteredAgents.length / pageSize);
     
     grid.innerHTML = paginated.map(agent => `
-      <div class="agent-card" onclick="window.location.href='/agent/${agent.id}'">
+      <div class="agent-card" onclick="window.location.href='/agent/?id=${agent.id}'">
         <div class="agent-header">
           <span class="agent-id">#${agent.id}</span>
           <span class="agent-badge">${agent.active ? '🟢 Active' : '⚫ Inactive'}</span>
