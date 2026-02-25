@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ToadAid — Agent Directory (ERC-8004) | Toadgang Registry</title>
   <style>
+    /* ALL STYLES FROM YOUR PREVIOUS VERSION - KEEP THEM EXACTLY */
     :root{
       --bg:#0b1020; --text:#e8eeff; --muted:#9bb0ff; --line:rgba(255,255,255,.08);
       --accent:#4aa3ff; --accent2:#67f3c4; --warn:#ffcc66; --bad:#ff6b6b; --good:#5cff95;
@@ -389,10 +390,9 @@
   const BASE_ID = 8453;
   
   const REGISTRY_ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";
-  const TOAD_ADDRESS = "0x5874C4FcB2b5fDf5B1b8C9eE8f3d1a2b3c4d5e6f"; // Replace with actual Toadgang address
+  const TOAD_ADDRESS = "0x587464fd25af9147cb4660b03d899c8893378c0a"; // Updated from your event!
   
-  // Forged event signature - you need to get this from your contract
-  // This is a placeholder - you must replace with actual event hash!
+  // REAL Forged event signature from your contract!
   const FORGED_EVENT_SIG = "0x433b1a743df29cafbb6a1974d6683ffdf634082f8fada01f1ef9c57713ab8894";
   
   // ===== DOM ELEMENTS =====
@@ -436,6 +436,10 @@
         const base64 = agentURI.replace('data:application/json;base64,', '');
         const json = atob(base64);
         metadata = { ...metadata, ...JSON.parse(json) };
+      } else if (agentURI.startsWith('ipfs://')) {
+        // For IPFS URIs, show IPFS tag
+        metadata.name = `IPFS Agent #${agentId}`;
+        metadata.description = 'Metadata stored on IPFS';
       }
       
       return metadata;
@@ -454,7 +458,7 @@
       $("errorDisplay").style.display = "none";
       $("statusMessage").style.display = "none";
       
-      console.log("Fetching from Alchemy:", ALCHEMY_URL);
+      console.log("Fetching from Alchemy with event sig:", FORGED_EVENT_SIG);
       
       // Create provider with your Alchemy key
       const alchemyProvider = new ethers.JsonRpcProvider(ALCHEMY_URL);
@@ -466,22 +470,18 @@
       $("statusMessage").style.display = "block";
       $("statusMessage").innerHTML = `✅ Connected to Alchemy (block ${blockNumber}). Fetching agents...`;
       
-      // Get logs for Forged events
-      // Note: You need the actual event signature from your contract!
-      // For now, this will return empty array until you provide the correct signature
-      
+      // Get logs for Forged events using the REAL signature
       const logs = await alchemyProvider.send("eth_getLogs", [{
         address: REGISTRY_ROUTER,
         fromBlock: "0x0",
         toBlock: "latest",
-        topics: [FORGED_EVENT_SIG] // Add [FORGED_EVENT_SIG] when you have the real signature
+        topics: [FORGED_EVENT_SIG]
       }]);
       
       console.log("Found logs:", logs.length);
       
       if (logs.length === 0) {
-        // No logs found - show sample data
-        $("statusMessage").innerHTML = "⚠️ No Forged events found yet. Showing sample data.";
+        $("statusMessage").innerHTML = "⚠️ No Forged events found yet.";
         return false;
       }
       
@@ -492,22 +492,26 @@
         const log = logs[i];
         try {
           // Extract data from log
-          const agentId = parseInt(log.topics[2] || '0x0', 16);
-          const creator = log.topics[1] ? '0x' + log.topics[1].slice(26) : '0x0000...0000';
+          // topics[0] = event sig, topics[1] = creator, topics[2] = agentId, topics[3] = registry
+          const creator = log.topics[1] ? '0x' + log.topics[1].slice(26) : null;
+          const agentIdHex = log.topics[2] || '0x0';
+          const agentId = parseInt(agentIdHex, 16);
           const metadata = parseAgentURI(log.data, agentId);
           
-          agents.push({
-            id: agentId,
-            name: metadata.name,
-            description: metadata.description || 'No description',
-            image: metadata.image || '🪞',
-            creator: creator,
-            active: metadata.active !== false,
-            endorsements: Math.floor(Math.random() * 20), // Placeholder until attestation events
-            flags: Math.floor(Math.random() * 3), // Placeholder
-            timestamp: Date.now() - (i * 86400000), // Approximate
-            transactionHash: log.transactionHash
-          });
+          if (creator) {
+            agents.push({
+              id: agentId,
+              name: metadata.name,
+              description: metadata.description || 'No description',
+              image: metadata.image || '🪞',
+              creator: creator,
+              active: metadata.active !== false,
+              endorsements: 0, // You can fetch attestations later
+              flags: 0,
+              timestamp: Date.now() - (i * 86400000), // Approx - you could get block timestamp
+              transactionHash: log.transactionHash
+            });
+          }
         } catch (e) {
           console.warn("Error processing log:", e);
         }
@@ -524,7 +528,7 @@
     } catch (error) {
       console.error("Alchemy error:", error);
       $("errorDisplay").style.display = "block";
-      $("errorDisplay").innerHTML = `⚠️ Alchemy API error: ${error.message}. Using sample data.`;
+      $("errorDisplay").innerHTML = `⚠️ Alchemy API error: ${error.message}.`;
       return false;
     }
   }
@@ -534,7 +538,7 @@
     const success = await fetchAgentsFromAlchemy();
     
     if (!success || allAgents.length === 0) {
-      // Fallback to mock data
+      // Fallback to mock data (should not happen now with your event signature)
       allAgents = [
         { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", creator: TOAD_ADDRESS, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30 },
         { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", creator: TOAD_ADDRESS, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15 },
@@ -547,7 +551,7 @@
       ];
       
       $("errorDisplay").style.display = "block";
-      $("errorDisplay").innerHTML = "⚠️ Using sample data. To see real agents, deploy your contract and add the correct event signature.";
+      $("errorDisplay").innerHTML = "⚠️ Using sample data. No real agents found.";
     }
     
     $("loadingSpinner").style.display = "none";
@@ -560,7 +564,7 @@
   // ===== UI FUNCTIONS =====
   function updateStats() {
     $("totalAgents").textContent = allAgents.length;
-    $("toadAgents").textContent = allAgents.filter(a => a.creator === TOAD_ADDRESS).length;
+    $("toadAgents").textContent = allAgents.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase()).length;
     $("activeAgents").textContent = allAgents.filter(a => a.active).length;
     $("lastUpdate").textContent = formatTimeAgo(Date.now());
   }
@@ -582,7 +586,7 @@
     }
     
     if (creator === "toadgang") {
-      filtered = filtered.filter(a => a.creator === TOAD_ADDRESS);
+      filtered = filtered.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase());
     }
     
     if (status !== "all") {
@@ -631,7 +635,7 @@
             <div style="font-size:32px;">${agent.image}</div>
             <div class="agent-name">${agent.name}</div>
           </div>
-          ${agent.creator === TOAD_ADDRESS ? '<span class="toadgang-tag">🐸 TOADGANG</span>' : ''}
+          ${agent.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase() ? '<span class="toadgang-tag">🐸 TOADGANG</span>' : ''}
           <div class="agent-desc">${agent.description}</div>
           <div class="agent-meta">
             <span class="meta-item">⭐ ${agent.endorsements}</span>
@@ -706,7 +710,7 @@
   
   $("statsLink").addEventListener("click", (e) => {
     e.preventDefault();
-    alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => a.creator === TOAD_ADDRESS).length}\nActive: ${allAgents.filter(a => a.active).length}`);
+    alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase()).length}\nActive: ${allAgents.filter(a => a.active).length}`);
   });
   
   // ===== WALLET CONNECT =====
@@ -792,7 +796,7 @@
   // Auto-refresh every 5 minutes
   setInterval(loadAgents, 300000);
   
-  console.log("Agent Directory loaded with Alchemy! API key:", ALCHEMY_API_KEY.slice(0,10) + "...");
+  console.log("Agent Directory loaded with REAL event signature!");
 </script>
 </body>
 </html>
