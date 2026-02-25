@@ -349,7 +349,35 @@
       word-break: break-all;
       margin-top: 16px;
     }
-  </style>
+  
+    /* ===== Mobile scroll + layout fixes ===== */
+    html, body { width: 100%; overflow-x: hidden; }
+    body { -webkit-text-size-adjust: 100%; touch-action: pan-y; }
+
+    /* Make header stack cleanly on small screens */
+    @media (max-width: 560px){
+      header{
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .top-actions{
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .pill{
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      button.smallbtn, button.primary.smallbtn{
+        width: 100%;
+      }
+      .agents-grid{
+        grid-template-columns: 1fr;
+      }
+    }
+
+</style>
 </head>
 <body>
 <header>
@@ -609,20 +637,41 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
       // Connect to Base
       const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
       
-      // Get agent URI from contract
-      const registry = new ethers.Contract(REGISTRY_PROXY, [
+      // Get agent URI from chain (try proxy, then router). If both fail, fall back to logs.
+      const registryProxy = new ethers.Contract(REGISTRY_PROXY, [
         "function agentURI(uint256) view returns (string)"
       ], provider);
-      
-      let uri;
+
+      const registryRouter = new ethers.Contract(REGISTRY_ROUTER, [
+        "function agentURI(uint256) view returns (string)"
+      ], provider);
+
+      let uri = "";
+      let uriSource = "";
+
+      // 1) Try ERC-8004 registry proxy
       try {
-        uri = await registry.agentURI(id);
-        console.log("Agent URI from contract:", uri);
+        uri = await registryProxy.agentURI(id);
+        uriSource = "REGISTRY_PROXY";
+        console.log("Agent URI from REGISTRY_PROXY:", uri);
       } catch (e) {
-        throw new Error(`Agent #${id} does not exist`);
+        console.warn("REGISTRY_PROXY.agentURI failed for", id, e?.message || e);
       }
-      
-      // Get transaction from Blockscout
+
+      // 2) Try registry router (some deployments expose agentURI here)
+      if (!uri) {
+        try {
+          uri = await registryRouter.agentURI(id);
+          uriSource = "REGISTRY_ROUTER";
+          console.log("Agent URI from REGISTRY_ROUTER:", uri);
+        } catch (e) {
+          console.warn("REGISTRY_ROUTER.agentURI failed for", id, e?.message || e);
+        }
+      }
+
+      // 3) If still empty, we will confirm existence via Blockscout logs (Forged event)
+      //    and render a detail page anyway (showing creator/tx/time), with URI unknown.
+// Get transaction from Blockscout
       const response = await fetch(BLOCKSCOUT_URL);
       const data = await response.json();
       
@@ -636,10 +685,33 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
           creator = '0x' + log.topics[1].slice(26);
           timestamp = parseInt(log.timeStamp) * 1000;
           txHash = log.transactionHash;
+
+          // If URI wasn't available from contracts, try decoding it from the event log data.
+          // NOTE: This is best-effort because event ABI may vary.
+          if (!uri && log.data && log.data !== "0x") {
+            try {
+              const dataHex = log.data.startsWith("0x") ? log.data.slice(2) : log.data;
+              // Heuristic: take the tail and try to decode as ASCII-ish text.
+              const tail = dataHex.slice(Math.max(0, dataHex.length - 4096));
+              let str = "";
+              for (let i = 0; i < tail.length; i += 2) {
+                const code = parseInt(tail.substr(i, 2), 16);
+                if (code === 0) continue;
+                if (code >= 32 && code <= 126) str += String.fromCharCode(code);
+              }
+              const m = str.match(/(ipfs:\/\/[^\s"'<>]+|data:application\/json;base64,[A-Za-z0-9+/=]+)/);
+              if (m) {
+                uri = m[1];
+                uriSource = "FORGED_EVENT_LOG";
+                console.log("Agent URI decoded from log:", uri);
+              }
+            } catch (e) {
+              console.warn("Failed to decode URI from log data", e);
+            }
+          }
         }
       }
-      
-      // Parse metadata
+// Parse metadata
       let metadata = {
         name: `Agent #${id}`,
         description: "No description available",
@@ -715,7 +787,7 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
                 </div>
                 
                 <div class="detail-uri">
-                  <strong>Agent URI:</strong> ${uri}
+                  <strong>Agent URI:</strong> ${uri || '(unavailable)'}${uriSource ? ` <span style="opacity:.7">[${uriSource}]</span>` : ''}
                 </div>
                 ${txHash ? `
                   <div class="detail-uri" style="margin-top:8px;">
