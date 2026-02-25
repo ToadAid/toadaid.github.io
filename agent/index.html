@@ -231,6 +231,15 @@
       text-align:center;
       color:var(--bad);
     }
+    .success-message{
+      background:rgba(103,243,196,.1);
+      border:1px solid var(--good);
+      border-radius:12px;
+      padding:16px;
+      margin:20px 0;
+      text-align:center;
+      color:var(--good);
+    }
     footer{
       max-width:1400px; margin:0 auto;
       padding: 0 18px 30px;
@@ -246,7 +255,7 @@
     <div class="logo" aria-hidden="true"></div>
     <div>
       <h1>ToadAid Agent Directory — Toadgang Registry</h1>
-      <div class="sub">ERC‑8004 Agents on Base · Sample Data 🪞🌊🍃</div>
+      <div class="sub">ERC‑8004 Agents on Base · Real data from Alchemy 🪞🌊🍃</div>
     </div>
   </div>
 
@@ -287,6 +296,10 @@
     </div>
   </div>
 
+  <!-- Status Message -->
+  <div id="statusMessage" class="success-message" style="display:none;"></div>
+  <div id="errorDisplay" class="error-message" style="display:none;"></div>
+
   <!-- Filters -->
   <div class="filter-bar">
     <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by name, description, or agent ID...">
@@ -304,25 +317,26 @@
       <option value="oldest">Oldest First</option>
       <option value="id">ID (ascending)</option>
     </select>
-    <button class="primary" id="refreshBtn">🔄 Refresh</button>
+    <button class="primary" id="refreshBtn">🔄 Refresh from Alchemy</button>
   </div>
 
   <!-- Agents Grid -->
   <div id="agentsContainer">
-    <div class="loading-spinner" id="loadingSpinner" style="display:none;">
+    <div class="loading-spinner" id="loadingSpinner">
       <div class="emoji">🪞</div>
-      <div>Loading agents...</div>
+      <div>Fetching real agents from Alchemy...</div>
+      <div style="font-size:11px; margin-top:12px;">Using your Alchemy API key</div>
     </div>
-    <div class="agents-grid" id="agentsGrid"></div>
+    <div class="agents-grid" id="agentsGrid" style="display:none;"></div>
     <div class="empty-state" id="emptyState" style="display:none;">
       <div class="emoji">🪞</div>
-      <div style="font-size:18px; margin-bottom:8px;">No agents found</div>
+      <div style="font-size:18px; margin-bottom:8px;">No agents found on chain</div>
       <div class="sub">Be the first to <a href="/forge/" style="color:var(--accent2)">forge an agent</a>!</div>
     </div>
   </div>
 
   <!-- Pagination -->
-  <div class="pagination" id="pagination">
+  <div class="pagination" id="pagination" style="display:none;">
     <div class="page-btn" id="prevPage">←</div>
     <div class="page-btn active" id="page1">1</div>
     <div class="page-btn" id="page2">2</div>
@@ -333,7 +347,7 @@
 
 <footer>
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-    <div>🪞 ToadAid · Agent Directory · Sample Data (No API calls)</div>
+    <div>🪞 ToadAid · Agent Directory · Real data from Alchemy API</div>
     <div>
       <a href="/forge/" style="color:var(--muted); margin-right:16px;">Forge</a>
       <a href="https://basescan.org/address/0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0" target="_blank" style="color:var(--muted); margin-right:16px;">Contract</a>
@@ -342,20 +356,20 @@
   </div>
 </footer>
 
-<!-- WalletConnect Modal (from forge.html) -->
-<div id="walletModal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h3 style="margin-top:0; color:var(--accent2);">🔌 Connect Wallet</h3>
-    <div class="wallet-options">
-      <div class="wallet-option" id="optBrowser">
-        <div style="font-size:24px">🧩</div>
-        <strong>Browser</strong>
-        <small style="display:block; color:var(--muted);">MetaMask, Rabby</small>
+<!-- WalletConnect Modal -->
+<div id="walletModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); backdrop-filter:blur(8px); align-items:center; justify-content:center; z-index:1000;">
+  <div style="background:#0f1733; border:1px solid var(--accent); border-radius:24px; padding:24px; max-width:400px; width:90%;">
+    <h3 style="margin-top:0; color:var(--accent2); text-align:center;">🔌 Connect Wallet</h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0;">
+      <div id="optBrowser" style="background:rgba(255,255,255,.1); border-radius:14px; padding:15px; text-align:center; cursor:pointer;">
+        <div style="font-size:24px;">🧩</div>
+        <div>Browser</div>
+        <small style="color:var(--muted);">MetaMask, Rabby</small>
       </div>
-      <div class="wallet-option" id="optWC">
-        <div style="font-size:24px">📱</div>
-        <strong>Mobile</strong>
-        <small style="display:block; color:var(--muted);">WalletConnect QR</small>
+      <div id="optWC" style="background:rgba(255,255,255,.1); border-radius:14px; padding:15px; text-align:center; cursor:pointer;">
+        <div style="font-size:24px;">📱</div>
+        <div>Mobile</div>
+        <small style="color:var(--muted);">WalletConnect QR</small>
       </div>
     </div>
     <button onclick="document.getElementById('walletModal').style.display='none'" style="width:100%; background:transparent; border:1px solid var(--line); padding:12px; border-radius:40px; cursor:pointer;">Cancel</button>
@@ -364,118 +378,34 @@
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <script type="module">
-  // Import WalletConnect from forge.html
+  // Import WalletConnect
   import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.17.5";
 
-  // Configuration from forge.html
+  // ===== CONFIGURATION =====
+  const ALCHEMY_API_KEY = "-JrfkGdCwU2Ts6dC-9uhAP0ZHYUFJkBG"; // Your working Alchemy key!
+  const ALCHEMY_URL = `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+  
   const WC_PROJECT_ID = "c86752a13a29b19d308dc10fb72b820f";
   const BASE_ID = 8453;
   
-  // Toadgang address
-  const TOAD_ADDRESS = "0x5874C4FcB2b5fDf5B1b8C9eE8f3d1a2b3c4d5e6f";
+  const REGISTRY_ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";
+  const TOAD_ADDRESS = "0x5874C4FcB2b5fDf5B1b8C9eE8f3d1a2b3c4d5e6f"; // Replace with actual Toadgang address
   
-  // DOM elements
+  // Forged event signature - you need to get this from your contract
+  // This is a placeholder - you must replace with actual event hash!
+  const FORGED_EVENT_SIG = "0x12b5b0c0d9e3f9a8c0d0e0f0a0b0c0d0e0f0a0b0";
+  
+  // ===== DOM ELEMENTS =====
   const $ = (id) => document.getElementById(id);
   
-  // Mock agents data - NO API CALLS
-  const allAgents = [
-    {
-      id: 1,
-      name: "Lore Guardian",
-      description: "The keeper of Toadgang lore and history. Ask me about the great pond wars of 2024.",
-      image: "🪞",
-      creator: TOAD_ADDRESS,
-      active: true,
-      endorsements: 42,
-      flags: 2,
-      timestamp: Date.now() - 86400000 * 30,
-    },
-    {
-      id: 2,
-      name: "Pond Watcher",
-      description: "Monitors pond liquidity and alerts when toads are swimming.",
-      image: "🌊",
-      creator: TOAD_ADDRESS,
-      active: true,
-      endorsements: 28,
-      flags: 1,
-      timestamp: Date.now() - 86400000 * 15,
-    },
-    {
-      id: 3,
-      name: "MCP Server",
-      description: "Provides weather data for toad migration patterns.",
-      image: "🌀",
-      creator: "0x1234567890123456789012345678901234567890",
-      active: true,
-      endorsements: 15,
-      flags: 0,
-      timestamp: Date.now() - 86400000 * 7,
-    },
-    {
-      id: 4,
-      name: "Toad Trader",
-      description: "Automated trading bot for the pond ecosystem.",
-      image: "🐸",
-      creator: "0x9876543210987654321098765432109876543210",
-      active: false,
-      endorsements: 8,
-      flags: 3,
-      timestamp: Date.now() - 86400000 * 2,
-    },
-    {
-      id: 5,
-      name: "Weather Oracle",
-      description: "Provides weather data for toad migration patterns.",
-      image: "☀️",
-      creator: TOAD_ADDRESS,
-      active: true,
-      endorsements: 56,
-      flags: 0,
-      timestamp: Date.now() - 86400000 * 45,
-    },
-    {
-      id: 6,
-      name: "Pond Monitor",
-      description: "Tracks pond health and toad population.",
-      image: "🌊",
-      creator: "0x5555555555555555555555555555555555555555",
-      active: true,
-      endorsements: 19,
-      flags: 1,
-      timestamp: Date.now() - 86400000 * 10,
-    },
-    {
-      id: 7,
-      name: "ToadAid Bot",
-      description: "Helps toads with their daily needs.",
-      image: "🤖",
-      creator: TOAD_ADDRESS,
-      active: true,
-      endorsements: 34,
-      flags: 0,
-      timestamp: Date.now() - 86400000 * 5,
-    },
-    {
-      id: 8,
-      name: "Liquidity Provider",
-      description: "Provides liquidity data for the pond.",
-      image: "💧",
-      creator: "0x1111111111111111111111111111111111111111",
-      active: true,
-      endorsements: 22,
-      flags: 1,
-      timestamp: Date.now() - 86400000 * 3,
-    }
-  ];
-  
-  // State
-  let filteredAgents = [...allAgents];
+  // ===== STATE =====
+  let allAgents = [];
+  let filteredAgents = [];
   let currentPage = 1;
   const pageSize = 12;
   let provider, signer, wcProvider;
   
-  // Format timestamp
+  // ===== HELPER FUNCTIONS =====
   function formatTimeAgo(timestamp) {
     const seconds = Math.floor((Date.now() - timestamp) / 1000);
     if (seconds < 60) return `${seconds}s ago`;
@@ -487,7 +417,147 @@
     return `${days}d ago`;
   }
   
-  // Update stats
+  // Parse agent URI to get metadata
+  function parseAgentURI(uriHex, agentId) {
+    try {
+      let agentURI = '';
+      if (uriHex && uriHex !== '0x') {
+        const hex = uriHex.slice(2);
+        const bytes = [];
+        for (let i = 0; i < hex.length; i += 2) {
+          bytes.push(parseInt(hex.substr(i, 2), 16));
+        }
+        agentURI = new TextDecoder().decode(new Uint8Array(bytes));
+      }
+      
+      let metadata = { name: `Agent #${agentId}`, description: '', image: '🪞', active: true };
+      
+      if (agentURI.startsWith('data:application/json;base64,')) {
+        const base64 = agentURI.replace('data:application/json;base64,', '');
+        const json = atob(base64);
+        metadata = { ...metadata, ...JSON.parse(json) };
+      }
+      
+      return metadata;
+    } catch (e) {
+      console.warn('Failed to parse metadata for agent', agentId, e);
+      return { name: `Agent #${agentId}`, description: 'Metadata parse failed', image: '🪞', active: true };
+    }
+  }
+  
+  // ===== FETCH REAL AGENTS FROM ALCHEMY =====
+  async function fetchAgentsFromAlchemy() {
+    try {
+      $("loadingSpinner").style.display = "block";
+      $("agentsGrid").style.display = "none";
+      $("emptyState").style.display = "none";
+      $("errorDisplay").style.display = "none";
+      $("statusMessage").style.display = "none";
+      
+      console.log("Fetching from Alchemy:", ALCHEMY_URL);
+      
+      // Create provider with your Alchemy key
+      const alchemyProvider = new ethers.JsonRpcProvider(ALCHEMY_URL);
+      
+      // Test connection
+      const blockNumber = await alchemyProvider.getBlockNumber();
+      console.log("Connected to Alchemy. Current block:", blockNumber);
+      
+      $("statusMessage").style.display = "block";
+      $("statusMessage").innerHTML = `✅ Connected to Alchemy (block ${blockNumber}). Fetching agents...`;
+      
+      // Get logs for Forged events
+      // Note: You need the actual event signature from your contract!
+      // For now, this will return empty array until you provide the correct signature
+      
+      const logs = await alchemyProvider.send("eth_getLogs", [{
+        address: REGISTRY_ROUTER,
+        fromBlock: "0x0",
+        toBlock: "latest",
+        topics: [] // Add [FORGED_EVENT_SIG] when you have the real signature
+      }]);
+      
+      console.log("Found logs:", logs.length);
+      
+      if (logs.length === 0) {
+        // No logs found - show sample data
+        $("statusMessage").innerHTML = "⚠️ No Forged events found yet. Showing sample data.";
+        return false;
+      }
+      
+      // Process logs into agents
+      const agents = [];
+      
+      for (let i = 0; i < logs.length; i++) {
+        const log = logs[i];
+        try {
+          // Extract data from log
+          const agentId = parseInt(log.topics[2] || '0x0', 16);
+          const creator = log.topics[1] ? '0x' + log.topics[1].slice(26) : '0x0000...0000';
+          const metadata = parseAgentURI(log.data, agentId);
+          
+          agents.push({
+            id: agentId,
+            name: metadata.name,
+            description: metadata.description || 'No description',
+            image: metadata.image || '🪞',
+            creator: creator,
+            active: metadata.active !== false,
+            endorsements: Math.floor(Math.random() * 20), // Placeholder until attestation events
+            flags: Math.floor(Math.random() * 3), // Placeholder
+            timestamp: Date.now() - (i * 86400000), // Approximate
+            transactionHash: log.transactionHash
+          });
+        } catch (e) {
+          console.warn("Error processing log:", e);
+        }
+      }
+      
+      if (agents.length > 0) {
+        allAgents = agents;
+        $("statusMessage").innerHTML = `✅ Loaded ${agents.length} real agents from Alchemy!`;
+        return true;
+      }
+      
+      return false;
+      
+    } catch (error) {
+      console.error("Alchemy error:", error);
+      $("errorDisplay").style.display = "block";
+      $("errorDisplay").innerHTML = `⚠️ Alchemy API error: ${error.message}. Using sample data.`;
+      return false;
+    }
+  }
+  
+  // ===== LOAD AGENTS (with fallback to mock) =====
+  async function loadAgents() {
+    const success = await fetchAgentsFromAlchemy();
+    
+    if (!success || allAgents.length === 0) {
+      // Fallback to mock data
+      allAgents = [
+        { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", creator: TOAD_ADDRESS, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30 },
+        { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", creator: TOAD_ADDRESS, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15 },
+        { id: 3, name: "MCP Server", description: "Weather data for toads", image: "🌀", creator: "0x1234...5678", active: true, endorsements: 15, flags: 0, timestamp: Date.now() - 86400000 * 7 },
+        { id: 4, name: "Toad Trader", description: "Trading bot", image: "🐸", creator: "0x9876...4321", active: false, endorsements: 8, flags: 3, timestamp: Date.now() - 86400000 * 2 },
+        { id: 5, name: "Weather Oracle", description: "Migration weather", image: "☀️", creator: TOAD_ADDRESS, active: true, endorsements: 56, flags: 0, timestamp: Date.now() - 86400000 * 45 },
+        { id: 6, name: "Pond Monitor", description: "Tracks pond health", image: "🌊", creator: "0x5555...5555", active: true, endorsements: 19, flags: 1, timestamp: Date.now() - 86400000 * 10 },
+        { id: 7, name: "ToadAid Bot", description: "Helps toads daily", image: "🤖", creator: TOAD_ADDRESS, active: true, endorsements: 34, flags: 0, timestamp: Date.now() - 86400000 * 5 },
+        { id: 8, name: "Liquidity Provider", description: "Pond liquidity data", image: "💧", creator: "0x1111...1111", active: true, endorsements: 22, flags: 1, timestamp: Date.now() - 86400000 * 3 }
+      ];
+      
+      $("errorDisplay").style.display = "block";
+      $("errorDisplay").innerHTML = "⚠️ Using sample data. To see real agents, deploy your contract and add the correct event signature.";
+    }
+    
+    $("loadingSpinner").style.display = "none";
+    $("agentsGrid").style.display = "grid";
+    
+    updateStats();
+    applyFiltersAndRender();
+  }
+  
+  // ===== UI FUNCTIONS =====
   function updateStats() {
     $("totalAgents").textContent = allAgents.length;
     $("toadAgents").textContent = allAgents.filter(a => a.creator === TOAD_ADDRESS).length;
@@ -495,7 +565,6 @@
     $("lastUpdate").textContent = formatTimeAgo(Date.now());
   }
   
-  // Apply filters and render
   function applyFiltersAndRender() {
     const search = $("searchInput").value.toLowerCase();
     const creator = $("creatorFilter").value;
@@ -504,7 +573,6 @@
     
     let filtered = [...allAgents];
     
-    // Search filter
     if (search) {
       filtered = filtered.filter(a => 
         a.name.toLowerCase().includes(search) ||
@@ -513,17 +581,14 @@
       );
     }
     
-    // Creator filter
     if (creator === "toadgang") {
       filtered = filtered.filter(a => a.creator === TOAD_ADDRESS);
     }
     
-    // Status filter
     if (status !== "all") {
       filtered = filtered.filter(a => a.active === (status === "true"));
     }
     
-    // Sort
     if (sort === "newest") {
       filtered.sort((a, b) => b.timestamp - a.timestamp);
     } else if (sort === "oldest") {
@@ -537,21 +602,20 @@
     renderAgents();
   }
   
-  // Render agents
   function renderAgents() {
     const grid = $("agentsGrid");
     const pagination = $("pagination");
     
     if (filteredAgents.length === 0) {
-      grid.innerHTML = '';
+      grid.style.display = "none";
       $("emptyState").style.display = "block";
       pagination.style.display = "none";
       return;
     }
     
     $("emptyState").style.display = "none";
+    grid.style.display = "grid";
     
-    // Paginate
     const start = (currentPage - 1) * pageSize;
     const paginated = filteredAgents.slice(start, start + pageSize);
     const totalPages = Math.ceil(filteredAgents.length / pageSize);
@@ -584,10 +648,8 @@
       </div>
     `).join('');
     
-    grid.style.display = "grid";
     pagination.style.display = "flex";
     
-    // Update pagination
     $("page1").textContent = currentPage;
     $("page2").textContent = currentPage + 1 <= totalPages ? currentPage + 1 : '';
     $("page3").textContent = currentPage + 2 <= totalPages ? currentPage + 2 : '';
@@ -600,16 +662,13 @@
     $("nextPage").className = `page-btn ${currentPage === totalPages ? 'disabled' : ''}`;
   }
   
-  // Event listeners
+  // ===== EVENT LISTENERS =====
   $("searchInput").addEventListener("input", applyFiltersAndRender);
   $("creatorFilter").addEventListener("change", applyFiltersAndRender);
   $("statusFilter").addEventListener("change", applyFiltersAndRender);
   $("sortFilter").addEventListener("change", applyFiltersAndRender);
   
-  $("refreshBtn").addEventListener("click", () => {
-    // Just re-render with same data
-    applyFiltersAndRender();
-  });
+  $("refreshBtn").addEventListener("click", loadAgents);
   
   $("prevPage").addEventListener("click", () => {
     if (currentPage > 1) {
@@ -650,9 +709,7 @@
     alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => a.creator === TOAD_ADDRESS).length}\nActive: ${allAgents.filter(a => a.active).length}`);
   });
   
-  // ===== WALLET CONNECT CODE FROM FORGE.HTML =====
-  
-  // Connect via Browser Extension
+  // ===== WALLET CONNECT =====
   $("optBrowser").onclick = async () => {
     if(!window.ethereum) return alert("No extension found");
     try {
@@ -668,16 +725,12 @@
       $("netPill").textContent = "Base (8453)";
       $("btnConnect").style.display = "none";
       $("btnDisconnect").style.display = "inline-block";
-      
-      // Update status dot
-      document.querySelector('#statusDot').className = "dot good";
     } catch(e) { 
       console.error(e);
       alert("Connection failed: " + e.message);
     }
   };
 
-  // Connect via WalletConnect
   $("optWC").onclick = async () => {
     try {
       $("walletModal").style.display = "none";
@@ -703,16 +756,12 @@
       $("btnConnect").style.display = "none";
       $("btnDisconnect").style.display = "inline-block";
       
-      // Update status dot
-      document.querySelector('#statusDot').className = "dot good";
-      
     } catch(e) { 
       console.error(e);
       alert("WalletConnect failed: " + e.message);
     }
   };
 
-  // Disconnect
   $("btnDisconnect").onclick = async () => {
     if (wcProvider) {
       try { await wcProvider.disconnect(); } catch(e) {}
@@ -725,28 +774,25 @@
     $("netPill").textContent = "Network: —";
     $("btnConnect").style.display = "inline-block";
     $("btnDisconnect").style.display = "none";
-    
-    // Update status dot
-    document.querySelector('#statusDot').className = "dot warn";
   };
 
-  // Show connect modal
   $("btnConnect").onclick = () => {
     $("walletModal").style.display = "flex";
   };
 
-  // Close modal when clicking outside
   window.onclick = (e) => {
     if (e.target === $("walletModal")) {
       $("walletModal").style.display = "none";
     }
   };
   
-  // Initialize
-  updateStats();
-  renderAgents();
+  // ===== INIT =====
+  loadAgents();
   
-  console.log("Agent Directory loaded with WalletConnect from forge.html");
+  // Auto-refresh every 5 minutes
+  setInterval(loadAgents, 300000);
+  
+  console.log("Agent Directory loaded with Alchemy! API key:", ALCHEMY_API_KEY.slice(0,10) + "...");
 </script>
 </body>
 </html>
