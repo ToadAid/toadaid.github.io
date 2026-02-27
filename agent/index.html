@@ -428,7 +428,6 @@
     html, body { width: 100%; overflow-x: hidden; }
     body { -webkit-text-size-adjust: 100%; touch-action: pan-y; }
 
-    /* ===== New styles for badges and search ===== */
     .badge-container {
       display: flex;
       gap: 4px;
@@ -781,29 +780,24 @@
     return null;
   }
   
-  // Smart search that detects input type
   function smartSearch(input) {
     const trimmed = input.trim();
     
-    // Check if it's a number (agent ID)
     if (/^\d+$/.test(trimmed)) {
       window.location.href = `/agent/?id=${trimmed}`;
       return true;
     }
     
-    // Check if it's a wallet address (0x + 40 hex chars)
     if (/^0x[a-fA-F0-9]{40}$/.test(trimmed)) {
       filterByCreator(trimmed);
       return true;
     }
     
-    // Check if it's a transaction hash (0x + 64 hex chars)
     if (/^0x[a-fA-F0-9]{64}$/.test(trimmed)) {
       window.open(`https://basescan.org/tx/${trimmed}`, '_blank');
       return true;
     }
     
-    // Check if it's an IPFS URI
     if (trimmed.startsWith('ipfs://') || trimmed.startsWith('Qm') || trimmed.startsWith('bafy')) {
       $("statusMessage").style.display = "block";
       $("statusMessage").innerHTML = `🔍 Searching for agents with URI containing ${trimmed.slice(0,20)}...`;
@@ -838,7 +832,6 @@
     $("statusMessage").innerHTML = `✅ Found ${filteredAgents.length} agents matching "${uri.slice(0,20)}..."`;
   }
   
-  // Copy share link
   async function copyShareLink(agentId) {
     const url = `${window.location.origin}/agent/?id=${agentId}`;
     await navigator.clipboard.writeText(url);
@@ -1153,11 +1146,9 @@
     let filtered = [...allAgents];
     
     if (search) {
-      // Try smart search first
       if (smartSearch(search)) {
         return;
       }
-      // Fallback to normal search
       filtered = filtered.filter(a => 
         a.name.toLowerCase().includes(search) ||
         a.description.toLowerCase().includes(search) ||
@@ -1312,7 +1303,6 @@
     alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase()).length}\nActive: ${allAgents.filter(a => a.active).length}`);
   });
 
-  // Make copyShareLink globally available
   window.copyShareLink = copyShareLink;
 
   if (isDetailView) {
