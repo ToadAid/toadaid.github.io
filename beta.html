@@ -670,7 +670,7 @@
     }
   }
 
-  // Check if agent exists (using Router, not Proxy)
+  // Check if agent exists
   async function checkAgentExists() {
     const agentId = (agentIdIn.value || "").trim();
     if (!agentId || !provider) {
@@ -717,7 +717,6 @@
     if (uri.startsWith('http')) return uri;
     if (uri.startsWith('ipfs://')) {
       const hash = uri.replace('ipfs://', '');
-      // Return gateway URL without checking (let browser handle 404)
       return IPFS_GATEWAYS[0] + hash;
     }
     return null;
@@ -946,6 +945,15 @@
   async function connectWalletConnect() {
     try {
       setStatus("warn", "Opening WalletConnect QR...");
+      
+      // Clean up any existing provider
+      if (wcProvider) {
+        try {
+          await wcProvider.disconnect();
+        } catch (e) {}
+        wcProvider = null;
+      }
+
       wcProvider = await EthereumProvider.init({
         projectId: WC_PROJECT_ID,
         chains: [BASE_CHAIN_ID],
@@ -963,12 +971,15 @@
         ],
         events: ["accountsChanged", "chainChanged", "disconnect"]
       });
+
       await wcProvider.connect();
+      
       const p = new ethers.BrowserProvider(wcProvider);
       await initSession(await p.getSigner(), p);
+      
     } catch (err) {
       console.error("WC Error:", err);
-      setStatus("bad", "WalletConnect failed. Check console.");
+      setStatus("bad", "WalletConnect failed. Please try again.");
     }
   }
 
@@ -1122,7 +1133,8 @@
           agentIdIn.value = id;
           updateButtons();
         } else if (action === 'view') {
-          window.open(`/agent/${id}`, '_blank');
+          // Use the correct URL format with query parameter
+          window.open(`/agent/?id=${id}`, '_blank');
         }
       });
     });
