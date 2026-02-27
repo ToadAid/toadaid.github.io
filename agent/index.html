@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ToadAid — Agent Directory (ERC-8004) | Toadgang Registry</title>
   <style>
-    /* ALL YOUR EXISTING STYLES - KEEP THEM EXACTLY THE SAME */
     :root{
       --bg:#0b1020; --text:#e8eeff; --muted:#9bb0ff; --line:rgba(255,255,255,.08);
       --accent:#4aa3ff; --accent2:#67f3c4; --warn:#ffcc66; --bad:#ff6b6b; --good:#5cff95;
@@ -119,7 +118,6 @@
       gap:20px; margin-bottom:30px;
     }
     
-    /* ===== NEW VISUAL CARD STYLES ===== */
     .agent-card {
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border: 1px solid var(--line);
@@ -239,7 +237,6 @@
       gap: 4px;
     }
     
-    /* Keep existing styles for other elements */
     .agent-id{
       font-family:var(--mono); font-size:12px;
       background:rgba(74,163,255,.2); padding:4px 8px;
@@ -320,7 +317,6 @@
       margin-top:20px;
     }
     
-    /* Detail view styles */
     .detail-container {
       background: rgba(0,0,0,.22);
       border-radius: 24px;
@@ -409,7 +405,6 @@
       color: var(--accent2);
     }
     
-    /* Fix long values (addresses / hashes) overlapping in attribute cards */
     .attribute-item { min-width: 0; }
     .attribute-value{
       overflow-wrap: anywhere;
@@ -430,11 +425,9 @@
       margin-top: 16px;
     }
   
-    /* ===== Mobile scroll + layout fixes ===== */
     html, body { width: 100%; overflow-x: hidden; }
     body { -webkit-text-size-adjust: 100%; touch-action: pan-y; }
 
-    /* Make header stack cleanly on small screens */
     @media (max-width: 560px){
       header{
         flex-direction: column;
@@ -480,15 +473,31 @@
 </header>
 
 <main>
-  <!-- Navigation -->
   <div class="nav-links" style="margin-bottom:24px;">
     <a href="/" class="nav-link">🏠 Home</a>
     <a href="/forge/" class="nav-link">🔨 Forge</a>
     <a href="/agent/" class="nav-link active" id="directoryLink">📋 Directory</a>
+    <a href="/agent/legendary/" class="nav-link" style="border-color: gold; color: gold;">👑 Legends</a>
     <a href="#" class="nav-link" id="statsLink">📊 Stats</a>
   </div>
 
-  <!-- Stats (hidden in detail mode) -->
+  <div class="stats-bar" id="statsBar">
+  </div>
+
+  <div style="background: linear-gradient(90deg, rgba(255,215,0,.1), rgba(74,163,255,.1)); border: 1px solid gold; border-radius: 18px; padding: 16px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 32px;">👑</span>
+      <div>
+        <div style="font-weight: 800; color: gold;">The Legends</div>
+        <div class="sub">Agent 0 & 1 — The OGs that started it all</div>
+      </div>
+    </div>
+    <a href="/agent/legendary/" class="nav-link" style="border-color: gold; color: gold;">View Legends →</a>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+  </div>
+
   <div class="stats-bar" id="statsBar">
     <div class="stat-card">
       <div class="stat-number" id="totalAgents">—</div>
@@ -508,7 +517,6 @@
     </div>
   </div>
 
-  <!-- Filters (hidden in detail mode) -->
   <div class="filter-bar" id="filterBar">
     <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by name, description, or agent ID...">
     <select class="filter-select" id="creatorFilter">
@@ -528,11 +536,9 @@
     <button class="primary" id="refreshBtn">🔄 Refresh from Blockscout</button>
   </div>
 
-  <!-- Status Message -->
   <div id="statusMessage" class="success-message" style="display:none;"></div>
   <div id="errorDisplay" class="error-message" style="display:none;"></div>
 
-  <!-- Agents Grid (used for both directory and detail) -->
   <div id="agentsContainer">
     <div class="loading-spinner" id="loadingSpinner">
       <div class="emoji">🪞</div>
@@ -547,7 +553,6 @@
     </div>
   </div>
 
-  <!-- Pagination (hidden in detail mode) -->
   <div class="pagination" id="pagination" style="display:none;">
     <div class="page-btn" id="prevPage">←</div>
     <div class="page-btn active" id="page1">1</div>
@@ -570,21 +575,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <script type="module">
-  // ===== CONFIGURATION =====
   const BASE_ID = 8453;
   
   const REGISTRY_ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";
   const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
   const TOAD_ADDRESS = "0x587464fd25af9147cb4660b03d899c8893378c0a";
   
-  // REAL Forged event signature from Blockscout!
   const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
   const BLOCKSCOUT_URL = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
   
-  // ===== DOM ELEMENTS =====
   const $ = (id) => document.getElementById(id);
   
-  // ===== CHECK URL FOR AGENT ID =====
   const params = new URLSearchParams(window.location.search);
   const qId = params.get("id");
 
@@ -600,32 +601,26 @@
 
   console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
 
-  // ===== STATE =====
   let allAgents = [];
   let filteredAgents = [];
   let currentPage = 1;
   const pageSize = 12;
   
-  // IPFS gateways
   const IPFS_GATEWAYS = [
     "https://ipfs.io/ipfs/",
     "https://cloudflare-ipfs.com/ipfs/",
     "https://gateway.pinata.cloud/ipfs/"
   ];
   
-  // ===== SAFE BASE64 DECODE (CSP-friendly) =====
   function safeBase64Decode(base64) {
     try {
-      // Use built-in atob which is actually allowed in most CSP contexts
       const binaryString = atob(base64);
       
-      // Convert to UTF-8 string properly
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
       }
       
-      // Use TextDecoder for proper UTF-8 handling
       return new TextDecoder().decode(bytes);
     } catch (e) {
       console.warn("Base64 decode failed:", e);
@@ -633,7 +628,6 @@
     }
   }
   
-  // ===== HELPER FUNCTIONS =====
   function formatTimeAgo(timestamp) {
     const seconds = Math.floor((Date.now() - timestamp) / 1000);
     if (seconds < 60) return `${seconds}s ago`;
@@ -649,7 +643,6 @@
     return addr ? addr.slice(0,6) + "…" + addr.slice(-4) : "";
   }
   
-  // Decode hex string to UTF-8
   function hexToString(hex) {
     try {
       if (!hex || hex === '0x') return '';
@@ -665,14 +658,12 @@
     }
   }
   
-  // Extract URI from log data
   function extractUriFromLogData(dataHex, agentId) {
     try {
       if (!dataHex || dataHex === '0x') return null;
       
       const hex = dataHex.startsWith('0x') ? dataHex.slice(2) : dataHex;
       
-      // Try to find IPFS pattern
       for (let i = 0; i < hex.length - 20; i++) {
         if (hex.substr(i, 14).toLowerCase() === '697066733a2f2f') {
           let uriHex = '';
@@ -712,7 +703,6 @@
     }
   }
   
-  // Parse base64 metadata
   function parseBase64Metadata(base64Data) {
     try {
       const decoded = safeBase64Decode(base64Data);
@@ -724,7 +714,6 @@
     }
   }
   
-  // Get image URL from various sources
   async function getImageUrl(agent) {
     if (agent.imageUrl) return agent.imageUrl;
     if (agent.image && agent.image.startsWith('http')) return agent.image;
@@ -735,7 +724,6 @@
     return null;
   }
   
-  // Fetch from IPFS with fallback gateways
   async function fetchFromIPFS(ipfsHash) {
     for (const gateway of IPFS_GATEWAYS) {
       try {
@@ -748,7 +736,6 @@
     return null;
   }
   
-  // ===== LOAD SINGLE AGENT DETAIL =====
   async function loadSingleAgent(id) {
     try {
       $("loadingSpinner").style.display = "block";
@@ -793,7 +780,6 @@
         throw new Error("Could not fetch agent data from Blockscout");
       }
       
-      // Parse metadata from URI
       let metadata = {
         name: `Agent #${id}`,
         description: "No description available",
@@ -819,7 +805,6 @@
       
       const isToadgang = creator && creator.toLowerCase() === TOAD_ADDRESS.toLowerCase();
       
-      // Build image HTML
       let imageHtml = '<div class="detail-image-placeholder">🪞</div>';
       if (metadata.image) {
         if (metadata.image.startsWith('http')) {
@@ -830,7 +815,6 @@
         }
       }
       
-      // Build attributes HTML
       let attributesHtml = '';
       if (metadata.attributes && metadata.attributes.length > 0) {
         attributesHtml = metadata.attributes.map(attr => `
@@ -841,7 +825,6 @@
         `).join('');
       }
       
-      // Render detail view
       $("agentsGrid").innerHTML = `
         <div style="grid-column: span 12;">
           <div class="detail-container">
@@ -905,7 +888,6 @@
     }
   }
   
-  // ===== FETCH REAL AGENTS FROM BLOCKSCOUT =====
   async function fetchAgentsFromBlockscout() {
     try {
       $("loadingSpinner").style.display = "block";
@@ -955,7 +937,6 @@
             } else if (uri.startsWith('ipfs://')) {
               name = `IPFS Agent #${agentId}`;
               description = 'Metadata stored on IPFS';
-              // Try to fetch from IPFS for image
               try {
                 const ipfsHash = uri.replace('ipfs://', '');
                 const ipfsData = await fetchFromIPFS(ipfsHash);
@@ -1014,7 +995,6 @@
     }
   }
   
-  // ===== LOAD AGENTS FOR DIRECTORY =====
   async function loadAgents() {
     const success = await fetchAgentsFromBlockscout();
     
@@ -1039,7 +1019,6 @@
     applyFiltersAndRender();
   }
   
-  // ===== UI FUNCTIONS =====
   function updateStats() {
     $("totalAgents").textContent = allAgents.length;
     $("toadAgents").textContent = allAgents.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase()).length;
@@ -1103,7 +1082,6 @@
     const totalPages = Math.ceil(filteredAgents.length / pageSize);
     
     grid.innerHTML = paginated.map(agent => {
-      // Determine image source
       let imageHtml = `<div class="agent-card-image-placeholder">${agent.image}</div>`;
       if (agent.imageUrl) {
         imageHtml = `<img src="${agent.imageUrl}" alt="${agent.name}" class="agent-card-image" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'agent-card-image-placeholder\'>🪞</div>';">`;
@@ -1148,7 +1126,6 @@
     $("nextPage").className = `page-btn ${currentPage === totalPages ? 'disabled' : ''}`;
   }
   
-  // ===== EVENT LISTENERS =====
   $("searchInput")?.addEventListener("input", applyFiltersAndRender);
   $("creatorFilter")?.addEventListener("change", applyFiltersAndRender);
   $("statusFilter")?.addEventListener("change", applyFiltersAndRender);
@@ -1195,7 +1172,6 @@
     alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase()).length}\nActive: ${allAgents.filter(a => a.active).length}`);
   });
 
-  // ===== INIT =====
   if (isDetailView) {
     $("statsBar").style.display = "none";
     $("filterBar").style.display = "none";
