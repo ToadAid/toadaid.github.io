@@ -470,11 +470,21 @@
   // Configuration
   const WC_PROJECT_ID = "c86752a13a29b19d308dc10fb72b820f";
   const BASE_CHAIN_ID = 8453;
+  
+  // Multiple RPC endpoints for fallback
+  const BASE_RPCS = [
+    "https://base.llamarpc.com",
+    "https://base.drpc.org",
+    "https://1rpc.io/base",
+    "https://base-pokt.nodies.app",
+    "https://base-mainnet.public.blastapi.io"
+  ];
+
   const BASE_PARAMS = {
     chainId: "0x2105",
     chainName: "Base",
     nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-    rpcUrls: ["https://mainnet.base.org"],
+    rpcUrls: BASE_RPCS,
     blockExplorerUrls: ["https://basescan.org"]
   };
 
@@ -829,17 +839,42 @@
     }
   }
 
+  // Updated balance check with RPC fallbacks
   async function checkMPASSBalance() {
     if (!signer || !provider) return;
     try {
       const addr = await signer.getAddress();
-      const mpassContract = new ethers.Contract(MPASS_ERC20, MPASS_ABI, provider);
-      const balance = await mpassContract.balanceOf(addr);
-      const decimals = await mpassContract.decimals();
-      const symbol = await mpassContract.symbol();
+      
+      // Try different RPCs if the current one fails
+      let balance = 0n;
+      let decimals = 18;
+      let symbol = "MPASS";
+      let balanceFetched = false;
+      
+      for (const rpcUrl of BASE_RPCS) {
+        try {
+          console.log(`Trying RPC: ${rpcUrl}`);
+          const fallbackProvider = new ethers.JsonRpcProvider(rpcUrl);
+          const mpassContract = new ethers.Contract(MPASS_ERC20, MPASS_ABI, fallbackProvider);
+          balance = await mpassContract.balanceOf(addr);
+          decimals = await mpassContract.decimals();
+          symbol = await mpassContract.symbol();
+          balanceFetched = true;
+          console.log(`Success with RPC: ${rpcUrl}`);
+          break; // Success! exit loop
+        } catch (e) {
+          console.log(`RPC ${rpcUrl} failed, trying next...`);
+        }
+      }
+      
+      if (!balanceFetched) {
+        throw new Error("All RPCs failed");
+      }
+      
       const formattedBalance = ethers.formatUnits(balance, decimals);
       mpassBalanceContainer.style.display = "block";
       mpassBalance.innerHTML = `💰 ${symbol} Balance: ${formattedBalance}`;
+      
       if (balance === 0n) {
         mpassBalance.style.background = "rgba(255,107,107,.2)";
         setStatus("warn", "⚠️ No MPASS tokens - forge will fail!");
@@ -848,6 +883,10 @@
       }
     } catch (err) {
       console.error("Balance check failed:", err);
+      // Show a fallback message
+      mpassBalanceContainer.style.display = "block";
+      mpassBalance.innerHTML = `💰 MPASS Balance: (RPC unavailable)`;
+      mpassBalance.style.background = "rgba(255,107,107,.2)";
     }
   }
 
@@ -909,8 +948,16 @@
     btnDisconnect.style.display = "inline-block";
     modal.style.display = "none";
     
-    await checkMPASSBalance();
-    await estimateGas();
+    // Try balance check but don't block if it fails
+    try {
+      await checkMPASSBalance();
+    } catch (e) {
+      console.log("Balance check failed but continuing...");
+    }
+    
+    try {
+      await estimateGas();
+    } catch (e) {}
     
     setStatus("good", "Connected. Ready to forge/attest.");
     updateButtons();
@@ -959,7 +1006,7 @@
         chains: [BASE_CHAIN_ID],
         optionalChains: [BASE_CHAIN_ID],
         showQrModal: true,
-        rpcMap: { [BASE_CHAIN_ID]: BASE_PARAMS.rpcUrls[0] },
+        rpcMap: { [BASE_CHAIN_ID]: BASE_RPCS[0] }, // Use first working RPC
         methods: [
           "eth_chainId",
           "eth_accounts",
