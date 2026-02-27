@@ -499,7 +499,9 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
-<script type="module">  // ===== CONFIGURATION =====  const BASE_ID = 8453;
+<script type="module">
+  // ===== CONFIGURATION =====
+  const BASE_ID = 8453;
   
   const REGISTRY_ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";
   const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
@@ -513,29 +515,30 @@
   const $ = (id) => document.getElementById(id);
   
   // ===== CHECK URL FOR AGENT ID =====
-// Prefer query param: /agent/?id=19173 (GitHub Pages safe)
-// Fallback: /agent/19173 (works only with /agent/404.html redirect)
-const params = new URLSearchParams(window.location.search);
-const qId = params.get("id");
+  // Prefer query param: /agent/?id=19173 (GitHub Pages safe)
+  // Fallback: /agent/19173 (works only with /agent/404.html redirect)
+  const params = new URLSearchParams(window.location.search);
+  const qId = params.get("id");
 
-const path = window.location.pathname;
-const pathParts = path.split("/").filter(Boolean);
-const lastPart = pathParts[pathParts.length - 1];
+  const path = window.location.pathname;
+  const pathParts = path.split("/").filter(Boolean);
+  const lastPart = pathParts[pathParts.length - 1];
 
-const parsedQueryId = qId && /^\d+$/.test(qId) ? parseInt(qId, 10) : null;
-const parsedPathId = lastPart && /^\d+$/.test(lastPart) && path.includes("/agent/") ? parseInt(lastPart, 10) : null;
+  const parsedQueryId = qId && /^\d+$/.test(qId) ? parseInt(qId, 10) : null;
+  const parsedPathId = lastPart && /^\d+$/.test(lastPart) && path.includes("/agent/") ? parseInt(lastPart, 10) : null;
 
-const agentId = parsedQueryId ?? parsedPathId;
-const isDetailView = Number.isInteger(agentId);
+  const agentId = parsedQueryId ?? parsedPathId;
+  const isDetailView = Number.isInteger(agentId);
 
-console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
+  console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
 
-// ===== STATE =====
+  // ===== STATE =====
   let allAgents = [];
   let filteredAgents = [];
   let currentPage = 1;
   const pageSize = 12;
   let provider;
+  
   // IPFS gateways
   const IPFS_GATEWAYS = [
     "https://ipfs.io/ipfs/",
@@ -555,41 +558,6 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
     return `${days}d ago`;
   }
   
-  // Parse agent URI to get metadata
-  function parseAgentURI(uri, agentId) {
-    try {
-      let metadata = { name: `Agent #${agentId}`, description: '', image: '🪞', active: true };
-      
-      if (uri.startsWith('data:application/json;base64,')) {
-        const base64 = uri.replace('data:application/json;base64,', '');
-        const json = atob(base64);
-        metadata = { ...metadata, ...JSON.parse(json) };
-      } else if (uri.startsWith('ipfs://')) {
-        metadata.name = `IPFS Agent #${agentId}`;
-        metadata.description = 'Metadata stored on IPFS';
-        metadata.image = '🪞';
-      }
-      
-      return metadata;
-    } catch (e) {
-      console.warn('Failed to parse metadata for agent', agentId, e);
-      return { name: `Agent #${agentId}`, description: 'Metadata parse failed', image: '🪞', active: true };
-    }
-  }
-  
-  // Fetch from IPFS with fallback gateways
-  async function fetchFromIPFS(ipfsHash) {
-    for (const gateway of IPFS_GATEWAYS) {
-      try {
-        const response = await fetch(gateway + ipfsHash);
-        if (response.ok) return await response.json();
-      } catch (e) {
-        console.warn(`Gateway ${gateway} failed:`, e);
-      }
-    }
-    return null;
-  }
-  
   // Decode hex string to UTF-8
   function hexToString(hex) {
     try {
@@ -606,6 +574,70 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
     }
   }
   
+  // Extract URI from log data (simplified version)
+  function extractUriFromLogData(dataHex, agentId) {
+    try {
+      if (!dataHex || dataHex === '0x') return null;
+      
+      // Remove '0x' prefix
+      const hex = dataHex.startsWith('0x') ? dataHex.slice(2) : dataHex;
+      
+      // Try to find IPFS pattern
+      for (let i = 0; i < hex.length - 20; i++) {
+        // Look for 'ipfs://' in hex (69 70 66 73 3a 2f 2f)
+        if (hex.substr(i, 14).toLowerCase() === '697066733a2f2f') {
+          let uriHex = '';
+          let j = i;
+          while (j < hex.length && hex.substr(j, 2) !== '00') {
+            uriHex += hex.substr(j, 2);
+            j += 2;
+          }
+          const uri = hexToString(uriHex);
+          if (uri.startsWith('ipfs://')) return uri;
+        }
+        
+        // Look for 'data:application/json;base64,' pattern
+        if (hex.substr(i, 40).toLowerCase().includes('646174613a6170706c69636174696f6e2f6a736f6e3b6261736536342c')) {
+          let uriHex = '';
+          let j = i;
+          while (j < hex.length && hex.substr(j, 2) !== '00') {
+            uriHex += hex.substr(j, 2);
+            j += 2;
+          }
+          const uri = hexToString(uriHex);
+          if (uri.startsWith('data:application/json;base64,')) return uri;
+        }
+      }
+      
+      // Fallback: try the tail of the data (where URI usually is)
+      const tail = hex.slice(-400);
+      let str = '';
+      for (let i = 0; i < tail.length; i += 2) {
+        const code = parseInt(tail.substr(i, 2), 16);
+        if (code >= 32 && code <= 126) str += String.fromCharCode(code);
+      }
+      const match = str.match(/(ipfs:\/\/[^\s"'<>]+|data:application\/json;base64,[A-Za-z0-9+/=]+)/);
+      return match ? match[1] : null;
+      
+    } catch (e) {
+      console.warn("Error extracting URI from log data:", e);
+      return null;
+    }
+  }
+  
+  // Fetch from IPFS with fallback gateways
+  async function fetchFromIPFS(ipfsHash) {
+    for (const gateway of IPFS_GATEWAYS) {
+      try {
+        const response = await fetch(gateway + ipfsHash);
+        if (response.ok) return await response.json();
+      } catch (e) {
+        console.warn(`Gateway ${gateway} failed:`, e);
+      }
+    }
+    return null;
+  }
+  
   // ===== LOAD SINGLE AGENT DETAIL =====
   async function loadSingleAgent(id) {
     try {
@@ -619,84 +651,43 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
       $("pageSubtitle").textContent = "ERC‑8004 Agent Details · Real data from IPFS 🪞";
       $("loadingMessage").textContent = `Loading agent #${id} from blockchain and IPFS...`;
       
-      // Connect to Base
-      const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-      
-      // Get agent URI from chain (try proxy, then router). If both fail, fall back to logs.
-      const registryProxy = new ethers.Contract(REGISTRY_PROXY, [
-        "function agentURI(uint256) view returns (string)"
-      ], provider);
-
-      const registryRouter = new ethers.Contract(REGISTRY_ROUTER, [
-        "function agentURI(uint256) view returns (string)"
-      ], provider);
-
-      let uri = "";
-      let uriSource = "";
-
-      // 1) Try ERC-8004 registry proxy
-      try {
-        uri = await registryProxy.agentURI(id);
-        uriSource = "REGISTRY_PROXY";
-        console.log("Agent URI from REGISTRY_PROXY:", uri);
-      } catch (e) {
-        console.warn("REGISTRY_PROXY.agentURI failed for", id, e?.message || e);
-      }
-
-      // 2) Try registry router (some deployments expose agentURI here)
-      if (!uri) {
-        try {
-          uri = await registryRouter.agentURI(id);
-          uriSource = "REGISTRY_ROUTER";
-          console.log("Agent URI from REGISTRY_ROUTER:", uri);
-        } catch (e) {
-          console.warn("REGISTRY_ROUTER.agentURI failed for", id, e?.message || e);
-        }
-      }
-
-      // 3) If still empty, we will confirm existence via Blockscout logs (Forged event)
-      //    and render a detail page anyway (showing creator/tx/time), with URI unknown.
-// Get transaction from Blockscout
+      // First, get the agent data from Blockscout logs
       const response = await fetch(BLOCKSCOUT_URL);
       const data = await response.json();
       
       let creator = null;
       let timestamp = null;
       let txHash = null;
+      let uri = null;
+      let uriSource = null;
       
       if (data.status === "1" && data.result) {
+        // Find the log for this specific agent ID
         const log = data.result.find(l => parseInt(l.topics[2], 16) === id);
+        
         if (log) {
           creator = '0x' + log.topics[1].slice(26);
           timestamp = parseInt(log.timeStamp) * 1000;
           txHash = log.transactionHash;
-
-          // If URI wasn't available from contracts, try decoding it from the event log data.
-          // NOTE: This is best-effort because event ABI may vary.
-          if (!uri && log.data && log.data !== "0x") {
-            try {
-              const dataHex = log.data.startsWith("0x") ? log.data.slice(2) : log.data;
-              // Heuristic: take the tail and try to decode as ASCII-ish text.
-              const tail = dataHex.slice(Math.max(0, dataHex.length - 4096));
-              let str = "";
-              for (let i = 0; i < tail.length; i += 2) {
-                const code = parseInt(tail.substr(i, 2), 16);
-                if (code === 0) continue;
-                if (code >= 32 && code <= 126) str += String.fromCharCode(code);
-              }
-              const m = str.match(/(ipfs:\/\/[^\s"'<>]+|data:application\/json;base64,[A-Za-z0-9+/=]+)/);
-              if (m) {
-                uri = m[1];
-                uriSource = "FORGED_EVENT_LOG";
-                console.log("Agent URI decoded from log:", uri);
-              }
-            } catch (e) {
-              console.warn("Failed to decode URI from log data", e);
+          
+          // Extract URI from log data
+          if (log.data && log.data !== "0x") {
+            const extractedUri = extractUriFromLogData(log.data, id);
+            if (extractedUri) {
+              uri = extractedUri;
+              uriSource = "FORGED_EVENT_LOG";
+              console.log("Agent URI extracted from log:", uri);
             }
           }
+        } else {
+          // Agent ID not found in logs
+          throw new Error(`Agent #${id} not found on chain`);
         }
+      } else {
+        throw new Error("Could not fetch agent data from Blockscout");
       }
-// Parse metadata
+      
+      // Parse metadata from URI
       let metadata = {
         name: `Agent #${id}`,
         description: "No description available",
@@ -704,18 +695,22 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
         attributes: []
       };
       
-      if (uri.startsWith('ipfs://')) {
-        const ipfsHash = uri.replace('ipfs://', '');
-        const ipfsData = await fetchFromIPFS(ipfsHash);
-        if (ipfsData) {
-          metadata = { ...metadata, ...ipfsData };
+      if (uri) {
+        if (uri.startsWith('ipfs://')) {
+          const ipfsHash = uri.replace('ipfs://', '');
+          const ipfsData = await fetchFromIPFS(ipfsHash);
+          if (ipfsData) {
+            metadata = { ...metadata, ...ipfsData };
+          }
+        } else if (uri.startsWith('data:application/json;base64,')) {
+          try {
+            const base64 = uri.replace('data:application/json;base64,', '');
+            const json = atob(base64);
+            metadata = { ...metadata, ...JSON.parse(json) };
+          } catch (e) {
+            console.warn("Failed to parse base64 metadata:", e);
+          }
         }
-      } else if (uri.startsWith('data:application/json;base64,')) {
-        try {
-          const base64 = uri.replace('data:application/json;base64,', '');
-          const json = atob(base64);
-          metadata = { ...metadata, ...JSON.parse(json) };
-        } catch (e) {}
       }
       
       const isToadgang = creator && creator.toLowerCase() === TOAD_ADDRESS.toLowerCase();
@@ -828,24 +823,41 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
           const agentId = parseInt(log.topics[2], 16);
           const creator = '0x' + log.topics[1].slice(26);
           
-          let uri = '';
+          // Extract URI from log data
+          let uri = null;
           if (log.data && log.data !== '0x') {
-            const dataHex = log.data.slice(2);
-            if (dataHex.length > 128) {
-              const uriHex = dataHex.slice(128);
-              uri = hexToString(uriHex);
+            uri = extractUriFromLogData(log.data, agentId);
+          }
+          
+          // Parse metadata if we have URI
+          let name = `Agent #${agentId}`;
+          let description = '';
+          let image = '🪞';
+          
+          if (uri) {
+            if (uri.startsWith('data:application/json;base64,')) {
+              try {
+                const base64 = uri.replace('data:application/json;base64,', '');
+                const json = atob(base64);
+                const metadata = JSON.parse(json);
+                name = metadata.name || name;
+                description = metadata.description || '';
+                image = metadata.image || '🪞';
+              } catch (e) {}
+            } else if (uri.startsWith('ipfs://')) {
+              name = `IPFS Agent #${agentId}`;
+              description = 'Metadata stored on IPFS';
+              // Optionally try to fetch from IPFS here
             }
           }
           
-          const metadata = parseAgentURI(uri, agentId);
-          
           return {
             id: agentId,
-            name: metadata.name,
-            description: metadata.description,
-            image: metadata.image,
+            name: name,
+            description: description,
+            image: image,
             creator: creator,
-            active: metadata.active !== false,
+            active: true,
             endorsements: 0,
             flags: 0,
             timestamp: parseInt(log.timeStamp) * 1000,
@@ -1052,7 +1064,9 @@ console.log("URL path:", path, "Query id:", qId, "Agent ID:", agentId);
   $("statsLink")?.addEventListener("click", (e) => {
     e.preventDefault();
     alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase()).length}\nActive: ${allAgents.filter(a => a.active).length}`);
-  });// ===== INIT =====
+  });
+
+  // ===== INIT =====
   if (isDetailView) {
     // Show single agent detail
     $("statsBar").style.display = "none";
