@@ -84,12 +84,10 @@
     html, body { width: 100%; overflow-x: hidden; }
     body { -webkit-text-size-adjust: 100%; touch-action: pan-y; }
 
-    /* Prevent long pills/addresses from forcing horizontal scroll */
     .pill { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
     .proxy-details { word-break: break-word; overflow-wrap: anywhere; }
     .mono { white-space: pre-wrap; overflow-wrap: anywhere; }
 
-    /* Header: allow wrapping and stack on small screens */
     header { flex-wrap: wrap; }
     @media (max-width: 560px){
       header{ flex-direction: column; align-items: flex-start; }
@@ -100,20 +98,84 @@
       main{ padding-left: 14px; padding-right: 14px; }
     }
 
-    /* Recent panel spans 2 columns on desktop; on mobile keep natural flow */
     @media (max-width: 980px){
       main{ grid-template-columns: 1fr !important; }
       main > .card[style*="grid-column"]{ grid-column: auto !important; }
     }
 
-    /* Wallet connect modal options: single column on narrow screens */
     @media (max-width: 420px){
       .wallet-options{ grid-template-columns: 1fr; }
     }
 
-    /* iOS Safari: avoid backdrop-filter scroll jank by enabling native momentum scrolling */
     .modal{ -webkit-overflow-scrolling: touch; }
 
+    /* My Agents grid inside panel */
+    .agents-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .agent-mini-card {
+      background: rgba(0,0,0,.25);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .agent-mini-image {
+      width: 100%;
+      height: 120px;
+      border-radius: 10px;
+      background: rgba(0,0,0,.3);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .agent-mini-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .agent-mini-image span {
+      font-size: 40px;
+      opacity: 0.7;
+    }
+    .agent-mini-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .agent-mini-id {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(74,163,255,.2);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .agent-mini-name {
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
+    }
+    .agent-mini-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px;
+      justify-content: flex-end;
+    }
+    .agent-mini-actions button {
+      padding: 6px 10px;
+      font-size: 11px;
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -126,13 +188,21 @@
     </div>
   </div>
 
-  <div class="top-actions">
-    <span class="pill" id="netPill">Network: —</span>
-    <span class="pill" id="addrPill">Wallet: —</span>
-    <button class="smallbtn" id="btnConnect">Connect</button>
-    <button class="smallbtn danger" id="btnDisconnect" style="display:none;">Disconnect</button>
-    <button class="primary smallbtn" id="btnForge" disabled>Forge Identity</button>
-  </div>
+<div class="top-actions">
+  <span class="pill" id="netPill">Network: —</span>
+  <span class="pill" id="addrPill">Wallet: —</span>
+
+  <!-- How to Mint Guide -->
+  <a class="smallbtn"
+     href="/forge/how-to-mint.html"
+     style="text-decoration:none; display:inline-flex; align-items:center;">
+    How to Mint
+  </a>
+
+  <button class="smallbtn" id="btnConnect">Connect</button>
+  <button class="smallbtn danger" id="btnDisconnect" style="display:none;">Disconnect</button>
+  <button class="primary smallbtn" id="btnForge" disabled>Forge Identity</button>
+</div>
 </header>
 
 <main>
@@ -165,6 +235,8 @@
       <div class="tabs">
         <div class="tab active" id="tabForge">🪙 Forge</div>
         <div class="tab" id="tabAttest">⭐ Attest</div>
+        <div class="tab" id="tabUpdate">✏️ Update</div>
+        <div class="tab" id="tabMyAgents">👤 My Agents</div>
       </div>
 
       <div id="panelForge">
@@ -279,6 +351,45 @@
           <span class="pill">Calls: <span style="font-family:var(--mono)">attest(uint256,uint16,string,uint96)</span></span>
         </div>
       </div>
+
+      <!-- Update Panel -->
+      <div id="panelUpdate" style="display:none;">
+        <div class="grid">
+          <div>
+            <label>Agent ID *</label>
+            <input id="updateAgentId" placeholder="e.g. 19173" />
+          </div>
+          <div>
+            <label>New Agent URI *</label>
+            <input id="newAgentUri" placeholder="ipfs://... or data:application/json;base64,..." />
+          </div>
+        </div>
+        <div class="hint" style="margin-top:8px;">
+          ⚠️ This updates the on-chain pointer. The old metadata will still exist on IPFS but won't be linked.
+        </div>
+        <div style="margin-top:14px" class="row">
+          <button class="primary smallbtn" id="btnUpdateAgent" disabled>Update Agent</button>
+          <span class="pill">Calls: setAgentUri(uint256,string)</span>
+        </div>
+      </div>
+
+      <!-- My Agents Panel -->
+      <div id="panelMyAgents" style="display:none;">
+        <div style="margin-bottom:12px;">
+          <span class="pill">Your minted agents</span>
+        </div>
+        <div id="myAgentsLoading" class="loading-spinner" style="display:none; padding:20px;">
+          <div class="emoji">🪞</div>
+          <div>Loading your agents...</div>
+        </div>
+        <div id="myAgentsEmpty" style="display:none; text-align:center; padding:20px; color:var(--muted);">
+          <div style="font-size:32px;">🪞</div>
+          <div>You haven't forged any agents yet.</div>
+          <div class="sub">Head over to the Forge tab to create your first identity.</div>
+        </div>
+        <div id="myAgentsGrid" class="agents-mini-grid" style="display:none;"></div>
+      </div>
+
     </div>
   </section>
 
@@ -315,6 +426,8 @@
   <ul style="margin:8px 0 12px 20px; opacity:0.9">
     <li><strong>Forge</strong> mints an ERC‑8004 Agent ID through the Registry Router (MPASS‑gated onchain).</li>
     <li><strong>Attest</strong> emits reputation events for any agentId (also MPASS‑gated).</li>
+    <li><strong>Update</strong> lets you change the metadata URI of an agent you own.</li>
+    <li><strong>My Agents</strong> dashboard shows all your minted agents with images and quick actions.</li>
     <li><strong>Agent 0 & 1</strong> live forever in the Base implementation contract.</li>
   </ul>
   <p style="margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
@@ -357,11 +470,21 @@
   // Configuration
   const WC_PROJECT_ID = "c86752a13a29b19d308dc10fb72b820f";
   const BASE_CHAIN_ID = 8453;
+  
+  // Multiple RPC endpoints for fallback
+  const BASE_RPCS = [
+    "https://base.llamarpc.com",
+    "https://base.drpc.org",
+    "https://1rpc.io/base",
+    "https://base-pokt.nodies.app",
+    "https://base-mainnet.public.blastapi.io"
+  ];
+
   const BASE_PARAMS = {
     chainId: "0x2105",
     chainName: "Base",
     nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-    rpcUrls: ["https://mainnet.base.org"],
+    rpcUrls: BASE_RPCS,
     blockExplorerUrls: ["https://basescan.org"]
   };
 
@@ -371,6 +494,9 @@
   const MPASS_ERC20 = "0xdb9e64465d4b5fbc7ee9091c459094efc7df5cde";
   const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
   const BASE_IMPL = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
+
+  // REAL Forged event signature from your contract!
+  const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
 
   // ABIs
   const ROUTER_ABI = [
@@ -388,6 +514,16 @@
   ];
   const REGISTRY_ABI = [
     "function agentURI(uint256) view returns (string)"
+  ];
+  const UPDATE_ABI = [
+    "function setAgentUri(uint256 agentId, string calldata newUri) external"
+  ];
+
+  // IPFS gateways
+  const IPFS_GATEWAYS = [
+    "https://ipfs.io/ipfs/",
+    "https://cloudflare-ipfs.com/ipfs/",
+    "https://gateway.pinata.cloud/ipfs/"
   ];
 
   // DOM elements
@@ -408,8 +544,12 @@
   
   const tabForge = $("tabForge");
   const tabAttest = $("tabAttest");
+  const tabUpdate = $("tabUpdate");
+  const tabMyAgents = $("tabMyAgents");
   const panelForge = $("panelForge");
   const panelAttest = $("panelAttest");
+  const panelUpdate = $("panelUpdate");
+  const panelMyAgents = $("panelMyAgents");
   
   const nameIn = $("name");
   const descIn = $("desc");
@@ -424,6 +564,10 @@
   const kindIn = $("kind");
   const refUriIn = $("refUri");
   const weightIn = $("weight");
+  
+  const updateAgentId = $("updateAgentId");
+  const newAgentUri = $("newAgentUri");
+  const btnUpdateAgent = $("btnUpdateAgent");
   
   const jsonOut = $("jsonOut");
   const uriOut = $("uriOut");
@@ -440,6 +584,11 @@
   const recentForges = $("recentForges");
   const recentCount = $("recentCount");
 
+  // My Agents panel elements
+  const myAgentsLoading = $("myAgentsLoading");
+  const myAgentsEmpty = $("myAgentsEmpty");
+  const myAgentsGrid = $("myAgentsGrid");
+
   // Set contract addresses in UI
   $("addrForge").textContent = REGISTRY_ROUTER;
   $("addrRep").textContent = REPUTATION_ROUTER;
@@ -451,13 +600,13 @@
   let signer = null;
   let wcProvider = null;
   let recentForgeList = JSON.parse(localStorage.getItem('recentForges') || '[]');
+  let allAgents = []; // will hold fetched agents
 
   // Helper functions
   function setStatus(kind, text) {
     statusText.textContent = text;
     statusDot.className = "dot " + kind;
     
-    // Auto-clear success messages after 5 seconds
     if (kind === "good") {
       setTimeout(() => {
         if (statusText.textContent === text) {
@@ -511,18 +660,216 @@
     
     const aid = (agentIdIn.value || "").trim();
     btnAttest.disabled = !(!!signer && aid.length > 0);
+
+    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim() && isValidUri(newAgentUri.value.trim()));
   }
 
-  // Check MPASS Balance
-  async function checkMPASSBalance() {
-    if (!signer || !provider) return;
+  // Decode hex string to UTF-8
+  function hexToString(hex) {
+    try {
+      if (!hex || hex === '0x') return '';
+      const hexStr = hex.startsWith('0x') ? hex.slice(2) : hex;
+      let str = '';
+      for (let i = 0; i < hexStr.length; i += 2) {
+        const code = parseInt(hexStr.substr(i, 2), 16);
+        if (code !== 0) str += String.fromCharCode(code);
+      }
+      return str;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  // Check if agent exists
+  async function checkAgentExists() {
+    const agentId = (agentIdIn.value || "").trim();
+    if (!agentId || !provider) {
+      setStatus("warn", "Enter Agent ID first");
+      return;
+    }
     
     try {
+      // Check in our fetched agents list first
+      const agentExists = allAgents.some(a => a.id.toString() === agentId);
+      if (agentExists) {
+        setStatus("good", `✅ Agent ${agentId} exists!`);
+        return;
+      }
+      
+      // If not in our list, try to fetch from Router events
+      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.status === "1" && data.result) {
+        const found = data.result.some(log => {
+          const id = parseInt(log.topics[2], 16);
+          return id.toString() === agentId;
+        });
+        
+        if (found) {
+          setStatus("good", `✅ Agent ${agentId} exists!`);
+        } else {
+          setStatus("bad", `❌ Agent ${agentId} not found`);
+        }
+      } else {
+        setStatus("bad", `❌ Agent ${agentId} not found`);
+      }
+    } catch (err) {
+      console.error("Check agent error:", err);
+      setStatus("bad", `Error checking agent ${agentId}`);
+    }
+  }
+
+  // Fetch image from IPFS with fallback
+  async function getImageUrl(uri) {
+    if (!uri) return null;
+    if (uri.startsWith('http')) return uri;
+    if (uri.startsWith('ipfs://')) {
+      const hash = uri.replace('ipfs://', '');
+      return IPFS_GATEWAYS[0] + hash;
+    }
+    return null;
+  }
+
+  // ===== FETCH REAL AGENTS FROM BLOCKSCOUT =====
+  async function fetchAgentsFromBlockscout() {
+    try {
+      console.log("Fetching agents from Blockscout...");
+      
+      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        console.log(`Found ${data.result.length} forged events`);
+        
+        // Process logs into agents
+        const agents = [];
+        
+        for (const log of data.result) {
+          try {
+            // Decode agent ID from topics[2]
+            const agentId = parseInt(log.topics[2], 16);
+            
+            // Decode creator from topics[1]
+            const creator = '0x' + log.topics[1].slice(26);
+            
+            // Decode URI from data (it's in the log data)
+            let uri = '';
+            if (log.data && log.data !== '0x') {
+              const dataHex = log.data.slice(2);
+              if (dataHex.length > 128) {
+                const uriHex = dataHex.slice(128);
+                uri = hexToString(uriHex);
+              }
+            }
+            
+            // Parse metadata from URI
+            let name = `Agent #${agentId}`;
+            let description = '';
+            let image = '🪞';
+            let imageUrl = null;
+            
+            try {
+              if (uri.startsWith('data:application/json;base64,')) {
+                const base64 = uri.replace('data:application/json;base64,', '');
+                const json = atob(base64);
+                const metadata = JSON.parse(json);
+                name = metadata.name || name;
+                description = metadata.description || '';
+                image = metadata.image || '🪞';
+                if (metadata.image) {
+                  imageUrl = await getImageUrl(metadata.image);
+                }
+              } else if (uri.startsWith('ipfs://')) {
+                name = `IPFS Agent #${agentId}`;
+                description = 'Metadata stored on IPFS';
+                // Try to fetch from IPFS
+                try {
+                  const ipfsHash = uri.replace('ipfs://', '');
+                  const metaResponse = await fetch(IPFS_GATEWAYS[0] + ipfsHash);
+                  if (metaResponse.ok) {
+                    const metadata = await metaResponse.json();
+                    name = metadata.name || name;
+                    description = metadata.description || description;
+                    if (metadata.image) {
+                      imageUrl = await getImageUrl(metadata.image);
+                    }
+                  }
+                } catch (e) {}
+              }
+            } catch (e) {
+              console.warn(`Could not parse metadata for agent ${agentId}:`, e);
+            }
+            
+            agents.push({
+              id: agentId,
+              creator: creator,
+              name: name,
+              description: description,
+              image: image,
+              imageUrl: imageUrl,
+              active: true,
+              timestamp: parseInt(log.timeStamp) * 1000,
+              transactionHash: log.transactionHash,
+              uri: uri
+            });
+          } catch (e) {
+            console.warn("Error processing log:", e);
+          }
+        }
+        
+        // Sort by newest first
+        agents.sort((a, b) => b.timestamp - a.timestamp);
+        
+        allAgents = agents;
+        console.log("Agents loaded:", allAgents.length);
+        return true;
+      } else {
+        console.log("No agents found or API error:", data);
+        allAgents = [];
+        return false;
+      }
+    } catch (error) {
+      console.error("Blockscout fetch error:", error);
+      allAgents = [];
+      return false;
+    }
+  }
+
+  // Updated balance check with RPC fallbacks
+  async function checkMPASSBalance() {
+    if (!signer || !provider) return;
+    try {
       const addr = await signer.getAddress();
-      const mpassContract = new ethers.Contract(MPASS_ERC20, MPASS_ABI, provider);
-      const balance = await mpassContract.balanceOf(addr);
-      const decimals = await mpassContract.decimals();
-      const symbol = await mpassContract.symbol();
+      
+      // Try different RPCs if the current one fails
+      let balance = 0n;
+      let decimals = 18;
+      let symbol = "MPASS";
+      let balanceFetched = false;
+      
+      for (const rpcUrl of BASE_RPCS) {
+        try {
+          console.log(`Trying RPC: ${rpcUrl}`);
+          const fallbackProvider = new ethers.JsonRpcProvider(rpcUrl);
+          const mpassContract = new ethers.Contract(MPASS_ERC20, MPASS_ABI, fallbackProvider);
+          balance = await mpassContract.balanceOf(addr);
+          decimals = await mpassContract.decimals();
+          symbol = await mpassContract.symbol();
+          balanceFetched = true;
+          console.log(`Success with RPC: ${rpcUrl}`);
+          break; // Success! exit loop
+        } catch (e) {
+          console.log(`RPC ${rpcUrl} failed, trying next...`);
+        }
+      }
+      
+      if (!balanceFetched) {
+        throw new Error("All RPCs failed");
+      }
       
       const formattedBalance = ethers.formatUnits(balance, decimals);
       mpassBalanceContainer.style.display = "block";
@@ -536,59 +883,29 @@
       }
     } catch (err) {
       console.error("Balance check failed:", err);
+      // Show a fallback message
+      mpassBalanceContainer.style.display = "block";
+      mpassBalance.innerHTML = `💰 MPASS Balance: (RPC unavailable)`;
+      mpassBalance.style.background = "rgba(255,107,107,.2)";
     }
   }
 
-  // Estimate Gas
   async function estimateGas() {
     if (!signer) return;
-    
     try {
       const pinned = (pinnedUriIn.value || "").trim();
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
-      
       if (!(pinned && isValidUri(pinned)) && !ok) return;
-      
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
       const gasEstimate = await contract.forge.estimateGas(agentURI);
       const feeData = await provider.getFeeData();
-      
       const gasCost = gasEstimate * (feeData.gasPrice || 0n);
       const ethCost = ethers.formatEther(gasCost);
-      
       gasEstimate.innerHTML = `⛽ Estimated gas: ${gasEstimate.toString()} (~${ethCost} ETH)`;
-    } catch (err) {
-      // Silent fail for gas estimation
-    }
+    } catch (err) {}
   }
 
-  // Check if agent exists
-  async function checkAgentExists() {
-    const agentId = (agentIdIn.value || "").trim();
-    if (!agentId || !provider) {
-      setStatus("warn", "Enter Agent ID first");
-      return;
-    }
-    
-    try {
-      const registry = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-      const uri = await registry.agentURI(agentId);
-      
-      if (uri && uri.length > 0) {
-        setStatus("good", `✅ Agent ${agentId} exists!`);
-        
-        // Show preview in console
-        console.log(`Agent ${agentId} URI:`, uri);
-      } else {
-        setStatus("warn", `❌ Agent ${agentId} not found`);
-      }
-    } catch (err) {
-      setStatus("bad", `Agent ${agentId} not found`);
-    }
-  }
-
-  // Add to recent forges
   function addToRecentForges(agentId, name, txHash) {
     const newForge = {
       agentId,
@@ -597,10 +914,8 @@
       timestamp: Date.now(),
       url: `https://basescan.org/tx/${txHash}`
     };
-    
     recentForgeList.unshift(newForge);
     if (recentForgeList.length > 5) recentForgeList.pop();
-    
     localStorage.setItem('recentForges', JSON.stringify(recentForgeList));
     updateRecentForges();
   }
@@ -611,14 +926,12 @@
       recentCount.textContent = '0';
       return;
     }
-    
     recentForges.innerHTML = recentForgeList.map(f => `
       <div class="recent-item">
         <span><strong>#${f.agentId}</strong> ${f.name}</span>
         <a href="${f.url}" target="_blank" style="color:var(--accent2)">🔗</a>
       </div>
     `).join('');
-    
     recentCount.textContent = recentForgeList.length;
   }
 
@@ -635,41 +948,41 @@
     btnDisconnect.style.display = "inline-block";
     modal.style.display = "none";
     
-    await checkMPASSBalance();
-    await estimateGas();
+    // Try balance check but don't block if it fails
+    try {
+      await checkMPASSBalance();
+    } catch (e) {
+      console.log("Balance check failed but continuing...");
+    }
+    
+    try {
+      await estimateGas();
+    } catch (e) {}
     
     setStatus("good", "Connected. Ready to forge/attest.");
     updateButtons();
+    // Fetch agents to include this user's agents
+    await fetchAgentsFromBlockscout();
+    if (panelMyAgents.style.display === 'block') {
+      renderMyAgents();
+    }
   }
 
   // Connect via Browser Extension
   async function connectBrowser() {
     try {
       setStatus("warn", "Connecting browser wallet...");
-      
-      if (!window.ethereum) {
-        throw new Error("No browser wallet found");
-      }
-
-      // Switch to Base chain
+      if (!window.ethereum) throw new Error("No browser wallet found");
       try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: BASE_PARAMS.chainId }]
-        });
+        await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_PARAMS.chainId }] });
       } catch (e) {
         if (e.code === 4902) {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [BASE_PARAMS]
-          });
+          await window.ethereum.request({ method: "wallet_addEthereumChain", params: [BASE_PARAMS] });
         }
       }
-
       const p = new ethers.BrowserProvider(window.ethereum);
       await p.send("eth_requestAccounts", []);
       await initSession(await p.getSigner(), p);
-      
     } catch (err) {
       setStatus("bad", err.message || "Connection failed");
     }
@@ -680,12 +993,20 @@
     try {
       setStatus("warn", "Opening WalletConnect QR...");
       
+      // Clean up any existing provider
+      if (wcProvider) {
+        try {
+          await wcProvider.disconnect();
+        } catch (e) {}
+        wcProvider = null;
+      }
+
       wcProvider = await EthereumProvider.init({
         projectId: WC_PROJECT_ID,
         chains: [BASE_CHAIN_ID],
         optionalChains: [BASE_CHAIN_ID],
         showQrModal: true,
-        rpcMap: { [BASE_CHAIN_ID]: BASE_PARAMS.rpcUrls[0] },
+        rpcMap: { [BASE_CHAIN_ID]: BASE_RPCS[0] }, // Use first working RPC
         methods: [
           "eth_chainId",
           "eth_accounts",
@@ -705,7 +1026,7 @@
       
     } catch (err) {
       console.error("WC Error:", err);
-      setStatus("bad", "WalletConnect failed. Check console.");
+      setStatus("bad", "WalletConnect failed. Please try again.");
     }
   }
 
@@ -717,17 +1038,14 @@
         wcProvider = null;
       }
     } catch (_) {}
-    
     provider = null;
     signer = null;
-    
     addrPill.textContent = "Wallet: —";
     netPill.textContent = "Network: —";
     btnConnect.style.display = "inline-block";
     btnDisconnect.style.display = "none";
     mpassBalanceContainer.style.display = "none";
     gasEstimate.innerHTML = "";
-    
     setStatus("warn", "Disconnected.");
     updateButtons();
   }
@@ -736,26 +1054,147 @@
   function showForge() {
     tabForge.classList.add("active");
     tabAttest.classList.remove("active");
+    tabUpdate.classList.remove("active");
+    tabMyAgents.classList.remove("active");
     panelForge.style.display = "block";
     panelAttest.style.display = "none";
+    panelUpdate.style.display = "none";
+    panelMyAgents.style.display = "none";
   }
   
   function showAttest() {
     tabAttest.classList.add("active");
     tabForge.classList.remove("active");
+    tabUpdate.classList.remove("active");
+    tabMyAgents.classList.remove("active");
     panelForge.style.display = "none";
     panelAttest.style.display = "block";
+    panelUpdate.style.display = "none";
+    panelMyAgents.style.display = "none";
+  }
+
+  function showUpdate() {
+    tabUpdate.classList.add("active");
+    tabForge.classList.remove("active");
+    tabAttest.classList.remove("active");
+    tabMyAgents.classList.remove("active");
+    panelForge.style.display = "none";
+    panelAttest.style.display = "none";
+    panelUpdate.style.display = "block";
+    panelMyAgents.style.display = "none";
+  }
+
+  function showMyAgents() {
+    tabMyAgents.classList.add("active");
+    tabForge.classList.remove("active");
+    tabAttest.classList.remove("active");
+    tabUpdate.classList.remove("active");
+    panelForge.style.display = "none";
+    panelAttest.style.display = "none";
+    panelUpdate.style.display = "none";
+    panelMyAgents.style.display = "block";
+    renderMyAgents();
+  }
+
+  // ===== RENDER MY AGENTS =====
+  async function renderMyAgents() {
+    if (!signer) {
+      myAgentsGrid.style.display = 'none';
+      myAgentsLoading.style.display = 'none';
+      myAgentsEmpty.style.display = 'block';
+      myAgentsEmpty.innerHTML = '<div style="font-size:32px;">🔌</div><div>Connect wallet to see your agents.</div>';
+      return;
+    }
+
+    myAgentsLoading.style.display = 'block';
+    myAgentsGrid.style.display = 'none';
+    myAgentsEmpty.style.display = 'none';
+
+    const addr = await signer.getAddress();
+    const addrLower = addr.toLowerCase();
+    console.log("Connected address:", addrLower);
+    
+    // Fetch agents if we don't have them yet
+    if (allAgents.length === 0) {
+      console.log("No agents in memory, fetching from Blockscout...");
+      await fetchAgentsFromBlockscout();
+    }
+    
+    // Filter agents by creator
+    const userAgents = allAgents.filter(a => a.creator.toLowerCase() === addrLower);
+    console.log(`Found ${userAgents.length} agents for this wallet`);
+    
+    myAgentsLoading.style.display = 'none';
+
+    if (userAgents.length === 0) {
+      myAgentsEmpty.style.display = 'block';
+      myAgentsEmpty.innerHTML = '<div style="font-size:32px;">🪞</div><div>You haven\'t forged any agents yet.</div><div class="sub">Head over to the Forge tab to create your first identity.</div>';
+      return;
+    }
+
+    myAgentsGrid.style.display = 'grid';
+    
+    // Build HTML with images
+    let html = '';
+    for (const agent of userAgents) {
+      let imageHtml = '';
+      if (agent.imageUrl) {
+        imageHtml = `<img src="${agent.imageUrl}" alt="${agent.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<span>🪞</span>';" />`;
+      } else {
+        imageHtml = `<span>${agent.image}</span>`;
+      }
+      
+      html += `
+        <div class="agent-mini-card">
+          <div class="agent-mini-image">
+            ${imageHtml}
+          </div>
+          <div class="agent-mini-header">
+            <span class="agent-mini-id">#${agent.id}</span>
+            <span class="agent-mini-name" title="${agent.name}">${agent.name.length > 15 ? agent.name.slice(0,12)+'…' : agent.name}</span>
+          </div>
+          <div class="agent-mini-actions">
+            <button class="smallbtn" data-action="update" data-id="${agent.id}">✏️ Update</button>
+            <button class="smallbtn" data-action="attest" data-id="${agent.id}">⭐ Attest</button>
+            <button class="smallbtn" data-action="view" data-id="${agent.id}">👁️ View</button>
+          </div>
+        </div>
+      `;
+    }
+    
+    myAgentsGrid.innerHTML = html;
+
+    // Attach event listeners to the buttons
+    myAgentsGrid.querySelectorAll('button[data-action]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        
+        if (action === 'update') {
+          showUpdate();
+          updateAgentId.value = id;
+          updateButtons();
+        } else if (action === 'attest') {
+          showAttest();
+          agentIdIn.value = id;
+          updateButtons();
+        } else if (action === 'view') {
+          // Use the correct URL format with query parameter
+          window.open(`/agent/?id=${id}`, '_blank');
+        }
+      });
+    });
   }
 
   // Event listeners
-  [nameIn, descIn, imageIn, activeIn, x402In, endpointIn, endpointTypeIn, pinnedUriIn, agentIdIn, kindIn, refUriIn, weightIn].forEach(el => {
+  [nameIn, descIn, imageIn, activeIn, x402In, endpointIn, endpointTypeIn, pinnedUriIn, agentIdIn, kindIn, refUriIn, weightIn, updateAgentId, newAgentUri].forEach(el => {
     if (el) {
       el.addEventListener("input", updateButtons);
       el.addEventListener("change", updateButtons);
     }
   });
 
-  // Additional listeners for gas estimation
   [nameIn, descIn, pinnedUriIn].forEach(el => {
     if (el) {
       el.addEventListener("input", () => {
@@ -766,6 +1205,8 @@
 
   tabForge.addEventListener("click", showForge);
   tabAttest.addEventListener("click", showAttest);
+  tabUpdate.addEventListener("click", showUpdate);
+  tabMyAgents.addEventListener("click", showMyAgents);
 
   btnConnect.addEventListener("click", () => {
     modal.style.display = "flex";
@@ -798,30 +1239,21 @@
   btnForge.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
-      
       const pinned = (pinnedUriIn.value || "").trim();
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
       const agentName = nameIn.value || "Unnamed Agent";
-      
       if (!(pinned && isValidUri(pinned)) && !ok) {
         throw new Error("Fill required fields or paste pinned ipfs:// URI");
       }
-
-      // Loading state
       const originalText = btnForge.innerHTML;
       btnForge.innerHTML = '⏳ Forging...';
       btnForge.disabled = true;
-
       setStatus("warn", "Forging identity…");
-      
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
       const tx = await contract.forge(agentURI);
-      
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       const receipt = await tx.wait();
-
-      // Try to extract agentId from event
       let agentId = null;
       for (const log of receipt.logs) {
         try {
@@ -829,27 +1261,24 @@
           if (parsed && parsed.name === "Forged") {
             agentId = parsed.args.agentId.toString();
             break;
-        }
+          }
         } catch (_) {}
       }
-      
       if (agentId) {
         agentIdIn.value = agentId;
         addToRecentForges(agentId, agentName, tx.hash);
         updateButtons();
-        
-        // Show success with link
         const txLink = `https://basescan.org/tx/${tx.hash}`;
         setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
         statusText.innerHTML = `✅ Forged! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+        // Refresh agents list
+        await fetchAgentsFromBlockscout();
+        if (panelMyAgents.style.display === 'block') renderMyAgents();
       } else {
         setStatus("good", "Forged! Check BaseScan.");
       }
-      
-      // Reset button
       btnForge.innerHTML = originalText;
       btnForge.disabled = false;
-      
     } catch (err) {
       btnForge.innerHTML = 'Forge Identity';
       btnForge.disabled = false;
@@ -866,11 +1295,10 @@
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
 
-      // Check if agent exists first
-      try {
-        const registry = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-        await registry.agentURI(agentId);
-      } catch {
+      // Check if agent exists in our list first
+      const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
+      
+      if (!agentExists) {
         if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
           return;
         }
@@ -893,7 +1321,6 @@
       setStatus("good", `✅ Attested!`);
       statusText.innerHTML = `✅ Attested! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View Event]</a>`;
       
-      // Reset button
       btnAttest.innerHTML = originalText;
       btnAttest.disabled = false;
       
@@ -901,6 +1328,39 @@
       btnAttest.innerHTML = 'Attest';
       btnAttest.disabled = false;
       setStatus("bad", err.shortMessage || err.message || "Attest failed");
+    }
+  });
+
+  btnUpdateAgent.addEventListener("click", async () => {
+    try {
+      if (!signer) throw new Error("Connect wallet first");
+      const agentId = updateAgentId.value.trim();
+      const newUri = newAgentUri.value.trim();
+      if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
+      if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
+      if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
+      const originalText = btnUpdateAgent.innerHTML;
+      btnUpdateAgent.innerHTML = '⏳ Updating...';
+      btnUpdateAgent.disabled = true;
+      setStatus("warn", `Updating Agent #${agentId}...`);
+      const contract = new ethers.Contract(REGISTRY_ROUTER, UPDATE_ABI, signer);
+      const tx = await contract.setAgentUri(agentId, newUri);
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+      await tx.wait();
+      const txLink = `https://basescan.org/tx/${tx.hash}`;
+      setStatus("good", `✅ Agent #${agentId} updated!`);
+      statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+      updateAgentId.value = '';
+      newAgentUri.value = '';
+      updateButtons();
+      btnUpdateAgent.innerHTML = originalText;
+      btnUpdateAgent.disabled = false;
+      // Refresh agents list
+      await fetchAgentsFromBlockscout();
+    } catch (err) {
+      btnUpdateAgent.innerHTML = 'Update Agent';
+      btnUpdateAgent.disabled = false;
+      setStatus("bad", err.shortMessage || err.message || "Update failed. Ensure you own this agent.");
     }
   });
 
@@ -918,10 +1378,10 @@
     setStatus("good", "JSON copied.");
   });
 
-  // Auto-reconnect if previously connected (simplified)
   window.addEventListener("load", () => {
-    // Check if we have a recent connection in localStorage
-    // This is simplified - in production you'd use a more robust method
+    // Initial fetch of agents
+    fetchAgentsFromBlockscout();
+    // Auto-connect if previously connected
     if (window.ethereum && window.ethereum.selectedAddress) {
       connectBrowser();
     }
@@ -933,7 +1393,7 @@
   showForge();
   updateRecentForges();
 
-  console.log("ToadAid Forge loaded with all features!");
+  console.log("ToadAid Forge loaded with all features including My Agents with images!");
 </script>
 </body>
 </html>
