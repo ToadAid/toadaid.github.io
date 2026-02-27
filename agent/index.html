@@ -428,6 +428,52 @@
     html, body { width: 100%; overflow-x: hidden; }
     body { -webkit-text-size-adjust: 100%; touch-action: pan-y; }
 
+    /* ===== New styles for badges and search ===== */
+    .badge-container {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin: 4px 0;
+    }
+    
+    .badge {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      background: rgba(74,163,255,.15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+    
+    .badge.legendary {
+      background: rgba(255,215,0,.15);
+      border-color: gold;
+      color: gold;
+    }
+    
+    .badge.verified {
+      background: rgba(103,243,196,.15);
+      border-color: var(--good);
+      color: var(--good);
+    }
+    
+    .badge.registry {
+      background: rgba(74,163,255,.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    
+    .share-link {
+      font-size: 11px;
+      color: var(--accent2);
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    
+    .share-link:hover {
+      text-decoration: underline;
+    }
+
     @media (max-width: 560px){
       header{
         flex-direction: column;
@@ -481,9 +527,6 @@
     <a href="#" class="nav-link" id="statsLink">📊 Stats</a>
   </div>
 
-  <div class="stats-bar" id="statsBar">
-  </div>
-
   <div style="background: linear-gradient(90deg, rgba(255,215,0,.1), rgba(74,163,255,.1)); border: 1px solid gold; border-radius: 18px; padding: 16px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
     <div style="display: flex; align-items: center; gap: 12px;">
       <span style="font-size: 32px;">👑</span>
@@ -493,9 +536,6 @@
       </div>
     </div>
     <a href="/agent/legendary/" class="nav-link" style="border-color: gold; color: gold;">View Legends →</a>
-  </div>
-
-  <div class="filter-bar" id="filterBar">
   </div>
 
   <div class="stats-bar" id="statsBar">
@@ -518,7 +558,7 @@
   </div>
 
   <div class="filter-bar" id="filterBar">
-    <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by name, description, or agent ID...">
+    <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by ID, address, tx hash, or IPFS URI...">
     <select class="filter-select" id="creatorFilter">
       <option value="all">All Creators</option>
       <option value="toadgang">🐸 Toadgang Only</option>
@@ -529,11 +569,16 @@
       <option value="false">Inactive</option>
     </select>
     <select class="filter-select" id="sortFilter">
-      <option value="newest">Newest First</option>
-      <option value="oldest">Oldest First</option>
-      <option value="id">ID (ascending)</option>
+      <option value="newest">✨ Newest</option>
+      <option value="oldest">📅 Oldest</option>
+      <option value="id"># ID</option>
     </select>
-    <button class="primary" id="refreshBtn">🔄 Refresh from Blockscout</button>
+    <select class="filter-select" id="metadataFilter">
+      <option value="all">All Agents</option>
+      <option value="has">✅ Has Metadata</option>
+      <option value="missing">❌ Missing Metadata</option>
+    </select>
+    <button class="primary" id="refreshBtn">🔄 Refresh</button>
   </div>
 
   <div id="statusMessage" class="success-message" style="display:none;"></div>
@@ -548,7 +593,7 @@
     <div class="agents-grid" id="agentsGrid" style="display:none;"></div>
     <div class="empty-state" id="emptyState" style="display:none;">
       <div class="emoji">🪞</div>
-      <div style="font-size:18px; margin-bottom:8px;">No agents found on chain</div>
+      <div style="font-size:18px; margin-bottom:8px;">No agents found</div>
       <div class="sub">Be the first to <a href="/forge/" style="color:var(--accent2)">forge an agent</a>!</div>
     </div>
   </div>
@@ -564,7 +609,7 @@
 
 <footer id="mainFooter">
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-    <div>🪞 ToadAid · Agent Directory · Real data from Blockscout API</div>
+    <div>🪞 ToadAid · Agent Explorer · Real data from Blockscout</div>
     <div>
       <a href="/forge/" style="color:var(--muted); margin-right:16px;">Forge</a>
       <a href="https://basescan.org/address/0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0" target="_blank" style="color:var(--muted); margin-right:16px;">Contract</a>
@@ -736,6 +781,74 @@
     return null;
   }
   
+  // Smart search that detects input type
+  function smartSearch(input) {
+    const trimmed = input.trim();
+    
+    // Check if it's a number (agent ID)
+    if (/^\d+$/.test(trimmed)) {
+      window.location.href = `/agent/?id=${trimmed}`;
+      return true;
+    }
+    
+    // Check if it's a wallet address (0x + 40 hex chars)
+    if (/^0x[a-fA-F0-9]{40}$/.test(trimmed)) {
+      filterByCreator(trimmed);
+      return true;
+    }
+    
+    // Check if it's a transaction hash (0x + 64 hex chars)
+    if (/^0x[a-fA-F0-9]{64}$/.test(trimmed)) {
+      window.open(`https://basescan.org/tx/${trimmed}`, '_blank');
+      return true;
+    }
+    
+    // Check if it's an IPFS URI
+    if (trimmed.startsWith('ipfs://') || trimmed.startsWith('Qm') || trimmed.startsWith('bafy')) {
+      $("statusMessage").style.display = "block";
+      $("statusMessage").innerHTML = `🔍 Searching for agents with URI containing ${trimmed.slice(0,20)}...`;
+      // Filter by URI in metadata
+      filterByUri(trimmed);
+      return true;
+    }
+    
+    return false;
+  }
+  
+  function filterByCreator(address) {
+    $("creatorFilter").value = "all";
+    $("searchInput").value = "";
+    const lowerAddr = address.toLowerCase();
+    filteredAgents = allAgents.filter(a => a.creator.toLowerCase() === lowerAddr);
+    currentPage = 1;
+    renderAgents();
+    $("statusMessage").style.display = "block";
+    $("statusMessage").innerHTML = `✅ Showing ${filteredAgents.length} agents created by ${shortAddr(address)}`;
+  }
+  
+  function filterByUri(uri) {
+    const searchTerm = uri.toLowerCase();
+    filteredAgents = allAgents.filter(a => 
+      (a.uri && a.uri.toLowerCase().includes(searchTerm)) ||
+      (a.name && a.name.toLowerCase().includes(searchTerm))
+    );
+    currentPage = 1;
+    renderAgents();
+    $("statusMessage").style.display = "block";
+    $("statusMessage").innerHTML = `✅ Found ${filteredAgents.length} agents matching "${uri.slice(0,20)}..."`;
+  }
+  
+  // Copy share link
+  async function copyShareLink(agentId) {
+    const url = `${window.location.origin}/agent/?id=${agentId}`;
+    await navigator.clipboard.writeText(url);
+    $("statusMessage").style.display = "block";
+    $("statusMessage").innerHTML = `✅ Link copied to clipboard!`;
+    setTimeout(() => {
+      $("statusMessage").style.display = "none";
+    }, 3000);
+  }
+  
   async function loadSingleAgent(id) {
     try {
       $("loadingSpinner").style.display = "block";
@@ -851,6 +964,7 @@
                 <div class="detail-actions">
                   <a href="/forge/?tab=attest&agentId=${id}" class="nav-link" style="background:linear-gradient(135deg, rgba(74,163,255,.2), rgba(103,243,196,.2));">⭐ Attest This Agent</a>
                   <a href="/agent/" class="nav-link">📋 Back to Directory</a>
+                  <button class="smallbtn" onclick="copyShareLink(${id})">🔗 Share</button>
                 </div>
                 
                 <div class="detail-uri">
@@ -918,8 +1032,10 @@
           let description = '';
           let image = '🪞';
           let imageUrl = null;
+          let hasMetadata = false;
           
           if (uri) {
+            hasMetadata = true;
             if (uri.startsWith('data:application/json;base64,')) {
               const base64Data = uri.replace('data:application/json;base64,', '');
               const parsed = parseBase64Metadata(base64Data);
@@ -968,7 +1084,8 @@
             flags: 0,
             timestamp: parseInt(log.timeStamp) * 1000,
             uri: uri,
-            transactionHash: log.transactionHash
+            transactionHash: log.transactionHash,
+            hasMetadata: hasMetadata
           };
         }));
         
@@ -1000,14 +1117,14 @@
     
     if (!success || allAgents.length === 0) {
       allAgents = [
-        { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", imageUrl: null, creator: TOAD_ADDRESS, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30 },
-        { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", imageUrl: null, creator: TOAD_ADDRESS, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15 },
-        { id: 3, name: "MCP Server", description: "Weather data for toads", image: "🌀", imageUrl: null, creator: "0x1234...5678", active: true, endorsements: 15, flags: 0, timestamp: Date.now() - 86400000 * 7 },
-        { id: 4, name: "Toad Trader", description: "Trading bot", image: "🐸", imageUrl: null, creator: "0x9876...4321", active: false, endorsements: 8, flags: 3, timestamp: Date.now() - 86400000 * 2 },
-        { id: 5, name: "Weather Oracle", description: "Migration weather", image: "☀️", imageUrl: null, creator: TOAD_ADDRESS, active: true, endorsements: 56, flags: 0, timestamp: Date.now() - 86400000 * 45 },
-        { id: 6, name: "Pond Monitor", description: "Tracks pond health", image: "🌊", imageUrl: null, creator: "0x5555...5555", active: true, endorsements: 19, flags: 1, timestamp: Date.now() - 86400000 * 10 },
-        { id: 7, name: "ToadAid Bot", description: "Helps toads daily", image: "🤖", imageUrl: null, creator: TOAD_ADDRESS, active: true, endorsements: 34, flags: 0, timestamp: Date.now() - 86400000 * 5 },
-        { id: 8, name: "Liquidity Provider", description: "Pond liquidity data", image: "💧", imageUrl: null, creator: "0x1111...1111", active: true, endorsements: 22, flags: 1, timestamp: Date.now() - 86400000 * 3 }
+        { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", imageUrl: null, creator: TOAD_ADDRESS, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30, hasMetadata: true },
+        { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", imageUrl: null, creator: TOAD_ADDRESS, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15, hasMetadata: true },
+        { id: 3, name: "MCP Server", description: "Weather data for toads", image: "🌀", imageUrl: null, creator: "0x1234...5678", active: true, endorsements: 15, flags: 0, timestamp: Date.now() - 86400000 * 7, hasMetadata: false },
+        { id: 4, name: "Toad Trader", description: "Trading bot", image: "🐸", imageUrl: null, creator: "0x9876...4321", active: false, endorsements: 8, flags: 3, timestamp: Date.now() - 86400000 * 2, hasMetadata: false },
+        { id: 5, name: "Weather Oracle", description: "Migration weather", image: "☀️", imageUrl: null, creator: TOAD_ADDRESS, active: true, endorsements: 56, flags: 0, timestamp: Date.now() - 86400000 * 45, hasMetadata: true },
+        { id: 6, name: "Pond Monitor", description: "Tracks pond health", image: "🌊", imageUrl: null, creator: "0x5555...5555", active: true, endorsements: 19, flags: 1, timestamp: Date.now() - 86400000 * 10, hasMetadata: false },
+        { id: 7, name: "ToadAid Bot", description: "Helps toads daily", image: "🤖", imageUrl: null, creator: TOAD_ADDRESS, active: true, endorsements: 34, flags: 0, timestamp: Date.now() - 86400000 * 5, hasMetadata: true },
+        { id: 8, name: "Liquidity Provider", description: "Pond liquidity data", image: "💧", imageUrl: null, creator: "0x1111...1111", active: true, endorsements: 22, flags: 1, timestamp: Date.now() - 86400000 * 3, hasMetadata: false }
       ];
       
       $("errorDisplay").style.display = "block";
@@ -1031,10 +1148,16 @@
     const creator = $("creatorFilter").value;
     const status = $("statusFilter").value;
     const sort = $("sortFilter").value;
+    const metadata = $("metadataFilter").value;
     
     let filtered = [...allAgents];
     
     if (search) {
+      // Try smart search first
+      if (smartSearch(search)) {
+        return;
+      }
+      // Fallback to normal search
       filtered = filtered.filter(a => 
         a.name.toLowerCase().includes(search) ||
         a.description.toLowerCase().includes(search) ||
@@ -1048,6 +1171,12 @@
     
     if (status !== "all") {
       filtered = filtered.filter(a => a.active === (status === "true"));
+    }
+    
+    if (metadata === "has") {
+      filtered = filtered.filter(a => a.hasMetadata);
+    } else if (metadata === "missing") {
+      filtered = filtered.filter(a => !a.hasMetadata);
     }
     
     if (sort === "newest") {
@@ -1090,6 +1219,8 @@
       }
       
       const isToadgang = agent.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase();
+      const isLegendary = agent.id < 2;
+      const hasMetadata = agent.hasMetadata;
       
       return `
         <div class="agent-card" onclick="window.location.href='/agent/?id=${agent.id}'">
@@ -1103,9 +1234,17 @@
             </div>
             <div class="agent-card-name">${agent.name}</div>
             <div class="agent-card-creator" title="${agent.creator}">${shortAddr(agent.creator)}</div>
+            <div class="badge-container">
+              ${isLegendary ? '<span class="badge legendary">👑 OG</span>' : ''}
+              ${hasMetadata ? '<span class="badge verified">✅ Verified</span>' : ''}
+              ${agent.uri ? '<span class="badge registry">📋 Registry</span>' : ''}
+            </div>
             <div class="agent-card-footer">
               ${isToadgang ? '<span class="agent-card-tag">🐸 TOADGANG</span>' : '<span></span>'}
-              <span class="agent-card-link">View →</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="share-link" onclick="event.stopPropagation(); copyShareLink(${agent.id})">🔗</span>
+                <span class="agent-card-link">View →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1130,6 +1269,7 @@
   $("creatorFilter")?.addEventListener("change", applyFiltersAndRender);
   $("statusFilter")?.addEventListener("change", applyFiltersAndRender);
   $("sortFilter")?.addEventListener("change", applyFiltersAndRender);
+  $("metadataFilter")?.addEventListener("change", applyFiltersAndRender);
   
   $("refreshBtn")?.addEventListener("click", loadAgents);
   
@@ -1171,6 +1311,9 @@
     e.preventDefault();
     alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => a.creator.toLowerCase() === TOAD_ADDRESS.toLowerCase()).length}\nActive: ${allAgents.filter(a => a.active).length}`);
   });
+
+  // Make copyShareLink globally available
+  window.copyShareLink = copyShareLink;
 
   if (isDetailView) {
     $("statsBar").style.display = "none";
