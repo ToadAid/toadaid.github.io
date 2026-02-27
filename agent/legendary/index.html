@@ -22,7 +22,6 @@
       min-height: 100vh;
     }
     
-    /* Hero section for legends */
     .hero {
       text-align: center;
       padding: 40px 20px;
@@ -57,7 +56,6 @@
       margin-top: 16px;
     }
     
-    /* Agent cards container */
     .agents-container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -73,7 +71,6 @@
       }
     }
     
-    /* Legendary card style */
     .legend-card {
       background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,215,0,.05));
       border: 2px solid gold;
@@ -299,11 +296,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
   <script>
-    // Configuration
     const IDENTITY_REGISTRY = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
     const BASE_RPC = "https://mainnet.base.org";
     
-    // IPFS gateways
     const IPFS_GATEWAYS = [
       "https://ipfs.io/ipfs/",
       "https://cloudflare-ipfs.com/ipfs/",
@@ -312,7 +307,6 @@
 
     const $ = (id) => document.getElementById(id);
 
-    // Fetch from IPFS with fallback
     async function fetchFromIPFS(ipfsHash) {
       for (const gateway of IPFS_GATEWAYS) {
         try {
@@ -325,7 +319,6 @@
       return null;
     }
 
-    // Get image URL from metadata
     function getImageUrl(metadata) {
       if (!metadata || !metadata.image) return null;
       if (metadata.image.startsWith('http')) return metadata.image;
@@ -340,7 +333,6 @@
       try {
         const provider = new ethers.JsonRpcProvider(BASE_RPC);
         
-        // Identity Registry ABI (only what we need)
         const abi = [
           "function tokenURI(uint256 tokenId) view returns (string)",
           "function ownerOf(uint256 tokenId) view returns (address)"
@@ -348,15 +340,12 @@
         
         const registry = new ethers.Contract(IDENTITY_REGISTRY, abi, provider);
         
-        // Load Agent 0
         const uri0 = await registry.tokenURI(0);
         const owner0 = await registry.ownerOf(0);
         
-        // Load Agent 1
         const uri1 = await registry.tokenURI(1);
         const owner1 = await registry.ownerOf(1);
         
-        // Fetch IPFS metadata for both
         let metadata0 = null;
         let metadata1 = null;
         
@@ -370,7 +359,6 @@
           metadata1 = await fetchFromIPFS(hash1);
         }
         
-        // Build HTML
         const container = $("agentsContainer");
         $("loadingSpinner").style.display = "none";
         
@@ -448,7 +436,6 @@
       }
     }
 
-    // Load on page load
     window.addEventListener('load', loadLegends);
   </script>
 </body>
