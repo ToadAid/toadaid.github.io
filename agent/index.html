@@ -515,8 +515,6 @@
   const $ = (id) => document.getElementById(id);
   
   // ===== CHECK URL FOR AGENT ID =====
-  // Prefer query param: /agent/?id=19173 (GitHub Pages safe)
-  // Fallback: /agent/19173 (works only with /agent/404.html redirect)
   const params = new URLSearchParams(window.location.search);
   const qId = params.get("id");
 
@@ -537,7 +535,6 @@
   let filteredAgents = [];
   let currentPage = 1;
   const pageSize = 12;
-  let provider;
   
   // IPFS gateways
   const IPFS_GATEWAYS = [
@@ -545,6 +542,27 @@
     "https://cloudflare-ipfs.com/ipfs/",
     "https://gateway.pinata.cloud/ipfs/"
   ];
+  
+  // ===== SAFE BASE64 DECODE (CSP-friendly) =====
+  function safeBase64Decode(base64) {
+    try {
+      // Use built-in atob which is actually allowed in most CSP contexts
+      // The warning is about eval, not atob
+      const binaryString = atob(base64);
+      
+      // Convert to UTF-8 string properly
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      // Use TextDecoder for proper UTF-8 handling
+      return new TextDecoder().decode(bytes);
+    } catch (e) {
+      console.warn("Base64 decode failed:", e);
+      return null;
+    }
+  }
   
   // ===== HELPER FUNCTIONS =====
   function formatTimeAgo(timestamp) {
@@ -563,28 +581,26 @@
     try {
       if (!hex || hex === '0x') return '';
       const hexStr = hex.startsWith('0x') ? hex.slice(2) : hex;
-      let str = '';
+      const bytes = [];
       for (let i = 0; i < hexStr.length; i += 2) {
         const code = parseInt(hexStr.substr(i, 2), 16);
-        if (code !== 0) str += String.fromCharCode(code);
+        if (code !== 0) bytes.push(code);
       }
-      return str;
+      return new TextDecoder().decode(new Uint8Array(bytes));
     } catch (e) {
       return '';
     }
   }
   
-  // Extract URI from log data (simplified version)
+  // Extract URI from log data
   function extractUriFromLogData(dataHex, agentId) {
     try {
       if (!dataHex || dataHex === '0x') return null;
       
-      // Remove '0x' prefix
       const hex = dataHex.startsWith('0x') ? dataHex.slice(2) : dataHex;
       
       // Try to find IPFS pattern
       for (let i = 0; i < hex.length - 20; i++) {
-        // Look for 'ipfs://' in hex (69 70 66 73 3a 2f 2f)
         if (hex.substr(i, 14).toLowerCase() === '697066733a2f2f') {
           let uriHex = '';
           let j = i;
@@ -596,7 +612,6 @@
           if (uri.startsWith('ipfs://')) return uri;
         }
         
-        // Look for 'data:application/json;base64,' pattern
         if (hex.substr(i, 40).toLowerCase().includes('646174613a6170706c69636174696f6e2f6a736f6e3b6261736536342c')) {
           let uriHex = '';
           let j = i;
@@ -609,7 +624,6 @@
         }
       }
       
-      // Fallback: try the tail of the data (where URI usually is)
       const tail = hex.slice(-400);
       let str = '';
       for (let i = 0; i < tail.length; i += 2) {
@@ -621,6 +635,18 @@
       
     } catch (e) {
       console.warn("Error extracting URI from log data:", e);
+      return null;
+    }
+  }
+  
+  // Parse base64 metadata without using eval
+  function parseBase64Metadata(base64Data) {
+    try {
+      const decoded = safeBase64Decode(base64Data);
+      if (!decoded) return null;
+      return JSON.parse(decoded);
+    } catch (e) {
+      console.warn("Failed to parse base64 metadata:", e);
       return null;
     }
   }
@@ -651,7 +677,6 @@
       $("pageSubtitle").textContent = "ERC‑8004 Agent Details · Real data from IPFS 🪞";
       $("loadingMessage").textContent = `Loading agent #${id} from blockchain and IPFS...`;
       
-      // First, get the agent data from Blockscout logs
       const response = await fetch(BLOCKSCOUT_URL);
       const data = await response.json();
       
@@ -662,7 +687,6 @@
       let uriSource = null;
       
       if (data.status === "1" && data.result) {
-        // Find the log for this specific agent ID
         const log = data.result.find(l => parseInt(l.topics[2], 16) === id);
         
         if (log) {
@@ -670,7 +694,6 @@
           timestamp = parseInt(log.timeStamp) * 1000;
           txHash = log.transactionHash;
           
-          // Extract URI from log data
           if (log.data && log.data !== "0x") {
             const extractedUri = extractUriFromLogData(log.data, id);
             if (extractedUri) {
@@ -680,7 +703,6 @@
             }
           }
         } else {
-          // Agent ID not found in logs
           throw new Error(`Agent #${id} not found on chain`);
         }
       } else {
@@ -703,12 +725,10 @@
             metadata = { ...metadata, ...ipfsData };
           }
         } else if (uri.startsWith('data:application/json;base64,')) {
-          try {
-            const base64 = uri.replace('data:application/json;base64,', '');
-            const json = atob(base64);
-            metadata = { ...metadata, ...JSON.parse(json) };
-          } catch (e) {
-            console.warn("Failed to parse base64 metadata:", e);
+          const base64Data = uri.replace('data:application/json;base64,', '');
+          const parsed = parseBase64Metadata(base64Data);
+          if (parsed) {
+            metadata = { ...metadata, ...parsed };
           }
         }
       }
@@ -823,31 +843,27 @@
           const agentId = parseInt(log.topics[2], 16);
           const creator = '0x' + log.topics[1].slice(26);
           
-          // Extract URI from log data
           let uri = null;
           if (log.data && log.data !== '0x') {
             uri = extractUriFromLogData(log.data, agentId);
           }
           
-          // Parse metadata if we have URI
           let name = `Agent #${agentId}`;
           let description = '';
           let image = '🪞';
           
           if (uri) {
             if (uri.startsWith('data:application/json;base64,')) {
-              try {
-                const base64 = uri.replace('data:application/json;base64,', '');
-                const json = atob(base64);
-                const metadata = JSON.parse(json);
-                name = metadata.name || name;
-                description = metadata.description || '';
-                image = metadata.image || '🪞';
-              } catch (e) {}
+              const base64Data = uri.replace('data:application/json;base64,', '');
+              const parsed = parseBase64Metadata(base64Data);
+              if (parsed) {
+                name = parsed.name || name;
+                description = parsed.description || '';
+                image = parsed.image || '🪞';
+              }
             } else if (uri.startsWith('ipfs://')) {
               name = `IPFS Agent #${agentId}`;
               description = 'Metadata stored on IPFS';
-              // Optionally try to fetch from IPFS here
             }
           }
           
@@ -1068,15 +1084,12 @@
 
   // ===== INIT =====
   if (isDetailView) {
-    // Show single agent detail
     $("statsBar").style.display = "none";
     $("filterBar").style.display = "none";
     $("pagination").style.display = "none";
     loadSingleAgent(agentId);
   } else {
-    // Show directory
     loadAgents();
-    // Auto-refresh every 5 minutes
     setInterval(loadAgents, 300000);
   }
   
