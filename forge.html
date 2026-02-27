@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src *; img-src * data: blob:; style-src * 'unsafe-inline';">
   <title>ToadAid — Identity Forge (ERC-8004) | MPASS-Gated</title>
   <style>
     :root{
@@ -176,6 +177,72 @@
       font-size: 11px;
       flex: 1;
     }
+
+    /* ===== New Styles for IPFS Helper and Templates ===== */
+    .ipfs-helper {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(0,0,0,.2);
+      border-radius: 12px;
+      border: 1px dashed var(--accent2);
+    }
+    
+    .ipfs-preview {
+      margin-top: 8px;
+      font-size: 11px;
+      padding: 8px;
+      background: rgba(0,0,0,.3);
+      border-radius: 8px;
+      word-break: break-all;
+    }
+    
+    .ipfs-valid {
+      color: var(--good);
+    }
+    
+    .ipfs-invalid {
+      color: var(--bad);
+    }
+    
+    .template-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+    
+    .chip-container {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    
+    .chip {
+      background: rgba(74,163,255,.15);
+      border: 1px solid var(--accent);
+      border-radius: 30px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-family: var(--mono);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .chip:hover {
+      background: rgba(74,163,255,.3);
+      transform: translateY(-1px);
+    }
+    
+    .legend-link {
+      background: rgba(255,215,0,.15);
+      border-color: gold;
+      color: gold;
+    }
+    
+    .legend-link:hover {
+      background: rgba(255,215,0,.25);
+    }
   </style>
 </head>
 <body>
@@ -197,6 +264,11 @@
      href="/forge/how-to-mint.html"
      style="text-decoration:none; display:inline-flex; align-items:center;">
     How to Mint
+  </a>
+
+  <!-- Legendary Agents Link -->
+  <a href="/agent/legendary/" class="smallbtn legend-link" style="text-decoration:none; display:inline-flex; align-items:center;">
+    👑 Legends
   </a>
 
   <button class="smallbtn" id="btnConnect">Connect</button>
@@ -242,18 +314,18 @@
       <div id="panelForge">
         <div class="grid">
           <div>
-            <label>Agent Name *</label>
-            <input id="name" placeholder="Mirror Engineer / Lore Guardian / Builder Agent…" maxlength="100" />
+            <label for="name">Agent Name *</label>
+            <input type="text" id="name" name="name" placeholder="Mirror Engineer / Lore Guardian / Builder Agent…" maxlength="100" autocomplete="off" />
           </div>
           <div>
-            <label>Image URL (optional)</label>
-            <input id="image" placeholder="https://… or ipfs://…" />
+            <label for="image">Image URL (optional)</label>
+            <input type="url" id="image" name="image" placeholder="https://… or ipfs://…" autocomplete="off" />
           </div>
         </div>
 
         <div style="margin-top:12px">
-          <label>Description *</label>
-          <textarea id="desc" placeholder="What does this agent do? How can others interact with it? (short + clear)"></textarea>
+          <label for="desc">Description *</label>
+          <textarea id="desc" name="desc" placeholder="What does this agent do? How can others interact with it? (short + clear)"></textarea>
         </div>
 
         <div style="margin-top:12px" class="grid">
@@ -276,14 +348,14 @@
 
         <div style="margin-top:12px" class="grid">
           <div>
-            <label>Endpoint URL (optional)</label>
-            <input id="endpoint" placeholder="https://toadaid.github.io/mcp (or /ask)" />
+            <label for="endpoint">Endpoint URL (optional)</label>
+            <input type="url" id="endpoint" name="endpoint" placeholder="https://toadaid.github.io/mcp (or /ask)" autocomplete="off" />
             <div class="hint">Tip: use a gateway / rate-limited key. Don't expose raw private services.</div>
           </div>
 
           <div>
-            <label>Endpoint Type</label>
-            <select id="endpointType">
+            <label for="endpointType">Endpoint Type</label>
+            <select id="endpointType" name="endpointType">
               <option value="web">Web</option>
               <option value="mcp">MCP</option>
               <option value="custom">Custom</option>
@@ -292,10 +364,37 @@
           </div>
         </div>
 
+        <!-- IPFS Helper Section -->
+        <div class="ipfs-helper">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-weight:800; color:var(--accent2);">📦 IPFS Helper</span>
+            <span class="badge">CID → ipfs://</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="cidInput" placeholder="Paste CID only (Qm... or bafy...)" style="flex:1;" />
+            <button class="smallbtn" id="convertCidBtn">Convert</button>
+          </div>
+          <div id="ipfsPreview" class="ipfs-preview" style="display:none;"></div>
+          <div id="ipfsValidation" style="font-size:11px; margin-top:4px;"></div>
+        </div>
+
         <div style="margin-top:12px">
-          <label>Optional: Use a pinned metadata URI instead of data: URI</label>
-          <input id="pinnedUri" placeholder="ipfs://bafkrei... (leave blank to use Generated Metadata)" />
+          <label for="pinnedUri">Optional: Use a pinned metadata URI instead of data: URI</label>
+          <input type="url" id="pinnedUri" name="pinnedUri" placeholder="ipfs://bafkrei... (leave blank to use Generated Metadata)" autocomplete="off" />
           <div class="hint">If you already pinned JSON (Pinata), paste the <strong>ipfs://…</strong> here and Forge will use it.</div>
+        </div>
+
+        <!-- Template Buttons -->
+        <div class="template-buttons">
+          <button class="smallbtn" id="copyTemplateBtn">📋 Copy agentURI.json template</button>
+          <button class="smallbtn" id="downloadTemplateBtn">⬇️ Download template</button>
+          <button class="smallbtn" id="copyAddressesBtn">📋 Copy Router/Registry addresses</button>
+        </div>
+
+        <!-- Recent Chips (from localStorage) -->
+        <div id="recentChipsContainer" class="chip-container" style="display:none;">
+          <span style="color:var(--muted); font-size:11px;">Recent:</span>
+          <div id="recentChips" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
         </div>
 
         <div style="margin-top:14px" class="row">
@@ -315,13 +414,13 @@
       <div id="panelAttest" style="display:none;">
         <div class="grid">
           <div>
-            <label>Agent ID *</label>
-            <input id="agentId" placeholder="e.g. 19173" />
+            <label for="agentId">Agent ID *</label>
+            <input type="text" id="agentId" name="agentId" placeholder="e.g. 19173" autocomplete="off" />
             <button class="smallbtn" id="btnCheckAgent" style="margin-top:5px; width:100%;">Check if exists</button>
           </div>
           <div>
-            <label>Kind *</label>
-            <select id="kind">
+            <label for="kind">Kind *</label>
+            <select id="kind" name="kind">
               <option value="1">1 — ENDORSE</option>
               <option value="2">2 — FLAG</option>
               <option value="3">3 — ROLE</option>
@@ -333,12 +432,12 @@
 
         <div style="margin-top:12px" class="grid">
           <div>
-            <label>Reference URI (optional)</label>
-            <input id="refUri" placeholder="ipfs://bafkrei.../proof.json (or empty)" />
+            <label for="refUri">Reference URI (optional)</label>
+            <input type="url" id="refUri" name="refUri" placeholder="ipfs://bafkrei.../proof.json (or empty)" autocomplete="off" />
           </div>
           <div>
-            <label>Weight</label>
-            <input id="weight" placeholder="1" value="1" />
+            <label for="weight">Weight</label>
+            <input type="number" id="weight" name="weight" placeholder="1" value="1" min="1" step="1" autocomplete="off" />
           </div>
         </div>
 
@@ -356,12 +455,12 @@
       <div id="panelUpdate" style="display:none;">
         <div class="grid">
           <div>
-            <label>Agent ID *</label>
-            <input id="updateAgentId" placeholder="e.g. 19173" />
+            <label for="updateAgentId">Agent ID *</label>
+            <input type="text" id="updateAgentId" name="updateAgentId" placeholder="e.g. 19173" autocomplete="off" />
           </div>
           <div>
-            <label>New Agent URI *</label>
-            <input id="newAgentUri" placeholder="ipfs://... or data:application/json;base64,..." />
+            <label for="newAgentUri">New Agent URI *</label>
+            <input type="url" id="newAgentUri" name="newAgentUri" placeholder="ipfs://... or data:application/json;base64,..." autocomplete="off" />
           </div>
         </div>
         <div class="hint" style="margin-top:8px;">
@@ -584,6 +683,17 @@
   const recentForges = $("recentForges");
   const recentCount = $("recentCount");
 
+  // New DOM elements
+  const cidInput = $("cidInput");
+  const convertCidBtn = $("convertCidBtn");
+  const ipfsPreview = $("ipfsPreview");
+  const ipfsValidation = $("ipfsValidation");
+  const copyTemplateBtn = $("copyTemplateBtn");
+  const downloadTemplateBtn = $("downloadTemplateBtn");
+  const copyAddressesBtn = $("copyAddressesBtn");
+  const recentChipsContainer = $("recentChipsContainer");
+  const recentChips = $("recentChips");
+
   // My Agents panel elements
   const myAgentsLoading = $("myAgentsLoading");
   const myAgentsEmpty = $("myAgentsEmpty");
@@ -600,6 +710,8 @@
   let signer = null;
   let wcProvider = null;
   let recentForgeList = JSON.parse(localStorage.getItem('recentForges') || '[]');
+  let recentUriList = JSON.parse(localStorage.getItem('recentUris') || '[]');
+  let recentTxList = JSON.parse(localStorage.getItem('recentTxs') || '[]');
   let allAgents = []; // will hold fetched agents
 
   // Helper functions
@@ -624,6 +736,15 @@
     if (!s) return false;
     const t = s.trim();
     return t.startsWith("ipfs://") || t.startsWith("https://") || t.startsWith("data:application/json;base64,");
+  }
+
+  function isValidCID(str) {
+    return str.match(/^Qm[a-zA-Z0-9]{44,}$/) || str.match(/^bafy[a-zA-Z0-9]{50,}$/);
+  }
+
+  function extractCIDFromUrl(url) {
+    const match = url.match(/\/ipfs\/([a-zA-Z0-9]{46,})/);
+    return match ? match[1] : null;
   }
 
   function buildMetadata() {
@@ -662,6 +783,48 @@
     btnAttest.disabled = !(!!signer && aid.length > 0);
 
     btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim() && isValidUri(newAgentUri.value.trim()));
+  }
+
+  // Update recent chips display
+  function updateRecentChips() {
+    const chips = [];
+    
+    if (recentForgeList.length > 0) {
+      chips.push(`<span class="chip" onclick="loadAgentId(${recentForgeList[0].agentId})">#${recentForgeList[0].agentId}</span>`);
+    }
+    
+    if (recentUriList.length > 0) {
+      const shortUri = recentUriList[0].length > 20 ? recentUriList[0].slice(0,20) + '…' : recentUriList[0];
+      chips.push(`<span class="chip" onclick="loadUri('${recentUriList[0]}')">${shortUri}</span>`);
+    }
+    
+    if (recentTxList.length > 0) {
+      const shortTx = recentTxList[0].slice(0,10) + '…';
+      chips.push(`<span class="chip" onclick="loadTx('${recentTxList[0]}')">${shortTx}</span>`);
+    }
+    
+    if (chips.length > 0) {
+      recentChipsContainer.style.display = 'flex';
+      recentChips.innerHTML = chips.join('');
+    } else {
+      recentChipsContainer.style.display = 'none';
+    }
+  }
+
+  // Add to recent URIs
+  function addToRecentUris(uri) {
+    recentUriList.unshift(uri);
+    if (recentUriList.length > 3) recentUriList.pop();
+    localStorage.setItem('recentUris', JSON.stringify(recentUriList));
+    updateRecentChips();
+  }
+
+  // Add to recent TXs
+  function addToRecentTxs(txHash) {
+    recentTxList.unshift(txHash);
+    if (recentTxList.length > 3) recentTxList.pop();
+    localStorage.setItem('recentTxs', JSON.stringify(recentTxList));
+    updateRecentChips();
   }
 
   // Decode hex string to UTF-8
@@ -918,6 +1081,7 @@
     if (recentForgeList.length > 5) recentForgeList.pop();
     localStorage.setItem('recentForges', JSON.stringify(recentForgeList));
     updateRecentForges();
+    updateRecentChips();
   }
 
   function updateRecentForges() {
@@ -1203,6 +1367,90 @@
     }
   });
 
+  // IPFS Helper
+  convertCidBtn.addEventListener("click", () => {
+    const input = cidInput.value.trim();
+    let cid = input;
+    let message = '';
+    let isValid = false;
+    
+    // Check if it's a full URL with /ipfs/
+    if (input.includes('/ipfs/')) {
+      const extracted = extractCIDFromUrl(input);
+      if (extracted) {
+        cid = extracted;
+        message = `✅ Extracted CID: ${cid}`;
+        isValid = true;
+      } else {
+        message = `❌ Could not extract CID from URL`;
+      }
+    }
+    // Check if it's already a valid CID
+    else if (isValidCID(input)) {
+      isValid = true;
+      message = `✅ Valid CID`;
+    } else {
+      message = `❌ Invalid CID format — must start with Qm or bafy...`;
+    }
+    
+    if (isValid) {
+      const ipfsUri = `ipfs://${cid}`;
+      pinnedUriIn.value = ipfsUri;
+      addToRecentUris(ipfsUri);
+      
+      ipfsPreview.style.display = 'block';
+      ipfsPreview.innerHTML = `
+        <span class="ipfs-valid">✅ Converted: ${ipfsUri}</span><br>
+        <span>🔗 Preview: <a href="https://ipfs.io/ipfs/${cid}" target="_blank">ipfs.io/ipfs/${cid.slice(0,10)}…</a></span>
+      `;
+      ipfsValidation.innerHTML = '';
+    } else {
+      ipfsPreview.style.display = 'none';
+      ipfsValidation.innerHTML = `<span class="ipfs-invalid">${message}</span>`;
+    }
+  });
+
+  // Template buttons
+  copyTemplateBtn.addEventListener("click", () => {
+    const template = {
+      name: "Your Agent Name",
+      description: "What does your agent do?",
+      image: "ipfs://... or https://...",
+      attributes: [
+        { trait_type: "Role", value: "Guardian" },
+        { trait_type: "Power", value: "42" }
+      ]
+    };
+    navigator.clipboard.writeText(JSON.stringify(template, null, 2));
+    setStatus("good", "Template copied to clipboard!");
+  });
+
+  downloadTemplateBtn.addEventListener("click", () => {
+    const template = {
+      name: "Your Agent Name",
+      description: "What does your agent do?",
+      image: "ipfs://... or https://...",
+      attributes: [
+        { trait_type: "Role", value: "Guardian" },
+        { trait_type: "Power", value: "42" }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'agent-template.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatus("good", "Template downloaded!");
+  });
+
+  copyAddressesBtn.addEventListener("click", () => {
+    const addresses = `Registry Router: ${REGISTRY_ROUTER}\nReputation Router: ${REPUTATION_ROUTER}\nMPASS: ${MPASS_ERC20}\nRegistry Proxy: ${REGISTRY_PROXY}\nBase Implementation: ${BASE_IMPL}`;
+    navigator.clipboard.writeText(addresses);
+    setStatus("good", "Addresses copied!");
+  });
+
   tabForge.addEventListener("click", showForge);
   tabAttest.addEventListener("click", showAttest);
   tabUpdate.addEventListener("click", showUpdate);
@@ -1267,6 +1515,7 @@
       if (agentId) {
         agentIdIn.value = agentId;
         addToRecentForges(agentId, agentName, tx.hash);
+        addToRecentTxs(tx.hash);
         updateButtons();
         const txLink = `https://basescan.org/tx/${tx.hash}`;
         setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
@@ -1378,6 +1627,20 @@
     setStatus("good", "JSON copied.");
   });
 
+  // Global functions for chips
+  window.loadAgentId = (id) => {
+    window.location.href = `/agent/?id=${id}`;
+  };
+
+  window.loadUri = (uri) => {
+    pinnedUriIn.value = uri;
+    showForge();
+  };
+
+  window.loadTx = (txHash) => {
+    window.open(`https://basescan.org/tx/${txHash}`, '_blank');
+  };
+
   window.addEventListener("load", () => {
     // Initial fetch of agents
     fetchAgentsFromBlockscout();
@@ -1385,6 +1648,7 @@
     if (window.ethereum && window.ethereum.selectedAddress) {
       connectBrowser();
     }
+    updateRecentChips();
   });
 
   // Initial render
@@ -1393,7 +1657,7 @@
   showForge();
   updateRecentForges();
 
-  console.log("ToadAid Forge loaded with all features including My Agents with images!");
+  console.log("ToadAid Forge loaded with all pro-grade features!");
 </script>
 </body>
 </html>
