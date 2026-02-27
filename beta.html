@@ -112,15 +112,37 @@
     /* My Agents grid inside panel */
     .agents-mini-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
       margin-top: 12px;
     }
     .agent-mini-card {
       background: rgba(0,0,0,.25);
       border: 1px solid var(--line);
       border-radius: 14px;
-      padding: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .agent-mini-image {
+      width: 100%;
+      height: 120px;
+      border-radius: 10px;
+      background: rgba(0,0,0,.3);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .agent-mini-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .agent-mini-image span {
+      font-size: 40px;
+      opacity: 0.7;
     }
     .agent-mini-header {
       display: flex;
@@ -146,12 +168,13 @@
     .agent-mini-actions {
       display: flex;
       gap: 6px;
-      margin-top: 10px;
+      margin-top: 12px;
       justify-content: flex-end;
     }
     .agent-mini-actions button {
-      padding: 4px 8px;
+      padding: 6px 10px;
       font-size: 11px;
+      flex: 1;
     }
   </style>
 </head>
@@ -404,7 +427,7 @@
     <li><strong>Forge</strong> mints an ERC‑8004 Agent ID through the Registry Router (MPASS‑gated onchain).</li>
     <li><strong>Attest</strong> emits reputation events for any agentId (also MPASS‑gated).</li>
     <li><strong>Update</strong> lets you change the metadata URI of an agent you own.</li>
-    <li><strong>My Agents</strong> dashboard shows all your minted agents with quick actions.</li>
+    <li><strong>My Agents</strong> dashboard shows all your minted agents with images and quick actions.</li>
     <li><strong>Agent 0 & 1</strong> live forever in the Base implementation contract.</li>
   </ul>
   <p style="margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
@@ -484,6 +507,13 @@
   ];
   const UPDATE_ABI = [
     "function setAgentUri(uint256 agentId, string calldata newUri) external"
+  ];
+
+  // IPFS gateways
+  const IPFS_GATEWAYS = [
+    "https://ipfs.io/ipfs/",
+    "https://cloudflare-ipfs.com/ipfs/",
+    "https://gateway.pinata.cloud/ipfs/"
   ];
 
   // DOM elements
@@ -640,95 +670,133 @@
     }
   }
 
-// ===== FETCH REAL AGENTS FROM BLOCKSCOUT AND CONTRACT =====
-async function fetchAgentsFromBlockscout() {
-  try {
-    console.log("Fetching agents from Blockscout...");
-    
-    const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
-    
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (data.status === "1" && data.result && data.result.length > 0) {
-      console.log(`Found ${data.result.length} forged events`);
-      
-      // Create a provider to query the proxy contract
-      const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-      const proxyContract = new ethers.Contract(REGISTRY_PROXY, [
-        "function agentURI(uint256) view returns (string)"
-      ], provider);
-      
-      // Process logs into agents
-      const agents = [];
-      
-      for (const log of data.result) {
+  // Fetch image from IPFS with fallback
+  async function getImageUrl(uri) {
+    if (!uri) return null;
+    if (uri.startsWith('http')) return uri;
+    if (uri.startsWith('ipfs://')) {
+      const hash = uri.replace('ipfs://', '');
+      // Try multiple gateways
+      for (const gateway of IPFS_GATEWAYS) {
         try {
-          // Decode agent ID from topics[2]
-          const agentId = parseInt(log.topics[2], 16);
-          
-          // Decode creator from topics[1]
-          const creator = '0x' + log.topics[1].slice(26);
-          
-          // Get the actual URI from the proxy contract
-          let uri = '';
-          let name = `Agent #${agentId}`;
-          let description = '';
-          let image = '🪞';
-          
-          try {
-            uri = await proxyContract.agentURI(agentId);
-            console.log(`Agent ${agentId} URI:`, uri);
-            
-            // Parse metadata from URI
-            if (uri.startsWith('data:application/json;base64,')) {
-              const base64 = uri.replace('data:application/json;base64,', '');
-              const json = atob(base64);
-              const metadata = JSON.parse(json);
-              name = metadata.name || name;
-              description = metadata.description || '';
-              image = metadata.image || '🪞';
-            } else if (uri.startsWith('ipfs://')) {
-              name = `IPFS Agent #${agentId}`;
-              description = 'Metadata stored on IPFS';
-            }
-          } catch (e) {
-            console.warn(`Could not fetch URI for agent ${agentId}:`, e);
-          }
-          
-          agents.push({
-            id: agentId,
-            creator: creator,
-            name: name,
-            description: description,
-            image: image,
-            active: true,
-            timestamp: parseInt(log.timeStamp) * 1000,
-            transactionHash: log.transactionHash,
-            uri: uri
-          });
-        } catch (e) {
-          console.warn("Error processing log:", e);
-        }
+          const response = await fetch(gateway + hash, { method: 'HEAD' });
+          if (response.ok) return gateway + hash;
+        } catch (e) {}
       }
+    }
+    return null;
+  }
+
+  // ===== FETCH REAL AGENTS FROM BLOCKSCOUT AND CONTRACT =====
+  async function fetchAgentsFromBlockscout() {
+    try {
+      console.log("Fetching agents from Blockscout...");
       
-      // Sort by newest first
-      agents.sort((a, b) => b.timestamp - a.timestamp);
+      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
       
-      allAgents = agents;
-      console.log("Agents loaded:", allAgents.length);
-      return true;
-    } else {
-      console.log("No agents found or API error:", data);
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        console.log(`Found ${data.result.length} forged events`);
+        
+        // Create a provider to query the proxy contract
+        const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+        const proxyContract = new ethers.Contract(REGISTRY_PROXY, [
+          "function agentURI(uint256) view returns (string)"
+        ], provider);
+        
+        // Process logs into agents
+        const agents = [];
+        
+        for (const log of data.result) {
+          try {
+            // Decode agent ID from topics[2]
+            const agentId = parseInt(log.topics[2], 16);
+            
+            // Decode creator from topics[1]
+            const creator = '0x' + log.topics[1].slice(26);
+            
+            // Get the actual URI from the proxy contract
+            let uri = '';
+            let name = `Agent #${agentId}`;
+            let description = '';
+            let image = '🪞';
+            let imageUrl = null;
+            
+            try {
+              uri = await proxyContract.agentURI(agentId);
+              console.log(`Agent ${agentId} URI:`, uri);
+              
+              // Parse metadata from URI
+              if (uri.startsWith('data:application/json;base64,')) {
+                const base64 = uri.replace('data:application/json;base64,', '');
+                const json = atob(base64);
+                const metadata = JSON.parse(json);
+                name = metadata.name || name;
+                description = metadata.description || '';
+                image = metadata.image || '🪞';
+                if (metadata.image) {
+                  imageUrl = await getImageUrl(metadata.image);
+                }
+              } else if (uri.startsWith('ipfs://')) {
+                name = `IPFS Agent #${agentId}`;
+                description = 'Metadata stored on IPFS';
+                // Try to fetch image from IPFS metadata
+                try {
+                  const ipfsHash = uri.replace('ipfs://', '');
+                  for (const gateway of IPFS_GATEWAYS) {
+                    const metaResponse = await fetch(gateway + ipfsHash);
+                    if (metaResponse.ok) {
+                      const metadata = await metaResponse.json();
+                      name = metadata.name || name;
+                      description = metadata.description || description;
+                      if (metadata.image) {
+                        imageUrl = await getImageUrl(metadata.image);
+                      }
+                      break;
+                    }
+                  }
+                } catch (e) {}
+              }
+            } catch (e) {
+              console.warn(`Could not fetch URI for agent ${agentId}:`, e);
+            }
+            
+            agents.push({
+              id: agentId,
+              creator: creator,
+              name: name,
+              description: description,
+              image: image,
+              imageUrl: imageUrl,
+              active: true,
+              timestamp: parseInt(log.timeStamp) * 1000,
+              transactionHash: log.transactionHash,
+              uri: uri
+            });
+          } catch (e) {
+            console.warn("Error processing log:", e);
+          }
+        }
+        
+        // Sort by newest first
+        agents.sort((a, b) => b.timestamp - a.timestamp);
+        
+        allAgents = agents;
+        console.log("Agents loaded:", allAgents.length);
+        return true;
+      } else {
+        console.log("No agents found or API error:", data);
+        allAgents = [];
+        return false;
+      }
+    } catch (error) {
+      console.error("Blockscout fetch error:", error);
       allAgents = [];
       return false;
     }
-  } catch (error) {
-    console.error("Blockscout fetch error:", error);
-    allAgents = [];
-    return false;
   }
-}
 
   async function checkMPASSBalance() {
     if (!signer || !provider) return;
@@ -995,19 +1063,36 @@ async function fetchAgentsFromBlockscout() {
     }
 
     myAgentsGrid.style.display = 'grid';
-    myAgentsGrid.innerHTML = userAgents.map(agent => `
-      <div class="agent-mini-card">
-        <div class="agent-mini-header">
-          <span class="agent-mini-id">#${agent.id}</span>
-          <span class="agent-mini-name" title="${agent.name}">${agent.name.length > 15 ? agent.name.slice(0,12)+'…' : agent.name}</span>
+    
+    // Build HTML with images
+    let html = '';
+    for (const agent of userAgents) {
+      let imageHtml = '';
+      if (agent.imageUrl) {
+        imageHtml = `<img src="${agent.imageUrl}" alt="${agent.name}" />`;
+      } else {
+        imageHtml = `<span>${agent.image}</span>`;
+      }
+      
+      html += `
+        <div class="agent-mini-card">
+          <div class="agent-mini-image">
+            ${imageHtml}
+          </div>
+          <div class="agent-mini-header">
+            <span class="agent-mini-id">#${agent.id}</span>
+            <span class="agent-mini-name" title="${agent.name}">${agent.name.length > 15 ? agent.name.slice(0,12)+'…' : agent.name}</span>
+          </div>
+          <div class="agent-mini-actions">
+            <button class="smallbtn" data-action="update" data-id="${agent.id}">✏️ Update</button>
+            <button class="smallbtn" data-action="attest" data-id="${agent.id}">⭐ Attest</button>
+            <button class="smallbtn" data-action="view" data-id="${agent.id}">👁️ View</button>
+          </div>
         </div>
-        <div class="agent-mini-actions">
-          <button class="smallbtn" data-action="update" data-id="${agent.id}">✏️ Update</button>
-          <button class="smallbtn" data-action="attest" data-id="${agent.id}">⭐ Attest</button>
-          <button class="smallbtn" data-action="view" data-id="${agent.id}">👁️ View</button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }
+    
+    myAgentsGrid.innerHTML = html;
 
     // Attach event listeners to the buttons
     myAgentsGrid.querySelectorAll('button[data-action]').forEach(btn => {
@@ -1225,7 +1310,7 @@ async function fetchAgentsFromBlockscout() {
   showForge();
   updateRecentForges();
 
-  console.log("ToadAid Forge loaded with all features including My Agents!");
+  console.log("ToadAid Forge loaded with all features including My Agents with images!");
 </script>
 </body>
 </html>
