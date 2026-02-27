@@ -670,24 +670,60 @@
     }
   }
 
+  // Check if agent exists (using Router, not Proxy)
+  async function checkAgentExists() {
+    const agentId = (agentIdIn.value || "").trim();
+    if (!agentId || !provider) {
+      setStatus("warn", "Enter Agent ID first");
+      return;
+    }
+    
+    try {
+      // Check in our fetched agents list first
+      const agentExists = allAgents.some(a => a.id.toString() === agentId);
+      if (agentExists) {
+        setStatus("good", `✅ Agent ${agentId} exists!`);
+        return;
+      }
+      
+      // If not in our list, try to fetch from Router events
+      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.status === "1" && data.result) {
+        const found = data.result.some(log => {
+          const id = parseInt(log.topics[2], 16);
+          return id.toString() === agentId;
+        });
+        
+        if (found) {
+          setStatus("good", `✅ Agent ${agentId} exists!`);
+        } else {
+          setStatus("bad", `❌ Agent ${agentId} not found`);
+        }
+      } else {
+        setStatus("bad", `❌ Agent ${agentId} not found`);
+      }
+    } catch (err) {
+      console.error("Check agent error:", err);
+      setStatus("bad", `Error checking agent ${agentId}`);
+    }
+  }
+
   // Fetch image from IPFS with fallback
   async function getImageUrl(uri) {
     if (!uri) return null;
     if (uri.startsWith('http')) return uri;
     if (uri.startsWith('ipfs://')) {
       const hash = uri.replace('ipfs://', '');
-      // Try multiple gateways
-      for (const gateway of IPFS_GATEWAYS) {
-        try {
-          const response = await fetch(gateway + hash, { method: 'HEAD' });
-          if (response.ok) return gateway + hash;
-        } catch (e) {}
-      }
+      // Return gateway URL without checking (let browser handle 404)
+      return IPFS_GATEWAYS[0] + hash;
     }
     return null;
   }
 
-  // ===== FETCH REAL AGENTS FROM BLOCKSCOUT AND CONTRACT =====
+  // ===== FETCH REAL AGENTS FROM BLOCKSCOUT =====
   async function fetchAgentsFromBlockscout() {
     try {
       console.log("Fetching agents from Blockscout...");
@@ -700,12 +736,6 @@
       if (data.status === "1" && data.result && data.result.length > 0) {
         console.log(`Found ${data.result.length} forged events`);
         
-        // Create a provider to query the proxy contract
-        const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-        const proxyContract = new ethers.Contract(REGISTRY_PROXY, [
-          "function agentURI(uint256) view returns (string)"
-        ], provider);
-        
         // Process logs into agents
         const agents = [];
         
@@ -717,18 +747,23 @@
             // Decode creator from topics[1]
             const creator = '0x' + log.topics[1].slice(26);
             
-            // Get the actual URI from the proxy contract
+            // Decode URI from data (it's in the log data)
             let uri = '';
+            if (log.data && log.data !== '0x') {
+              const dataHex = log.data.slice(2);
+              if (dataHex.length > 128) {
+                const uriHex = dataHex.slice(128);
+                uri = hexToString(uriHex);
+              }
+            }
+            
+            // Parse metadata from URI
             let name = `Agent #${agentId}`;
             let description = '';
             let image = '🪞';
             let imageUrl = null;
             
             try {
-              uri = await proxyContract.agentURI(agentId);
-              console.log(`Agent ${agentId} URI:`, uri);
-              
-              // Parse metadata from URI
               if (uri.startsWith('data:application/json;base64,')) {
                 const base64 = uri.replace('data:application/json;base64,', '');
                 const json = atob(base64);
@@ -742,25 +777,22 @@
               } else if (uri.startsWith('ipfs://')) {
                 name = `IPFS Agent #${agentId}`;
                 description = 'Metadata stored on IPFS';
-                // Try to fetch image from IPFS metadata
+                // Try to fetch from IPFS
                 try {
                   const ipfsHash = uri.replace('ipfs://', '');
-                  for (const gateway of IPFS_GATEWAYS) {
-                    const metaResponse = await fetch(gateway + ipfsHash);
-                    if (metaResponse.ok) {
-                      const metadata = await metaResponse.json();
-                      name = metadata.name || name;
-                      description = metadata.description || description;
-                      if (metadata.image) {
-                        imageUrl = await getImageUrl(metadata.image);
-                      }
-                      break;
+                  const metaResponse = await fetch(IPFS_GATEWAYS[0] + ipfsHash);
+                  if (metaResponse.ok) {
+                    const metadata = await metaResponse.json();
+                    name = metadata.name || name;
+                    description = metadata.description || description;
+                    if (metadata.image) {
+                      imageUrl = await getImageUrl(metadata.image);
                     }
                   }
                 } catch (e) {}
               }
             } catch (e) {
-              console.warn(`Could not fetch URI for agent ${agentId}:`, e);
+              console.warn(`Could not parse metadata for agent ${agentId}:`, e);
             }
             
             agents.push({
@@ -834,26 +866,6 @@
       const ethCost = ethers.formatEther(gasCost);
       gasEstimate.innerHTML = `⛽ Estimated gas: ${gasEstimate.toString()} (~${ethCost} ETH)`;
     } catch (err) {}
-  }
-
-  async function checkAgentExists() {
-    const agentId = (agentIdIn.value || "").trim();
-    if (!agentId || !provider) {
-      setStatus("warn", "Enter Agent ID first");
-      return;
-    }
-    try {
-      const registry = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-      const uri = await registry.agentURI(agentId);
-      if (uri && uri.length > 0) {
-        setStatus("good", `✅ Agent ${agentId} exists!`);
-        console.log(`Agent ${agentId} URI:`, uri);
-      } else {
-        setStatus("warn", `❌ Agent ${agentId} not found`);
-      }
-    } catch (err) {
-      setStatus("bad", `Agent ${agentId} not found`);
-    }
   }
 
   function addToRecentForges(agentId, name, txHash) {
@@ -1069,7 +1081,7 @@
     for (const agent of userAgents) {
       let imageHtml = '';
       if (agent.imageUrl) {
-        imageHtml = `<img src="${agent.imageUrl}" alt="${agent.name}" />`;
+        imageHtml = `<img src="${agent.imageUrl}" alt="${agent.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<span>🪞</span>';" />`;
       } else {
         imageHtml = `<span>${agent.image}</span>`;
       }
@@ -1218,29 +1230,41 @@
   btnAttest.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
+      
       const agentId = BigInt((agentIdIn.value || "").trim());
       const kind = Number(kindIn.value || "1");
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
-      try {
-        const registry = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-        await registry.agentURI(agentId);
-      } catch {
-        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) return;
+
+      // Check if agent exists in our list first
+      const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
+      
+      if (!agentExists) {
+        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
+          return;
+        }
       }
+
+      // Loading state
       const originalText = btnAttest.innerHTML;
       btnAttest.innerHTML = '⏳ Attesting...';
       btnAttest.disabled = true;
+
       setStatus("warn", "Attesting…");
+      
       const contract = new ethers.Contract(REPUTATION_ROUTER, REP_ABI, signer);
       const tx = await contract.attest(agentId, kind, refURI, weight);
+      
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       await tx.wait();
+      
       const txLink = `https://basescan.org/tx/${tx.hash}`;
       setStatus("good", `✅ Attested!`);
       statusText.innerHTML = `✅ Attested! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View Event]</a>`;
+      
       btnAttest.innerHTML = originalText;
       btnAttest.disabled = false;
+      
     } catch (err) {
       btnAttest.innerHTML = 'Attest';
       btnAttest.disabled = false;
@@ -1260,7 +1284,7 @@
       btnUpdateAgent.innerHTML = '⏳ Updating...';
       btnUpdateAgent.disabled = true;
       setStatus("warn", `Updating Agent #${agentId}...`);
-      const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
+      const contract = new ethers.Contract(REGISTRY_ROUTER, UPDATE_ABI, signer);
       const tx = await contract.setAgentUri(agentId, newUri);
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       await tx.wait();
