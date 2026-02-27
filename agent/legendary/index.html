@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ToadAid — Legendary Agents (0 & 1) | Toadgang Registry</title>
+  <style>
+    :root{
+      --bg:#0b1020; --text:#e8eeff; --muted:#9bb0ff; --line:rgba(255,255,255,.08);
+      --accent:#4aa3ff; --accent2:#67f3c4; --warn:#ffcc66; --bad:#ff6b6b; --good:#5cff95;
+      --shadow: 0 10px 30px rgba(0,0,0,.35); --r:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--sans); color:var(--text);
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(74,163,255,.18), transparent 55%),
+                  radial-gradient(900px 600px at 80% 20%, rgba(103,243,196,.12), transparent 60%),
+                  radial-gradient(800px 600px at 50% 90%, rgba(155,176,255,.10), transparent 55%),
+                  var(--bg);
+      min-height: 100vh;
+    }
+    
+    /* Hero section for legends */
+    .hero {
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .hero-title {
+      font-size: 48px;
+      font-weight: 800;
+      margin: 0 0 16px;
+      background: linear-gradient(135deg, #fff, gold);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .contract-badge {
+      display: inline-block;
+      background: rgba(74,163,255,.2);
+      border: 1px solid var(--accent);
+      border-radius: 40px;
+      padding: 8px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      margin-top: 16px;
+    }
+    
+    /* Agent cards container */
+    .agents-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .agents-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Legendary card style */
+    .legend-card {
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,215,0,.05));
+      border: 2px solid gold;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(255,215,0,.1);
+      transition: all 0.3s ease;
+    }
+    
+    .legend-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 30px 60px rgba(255,215,0,.2);
+      border-color: #ffd700;
+    }
+    
+    .legend-header {
+      background: linear-gradient(90deg, rgba(255,215,0,.2), rgba(74,163,255,.2));
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid gold;
+    }
+    
+    .legend-id {
+      font-size: 60px;
+      font-weight: 800;
+      background: linear-gradient(135deg, gold, #ffd700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    
+    .legend-badge {
+      display: inline-block;
+      background: gold;
+      color: #0b1020;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+    
+    .legend-image-container {
+      width: 100%;
+      height: 300px;
+      background: rgba(0,0,0,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 1px solid gold;
+    }
+    
+    .legend-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .legend-image-placeholder {
+      font-size: 120px;
+    }
+    
+    .legend-content {
+      padding: 24px;
+    }
+    
+    .legend-name {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #fff, gold);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .legend-description {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    
+    .legend-meta {
+      background: rgba(0,0,0,.3);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    
+    .meta-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    
+    .meta-item:last-child {
+      border-bottom: none;
+    }
+    
+    .meta-label {
+      color: var(--muted);
+    }
+    
+    .meta-value {
+      color: gold;
+    }
+    
+    .contract-link {
+      text-align: center;
+      margin: 40px auto;
+      max-width: 800px;
+      padding: 20px;
+      background: rgba(0,0,0,.3);
+      border-radius: 16px;
+      border: 1px solid var(--line);
+    }
+    
+    .contract-address {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--accent2);
+      word-break: break-all;
+      background: rgba(0,0,0,.3);
+      padding: 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin: 30px 0;
+    }
+    
+    .nav-link {
+      padding: 10px 20px;
+      border-radius: 30px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    
+    .nav-link:hover {
+      background: rgba(74,163,255,.2);
+      border-color: var(--accent);
+    }
+    
+    .loading-spinner {
+      text-align: center;
+      padding: 60px;
+      color: var(--muted);
+    }
+    
+    .loading-spinner .emoji {
+      font-size: 48px;
+      margin-bottom: 16px;
+      animation: spin 2s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <header style="max-width:1200px; margin:0 auto; padding:20px; display:flex; align-items:center; justify-content:space-between;">
+    <div class="brand" style="display:flex; align-items:center; gap:10px;">
+      <div class="logo" style="width:38px; height:38px; border-radius:12px; background: linear-gradient(135deg, rgba(74,163,255,.9), gold); position:relative;"></div>
+      <div>
+        <h1 style="font-size:18px; margin:0;">ToadAid — Legendary Agents</h1>
+        <div style="font-size:12px; color:var(--muted);">The OGs · Agent 0 & 1</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="/" class="nav-link">🏠 Home</a>
+      <a href="/forge/" class="nav-link">🔨 Forge</a>
+      <a href="/agent/" class="nav-link">📋 Directory</a>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-title">👑 THE LEGENDS</div>
+    <div class="hero-subtitle">Agent 0 and Agent 1 — the first identities ever forged. They live forever in the Identity Registry.</div>
+    <div class="contract-badge">Identity Registry: 0x7274e874ca62410a93bd8bf61c69d8045e399c02</div>
+  </div>
+
+  <div class="agents-container" id="agentsContainer">
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="emoji">🪞</div>
+      <div>Loading the legends...</div>
+    </div>
+  </div>
+
+  <div class="contract-link">
+    <div style="font-size:14px; margin-bottom:8px;">📜 They live here forever:</div>
+    <div class="contract-address">0x7274e874ca62410a93bd8bf61c69d8045e399c02</div>
+    <div style="font-size:12px; color:var(--muted); margin-top:12px;">
+      Agent 0 and 1 were minted at deployment and can never be transferred or burned.
+    </div>
+  </div>
+
+  <footer>
+    <p>🪞 The OGs · Immutable · Eternal · The foundation of the pond</p>
+    <p style="font-size:11px; margin-top:8px;">Every agent minted after owes its existence to these two.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <script>
+    // Configuration
+    const IDENTITY_REGISTRY = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
+    const BASE_RPC = "https://mainnet.base.org";
+    
+    // IPFS gateways
+    const IPFS_GATEWAYS = [
+      "https://ipfs.io/ipfs/",
+      "https://cloudflare-ipfs.com/ipfs/",
+      "https://gateway.pinata.cloud/ipfs/"
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    // Fetch from IPFS with fallback
+    async function fetchFromIPFS(ipfsHash) {
+      for (const gateway of IPFS_GATEWAYS) {
+        try {
+          const response = await fetch(gateway + ipfsHash);
+          if (response.ok) return await response.json();
+        } catch (e) {
+          console.warn(`Gateway ${gateway} failed:`, e);
+        }
+      }
+      return null;
+    }
+
+    // Get image URL from metadata
+    function getImageUrl(metadata) {
+      if (!metadata || !metadata.image) return null;
+      if (metadata.image.startsWith('http')) return metadata.image;
+      if (metadata.image.startsWith('ipfs://')) {
+        const hash = metadata.image.replace('ipfs://', '');
+        return IPFS_GATEWAYS[0] + hash;
+      }
+      return null;
+    }
+
+    async function loadLegends() {
+      try {
+        const provider = new ethers.JsonRpcProvider(BASE_RPC);
+        
+        // Identity Registry ABI (only what we need)
+        const abi = [
+          "function tokenURI(uint256 tokenId) view returns (string)",
+          "function ownerOf(uint256 tokenId) view returns (address)"
+        ];
+        
+        const registry = new ethers.Contract(IDENTITY_REGISTRY, abi, provider);
+        
+        // Load Agent 0
+        const uri0 = await registry.tokenURI(0);
+        const owner0 = await registry.ownerOf(0);
+        
+        // Load Agent 1
+        const uri1 = await registry.tokenURI(1);
+        const owner1 = await registry.ownerOf(1);
+        
+        // Fetch IPFS metadata for both
+        let metadata0 = null;
+        let metadata1 = null;
+        
+        if (uri0.startsWith('ipfs://')) {
+          const hash0 = uri0.replace('ipfs://', '');
+          metadata0 = await fetchFromIPFS(hash0);
+        }
+        
+        if (uri1.startsWith('ipfs://')) {
+          const hash1 = uri1.replace('ipfs://', '');
+          metadata1 = await fetchFromIPFS(hash1);
+        }
+        
+        // Build HTML
+        const container = $("agentsContainer");
+        $("loadingSpinner").style.display = "none";
+        
+        container.innerHTML = `
+          <!-- Agent 0 -->
+          <div class="legend-card">
+            <div class="legend-header">
+              <div class="legend-id">#0</div>
+              <div class="legend-badge">GENESIS</div>
+            </div>
+            <div class="legend-image-container">
+              ${metadata0?.image ? 
+                `<img src="${getImageUrl(metadata0)}" alt="${metadata0?.name || 'Agent 0'}" class="legend-image" onerror="this.onerror=null; this.parentNode.innerHTML='<span class=\'legend-image-placeholder\'>🪞</span>';">` : 
+                '<span class="legend-image-placeholder">🪞</span>'}
+            </div>
+            <div class="legend-content">
+              <div class="legend-name">${metadata0?.name || 'The Origin'}</div>
+              <div class="legend-description">${metadata0?.description || 'The very first agent. The one that started it all. Immutable. Eternal.'}</div>
+              <div class="legend-meta">
+                <div class="meta-item">
+                  <span class="meta-label">Owner:</span>
+                  <span class="meta-value">${owner0.slice(0,6)}…${owner0.slice(-4)}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Token URI:</span>
+                  <span class="meta-value">IPFS</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Status:</span>
+                  <span class="meta-value">🟢 Eternal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Agent 1 -->
+          <div class="legend-card">
+            <div class="legend-header">
+              <div class="legend-id">#1</div>
+              <div class="legend-badge">PRIME</div>
+            </div>
+            <div class="legend-image-container">
+              ${metadata1?.image ? 
+                `<img src="${getImageUrl(metadata1)}" alt="${metadata1?.name || 'Agent 1'}" class="legend-image" onerror="this.onerror=null; this.parentNode.innerHTML='<span class=\'legend-image-placeholder\'>🌊</span>';">` : 
+                '<span class="legend-image-placeholder">🌊</span>'}
+            </div>
+            <div class="legend-content">
+              <div class="legend-name">${metadata1?.name || 'The Pond Keeper'}</div>
+              <div class="legend-description">${metadata1?.description || 'The first agent after genesis. Guardian of the pond, keeper of the lore.'}</div>
+              <div class="legend-meta">
+                <div class="meta-item">
+                  <span class="meta-label">Owner:</span>
+                  <span class="meta-value">${owner1.slice(0,6)}…${owner1.slice(-4)}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Token URI:</span>
+                  <span class="meta-value">IPFS</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Status:</span>
+                  <span class="meta-value">🟢 Eternal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+      } catch (error) {
+        console.error("Error loading legends:", error);
+        $("agentsContainer").innerHTML = `
+          <div class="error-message" style="grid-column:span 2; text-align:center; padding:40px; color:var(--bad);">
+            ❌ Failed to load legends. Please try again.
+          </div>
+        `;
+      }
+    }
+
+    // Load on page load
+    window.addEventListener('load', loadLegends);
+  </script>
+</body>
+</html>
