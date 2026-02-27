@@ -141,6 +141,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 140px;
     }
     .agent-mini-actions {
       display: flex;
@@ -461,6 +462,9 @@
   const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
   const BASE_IMPL = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
 
+  // REAL Forged event signature from your contract!
+  const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
+
   // ABIs
   const ROUTER_ABI = [
     "function forge(string agentURI) external returns (uint256 agentId)",
@@ -620,6 +624,112 @@
     btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim() && isValidUri(newAgentUri.value.trim()));
   }
 
+  // Decode hex string to UTF-8
+  function hexToString(hex) {
+    try {
+      if (!hex || hex === '0x') return '';
+      const hexStr = hex.startsWith('0x') ? hex.slice(2) : hex;
+      let str = '';
+      for (let i = 0; i < hexStr.length; i += 2) {
+        const code = parseInt(hexStr.substr(i, 2), 16);
+        if (code !== 0) str += String.fromCharCode(code);
+      }
+      return str;
+    } catch (e) {
+      return '';
+    }
+  }
+
+// ===== FETCH REAL AGENTS FROM BLOCKSCOUT AND CONTRACT =====
+async function fetchAgentsFromBlockscout() {
+  try {
+    console.log("Fetching agents from Blockscout...");
+    
+    const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.status === "1" && data.result && data.result.length > 0) {
+      console.log(`Found ${data.result.length} forged events`);
+      
+      // Create a provider to query the proxy contract
+      const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+      const proxyContract = new ethers.Contract(REGISTRY_PROXY, [
+        "function agentURI(uint256) view returns (string)"
+      ], provider);
+      
+      // Process logs into agents
+      const agents = [];
+      
+      for (const log of data.result) {
+        try {
+          // Decode agent ID from topics[2]
+          const agentId = parseInt(log.topics[2], 16);
+          
+          // Decode creator from topics[1]
+          const creator = '0x' + log.topics[1].slice(26);
+          
+          // Get the actual URI from the proxy contract
+          let uri = '';
+          let name = `Agent #${agentId}`;
+          let description = '';
+          let image = '🪞';
+          
+          try {
+            uri = await proxyContract.agentURI(agentId);
+            console.log(`Agent ${agentId} URI:`, uri);
+            
+            // Parse metadata from URI
+            if (uri.startsWith('data:application/json;base64,')) {
+              const base64 = uri.replace('data:application/json;base64,', '');
+              const json = atob(base64);
+              const metadata = JSON.parse(json);
+              name = metadata.name || name;
+              description = metadata.description || '';
+              image = metadata.image || '🪞';
+            } else if (uri.startsWith('ipfs://')) {
+              name = `IPFS Agent #${agentId}`;
+              description = 'Metadata stored on IPFS';
+            }
+          } catch (e) {
+            console.warn(`Could not fetch URI for agent ${agentId}:`, e);
+          }
+          
+          agents.push({
+            id: agentId,
+            creator: creator,
+            name: name,
+            description: description,
+            image: image,
+            active: true,
+            timestamp: parseInt(log.timeStamp) * 1000,
+            transactionHash: log.transactionHash,
+            uri: uri
+          });
+        } catch (e) {
+          console.warn("Error processing log:", e);
+        }
+      }
+      
+      // Sort by newest first
+      agents.sort((a, b) => b.timestamp - a.timestamp);
+      
+      allAgents = agents;
+      console.log("Agents loaded:", allAgents.length);
+      return true;
+    } else {
+      console.log("No agents found or API error:", data);
+      allAgents = [];
+      return false;
+    }
+  } catch (error) {
+    console.error("Blockscout fetch error:", error);
+    allAgents = [];
+    return false;
+  }
+}
+
   async function checkMPASSBalance() {
     if (!signer || !provider) return;
     try {
@@ -725,8 +835,8 @@
     
     setStatus("good", "Connected. Ready to forge/attest.");
     updateButtons();
-    // Refresh agents to include new ones, then render My Agents if that tab is active
-    await fetchAgentsFromBlockscout(); // fetch and store in allAgents
+    // Fetch agents to include this user's agents
+    await fetchAgentsFromBlockscout();
     if (panelMyAgents.style.display === 'block') {
       renderMyAgents();
     }
@@ -848,57 +958,34 @@
     renderMyAgents();
   }
 
-  // Fetch agents from Blockscout (simplified, using the working logic)
-  async function fetchAgentsFromBlockscout() {
-    // This is a simplified version; in production you'd use the full fetch
-    // For now, we rely on the existing periodic fetch and just filter.
-    // We'll just return the stored allAgents or fetch if empty.
-    if (allAgents.length > 0) return allAgents;
-    try {
-      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.status === "1" && data.result) {
-        allAgents = data.result.map(log => {
-          const agentId = parseInt(log.topics[2], 16);
-          const creator = '0x' + log.topics[1].slice(26);
-          // parse URI etc. (simplified)
-          return {
-            id: agentId,
-            creator: creator,
-            name: `Agent #${agentId}`,
-            description: 'Metadata on IPFS',
-            image: '🪞',
-            active: true,
-            timestamp: parseInt(log.timeStamp) * 1000,
-            transactionHash: log.transactionHash
-          };
-        });
-      }
-    } catch (e) {
-      console.error("fetchAgentsFromBlockscout error", e);
-    }
-    return allAgents;
-  }
-
-  // Render My Agents
+  // ===== RENDER MY AGENTS =====
   async function renderMyAgents() {
     if (!signer) {
       myAgentsGrid.style.display = 'none';
+      myAgentsLoading.style.display = 'none';
       myAgentsEmpty.style.display = 'block';
       myAgentsEmpty.innerHTML = '<div style="font-size:32px;">🔌</div><div>Connect wallet to see your agents.</div>';
       return;
     }
+
     myAgentsLoading.style.display = 'block';
     myAgentsGrid.style.display = 'none';
     myAgentsEmpty.style.display = 'none';
 
-    const addr = await signer.getAddress().toLowerCase();
-    // Ensure we have agents
+    const addr = await signer.getAddress();
+    const addrLower = addr.toLowerCase();
+    console.log("Connected address:", addrLower);
+    
+    // Fetch agents if we don't have them yet
     if (allAgents.length === 0) {
+      console.log("No agents in memory, fetching from Blockscout...");
       await fetchAgentsFromBlockscout();
     }
-    const userAgents = allAgents.filter(a => a.creator.toLowerCase() === addr);
+    
+    // Filter agents by creator
+    const userAgents = allAgents.filter(a => a.creator.toLowerCase() === addrLower);
+    console.log(`Found ${userAgents.length} agents for this wallet`);
+    
     myAgentsLoading.style.display = 'none';
 
     if (userAgents.length === 0) {
@@ -912,7 +999,7 @@
       <div class="agent-mini-card">
         <div class="agent-mini-header">
           <span class="agent-mini-id">#${agent.id}</span>
-          <span class="agent-mini-name">${agent.name}</span>
+          <span class="agent-mini-name" title="${agent.name}">${agent.name.length > 15 ? agent.name.slice(0,12)+'…' : agent.name}</span>
         </div>
         <div class="agent-mini-actions">
           <button class="smallbtn" data-action="update" data-id="${agent.id}">✏️ Update</button>
@@ -925,8 +1012,10 @@
     // Attach event listeners to the buttons
     myAgentsGrid.querySelectorAll('button[data-action]').forEach(btn => {
       btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const action = btn.dataset.action;
         const id = btn.dataset.id;
+        
         if (action === 'update') {
           showUpdate();
           updateAgentId.value = id;
@@ -1098,6 +1187,8 @@
       updateButtons();
       btnUpdateAgent.innerHTML = originalText;
       btnUpdateAgent.disabled = false;
+      // Refresh agents list
+      await fetchAgentsFromBlockscout();
     } catch (err) {
       btnUpdateAgent.innerHTML = 'Update Agent';
       btnUpdateAgent.disabled = false;
@@ -1120,11 +1211,12 @@
   });
 
   window.addEventListener("load", () => {
+    // Initial fetch of agents
+    fetchAgentsFromBlockscout();
+    // Auto-connect if previously connected
     if (window.ethereum && window.ethereum.selectedAddress) {
       connectBrowser();
     }
-    // Initial fetch of agents
-    fetchAgentsFromBlockscout();
   });
 
   // Initial render
