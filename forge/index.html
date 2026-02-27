@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src *; img-src * data: blob:; style-src * 'unsafe-inline';">
   <title>ToadAid — Identity Forge (ERC-8004) | MPASS-Gated</title>
   <style>
     :root{
@@ -242,18 +243,18 @@
       <div id="panelForge">
         <div class="grid">
           <div>
-            <label>Agent Name *</label>
-            <input id="name" placeholder="Mirror Engineer / Lore Guardian / Builder Agent…" maxlength="100" />
+            <label for="name">Agent Name *</label>
+            <input type="text" id="name" name="name" placeholder="Mirror Engineer / Lore Guardian / Builder Agent…" maxlength="100" autocomplete="off" />
           </div>
           <div>
-            <label>Image URL (optional)</label>
-            <input id="image" placeholder="https://… or ipfs://…" />
+            <label for="image">Image URL (optional)</label>
+            <input type="url" id="image" name="image" placeholder="https://… or ipfs://…" autocomplete="off" />
           </div>
         </div>
 
         <div style="margin-top:12px">
-          <label>Description *</label>
-          <textarea id="desc" placeholder="What does this agent do? How can others interact with it? (short + clear)"></textarea>
+          <label for="desc">Description *</label>
+          <textarea id="desc" name="desc" placeholder="What does this agent do? How can others interact with it? (short + clear)"></textarea>
         </div>
 
         <div style="margin-top:12px" class="grid">
@@ -276,14 +277,14 @@
 
         <div style="margin-top:12px" class="grid">
           <div>
-            <label>Endpoint URL (optional)</label>
-            <input id="endpoint" placeholder="https://toadaid.github.io/mcp (or /ask)" />
+            <label for="endpoint">Endpoint URL (optional)</label>
+            <input type="url" id="endpoint" name="endpoint" placeholder="https://toadaid.github.io/mcp (or /ask)" autocomplete="off" />
             <div class="hint">Tip: use a gateway / rate-limited key. Don't expose raw private services.</div>
           </div>
 
           <div>
-            <label>Endpoint Type</label>
-            <select id="endpointType">
+            <label for="endpointType">Endpoint Type</label>
+            <select id="endpointType" name="endpointType">
               <option value="web">Web</option>
               <option value="mcp">MCP</option>
               <option value="custom">Custom</option>
@@ -293,8 +294,8 @@
         </div>
 
         <div style="margin-top:12px">
-          <label>Optional: Use a pinned metadata URI instead of data: URI</label>
-          <input id="pinnedUri" placeholder="ipfs://bafkrei... (leave blank to use Generated Metadata)" />
+          <label for="pinnedUri">Optional: Use a pinned metadata URI instead of data: URI</label>
+          <input type="url" id="pinnedUri" name="pinnedUri" placeholder="ipfs://bafkrei... (leave blank to use Generated Metadata)" autocomplete="off" />
           <div class="hint">If you already pinned JSON (Pinata), paste the <strong>ipfs://…</strong> here and Forge will use it.</div>
         </div>
 
@@ -315,13 +316,13 @@
       <div id="panelAttest" style="display:none;">
         <div class="grid">
           <div>
-            <label>Agent ID *</label>
-            <input id="agentId" placeholder="e.g. 19173" />
+            <label for="agentId">Agent ID *</label>
+            <input type="text" id="agentId" name="agentId" placeholder="e.g. 19173" autocomplete="off" />
             <button class="smallbtn" id="btnCheckAgent" style="margin-top:5px; width:100%;">Check if exists</button>
           </div>
           <div>
-            <label>Kind *</label>
-            <select id="kind">
+            <label for="kind">Kind *</label>
+            <select id="kind" name="kind">
               <option value="1">1 — ENDORSE</option>
               <option value="2">2 — FLAG</option>
               <option value="3">3 — ROLE</option>
@@ -333,12 +334,12 @@
 
         <div style="margin-top:12px" class="grid">
           <div>
-            <label>Reference URI (optional)</label>
-            <input id="refUri" placeholder="ipfs://bafkrei.../proof.json (or empty)" />
+            <label for="refUri">Reference URI (optional)</label>
+            <input type="url" id="refUri" name="refUri" placeholder="ipfs://bafkrei.../proof.json (or empty)" autocomplete="off" />
           </div>
           <div>
-            <label>Weight</label>
-            <input id="weight" placeholder="1" value="1" />
+            <label for="weight">Weight</label>
+            <input type="number" id="weight" name="weight" placeholder="1" value="1" min="1" step="1" autocomplete="off" />
           </div>
         </div>
 
@@ -356,12 +357,12 @@
       <div id="panelUpdate" style="display:none;">
         <div class="grid">
           <div>
-            <label>Agent ID *</label>
-            <input id="updateAgentId" placeholder="e.g. 19173" />
+            <label for="updateAgentId">Agent ID *</label>
+            <input type="text" id="updateAgentId" name="updateAgentId" placeholder="e.g. 19173" autocomplete="off" />
           </div>
           <div>
-            <label>New Agent URI *</label>
-            <input id="newAgentUri" placeholder="ipfs://... or data:application/json;base64,..." />
+            <label for="newAgentUri">New Agent URI *</label>
+            <input type="url" id="newAgentUri" name="newAgentUri" placeholder="ipfs://... or data:application/json;base64,..." autocomplete="off" />
           </div>
         </div>
         <div class="hint" style="margin-top:8px;">
