@@ -76,8 +76,8 @@
     .close-modal{ margin-top: 12px; background: transparent; border: 1px solid var(--line); width: 100%; }
   
     /* Pre-confirm modal */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:18px}
-    .modal{width:min(560px,100%);background:#0b1220;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.5);overflow:hidden}
+    .pc-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:18px}
+    .pc-modal{width:min(560px,100%);background:#0b1220;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.5);overflow:hidden}
     .modal header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .modal h3{margin:0;font-size:16px}
     .modal .body{padding:14px 16px}
@@ -319,6 +319,23 @@
     <button class="close-modal" id="closeModal">Cancel</button>
   </div>
 </div>
+
+<!-- Pre-confirm modal -->
+  <div class="pc-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="pc-modal">
+      <header>
+        <h3 id="modalTitle">Review transaction</h3>
+        <button class="smallbtn danger" id="modalClose" title="Close">✕</button>
+      </header>
+      <div class="body" id="modalBody"></div>
+      <footer>
+        <button class="smallbtn" id="modalCancel">Cancel</button>
+        <button class="primary smallbtn" id="modalConfirm">Confirm in wallet</button>
+      </footer>
+    </div>
+  </div>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <script type="importmap">
@@ -887,20 +904,5 @@ ${x.tx ? "https://basescan.org/tx/"+x.tx : ""}`.trim());
   console.log("ToadAid Forge loaded with working WalletConnect!");
 </script>
 
-  <!-- Pre-confirm modal -->
-  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal">
-      <header>
-        <h3 id="modalTitle">Review transaction</h3>
-        <button class="smallbtn danger" id="modalClose" title="Close">✕</button>
-      </header>
-      <div class="body" id="modalBody"></div>
-      <footer>
-        <button class="smallbtn" id="modalCancel">Cancel</button>
-        <button class="primary smallbtn" id="modalConfirm">Confirm in wallet</button>
-      </footer>
-    </div>
-  </div>
-
-</body>
+  </body>
 </html>
