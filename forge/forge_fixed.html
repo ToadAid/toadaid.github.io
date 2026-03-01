@@ -614,12 +614,9 @@
   const REGISTRY_ABI = [
     "function agentURI(uint256) view returns (string)"
   ];
+  // ABI for updating the agent URI – this function exists on the Registry Proxy
   const UPDATE_ABI = [
-    // ERC-8004 registry proxy: set agent URI
-    "function setAgentURI(uint256 agentId, string uri)",
-    // Some implementations used a lowercase i
-    "function setAgentUri(uint256 agentId, string uri)",
-    "function getAgentURI(uint256 agentId) view returns (string)"
+    "function setAgentUri(uint256 agentId, string calldata newUri) external"
   ];
 
   // IPFS gateways
@@ -1584,52 +1581,47 @@
     }
   });
 
+  // ===== UPDATE AGENT (FIXED) =====
   btnUpdateAgent.addEventListener("click", async () => {
-    if (!signer) return toast("Connect wallet first", "warn");
-
-    const id = (updateAgentId.value || "").trim();
-    let uri = (newAgentUri.value || "").trim();
-
-    if (!id || !/^\d+$/.test(id)) return toast("Enter a valid Agent ID", "warn");
-    if (!uri) return toast("Enter a new Agent URI", "warn");
-
-    // Normalize common gateway URLs to ipfs://CID
-    // Example: https://<gateway>/ipfs/<CID>  ->  ipfs://<CID>
     try {
-      if (uri.startsWith("http")) {
-        const u = new URL(uri);
-        const parts = u.pathname.split("/ipfs/");
-        if (parts.length === 2) {
-          const cid = parts[1].split("/")[0];
-          if (cid) uri = `ipfs://${cid}`;
-        }
-      }
-    } catch (_) {}
+      if (!signer) throw new Error("Connect wallet first");
+      const agentId = updateAgentId.value.trim();
+      const newUri = newAgentUri.value.trim();
+      if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
+      if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
+      if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
 
-    const registry = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
+      // Loading state
+      const originalText = btnUpdateAgent.innerHTML;
+      btnUpdateAgent.innerHTML = '⏳ Updating...';
+      btnUpdateAgent.disabled = true;
 
-    try {
-      setBusy(btnUpdateAgent, true);
-      toast("Submitting update…", "info");
+      setStatus("warn", `Updating Agent #${agentId}...`);
 
-      let tx;
-      if (typeof registry.setAgentURI === "function") {
-        tx = await registry.setAgentURI(BigInt(id), uri);
-      } else if (typeof registry.setAgentUri === "function") {
-        tx = await registry.setAgentUri(BigInt(id), uri);
-      } else {
-        throw new Error("Registry ABI mismatch: setAgentURI not found");
-      }
+      // FIX: Use REGISTRY_PROXY instead of REGISTRY_ROUTER
+      const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
+      const tx = await contract.setAgentUri(agentId, newUri);
+      
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+      await tx.wait();
 
-      toast("Waiting for confirmation…", "info");
-      const rcpt = await tx.wait();
-      toast(`Updated Agent URI ✅ (tx: ${String(rcpt.hash).slice(0, 10)}…)`, "ok");
-    } catch (e) {
-      console.error(e);
-      const msg = (e && (e.shortMessage || e.reason || e.message)) ? (e.shortMessage || e.reason || e.message) : "Update failed";
-      toast(msg, "err");
-    } finally {
-      setBusy(btnUpdateAgent, false);
+      const txLink = `https://basescan.org/tx/${tx.hash}`;
+      setStatus("good", `✅ Agent #${agentId} updated!`);
+      statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+
+      // Clear inputs
+      updateAgentId.value = '';
+      newAgentUri.value = '';
+      updateButtons();
+      btnUpdateAgent.innerHTML = originalText;
+      btnUpdateAgent.disabled = false;
+
+      // Refresh agents list
+      await fetchAgentsFromBlockscout();
+    } catch (err) {
+      btnUpdateAgent.innerHTML = 'Update Agent';
+      btnUpdateAgent.disabled = false;
+      setStatus("bad", err.shortMessage || err.message || "Update failed. Ensure you own this agent.");
     }
   });
 
