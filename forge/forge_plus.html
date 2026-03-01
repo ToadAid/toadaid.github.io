@@ -74,6 +74,19 @@
     .wallet-option span{ display:block; font-size:12px; font-weight:800; }
     .wallet-option small{ color:var(--muted); font-size:10px; display:block; margin-top:4px; }
     .close-modal{ margin-top: 12px; background: transparent; border: 1px solid var(--line); width: 100%; }
+  
+    /* Pre-confirm modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:18px}
+    .modal{width:min(560px,100%);background:#0b1220;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.5);overflow:hidden}
+    .modal header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .modal h3{margin:0;font-size:16px}
+    .modal .body{padding:14px 16px}
+    .modal .k{opacity:.7;font-size:12px;margin-top:10px}
+    .modal .v{font-family:var(--mono);font-size:12px;word-break:break-all;margin-top:4px}
+    .modal .warnbox{margin-top:12px;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);font-size:12px;line-height:1.35}
+    .modal footer{padding:14px 16px;border-top:1px solid rgba(255,255,255,.10);display:flex;gap:10px;justify-content:flex-end}
+    .modal a{color:inherit;text-decoration:underline}
+
   </style>
 </head>
 <body>
@@ -357,6 +370,70 @@
   const addrPill = $("addrPill");
   const statusDot = $("statusDot");
   const statusText = $("statusText");
+
+  // BaseScan helpers
+  const BASESCAN = "https://basescan.org";
+  const shortAddr = (a) => a ? (a.slice(0,6) + "…" + a.slice(-4)) : "—";
+  const addrLink = (a) => `${BASESCAN}/address/${a}`;
+  const txLink = (h) => `${BASESCAN}/tx/${h}`;
+
+  // Pre-confirm modal (reduces "Unknown transaction" fear on mobile wallets)
+  const modalBackdrop = $("modalBackdrop");
+  const modalTitle = $("modalTitle");
+  const modalBody = $("modalBody");
+  const modalClose = $("modalClose");
+  const modalCancel = $("modalCancel");
+  const modalConfirm = $("modalConfirm");
+
+  function openModal(){ modalBackdrop.style.display = "flex"; modalBackdrop.setAttribute("aria-hidden","false"); }
+  function closeModal(){ modalBackdrop.style.display = "none"; modalBackdrop.setAttribute("aria-hidden","true"); }
+  modalClose.addEventListener("click", () => { closeModal(); });
+  modalCancel.addEventListener("click", () => { closeModal(); });
+
+  function escapeHtml(s){ return (s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  async function preconfirmTx({ title, action, contractAddr, functionLabel, argsLines }) {
+    modalTitle.textContent = title || "Review transaction";
+    const networkLine = `Base Mainnet (chainId 8453)`;
+    const addrHtml = `<div class="k">Contract</div><div class="v"><a href="${addrLink(contractAddr)}" target="_blank" rel="noreferrer">${escapeHtml(contractAddr)} (${shortAddr(contractAddr)})</a></div>`;
+    const fnHtml = `<div class="k">Action</div><div class="v">${escapeHtml(action)} → ${escapeHtml(functionLabel)}</div>`;
+    const netHtml = `<div class="k">Network</div><div class="v">${escapeHtml(networkLine)}</div>`;
+    const argsHtml = (argsLines && argsLines.length)
+      ? `<div class="k">Details</div>` + argsLines.map(l => `<div class="v">${escapeHtml(l)}</div>`).join("")
+      : "";
+    const warnHtml = `
+      <div class="warnbox">
+        <strong>Heads up (mobile wallets):</strong><br>
+        Some wallets may show <em>"Unknown transaction"</em> because they can't decode custom contract calls.
+        This is expected for unrecognized ABIs/proxies.<br><br>
+        Always verify the contract address above matches the official Router/Registry.
+      </div>`;
+    modalBody.innerHTML = addrHtml + fnHtml + netHtml + argsHtml + warnHtml;
+
+    return await new Promise((resolve) => {
+      const onConfirm = () => { cleanup(); closeModal(); resolve(true); };
+      const onCancel = () => { cleanup(); closeModal(); resolve(false); };
+
+      function cleanup(){
+        modalConfirm.removeEventListener("click", onConfirm);
+        modalCancel.removeEventListener("click", onCancel);
+        modalClose.removeEventListener("click", onCancel);
+        modalBackdrop.removeEventListener("click", onBackdrop);
+        window.removeEventListener("keydown", onKey);
+      }
+      function onBackdrop(e){ if (e.target === modalBackdrop) onCancel(); }
+      function onKey(e){ if (e.key === "Escape") onCancel(); }
+
+      modalConfirm.addEventListener("click", onConfirm);
+      modalCancel.addEventListener("click", onCancel);
+      modalClose.addEventListener("click", onCancel);
+      modalBackdrop.addEventListener("click", onBackdrop);
+      window.addEventListener("keydown", onKey);
+
+      openModal();
+    });
+  }
+
   
   const btnConnect = $("btnConnect");
   const btnDisconnect = $("btnDisconnect");
@@ -683,6 +760,18 @@ ${x.tx ? "https://basescan.org/tx/"+x.tx : ""}`.trim());
         throw new Error("Fill required fields or paste pinned ipfs:// URI");
       }
 
+      // Pre-confirm (to reduce "Unknown transaction" fear)
+      const proceed = await preconfirmTx({
+        title: "Forge Identity",
+        action: "Register a new Agent Identity",
+        contractAddr: REGISTRY_ROUTER,
+        functionLabel: "forge(string agentURI)",
+        argsLines: [
+          `agentURI: ${agentURI.length > 80 ? agentURI.slice(0, 80) + "…" : agentURI}`,
+        ],
+      });
+      if (!proceed) { setStatus("muted", "Cancelled."); return; }
+
       setStatus("warn", "Forging identity…");
       
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
@@ -749,6 +838,19 @@ ${x.tx ? "https://basescan.org/tx/"+x.tx : ""}`.trim());
       if (!agentIdStr) throw new Error("Agent ID required");
       if (!isValidUri(newURI)) throw new Error("New URI must be ipfs://, https://, or data:application/json;base64,…");
       const agentId = BigInt(agentIdStr);
+
+      const proceed = await preconfirmTx({
+        title: "Update Agent URI",
+        action: "Update the onchain agentURI for an existing Agent",
+        contractAddr: REGISTRY_PROXY,
+        functionLabel: "setAgentURI(uint256 agentId, string newURI)",
+        argsLines: [
+          `agentId: ${agentId.toString()}`,
+          `newURI: ${newURI.length > 80 ? newURI.slice(0, 80) + "…" : newURI}`,
+        ],
+      });
+      if (!proceed) { setStatus("muted", "Cancelled."); return; }
+
       setStatus("warn", "Updating agentURI…");
       const reg = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
       const tx = await reg.setAgentURI(agentId, newURI);
@@ -784,5 +886,21 @@ ${x.tx ? "https://basescan.org/tx/"+x.tx : ""}`.trim());
 
   console.log("ToadAid Forge loaded with working WalletConnect!");
 </script>
+
+  <!-- Pre-confirm modal -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <header>
+        <h3 id="modalTitle">Review transaction</h3>
+        <button class="smallbtn danger" id="modalClose" title="Close">✕</button>
+      </header>
+      <div class="body" id="modalBody"></div>
+      <footer>
+        <button class="smallbtn" id="modalCancel">Cancel</button>
+        <button class="primary smallbtn" id="modalConfirm">Confirm in wallet</button>
+      </footer>
+    </div>
+  </div>
+
 </body>
 </html>
