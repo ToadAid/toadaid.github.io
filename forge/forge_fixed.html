@@ -290,7 +290,7 @@
       <div class="proxy-selector">
         <div class="title">🏗️ Contracts (Base Mainnet)</div>
         <div class="proxy-details" id="proxyDetails">
-          <strong>Registry Router (forge):</strong> <span id="addrForge"></span><br>
+          <strong>Registry Router (register):</strong> <span id="addrForge"></span><br>
           <strong>Reputation Router (attest):</strong> <span id="addrRep"></span><br>
           <strong>MPASS (ERC‑20 gate):</strong> <span id="addrMPASS"></span><br>
           <strong>Registry Proxy (ERC‑8004):</strong> <span id="addrRegistry"></span><br>
@@ -400,7 +400,7 @@
         <div style="margin-top:14px" class="row">
           <button class="smallbtn" id="btnCopyUri">Copy Agent URI</button>
           <button class="smallbtn" id="btnCopyJson">Copy JSON</button>
-          <span class="pill" id="contractPill">Calls: <span style="font-family:var(--mono)">forge(string)</span></span>
+          <span class="pill" id="contractPill">Calls: <span style="font-family:var(--mono)">register(string)</span></span>
         </div>
 
         <!-- Gas Estimate -->
@@ -468,7 +468,7 @@
         </div>
         <div style="margin-top:14px" class="row">
           <button class="primary smallbtn" id="btnUpdateAgent" disabled>Update Agent</button>
-          <span class="pill">Calls: setAgentUri(uint256,string)</span>
+          <span class="pill">Calls: setAgentURI(uint256,string)</span>
         </div>
       </div>
 
@@ -512,7 +512,7 @@
   <!-- Recent Forges Panel -->
   <div class="card" style="grid-column: span 2;">
     <div class="hd">
-      <div class="t">📜 Recently Forged</div>
+      <div class="t">📜 Recently Registered</div>
       <span class="badge" id="recentCount">0</span>
     </div>
     <div class="bd" id="recentForges">
@@ -523,9 +523,9 @@
 
 <footer>
   <ul style="margin:8px 0 12px 20px; opacity:0.9">
-    <li><strong>Forge</strong> mints an ERC‑8004 Agent ID through the Registry Router (MPASS‑gated onchain).</li>
+    <li><strong>Register</strong> mints an ERC‑8004 Agent ID through the Registry Router (MPASS‑gated onchain).</li>
     <li><strong>Attest</strong> emits reputation events for any agentId (also MPASS‑gated).</li>
-    <li><strong>Update</strong> lets you change the metadata URI of an agent you own.</li>
+    <li><strong>Update</strong> lets you change the metadata URI of an agent you own (setAgentURI).</li>
     <li><strong>My Agents</strong> dashboard shows all your minted agents with images and quick actions.</li>
     <li><strong>Agent 0 & 1</strong> live forever in the Base implementation contract.</li>
   </ul>
@@ -595,28 +595,31 @@
   const BASE_IMPL = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
 
   // REAL Forged event signature from your contract!
-  const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
+  const REGISTERED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
 
-  // ABIs
+  // ===== CORRECT ABIs from your contract =====
   const ROUTER_ABI = [
-    "function forge(string agentURI) external returns (uint256 agentId)",
-    "event Forged(address indexed user, uint256 indexed agentId, address indexed registry, string agentURI)"
+    "function register(string agentURI) external returns (uint256 agentId)",
+    "event Registered(uint256 indexed agentId, string agentURI, address indexed owner)"
   ];
+
   const REP_ABI = [
-    "function attest(uint256 agentId,uint16 kind,string refURI,uint96 weight) external",
-    "event Attested(uint256 indexed agentId,address indexed attester,uint16 indexed kind,string refURI,uint96 weight,uint64 timestamp)"
+    "function attest(uint256 agentId, uint16 kind, string refURI, uint96 weight) external",
+    "event Attested(uint256 indexed agentId, address indexed attester, uint16 indexed kind, string refURI, uint96 weight, uint64 timestamp)"
   ];
+
   const MPASS_ABI = [
     "function balanceOf(address) view returns (uint256)",
     "function symbol() view returns (string)",
     "function decimals() view returns (uint8)"
   ];
+
   const REGISTRY_ABI = [
-    "function agentURI(uint256) view returns (string)"
+    "function tokenURI(uint256) view returns (string)"
   ];
-  // ABI for updating the agent URI – this function exists on the Registry Proxy
+
   const UPDATE_ABI = [
-    "function setAgentUri(uint256 agentId, string calldata newUri) external"
+    "function setAgentURI(uint256 agentId, string calldata newURI) external"
   ];
 
   // IPFS gateways
@@ -713,7 +716,7 @@
   let recentForgeList = JSON.parse(localStorage.getItem('recentForges') || '[]');
   let recentUriList = JSON.parse(localStorage.getItem('recentUris') || '[]');
   let recentTxList = JSON.parse(localStorage.getItem('recentTxs') || '[]');
-  let allAgents = []; // will hold fetched agents
+  let allAgents = [];
 
   // Helper functions
   function setStatus(kind, text) {
@@ -844,7 +847,84 @@
     }
   }
 
-  // Check if agent exists
+  // Fetch agent's minting history from Blockscout
+  async function fetchRecentRegistersFromBlockscout() {
+    try {
+      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${REGISTERED_EVENT_SIG}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        // Get the 5 most recent registrations
+        const recentLogs = data.result.slice(0, 5);
+        
+        // Process each log to get agent info
+        const recentRegisters = await Promise.all(recentLogs.map(async (log) => {
+          const agentId = parseInt(log.topics[2], 16);
+          const creator = '0x' + log.topics[1].slice(26);
+          
+          // Try to get agent name from metadata
+          let name = `Agent #${agentId}`;
+          let uri = '';
+          
+          if (log.data && log.data !== '0x') {
+            const dataHex = log.data.slice(2);
+            if (dataHex.length > 128) {
+              const uriHex = dataHex.slice(128);
+              uri = hexToString(uriHex);
+              
+              // Try to parse name from URI
+              if (uri.startsWith('data:application/json;base64,')) {
+                try {
+                  const base64 = uri.replace('data:application/json;base64,', '');
+                  const json = atob(base64);
+                  const metadata = JSON.parse(json);
+                  name = metadata.name || name;
+                } catch (e) {}
+              }
+            }
+          }
+          
+          return {
+            agentId,
+            name,
+            creator,
+            timestamp: parseInt(log.timeStamp) * 1000,
+            txHash: log.transactionHash
+          };
+        }));
+        
+        return recentRegisters;
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching recent registrations:", error);
+      return [];
+    }
+  }
+
+  // Update the recent forges display
+  async function updateRecentForgesFromChain() {
+    const recentRegisters = await fetchRecentRegistersFromBlockscout();
+    
+    if (recentRegisters.length === 0) {
+      recentForges.innerHTML = '<div class="sub">No registrations found on chain</div>';
+      recentCount.textContent = '0';
+      return;
+    }
+    
+    recentForges.innerHTML = recentRegisters.map(f => `
+      <div class="recent-item">
+        <span><strong>#${f.agentId}</strong> ${f.name}</span>
+        <span style="font-size:10px; color:var(--muted);">${new Date(f.timestamp).toLocaleDateString()}</span>
+        <a href="https://basescan.org/tx/${f.txHash}" target="_blank" style="color:var(--accent2)">🔗</a>
+      </div>
+    `).join('');
+    
+    recentCount.textContent = recentRegisters.length;
+  }
+
+  // Check if agent exists using tokenURI
   async function checkAgentExists() {
     const agentId = (agentIdIn.value || "").trim();
     if (!agentId || !provider) {
@@ -853,35 +933,26 @@
     }
     
     try {
-      // Check in our fetched agents list first
-      const agentExists = allAgents.some(a => a.id.toString() === agentId);
-      if (agentExists) {
+      // Check using tokenURI on the proxy
+      const registry = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+      const uri = await registry.tokenURI(agentId);
+      
+      if (uri && uri.length > 0) {
         setStatus("good", `✅ Agent ${agentId} exists!`);
         return;
-      }
-      
-      // If not in our list, try to fetch from Router events
-      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.status === "1" && data.result) {
-        const found = data.result.some(log => {
-          const id = parseInt(log.topics[2], 16);
-          return id.toString() === agentId;
-        });
-        
-        if (found) {
-          setStatus("good", `✅ Agent ${agentId} exists!`);
-        } else {
-          setStatus("bad", `❌ Agent ${agentId} not found`);
-        }
       } else {
         setStatus("bad", `❌ Agent ${agentId} not found`);
       }
     } catch (err) {
       console.error("Check agent error:", err);
-      setStatus("bad", `Error checking agent ${agentId}`);
+      
+      // Fallback: check in our fetched agents list
+      const agentExists = allAgents.some(a => a.id.toString() === agentId);
+      if (agentExists) {
+        setStatus("good", `✅ Agent ${agentId} exists!`);
+      } else {
+        setStatus("bad", `❌ Agent ${agentId} not found`);
+      }
     }
   }
 
@@ -901,13 +972,13 @@
     try {
       console.log("Fetching agents from Blockscout...");
       
-      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
+      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${REGISTERED_EVENT_SIG}`;
       
       const response = await fetch(url);
       const data = await response.json();
       
       if (data.status === "1" && data.result && data.result.length > 0) {
-        console.log(`Found ${data.result.length} forged events`);
+        console.log(`Found ${data.result.length} registered events`);
         
         // Process logs into agents
         const agents = [];
@@ -1025,7 +1096,7 @@
           symbol = await mpassContract.symbol();
           balanceFetched = true;
           console.log(`Success with RPC: ${rpcUrl}`);
-          break; // Success! exit loop
+          break;
         } catch (e) {
           console.log(`RPC ${rpcUrl} failed, trying next...`);
         }
@@ -1047,7 +1118,6 @@
       }
     } catch (err) {
       console.error("Balance check failed:", err);
-      // Show a fallback message
       mpassBalanceContainer.style.display = "block";
       mpassBalance.innerHTML = `💰 MPASS Balance: (RPC unavailable)`;
       mpassBalance.style.background = "rgba(255,107,107,.2)";
@@ -1061,13 +1131,18 @@
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
       if (!(pinned && isValidUri(pinned)) && !ok) return;
+      
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
-      const gasEstimate = await contract.forge.estimateGas(agentURI);
+      const gasEstimate = await contract.register.estimateGas(agentURI);
       const feeData = await provider.getFeeData();
+      
       const gasCost = gasEstimate * (feeData.gasPrice || 0n);
       const ethCost = ethers.formatEther(gasCost);
+      
       gasEstimate.innerHTML = `⛽ Estimated gas: ${gasEstimate.toString()} (~${ethCost} ETH)`;
-    } catch (err) {}
+    } catch (err) {
+      console.log("Gas estimation failed (normal if not enough MPASS)");
+    }
   }
 
   function addToRecentForges(agentId, name, txHash) {
@@ -1113,7 +1188,6 @@
     btnDisconnect.style.display = "inline-block";
     modal.style.display = "none";
     
-    // Try balance check but don't block if it fails
     try {
       await checkMPASSBalance();
     } catch (e) {
@@ -1124,8 +1198,12 @@
       await estimateGas();
     } catch (e) {}
     
+    // Load recent forges from chain
+    await updateRecentForgesFromChain();
+    
     setStatus("good", "Connected. Ready to forge/attest.");
     updateButtons();
+    
     // Fetch agents to include this user's agents
     await fetchAgentsFromBlockscout();
     if (panelMyAgents.style.display === 'block') {
@@ -1158,7 +1236,6 @@
     try {
       setStatus("warn", "Opening WalletConnect QR...");
       
-      // Clean up any existing provider
       if (wcProvider) {
         try {
           await wcProvider.disconnect();
@@ -1171,7 +1248,7 @@
         chains: [BASE_CHAIN_ID],
         optionalChains: [BASE_CHAIN_ID],
         showQrModal: true,
-        rpcMap: { [BASE_CHAIN_ID]: BASE_RPCS[0] }, // Use first working RPC
+        rpcMap: { [BASE_CHAIN_ID]: BASE_RPCS[0] },
         methods: [
           "eth_chainId",
           "eth_accounts",
@@ -1279,13 +1356,11 @@
     const addrLower = addr.toLowerCase();
     console.log("Connected address:", addrLower);
     
-    // Fetch agents if we don't have them yet
     if (allAgents.length === 0) {
       console.log("No agents in memory, fetching from Blockscout...");
       await fetchAgentsFromBlockscout();
     }
     
-    // Filter agents by creator
     const userAgents = allAgents.filter(a => a.creator.toLowerCase() === addrLower);
     console.log(`Found ${userAgents.length} agents for this wallet`);
     
@@ -1299,7 +1374,6 @@
 
     myAgentsGrid.style.display = 'grid';
     
-    // Build HTML with images
     let html = '';
     for (const agent of userAgents) {
       let imageHtml = '';
@@ -1329,7 +1403,6 @@
     
     myAgentsGrid.innerHTML = html;
 
-    // Attach event listeners to the buttons
     myAgentsGrid.querySelectorAll('button[data-action]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1345,7 +1418,6 @@
           agentIdIn.value = id;
           updateButtons();
         } else if (action === 'view') {
-          // Use the correct URL format with query parameter
           window.open(`/agent/?id=${id}`, '_blank');
         }
       });
@@ -1375,7 +1447,6 @@
     let message = '';
     let isValid = false;
     
-    // Check if it's a full URL with /ipfs/
     if (input.includes('/ipfs/')) {
       const extracted = extractCIDFromUrl(input);
       if (extracted) {
@@ -1386,7 +1457,6 @@
         message = `❌ Could not extract CID from URL`;
       }
     }
-    // Check if it's already a valid CID
     else if (isValidCID(input)) {
       isValid = true;
       message = `✅ Valid CID`;
@@ -1485,57 +1555,97 @@
 
   btnCheckAgent.addEventListener("click", checkAgentExists);
 
+  // ===== FIXED Forge button with register() =====
   btnForge.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
+      
       const pinned = (pinnedUriIn.value || "").trim();
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
       const agentName = nameIn.value || "Unnamed Agent";
+      
       if (!(pinned && isValidUri(pinned)) && !ok) {
         throw new Error("Fill required fields or paste pinned ipfs:// URI");
       }
+
+      // Check MPASS balance first
+      const addr = await signer.getAddress();
+      const mpassContract = new ethers.Contract(MPASS_ERC20, MPASS_ABI, provider);
+      const balance = await mpassContract.balanceOf(addr);
+      
+      if (balance === 0n) {
+        if (!confirm("⚠️ You have 0 MPASS tokens. Register requires 1 MPASS. Continue anyway? (Will fail)")) {
+          return;
+        }
+      }
+
+      // Loading state
       const originalText = btnForge.innerHTML;
-      btnForge.innerHTML = '⏳ Forging...';
+      btnForge.innerHTML = '⏳ Registering...';
       btnForge.disabled = true;
-      setStatus("warn", "Forging identity…");
+
+      setStatus("warn", "Registering agent…");
+      
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
-      const tx = await contract.forge(agentURI);
+      
+      console.log("Registering with URI:", agentURI);
+      
+      const tx = await contract.register(agentURI);
+      
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       const receipt = await tx.wait();
+
+      // Try to extract agentId from Registered event
       let agentId = null;
       for (const log of receipt.logs) {
         try {
           const parsed = contract.interface.parseLog(log);
-          if (parsed && parsed.name === "Forged") {
+          if (parsed && parsed.name === "Registered") {
             agentId = parsed.args.agentId.toString();
             break;
           }
         } catch (_) {}
       }
+      
       if (agentId) {
         agentIdIn.value = agentId;
         addToRecentForges(agentId, agentName, tx.hash);
         addToRecentTxs(tx.hash);
         updateButtons();
+        
         const txLink = `https://basescan.org/tx/${tx.hash}`;
-        setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
-        statusText.innerHTML = `✅ Forged! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
-        // Refresh agents list
+        setStatus("good", `✅ Registered! Agent ID: ${agentId}`);
+        statusText.innerHTML = `✅ Registered! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+        
+        // Refresh agents list and recent forges
         await fetchAgentsFromBlockscout();
+        await updateRecentForgesFromChain();
         if (panelMyAgents.style.display === 'block') renderMyAgents();
       } else {
-        setStatus("good", "Forged! Check BaseScan.");
+        setStatus("good", "Registered! Check BaseScan.");
       }
+      
       btnForge.innerHTML = originalText;
       btnForge.disabled = false;
+      
     } catch (err) {
+      console.error("Register error:", err);
       btnForge.innerHTML = 'Forge Identity';
       btnForge.disabled = false;
-      setStatus("bad", err.shortMessage || err.message || "Forge failed");
+      
+      // Better error messages
+      if (err.message.includes("MPASS")) {
+        setStatus("bad", "Insufficient MPASS balance (need 1 MPASS)");
+      } else if (err.message.includes("user rejected")) {
+        setStatus("bad", "Transaction rejected");
+      } else {
+        setStatus("bad", err.shortMessage || err.message || "Register failed");
+      }
     }
   });
 
+  // ===== Attest button (unchanged, already correct) =====
   btnAttest.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1545,7 +1655,6 @@
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
 
-      // Check if agent exists in our list first
       const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
       
       if (!agentExists) {
@@ -1554,7 +1663,6 @@
         }
       }
 
-      // Loading state
       const originalText = btnAttest.innerHTML;
       btnAttest.innerHTML = '⏳ Attesting...';
       btnAttest.disabled = true;
@@ -1575,13 +1683,14 @@
       btnAttest.disabled = false;
       
     } catch (err) {
+      console.error("Attest error:", err);
       btnAttest.innerHTML = 'Attest';
       btnAttest.disabled = false;
       setStatus("bad", err.shortMessage || err.message || "Attest failed");
     }
   });
 
-  // ===== UPDATE AGENT (FIXED) =====
+  // ===== Update button (setAgentURI) =====
   btnUpdateAgent.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1591,16 +1700,14 @@
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
       if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
 
-      // Loading state
       const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
       btnUpdateAgent.disabled = true;
 
       setStatus("warn", `Updating Agent #${agentId}...`);
 
-      // FIX: Use REGISTRY_PROXY instead of REGISTRY_ROUTER
       const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
-      const tx = await contract.setAgentUri(agentId, newUri);
+      const tx = await contract.setAgentURI(agentId, newUri);
       
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       await tx.wait();
@@ -1609,16 +1716,15 @@
       setStatus("good", `✅ Agent #${agentId} updated!`);
       statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
 
-      // Clear inputs
       updateAgentId.value = '';
       newAgentUri.value = '';
       updateButtons();
       btnUpdateAgent.innerHTML = originalText;
       btnUpdateAgent.disabled = false;
 
-      // Refresh agents list
       await fetchAgentsFromBlockscout();
     } catch (err) {
+      console.error("Update error:", err);
       btnUpdateAgent.innerHTML = 'Update Agent';
       btnUpdateAgent.disabled = false;
       setStatus("bad", err.shortMessage || err.message || "Update failed. Ensure you own this agent.");
@@ -1654,9 +1760,8 @@
   };
 
   window.addEventListener("load", () => {
-    // Initial fetch of agents
     fetchAgentsFromBlockscout();
-    // Auto-connect if previously connected
+    updateRecentForgesFromChain(); // Load recent forges on page load
     if (window.ethereum && window.ethereum.selectedAddress) {
       connectBrowser();
     }
@@ -1669,7 +1774,7 @@
   showForge();
   updateRecentForges();
 
-  console.log("ToadAid Forge loaded with all pro-grade features!");
+  console.log("ToadAid Forge loaded with correct ABI functions!");
 </script>
 </body>
 </html>
