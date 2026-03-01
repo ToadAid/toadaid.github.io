@@ -6,6 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src *; img-src * data: blob:; style-src * 'unsafe-inline';">
   <title>ToadAid — Identity Forge (ERC-8004) | MPASS-Gated</title>
   <style>
+    /* ... (all CSS from index_fixed.html, unchanged) ... */
     :root{
       --bg:#0b1020; --text:#e8eeff; --muted:#9bb0ff; --line:rgba(255,255,255,.08);
       --accent:#4aa3ff; --accent2:#67f3c4; --warn:#ffcc66; --bad:#ff6b6b; --good:#5cff95;
@@ -251,7 +252,7 @@
     <div class="logo" aria-hidden="true"></div>
     <div>
       <h1>ToadAid Identity Forge — MPASS‑Gated</h1>
-      <div class="sub">ERC‑8004 on Base · Register via Registry Router · Reputation via Event Router 🪞🌊🍃</div>
+      <div class="sub">ERC‑8004 on Base · Forge via Registry Router · Reputation via Event Router 🪞🌊🍃</div>
     </div>
   </div>
 
@@ -290,7 +291,7 @@
       <div class="proxy-selector">
         <div class="title">🏗️ Contracts (Base Mainnet)</div>
         <div class="proxy-details" id="proxyDetails">
-          <strong>Registry Router (register):</strong> <span id="addrForge"></span><br>
+          <strong>Registry Router (forge):</strong> <span id="addrForge"></span><br>
           <strong>Reputation Router (attest):</strong> <span id="addrRep"></span><br>
           <strong>MPASS (ERC‑20 gate):</strong> <span id="addrMPASS"></span><br>
           <strong>Registry Proxy (ERC‑8004):</strong> <span id="addrRegistry"></span><br>
@@ -305,7 +306,7 @@
       </div>
 
       <div class="tabs">
-        <div class="tab active" id="tabForge">🪙 Register</div>
+        <div class="tab active" id="tabForge">🪙 Forge</div>
         <div class="tab" id="tabAttest">⭐ Attest</div>
         <div class="tab" id="tabUpdate">✏️ Update</div>
         <div class="tab" id="tabMyAgents">👤 My Agents</div>
@@ -400,7 +401,7 @@
         <div style="margin-top:14px" class="row">
           <button class="smallbtn" id="btnCopyUri">Copy Agent URI</button>
           <button class="smallbtn" id="btnCopyJson">Copy JSON</button>
-          <span class="pill" id="contractPill">Calls: <span style="font-family:var(--mono)">register(string)</span></span>
+          <span class="pill" id="contractPill">Calls: <span style="font-family:var(--mono)">forge(string)</span></span>
         </div>
 
         <!-- Gas Estimate -->
@@ -475,7 +476,7 @@
       <!-- My Agents Panel -->
       <div id="panelMyAgents" style="display:none;">
         <div style="margin-bottom:12px;">
-          <span class="pill">Your minted agents</span>
+          <span class="pill">Your forged agents</span>
         </div>
         <div id="myAgentsLoading" class="loading-spinner" style="display:none; padding:20px;">
           <div class="emoji">🪞</div>
@@ -484,7 +485,7 @@
         <div id="myAgentsEmpty" style="display:none; text-align:center; padding:20px; color:var(--muted);">
           <div style="font-size:32px;">🪞</div>
           <div>You haven't forged any agents yet.</div>
-          <div class="sub">Head over to the Register tab to create your first identity.</div>
+          <div class="sub">Head over to the Forge tab to create your first identity.</div>
         </div>
         <div id="myAgentsGrid" class="agents-mini-grid" style="display:none;"></div>
       </div>
@@ -512,7 +513,7 @@
   <!-- Recent Forges Panel -->
   <div class="card" style="grid-column: span 2;">
     <div class="hd">
-      <div class="t">📜 Recently Registered</div>
+      <div class="t">📜 Recently Forged</div>
       <span class="badge" id="recentCount">0</span>
     </div>
     <div class="bd" id="recentForges">
@@ -523,10 +524,10 @@
 
 <footer>
   <ul style="margin:8px 0 12px 20px; opacity:0.9">
-    <li><strong>Register</strong> mints an ERC‑8004 Agent ID through the Registry Router (MPASS‑gated onchain).</li>
+    <li><strong>Forge</strong> mints an ERC‑8004 Agent ID through the Registry Router (MPASS‑gated onchain).</li>
     <li><strong>Attest</strong> emits reputation events for any agentId (also MPASS‑gated).</li>
     <li><strong>Update</strong> lets you change the metadata URI of an agent you own (setAgentURI).</li>
-    <li><strong>My Agents</strong> dashboard shows all your minted agents with images and quick actions.</li>
+    <li><strong>My Agents</strong> dashboard shows all your forged agents with images and quick actions.</li>
     <li><strong>Agent 0 & 1</strong> live forever in the Base implementation contract.</li>
   </ul>
   <p style="margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
@@ -593,14 +594,13 @@
   const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
   const BASE_IMPL = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
 
-  // Event signature from your contract
-  const REGISTERED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
+  // Event signature
+  const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
 
-  // ===== CORRECT ABI from your contract =====
-  // Using the exact register function that takes a single string parameter
+  // ===== CORRECT ABI with forge() function =====
   const ROUTER_ABI = [
-    "function register(string agentURI) external returns (uint256 agentId)",
-    "event Registered(uint256 indexed agentId, string agentURI, address indexed owner)"
+    "function forge(string agentURI) external returns (uint256 agentId)",
+    "event Forged(address indexed user, uint256 indexed agentId, address indexed registry, string agentURI)"
   ];
 
   const REP_ABI = [
@@ -841,16 +841,16 @@
     }
   }
 
-  async function fetchRecentRegistersFromBlockscout() {
+  async function fetchRecentForgesFromBlockscout() {
     try {
-      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${REGISTERED_EVENT_SIG}`;
+      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
       const response = await fetch(url);
       const data = await response.json();
       
       if (data.status === "1" && data.result && data.result.length > 0) {
         const recentLogs = data.result.slice(0, 5);
         
-        const recentRegisters = await Promise.all(recentLogs.map(async (log) => {
+        const recentForges = await Promise.all(recentLogs.map(async (log) => {
           const agentId = parseInt(log.topics[2], 16);
           const creator = '0x' + log.topics[1].slice(26);
           
@@ -882,25 +882,25 @@
           };
         }));
         
-        return recentRegisters;
+        return recentForges;
       }
       return [];
     } catch (error) {
-      console.error("Error fetching recent registrations:", error);
+      console.error("Error fetching recent forges:", error);
       return [];
     }
   }
 
   async function updateRecentForgesFromChain() {
-    const recentRegisters = await fetchRecentRegistersFromBlockscout();
+    const recent = await fetchRecentForgesFromBlockscout();
     
-    if (recentRegisters.length === 0) {
-      recentForges.innerHTML = '<div class="sub">No registrations found on chain</div>';
+    if (recent.length === 0) {
+      recentForges.innerHTML = '<div class="sub">No forges found on chain</div>';
       recentCount.textContent = '0';
       return;
     }
     
-    recentForges.innerHTML = recentRegisters.map(f => `
+    recentForges.innerHTML = recent.map(f => `
       <div class="recent-item">
         <span><strong>#${f.agentId}</strong> ${f.name}</span>
         <span style="font-size:10px; color:var(--muted);">${new Date(f.timestamp).toLocaleDateString()}</span>
@@ -908,7 +908,7 @@
       </div>
     `).join('');
     
-    recentCount.textContent = recentRegisters.length;
+    recentCount.textContent = recent.length;
   }
 
   async function checkAgentExists() {
@@ -948,13 +948,13 @@
     try {
       console.log("Fetching agents from Blockscout...");
       
-      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${REGISTERED_EVENT_SIG}`;
+      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
       
       const response = await fetch(url);
       const data = await response.json();
       
       if (data.status === "1" && data.result && data.result.length > 0) {
-        console.log(`Found ${data.result.length} registered events`);
+        console.log(`Found ${data.result.length} forged events`);
         
         const agents = [];
         
@@ -1078,7 +1078,7 @@
       
       if (balance === 0n) {
         mpassBalance.style.background = "rgba(255,107,107,.2)";
-        setStatus("warn", "⚠️ No MPASS tokens - register will fail!");
+        setStatus("warn", "⚠️ No MPASS tokens - forge will fail!");
       } else {
         mpassBalance.style.background = "rgba(103,243,196,.1)";
       }
@@ -1102,7 +1102,7 @@
       if (!(pinned && isValidUri(pinned)) && !ok) return;
       
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
-      const gasEstimate = await contract.register.estimateGas(agentURI);
+      const gasEstimate = await contract.forge.estimateGas(agentURI);
       const feeData = await provider.getFeeData();
       
       const gasCost = gasEstimate * (feeData.gasPrice || 0n);
@@ -1169,7 +1169,7 @@
     
     await updateRecentForgesFromChain();
     
-    setStatus("good", "Connected. Ready to register/attest.");
+    setStatus("good", "Connected. Ready to forge/attest.");
     updateButtons();
     
     await fetchAgentsFromBlockscout();
@@ -1330,7 +1330,7 @@
 
     if (userAgents.length === 0) {
       myAgentsEmpty.style.display = 'block';
-      myAgentsEmpty.innerHTML = '<div style="font-size:32px;">🪞</div><div>You haven\'t forged any agents yet.</div><div class="sub">Head over to the Register tab to create your first identity.</div>';
+      myAgentsEmpty.innerHTML = '<div style="font-size:32px;">🪞</div><div>You haven\'t forged any agents yet.</div><div class="sub">Head over to the Forge tab to create your first identity.</div>';
       return;
     }
 
@@ -1514,7 +1514,7 @@
 
   btnCheckAgent.addEventListener("click", checkAgentExists);
 
-  // ===== FIXED Register button =====
+  // ===== FIXED Forge button with forge() function and proper event parsing =====
   btnForge.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1534,29 +1534,33 @@
       const balance = await mpassContract.balanceOf(addr);
       
       if (balance === 0n) {
-        throw new Error("You need at least 1 MPASS token to register");
+        throw new Error("You need at least 1 MPASS token to forge");
       }
 
       const originalText = btnForge.innerHTML;
-      btnForge.innerHTML = '⏳ Registering...';
+      btnForge.innerHTML = '⏳ Forging...';
       btnForge.disabled = true;
 
-      setStatus("warn", "Registering agent…");
+      setStatus("warn", "Forging agent…");
       
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
       
-      console.log("Registering with URI:", agentURI);
+      console.log("Forging with URI:", agentURI);
       
-      const tx = await contract.register(agentURI);
+      // This calls forge() – wallet will show the correct function name
+      const tx = await contract.forge(agentURI);
       
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+      
+      // Wait for transaction to be mined
       const receipt = await tx.wait();
 
+      // Parse the Forged event to get agentId
       let agentId = null;
       for (const log of receipt.logs) {
         try {
           const parsed = contract.interface.parseLog(log);
-          if (parsed && parsed.name === "Registered") {
+          if (parsed && parsed.name === "Forged") {
             agentId = parsed.args.agentId.toString();
             break;
           }
@@ -1570,32 +1574,32 @@
         updateButtons();
         
         const txLink = `https://basescan.org/tx/${tx.hash}`;
-        setStatus("good", `✅ Registered! Agent ID: ${agentId}`);
-        statusText.innerHTML = `✅ Registered! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+        setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
+        statusText.innerHTML = `✅ Forged! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
         
         await fetchAgentsFromBlockscout();
         await updateRecentForgesFromChain();
         if (panelMyAgents.style.display === 'block') renderMyAgents();
       } else {
-        setStatus("good", "Registered! Check BaseScan.");
+        setStatus("good", "Forged! Check BaseScan.");
       }
       
       btnForge.innerHTML = originalText;
       btnForge.disabled = false;
       
     } catch (err) {
-      console.error("Register error:", err);
+      console.error("Forge error:", err);
       btnForge.innerHTML = 'Forge Identity';
       btnForge.disabled = false;
       
       if (err.message.includes("MPASS")) {
-        setStatus("bad", "❌ Need at least 1 MPASS token to register");
+        setStatus("bad", "❌ Need at least 1 MPASS token to forge");
       } else if (err.message.includes("user rejected")) {
         setStatus("bad", "Transaction rejected");
       } else if (err.message.includes("execution reverted")) {
         setStatus("bad", "❌ Transaction reverted. Possible reasons:\n• Already registered\n• Contract error\n• Invalid parameters");
       } else {
-        setStatus("bad", err.shortMessage || err.message || "Register failed");
+        setStatus("bad", err.shortMessage || err.message || "Forge failed");
       }
     }
   });
@@ -1716,7 +1720,7 @@
   showForge();
   updateRecentForges();
 
-  console.log("ToadAid Forge loaded with correct register() function!");
+  console.log("ToadAid Forge loaded with correct forge() function!");
 </script>
 </body>
 </html>
