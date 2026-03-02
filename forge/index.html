@@ -178,7 +178,7 @@
       flex: 1;
     }
 
-    /* ===== IPFS Helper and Templates ===== */
+    /* ===== New Styles for IPFS Helper and Templates ===== */
     .ipfs-helper {
       margin-top: 12px;
       padding: 12px;
@@ -612,8 +612,7 @@
     "function decimals() view returns (uint8)"
   ];
   const REGISTRY_ABI = [
-    "function agentURI(uint256) view returns (string)",
-    "function ownerOf(uint256) view returns (address)"
+    "function agentURI(uint256) view returns (string)"
   ];
   
   // FIXED: Uppercase URI to match contract
@@ -1645,10 +1644,17 @@
       const kind = Number(kindIn.value || "1");
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
+
+      // Check if agent exists in our list first
+      const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
       
-      // (Optional check removed – no popup warning)
-      // Proceed directly with attestation
-      
+      if (!agentExists) {
+        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
+          return;
+        }
+      }
+
+      // Loading state
       const originalText = btnAttest.innerHTML;
       btnAttest.innerHTML = '⏳ Attesting...';
       btnAttest.disabled = true;
@@ -1684,7 +1690,7 @@
     }
   });
 
-  // ===== IMPROVED UPDATE BUTTON with ownership check =====
+  // ===== Update button with correct contract address =====
   btnUpdateAgent.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1695,32 +1701,29 @@
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
       
-      // --- Ownership check ---
-      const registryContract = new ethers.Contract(
-        REGISTRY_PROXY,
-        ["function ownerOf(uint256) view returns (address)"],
-        provider
-      );
-
-      let owner;
+      setStatus("warn", `Checking Agent #${agentId}...`);
+      
+      // Check if agent exists
       try {
-        owner = await registryContract.ownerOf(agentId);
-      } catch (e) {
-        throw new Error(`Agent #${agentId} does not exist`);
+        const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+        const currentUri = await registryContract.tokenURI(agentId);
+        console.log(`Current URI for agent ${agentId}:`, currentUri);
+      } catch (checkError) {
+        console.error("Agent check error:", checkError);
+        if (!confirm(`⚠️ Agent #${agentId} might not exist. Update anyway?`)) {
+          return;
+        }
       }
-
-      const signerAddr = await signer.getAddress();
-      if (owner.toLowerCase() !== signerAddr.toLowerCase()) {
-        throw new Error(`You do not own agent #${agentId}`);
-      }
-
-      // --- Proceed with update ---
-      setStatus("warn", `Updating Agent #${agentId}...`);
+      
+      if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
       
       const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
       btnUpdateAgent.disabled = true;
       
+      setStatus("warn", `Updating Agent #${agentId}...`);
+      
+      // Use REGISTRY_PROXY, not REGISTRY_ROUTER
       const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
       
       try {
