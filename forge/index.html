@@ -285,8 +285,6 @@
         <span class="dot warn" id="statusDot"></span>
         <span id="statusText">Connect wallet to begin.</span>
       </div>
-      <pre id="debugBox" style="display:none; margin-top:10px; padding:10px; border:1px solid rgba(255,255,255,0.12); border-radius:12px; background:rgba(0,0,0,0.25); color:var(--muted); overflow:auto; max-height:220px;"></pre>
-
     </div>
     <div class="bd">
       <div class="proxy-selector">
@@ -614,7 +612,8 @@
     "function decimals() view returns (uint8)"
   ];
   const REGISTRY_ABI = [
-    "function agentURI(uint256) view returns (string)"
+    "function agentURI(uint256) view returns (string)",
+    "function ownerOf(uint256) view returns (address)"
   ];
   
   // FIXED: Uppercase URI to match contract
@@ -732,34 +731,6 @@
     }
   }
 
-  function setDebug(err) {
-    const box = document.getElementById("debugBox");
-    if (!box) return;
-    if (!err) {
-      box.style.display = "none";
-      box.textContent = "";
-      return;
-    }
-    box.style.display = "block";
-    try {
-      const obj = {
-        name: err?.name,
-        message: err?.message,
-        shortMessage: err?.shortMessage,
-        code: err?.code,
-        reason: err?.reason,
-        data: err?.data,
-        errorName: err?.errorName,
-        errorArgs: err?.errorArgs,
-        stack: ("" + (err?.stack || "")).split("\n").slice(0,6).join("\n")
-      };
-      box.textContent = JSON.stringify(obj, null, 2);
-    } catch (e) {
-      box.textContent = String(err);
-    }
-  }
-
-
   function shortAddr(addr) {
     return addr ? addr.slice(0,6) + "…" + addr.slice(-4) : "—";
   }
@@ -814,8 +785,8 @@
     const aid = (agentIdIn.value || "").trim();
     btnAttest.disabled = !(!!signer && aid.length > 0);
 
-    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim());
-}
+    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim() && isValidUri(newAgentUri.value.trim()));
+  }
 
   // Update recent chips display
   function updateRecentChips() {
@@ -1674,13 +1645,10 @@
       const kind = Number(kindIn.value || "1");
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
-      // Check if agent exists in our list first
-      const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
-      if (!agentExists) {
-        // Popup-free mode: proceed, but warn loudly
-        setStatus("warn", `⚠️ Agent ${agentId} not found in explorer cache. Proceeding with attest anyway (popup-free).`);
-      }
-      // Loading state
+      
+      // (Optional check removed – no popup warning)
+      // Proceed directly with attestation
+      
       const originalText = btnAttest.innerHTML;
       btnAttest.innerHTML = '⏳ Attesting...';
       btnAttest.disabled = true;
@@ -1716,41 +1684,43 @@
     }
   });
 
-  // ===== button with contract address =====
+  // ===== IMPROVED UPDATE BUTTON with ownership check =====
   btnUpdateAgent.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
       
-      
-      // Always show that the click registered (mobile webviews can feel "dead")
-      setDebug(null);
-      setStatus("warn", "⏳ Update clicked — preparing transaction…");
-const agentId = updateAgentId.value.trim();
+      const agentId = updateAgentId.value.trim();
       const newUri = newAgentUri.value.trim();
       
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
       
-      setStatus("warn", `Checking Agent #${agentId}...`);
-      
-      // Check if agent exists
+      // --- Ownership check ---
+      const registryContract = new ethers.Contract(
+        REGISTRY_PROXY,
+        ["function ownerOf(uint256) view returns (address)"],
+        provider
+      );
+
+      let owner;
       try {
-        const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-        const currentUri = await registryContract.tokenURI(agentId);
-        console.log(`Current URI for agent ${agentId}:`, currentUri);
-      } catch (checkError) {
-        console.error("Agent check error:", checkError);
-        setStatus("warn", `⚠️ Agent #${agentId} check failed (might not exist). Proceeding with update anyway (popup-free).`);
-}
-      // Popup-free mode: no browser (setStatus("warn", String(webviews often block popups)), true)
-      setStatus("warn", `⚠️ Updating Agent #${agentId} (popup-free). Make sure the URI is correct.`);
-const originalText = btnUpdateAgent.innerHTML;
+        owner = await registryContract.ownerOf(agentId);
+      } catch (e) {
+        throw new Error(`Agent #${agentId} does not exist`);
+      }
+
+      const signerAddr = await signer.getAddress();
+      if (owner.toLowerCase() !== signerAddr.toLowerCase()) {
+        throw new Error(`You do not own agent #${agentId}`);
+      }
+
+      // --- Proceed with update ---
+      setStatus("warn", `Updating Agent #${agentId}...`);
+      
+      const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
       btnUpdateAgent.disabled = true;
       
-      setStatus("warn", `Updating Agent #${agentId}...`);
-      
-      // Use REGISTRY_PROXY, not REGISTRY_ROUTER
       const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
       
       try {
@@ -1829,8 +1799,7 @@ const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = 'Update Agent';
       btnUpdateAgent.disabled = false;
       setStatus("bad", err.message || "Update failed");
-          setDebug(err);
-}
+    }
   });
 
   btnCopyUri.addEventListener("click", async () => {
