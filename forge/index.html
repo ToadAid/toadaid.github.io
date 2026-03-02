@@ -285,6 +285,8 @@
         <span class="dot warn" id="statusDot"></span>
         <span id="statusText">Connect wallet to begin.</span>
       </div>
+      <pre id="debugBox" style="display:none; margin-top:10px; padding:10px; border:1px solid rgba(255,255,255,0.12); border-radius:12px; background:rgba(0,0,0,0.25); color:var(--muted); overflow:auto; max-height:220px;"></pre>
+
     </div>
     <div class="bd">
       <div class="proxy-selector">
@@ -730,6 +732,34 @@
     }
   }
 
+  function setDebug(err) {
+    const box = document.getElementById("debugBox");
+    if (!box) return;
+    if (!err) {
+      box.style.display = "none";
+      box.textContent = "";
+      return;
+    }
+    box.style.display = "block";
+    try {
+      const obj = {
+        name: err?.name,
+        message: err?.message,
+        shortMessage: err?.shortMessage,
+        code: err?.code,
+        reason: err?.reason,
+        data: err?.data,
+        errorName: err?.errorName,
+        errorArgs: err?.errorArgs,
+        stack: ("" + (err?.stack || "")).split("\n").slice(0,6).join("\n")
+      };
+      box.textContent = JSON.stringify(obj, null, 2);
+    } catch (e) {
+      box.textContent = String(err);
+    }
+  }
+
+
   function shortAddr(addr) {
     return addr ? addr.slice(0,6) + "…" + addr.slice(-4) : "—";
   }
@@ -784,8 +814,8 @@
     const aid = (agentIdIn.value || "").trim();
     btnAttest.disabled = !(!!signer && aid.length > 0);
 
-    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim() && isValidUri(newAgentUri.value.trim()));
-  }
+    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim());
+}
 
   // Update recent chips display
   function updateRecentChips() {
@@ -1691,7 +1721,11 @@
     try {
       if (!signer) throw new Error("Connect wallet first");
       
-      const agentId = updateAgentId.value.trim();
+      
+      // Always show that the click registered (mobile webviews can feel "dead")
+      setDebug(null);
+      setStatus("warn", "⏳ Update clicked — preparing transaction…");
+const agentId = updateAgentId.value.trim();
       const newUri = newAgentUri.value.trim();
       
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
@@ -1708,7 +1742,7 @@
         console.error("Agent check error:", checkError);
         setStatus("warn", `⚠️ Agent #${agentId} check failed (might not exist). Proceeding with update anyway (popup-free).`);
 }
-      // Popup-free mode: no browser confirm (webviews often block popups)
+      // Popup-free mode: no browser (setStatus("warn", String(webviews often block popups)), true)
       setStatus("warn", `⚠️ Updating Agent #${agentId} (popup-free). Make sure the URI is correct.`);
 const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
@@ -1795,7 +1829,8 @@ const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = 'Update Agent';
       btnUpdateAgent.disabled = false;
       setStatus("bad", err.message || "Update failed");
-    }
+          setDebug(err);
+}
   });
 
   btnCopyUri.addEventListener("click", async () => {
