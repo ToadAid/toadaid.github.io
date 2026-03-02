@@ -625,6 +625,39 @@
   const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
   const TOAD_ADDRESS = "0x587464fd25af9147cb4660b03d899c8893378c0a";
   
+
+  const RPC_URL = "https://mainnet.base.org";
+  // Source of truth for metadata: read tokenURI from the ERC-8004 Registry (proxy).
+  const ERC721_ABI = [
+    "function tokenURI(uint256 tokenId) view returns (string)",
+    "function ownerOf(uint256 tokenId) view returns (address)"
+  ];
+  const provider = new ethers.JsonRpcProvider(RPC_URL);
+  const registry = new ethers.Contract(REGISTRY_PROXY, ERC721_ABI, provider);
+
+  // Small concurrency limiter to avoid hammering the public RPC.
+  async function pMapLimit(items, limit, mapper) {
+    const ret = new Array(items.length);
+    let i = 0;
+    const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (true) {
+        const idx = i++;
+        if (idx >= items.length) return;
+        ret[idx] = await mapper(items[idx], idx);
+      }
+    });
+    await Promise.all(workers);
+    return ret;
+  }
+
+  async function fetchTokenURI(tokenId) {
+    try {
+      const uri = await registry.tokenURI(tokenId);
+      return (typeof uri === "string" && uri.length) ? uri : null;
+    } catch (e) {
+      return null;
+    }
+  }
   const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
   const BLOCKSCOUT_URL = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
   
@@ -879,6 +912,14 @@
               console.log("Agent URI extracted from log:", uri);
             }
           }
+
+          // Prefer the latest on-chain tokenURI (supports updates).
+          const onchainUri = await fetchTokenURI(id);
+          if (onchainUri) {
+            uri = onchainUri;
+            uriSource = "TOKENURI_CALL";
+            console.log("Agent tokenURI() from chain:", uri);
+          }
         } else {
           throw new Error(`Agent #${id} not found on chain`);
         }
@@ -1012,13 +1053,15 @@
         $("statusMessage").style.display = "block";
         $("statusMessage").innerHTML = `✅ Found ${data.result.length} forged agents!`;
         
-        const agents = await Promise.all(data.result.map(async (log) => {
+        const agents = await pMapLimit(data.result, 6, async (log) => {
           const agentId = parseInt(log.topics[2], 16);
           const creator = '0x' + log.topics[1].slice(26);
           
-          let uri = null;
-          if (log.data && log.data !== '0x') {
+          let uri = await fetchTokenURI(agentId);
+          let uriSource = uri ? "TOKENURI_CALL" : null;
+          if (!uri && log.data && log.data !== '0x') {
             uri = extractUriFromLogData(log.data, agentId);
+            if (uri) uriSource = "FORGED_EVENT_LOG";
           }
           
           let name = `Agent #${agentId}`;
@@ -1077,10 +1120,11 @@
             flags: 0,
             timestamp: parseInt(log.timeStamp) * 1000,
             uri: uri,
+            uriSource: uriSource,
             transactionHash: log.transactionHash,
             hasMetadata: hasMetadata
           };
-        }));
+        });
         
         agents.sort((a, b) => b.timestamp - a.timestamp);
         allAgents = agents;
