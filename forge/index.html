@@ -178,7 +178,7 @@
       flex: 1;
     }
 
-    /* ===== IPFS Helper and Templates ===== */
+    /* ===== New Styles for IPFS Helper and Templates ===== */
     .ipfs-helper {
       margin-top: 12px;
       padding: 12px;
@@ -271,9 +271,9 @@
     👑 Legends
   </a>
 
-  <button class="smallbtn" id="btnConnect" type="button">Connect</button>
-  <button class="smallbtn danger" id="btnDisconnect" style="display:none;" type="button">Disconnect</button>
-  <button class="primary smallbtn" id="btnForge" disabled type="button">Forge Identity</button>
+  <button class="smallbtn" id="btnConnect">Connect</button>
+  <button class="smallbtn danger" id="btnDisconnect" style="display:none;">Disconnect</button>
+  <button class="primary smallbtn" id="btnForge" disabled>Forge Identity</button>
 </div>
 </header>
 
@@ -285,8 +285,6 @@
         <span class="dot warn" id="statusDot"></span>
         <span id="statusText">Connect wallet to begin.</span>
       </div>
-      <pre id="debugBox" style="display:none; margin-top:10px; padding:10px; border:1px solid rgba(255,255,255,0.12); border-radius:12px; background:rgba(0,0,0,0.25); color:var(--muted); overflow:auto; max-height:220px;"></pre>
-
     </div>
     <div class="bd">
       <div class="proxy-selector">
@@ -418,7 +416,7 @@
           <div>
             <label for="agentId">Agent ID *</label>
             <input type="text" id="agentId" name="agentId" placeholder="e.g. 19173" autocomplete="off" />
-            <button class="smallbtn" id="btnCheckAgent" style="margin-top:5px; width:100%;" type="button">Check if exists</button>
+            <button class="smallbtn" id="btnCheckAgent" style="margin-top:5px; width:100%;">Check if exists</button>
           </div>
           <div>
             <label for="kind">Kind *</label>
@@ -448,7 +446,7 @@
         </div>
 
         <div style="margin-top:14px" class="row">
-          <button class="primary smallbtn" id="btnAttest" disabled type="button">Attest</button>
+          <button class="primary smallbtn" id="btnAttest" disabled>Attest</button>
           <span class="pill">Calls: <span style="font-family:var(--mono)">attest(uint256,uint16,string,uint96)</span></span>
         </div>
       </div>
@@ -469,8 +467,8 @@
           ⚠️ This updates the on-chain pointer. The old metadata will still exist on IPFS but won't be linked.
         </div>
         <div style="margin-top:14px" class="row">
-          <button class="primary smallbtn" id="btnUpdateAgent" disabled type="button">Update Agent</button>
-          <span class="pill">Calls: setAgentURI(uint256,string)</span>
+          <button class="primary smallbtn" id="btnUpdateAgent" disabled>Update Agent</button>
+          <span class="pill">Calls: setAgentUri(uint256,string)</span>
         </div>
       </div>
 
@@ -616,10 +614,8 @@
   const REGISTRY_ABI = [
     "function agentURI(uint256) view returns (string)"
   ];
-  
-  // FIXED: Uppercase URI to match contract
   const UPDATE_ABI = [
-    "function setAgentURI(uint256 agentId, string calldata newURI) external"
+    "function setAgentUri(uint256 agentId, string calldata newUri) external"
   ];
 
   // IPFS gateways
@@ -732,34 +728,6 @@
     }
   }
 
-  function setDebug(err) {
-    const box = document.getElementById("debugBox");
-    if (!box) return;
-    if (!err) {
-      box.style.display = "none";
-      box.textContent = "";
-      return;
-    }
-    box.style.display = "block";
-    try {
-      const obj = {
-        name: err?.name,
-        message: err?.message,
-        shortMessage: err?.shortMessage,
-        code: err?.code,
-        reason: err?.reason,
-        data: err?.data,
-        errorName: err?.errorName,
-        errorArgs: err?.errorArgs,
-        stack: ("" + (err?.stack || "")).split("\n").slice(0,6).join("\n")
-      };
-      box.textContent = JSON.stringify(obj, null, 2);
-    } catch (e) {
-      box.textContent = String(err);
-    }
-  }
-
-
   function shortAddr(addr) {
     return addr ? addr.slice(0,6) + "…" + addr.slice(-4) : "—";
   }
@@ -814,8 +782,8 @@
     const aid = (agentIdIn.value || "").trim();
     btnAttest.disabled = !(!!signer && aid.length > 0);
 
-    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim());
-}
+    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim() && isValidUri(newAgentUri.value.trim()));
+  }
 
   // Update recent chips display
   function updateRecentChips() {
@@ -1516,105 +1484,25 @@
 
   btnCheckAgent.addEventListener("click", checkAgentExists);
 
-  // ===== FINAL: Stable Forge Button (Base Mainnet / MPASS-Gated) =====
   btnForge.addEventListener("click", async () => {
-    setStatus("warn", "⏳ Forge clicked — preparing…");
-    if (typeof setDebug === "function") setDebug(null);
-
     try {
       if (!signer) throw new Error("Connect wallet first");
-
       const pinned = (pinnedUriIn.value || "").trim();
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
       const agentName = nameIn.value || "Unnamed Agent";
-
       if (!(pinned && isValidUri(pinned)) && !ok) {
         throw new Error("Fill required fields or paste pinned ipfs:// URI");
       }
-
-      const me = await signer.getAddress();
-
-      // ======================================================
-      // 1️⃣ Check if already registered (1 identity per wallet)
-      // ======================================================
-      const registry = new ethers.Contract(
-        REGISTRY_PROXY,
-        ["function balanceOf(address) view returns (uint256)"],
-        provider
-      );
-
-      const owned = await registry.balanceOf(me);
-      if (owned > 0n) {
-        throw new Error("Already registered (one identity per wallet). Use Update.");
-      }
-
-      // ======================================================
-      // 2️⃣ Check MPASS ERC-20 balance (≥ 1.0 MPASS)
-      // ======================================================
-      const mpass = new ethers.Contract(
-        MPASS_ERC20,
-        [
-          "function balanceOf(address) view returns (uint256)",
-          "function decimals() view returns (uint8)"
-        ],
-        provider
-      );
-
-      const balance = await mpass.balanceOf(me);
-      const decimals = await mpass.decimals();
-      const oneMPASS = 10n ** BigInt(decimals);
-
-      if (balance < oneMPASS) {
-        throw new Error("Need at least 1.0 MPASS to forge");
-      }
-
-      // ======================================================
-      // UI state
-      // ======================================================
       const originalText = btnForge.innerHTML;
-      btnForge.innerHTML = "⏳ Forging...";
+      btnForge.innerHTML = '⏳ Forging...';
       btnForge.disabled = true;
       setStatus("warn", "Forging identity…");
-
-      const contract = new ethers.Contract(
-        REGISTRY_ROUTER,
-        ROUTER_ABI,
-        signer
-      );
-
-      // ======================================================
-      // 3️⃣ Gas estimation (EIP-1559 safe)
-      // ======================================================
-      const estimatedGas = await contract.forge.estimateGas(agentURI);
-      const gasLimit = (estimatedGas * 120n) / 100n; // 20% buffer
-
-      const feeData = await provider.getFeeData();
-      const overrides = { gasLimit };
-
-      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
-        overrides.maxFeePerGas = feeData.maxFeePerGas;
-        overrides.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
-      } else if (feeData.gasPrice) {
-        overrides.gasPrice = feeData.gasPrice;
-      }
-
-      console.log("Estimated Gas:", estimatedGas.toString());
-      console.log("Gas Limit:", gasLimit.toString());
-
-      // ======================================================
-      // 4️⃣ Send transaction
-      // ======================================================
-      const tx = await contract.forge(agentURI, overrides);
-
-      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0, 10)}…`);
+      const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
+      const tx = await contract.forge(agentURI);
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       const receipt = await tx.wait();
-
-      // ======================================================
-      // 5️⃣ Parse Forged event
-      // ======================================================
       let agentId = null;
-
       for (const log of receipt.logs) {
         try {
           const parsed = contract.interface.parseLog(log);
@@ -1624,55 +1512,30 @@
           }
         } catch (_) {}
       }
-
       if (agentId) {
         agentIdIn.value = agentId;
         addToRecentForges(agentId, agentName, tx.hash);
         addToRecentTxs(tx.hash);
         updateButtons();
-
         const txLink = `https://basescan.org/tx/${tx.hash}`;
-
-        statusText.innerHTML = `
-          ✅ Forged! Agent ID: ${agentId}
-          <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>
-        `;
-
         setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
-
+        statusText.innerHTML = `✅ Forged! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+        // Refresh agents list
         await fetchAgentsFromBlockscout();
-        if (panelMyAgents.style.display === "block") {
-          renderMyAgents();
-        }
+        if (panelMyAgents.style.display === 'block') renderMyAgents();
       } else {
         setStatus("good", "Forged! Check BaseScan.");
       }
-
       btnForge.innerHTML = originalText;
       btnForge.disabled = false;
-
     } catch (err) {
-      console.error("Forge error:", err);
-
-      btnForge.innerHTML = "Forge Identity";
+      btnForge.innerHTML = 'Forge Identity';
       btnForge.disabled = false;
-
-      if ((err.message || "").includes("Already registered")) {
-        setStatus("warn", "⚠️ Already registered. Use Update instead.");
-      } else if ((err.message || "").includes("MPASS")) {
-        setStatus("bad", "❌ Need at least 1.0 MPASS to forge");
-      } else if (err.code === 4001) {
-        setStatus("bad", "Transaction rejected");
-      } else {
-        setStatus("bad", err.shortMessage || err.message || "Forge failed");
-      }
+      setStatus("bad", err.shortMessage || err.message || "Forge failed");
     }
   });
 
   btnAttest.addEventListener("click", async () => {
-    setStatus("warn", "⏳ Attest clicked — preparing…");
-    if (typeof setDebug === "function") setDebug(null);
-
     try {
       if (!signer) throw new Error("Connect wallet first");
       
@@ -1680,12 +1543,16 @@
       const kind = Number(kindIn.value || "1");
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
+
       // Check if agent exists in our list first
       const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
+      
       if (!agentExists) {
-        // Popup-free mode: proceed, but warn loudly
-        setStatus("warn", `⚠️ Agent ${agentId} not found in explorer cache. Proceeding with attest anyway (popup-free).`);
+        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
+          return;
+        }
       }
+
       // Loading state
       const originalText = btnAttest.innerHTML;
       btnAttest.innerHTML = '⏳ Attesting...';
@@ -1694,16 +1561,7 @@
       setStatus("warn", "Attesting…");
       
       const contract = new ethers.Contract(REPUTATION_ROUTER, REP_ABI, signer);
-      
-      // Get gas estimate
-      const estimatedGas = await contract.attest.estimateGas(agentId, kind, refURI, weight);
-      const feeData = await provider.getFeeData();
-      const gasLimit = estimatedGas * 120n / 100n;
-      
-      const tx = await contract.attest(agentId, kind, refURI, weight, {
-        gasLimit: gasLimit,
-        gasPrice: feeData.gasPrice || undefined
-      });
+      const tx = await contract.attest(agentId, kind, refURI, weight);
       
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       await tx.wait();
@@ -1722,140 +1580,37 @@
     }
   });
 
-  
-  // ===== Global error hooks (show why buttons feel dead) =====
-  window.addEventListener('error', (e) => {
-    try {
-      setStatus('bad', `JS Error: ${e.message || 'unknown'}`);
-      if (typeof setDebug === 'function') setDebug(e.error || e);
-    } catch (_) {}
-  });
-  window.addEventListener('unhandledrejection', (e) => {
-    try {
-      const msg = (e.reason && (e.reason.shortMessage || e.reason.message)) ? (e.reason.shortMessage || e.reason.message) : String(e.reason || 'unknown');
-      setStatus('bad', `Promise Rejection: ${msg}`);
-      if (typeof setDebug === 'function') setDebug(e.reason || e);
-    } catch (_) {}
-  });
-
-  // ===== button with contract address =====
   btnUpdateAgent.addEventListener("click", async () => {
-    setStatus("warn", "⏳ Update clicked — preparing…");
-    if (typeof setDebug === "function") setDebug(null);
-
     try {
       if (!signer) throw new Error("Connect wallet first");
-      
-      
-      // Always show that the click registered (mobile webviews can feel "dead")
-      setDebug(null);
-      setStatus("warn", "⏳ Update clicked — preparing transaction…");
-const agentId = updateAgentId.value.trim();
+      const agentId = updateAgentId.value.trim();
       const newUri = newAgentUri.value.trim();
-      
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
-      
-      setStatus("warn", `Checking Agent #${agentId}...`);
-      
-      // Check if agent exists
-      try {
-        const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-        const currentUri = await registryContract.tokenURI(agentId);
-        console.log(`Current URI for agent ${agentId}:`, currentUri);
-      } catch (checkError) {
-        console.error("Agent check error:", checkError);
-        setStatus("warn", `⚠️ Agent #${agentId} check failed (might not exist). Proceeding with update anyway (popup-free).`);
-}
-      // Popup-free mode: no browser (setStatus("warn", String(webviews often block popups)), true)
-      setStatus("warn", `⚠️ Updating Agent #${agentId} (popup-free). Make sure the URI is correct.`);
-const originalText = btnUpdateAgent.innerHTML;
+      if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
+      const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
       btnUpdateAgent.disabled = true;
-      
       setStatus("warn", `Updating Agent #${agentId}...`);
-      
-      // Use REGISTRY_PROXY, not REGISTRY_ROUTER
-      const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
-      
-      try {
-        // Estimate gas
-        console.log("Estimating gas for update...");
-        const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
-        console.log("Gas estimate:", estimatedGas.toString());
-        
-        const feeData = await provider.getFeeData();
-        const gasLimit = estimatedGas * 120n / 100n;
-        
-        // Send transaction
-        console.log("Sending update transaction...");
-        const tx = await contract.setAgentURI(agentId, newUri, {
-          gasLimit: gasLimit,
-          gasPrice: feeData.gasPrice || undefined
-        });
-        
-        setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
-        
-        // Wait for transaction
-        const receipt = await Promise.race([
-          tx.wait(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Transaction timeout")), 60000))
-        ]);
-        
-        console.log("Transaction confirmed:", receipt);
-        
-        const txLink = `https://basescan.org/tx/${tx.hash}`;
-        setStatus("good", `✅ Agent #${agentId} updated!`);
-        statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
-        
-        updateAgentId.value = '';
-        newAgentUri.value = '';
-        updateButtons();
-        
-        // Refresh agents list
-        await fetchAgentsFromBlockscout();
-        
-      } catch (estimateError) {
-        console.error("Update error details:", estimateError);
-        
-        let errorMessage = "Update failed. ";
-        
-        if (estimateError.data) {
-          try {
-            const revertReason = ethers.toUtf8String('0x' + estimateError.data.slice(138));
-            errorMessage += revertReason.replace(/\0/g, '');
-          } catch (e) {
-            console.log("Could not decode revert data");
-          }
-        }
-        
-        if (estimateError.message.includes("execution reverted")) {
-          if (estimateError.message.includes("owner") || errorMessage.includes("owner")) {
-            errorMessage = "❌ You don't own this agent";
-          } else if (estimateError.message.includes("exist") || errorMessage.includes("exist")) {
-            errorMessage = "❌ Agent does not exist";
-          } else {
-            errorMessage = "❌ Contract reverted. You may not own this agent.";
-          }
-        } else if (estimateError.code === 4001) {
-          errorMessage = "Transaction rejected";
-        } else {
-          errorMessage = estimateError.shortMessage || estimateError.message || "Unknown error";
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
+      const contract = new ethers.Contract(REGISTRY_ROUTER, UPDATE_ABI, signer);
+      const tx = await contract.setAgentUri(agentId, newUri);
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+      await tx.wait();
+      const txLink = `https://basescan.org/tx/${tx.hash}`;
+      setStatus("good", `✅ Agent #${agentId} updated!`);
+      statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+      updateAgentId.value = '';
+      newAgentUri.value = '';
+      updateButtons();
       btnUpdateAgent.innerHTML = originalText;
       btnUpdateAgent.disabled = false;
-      
+      // Refresh agents list
+      await fetchAgentsFromBlockscout();
     } catch (err) {
-      console.error("Final update error:", err);
       btnUpdateAgent.innerHTML = 'Update Agent';
       btnUpdateAgent.disabled = false;
-      setStatus("bad", err.message || "Update failed");
-          setDebug(err);
-}
+      setStatus("bad", err.shortMessage || err.message || "Update failed. Ensure you own this agent.");
+    }
   });
 
   btnCopyUri.addEventListener("click", async () => {
@@ -1904,13 +1659,5 @@ const originalText = btnUpdateAgent.innerHTML;
 
   console.log("ToadAid Forge loaded with all pro-grade features!");
 </script>
-
-<div id="statusBar" style="position:fixed; left:12px; right:12px; bottom:12px; z-index:9999; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.55); backdrop-filter: blur(10px); color:var(--text); display:none;">
-  <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
-    <div id="statusBarText" style="font-size:13px; color:var(--text); line-height:1.2;"></div>
-    <button id="statusBarClose" class="smallbtn" type="button" style="padding:6px 10px;">Hide</button>
-  </div>
-</div>
-
 </body>
 </html>
