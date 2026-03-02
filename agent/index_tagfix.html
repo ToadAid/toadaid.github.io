@@ -635,20 +635,31 @@
     "0x2fc60d9c2c572410335d62c6b3244c7f8147e47c", // TommyN9 (Mirror Architect)
   ];
 
-  function isToadgangAgent(creator, meta, holdsToby = false) {
-    // New: owner holds $TOBY
-    if (holdsToby) return true;
-    
-    const c = (creator || "").toLowerCase();
-    if (OFFICIAL_CREATORS.some(a => a.toLowerCase() === c)) return true;
-
-    const attrs = (meta && Array.isArray(meta.attributes)) ? meta.attributes : [];
-    const sys = attrs.find(a => String(a.trait_type || a.traitType || "").toLowerCase() === "system");
-    if (sys && String(sys.value || "").toLowerCase().includes("toadgang")) return true;
-
-    return false;
-  }
+function isToadgangAgent(creator, meta, holdsToby = false) {
+  // New: owner holds $TOBY
+  if (holdsToby) return true;
   
+  const c = (creator || "").toLowerCase();
+  if (OFFICIAL_CREATORS.some(a => a.toLowerCase() === c)) return true;
+
+  const attrs = (meta && Array.isArray(meta.attributes)) ? meta.attributes : [];
+  const sys = attrs.find(a => String(a.trait_type || a.traitType || "").toLowerCase() === "system");
+  
+  // More flexible check for "toadgang" variations
+  if (sys) {
+    const value = String(sys.value || "").toLowerCase();
+    // Check for any combination of toad/gang
+    if (value.includes("toad") && value.includes("gang")) {
+      return true;
+    }
+    // Also check for the combined word (in case it's written as one word)
+    if (value.replace(/\s+/g, '').includes("toadgang")) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
   const RPC_URL = "https://mainnet.base.org";
   // Source of truth for metadata: read tokenURI from the ERC-8004 Registry (proxy).
