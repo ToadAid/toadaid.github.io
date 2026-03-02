@@ -623,23 +623,31 @@
   
   const REGISTRY_ROUTER = "0x17163e5380929b04D4cC24f82aa6AC30877Bd0e0";
   const REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
+  const TOBY_TOKEN = "0xb8d98a102b0079b69ffbc760c8d857a31653e56e";   // $TOBY contract
+  
+  // ERC-20 ABI (only balanceOf)
+  const ERC20_ABI = [ "function balanceOf(address owner) view returns (uint256)" ];
+  
   // Official creator addresses that should display the TOADGANG badge.
-// Add more addresses here as your builder set expands.
-const OFFICIAL_CREATORS = [
-  "0x587464fd25Af9147CB4660B03d899c8893378C0A", // Toby7777777 (ZH Scroll Translator minter)
-  "0x2fc60d9c2c572410335d62c6b3244c7f8147e47c", // TommyN9 (Mirror Architect)
-];
+  // Add more addresses here as your builder set expands.
+  const OFFICIAL_CREATORS = [
+    "0x587464fd25Af9147CB4660B03d899c8893378C0A", // Toby7777777 (ZH Scroll Translator minter)
+    "0x2fc60d9c2c572410335d62c6b3244c7f8147e47c", // TommyN9 (Mirror Architect)
+  ];
 
-function isToadgangAgent(creator, meta) {
-  const c = (creator || "").toLowerCase();
-  if (OFFICIAL_CREATORS.some(a => a.toLowerCase() === c)) return true;
+  function isToadgangAgent(creator, meta, holdsToby = false) {
+    // New: owner holds $TOBY
+    if (holdsToby) return true;
+    
+    const c = (creator || "").toLowerCase();
+    if (OFFICIAL_CREATORS.some(a => a.toLowerCase() === c)) return true;
 
-  const attrs = (meta && Array.isArray(meta.attributes)) ? meta.attributes : [];
-  const sys = attrs.find(a => String(a.trait_type || a.traitType || "").toLowerCase() === "system");
-  if (sys && String(sys.value || "").toLowerCase().includes("toadgang")) return true;
+    const attrs = (meta && Array.isArray(meta.attributes)) ? meta.attributes : [];
+    const sys = attrs.find(a => String(a.trait_type || a.traitType || "").toLowerCase() === "system");
+    if (sys && String(sys.value || "").toLowerCase().includes("toadgang")) return true;
 
-  return false;
-}
+    return false;
+  }
   
 
   const RPC_URL = "https://mainnet.base.org";
@@ -650,6 +658,7 @@ function isToadgangAgent(creator, meta) {
   ];
   const provider = new ethers.JsonRpcProvider(RPC_URL);
   const registry = new ethers.Contract(REGISTRY_PROXY, ERC721_ABI, provider);
+  const tobyToken = new ethers.Contract(TOBY_TOKEN, ERC20_ABI, provider);
 
   // Small concurrency limiter to avoid hammering the public RPC.
   async function pMapLimit(items, limit, mapper) {
@@ -674,6 +683,20 @@ function isToadgangAgent(creator, meta) {
       return null;
     }
   }
+  
+  async function fetchOwnerAndTobyBalance(tokenId) {
+    try {
+      const owner = await registry.ownerOf(tokenId);
+      if (owner) {
+        const balance = await tobyToken.balanceOf(owner);
+        return { owner, holdsToby: balance > 0 };
+      }
+    } catch (e) {
+      console.warn(`Could not fetch owner/balance for #${tokenId}:`, e);
+    }
+    return { owner: null, holdsToby: false };
+  }
+  
   const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
   const BLOCKSCOUT_URL = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
   
@@ -911,6 +934,8 @@ function isToadgangAgent(creator, meta) {
       let txHash = null;
       let uri = null;
       let uriSource = null;
+      let owner = null;
+      let holdsToby = false;
       
       if (data.status === "1" && data.result) {
         const log = data.result.find(l => parseInt(l.topics[2], 16) === id);
@@ -936,6 +961,12 @@ function isToadgangAgent(creator, meta) {
             uriSource = "TOKENURI_CALL";
             console.log("Agent tokenURI() from chain:", uri);
           }
+          
+          // Check current owner and $TOBY balance
+          const ownerData = await fetchOwnerAndTobyBalance(id);
+          owner = ownerData.owner;
+          holdsToby = ownerData.holdsToby;
+          
         } else {
           throw new Error(`Agent #${id} not found on chain`);
         }
@@ -966,7 +997,7 @@ function isToadgangAgent(creator, meta) {
         }
       }
       
-      const isToadgang = isToadgangAgent(creator, meta);
+      const isToadgang = isToadgangAgent(creator, metadata, holdsToby);
       
       let imageHtml = '<div class="detail-image-placeholder">🪞</div>';
       if (metadata.image) {
@@ -1002,6 +1033,7 @@ function isToadgangAgent(creator, meta) {
                 </div>
                 <h1 class="detail-name">${metadata.name}</h1>
                 <div class="detail-creator">Created by: ${creator || 'Unknown'}</div>
+                ${owner ? `<div class="detail-creator" style="margin-top: -10px;">Current owner: ${owner} ${holdsToby ? '🐸' : ''}</div>` : ''}
                 <div class="detail-description">${metadata.description}</div>
                 
                 ${attributesHtml ? `
@@ -1080,6 +1112,9 @@ function isToadgangAgent(creator, meta) {
             if (uri) uriSource = "FORGED_EVENT_LOG";
           }
           
+          // Check current owner and $TOBY balance
+          const { owner, holdsToby } = await fetchOwnerAndTobyBalance(agentId);
+          
           let name = `Agent #${agentId}`;
           let description = '';
           let image = '🪞';
@@ -1131,6 +1166,8 @@ function isToadgangAgent(creator, meta) {
             image: image,
             imageUrl: imageUrl,
             creator: creator,
+            owner: owner,
+            holdsToby: holdsToby,
             active: true,
             endorsements: 0,
             flags: 0,
@@ -1170,14 +1207,14 @@ function isToadgangAgent(creator, meta) {
     
     if (!success || allAgents.length === 0) {
       allAgents = [
-        { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", imageUrl: null, creator: OFFICIAL_CREATORS[0], active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30, hasMetadata: true },
-        { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", imageUrl: null, creator: OFFICIAL_CREATORS[0], active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15, hasMetadata: true },
-        { id: 3, name: "MCP Server", description: "Weather data for toads", image: "🌀", imageUrl: null, creator: "0x1234...5678", active: true, endorsements: 15, flags: 0, timestamp: Date.now() - 86400000 * 7, hasMetadata: false },
-        { id: 4, name: "Toad Trader", description: "Trading bot", image: "🐸", imageUrl: null, creator: "0x9876...4321", active: false, endorsements: 8, flags: 3, timestamp: Date.now() - 86400000 * 2, hasMetadata: false },
-        { id: 5, name: "Weather Oracle", description: "Migration weather", image: "☀️", imageUrl: null, creator: OFFICIAL_CREATORS[0], active: true, endorsements: 56, flags: 0, timestamp: Date.now() - 86400000 * 45, hasMetadata: true },
-        { id: 6, name: "Pond Monitor", description: "Tracks pond health", image: "🌊", imageUrl: null, creator: "0x5555...5555", active: true, endorsements: 19, flags: 1, timestamp: Date.now() - 86400000 * 10, hasMetadata: false },
-        { id: 7, name: "ToadAid Bot", description: "Helps toads daily", image: "🤖", imageUrl: null, creator: OFFICIAL_CREATORS[0], active: true, endorsements: 34, flags: 0, timestamp: Date.now() - 86400000 * 5, hasMetadata: true },
-        { id: 8, name: "Liquidity Provider", description: "Pond liquidity data", image: "💧", imageUrl: null, creator: "0x1111...1111", active: true, endorsements: 22, flags: 1, timestamp: Date.now() - 86400000 * 3, hasMetadata: false }
+        { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", imageUrl: null, creator: OFFICIAL_CREATORS[0], owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30, hasMetadata: true },
+        { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", imageUrl: null, creator: OFFICIAL_CREATORS[0], owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15, hasMetadata: true },
+        { id: 3, name: "MCP Server", description: "Weather data for toads", image: "🌀", imageUrl: null, creator: "0x1234...5678", owner: "0x1234...5678", holdsToby: false, active: true, endorsements: 15, flags: 0, timestamp: Date.now() - 86400000 * 7, hasMetadata: false },
+        { id: 4, name: "Toad Trader", description: "Trading bot", image: "🐸", imageUrl: null, creator: "0x9876...4321", owner: "0x9876...4321", holdsToby: false, active: false, endorsements: 8, flags: 3, timestamp: Date.now() - 86400000 * 2, hasMetadata: false },
+        { id: 5, name: "Weather Oracle", description: "Migration weather", image: "☀️", imageUrl: null, creator: OFFICIAL_CREATORS[0], owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 56, flags: 0, timestamp: Date.now() - 86400000 * 45, hasMetadata: true },
+        { id: 6, name: "Pond Monitor", description: "Tracks pond health", image: "🌊", imageUrl: null, creator: "0x5555...5555", owner: "0x5555...5555", holdsToby: false, active: true, endorsements: 19, flags: 1, timestamp: Date.now() - 86400000 * 10, hasMetadata: false },
+        { id: 7, name: "ToadAid Bot", description: "Helps toads daily", image: "🤖", imageUrl: null, creator: OFFICIAL_CREATORS[0], owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 34, flags: 0, timestamp: Date.now() - 86400000 * 5, hasMetadata: true },
+        { id: 8, name: "Liquidity Provider", description: "Pond liquidity data", image: "💧", imageUrl: null, creator: "0x1111...1111", owner: "0x1111...1111", holdsToby: false, active: true, endorsements: 22, flags: 1, timestamp: Date.now() - 86400000 * 3, hasMetadata: false }
       ];
       
       $("errorDisplay").style.display = "block";
@@ -1191,7 +1228,7 @@ function isToadgangAgent(creator, meta) {
   
   function updateStats() {
     $("totalAgents").textContent = allAgents.length;
-    $("toadAgents").textContent = allAgents.filter(a => isToadgangAgent(a.creator, a.metadata || a.meta || null)).length;
+    $("toadAgents").textContent = allAgents.filter(a => isToadgangAgent(a.creator, a.metadata || a.meta || null, a.holdsToby)).length;
     $("activeAgents").textContent = allAgents.filter(a => a.active).length;
     $("lastUpdate").textContent = formatTimeAgo(Date.now());
   }
@@ -1217,7 +1254,7 @@ function isToadgangAgent(creator, meta) {
     }
     
     if (creator === "toadgang") {
-      filtered = filtered.filter(a => isToadgangAgent(a.creator, a.metadata || a.meta || null));
+      filtered = filtered.filter(a => isToadgangAgent(a.creator, a.metadata || a.meta || null, a.holdsToby));
     }
     
     if (status !== "all") {
@@ -1269,7 +1306,7 @@ function isToadgangAgent(creator, meta) {
         imageHtml = `<img src="${agent.image}" alt="${agent.name}" class="agent-card-image" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'agent-card-image-placeholder\'>🪞</div>';">`;
       }
       
-      const isToadgang = isToadgangAgent(agent.creator, agent.metadata || agent.meta || null);
+      const isToadgang = isToadgangAgent(agent.creator, agent.metadata || agent.meta || null, agent.holdsToby);
       const isLegendary = agent.id < 2;
       const hasMetadata = agent.hasMetadata;
       
@@ -1360,7 +1397,7 @@ function isToadgangAgent(creator, meta) {
   
   $("statsLink")?.addEventListener("click", (e) => {
     e.preventDefault();
-    alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => isToadgangAgent(a.creator, a.metadata || a.meta || null)).length}\nActive: ${allAgents.filter(a => a.active).length}`);
+    alert(`Total Agents: ${allAgents.length}\nToadgang Agents: ${allAgents.filter(a => isToadgangAgent(a.creator, a.metadata || a.meta || null, a.holdsToby)).length}\nActive: ${allAgents.filter(a => a.active).length}`);
   });
 
   window.copyShareLink = copyShareLink;
