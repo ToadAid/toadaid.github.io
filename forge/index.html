@@ -612,8 +612,7 @@
     "function decimals() view returns (uint8)"
   ];
   const REGISTRY_ABI = [
-    "function agentURI(uint256) view returns (string)",
-    "function ownerOf(uint256) view returns (address)"
+    "function agentURI(uint256) view returns (string)"
   ];
   
   // FIXED: Uppercase URI to match contract
@@ -1645,9 +1644,17 @@
       const kind = Number(kindIn.value || "1");
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
+
+      // Check if agent exists in our list first
+      const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
       
-      // (No popup warning – proceed directly)
-      
+      if (!agentExists) {
+        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
+          return;
+        }
+      }
+
+      // Loading state
       const originalText = btnAttest.innerHTML;
       btnAttest.innerHTML = '⏳ Attesting...';
       btnAttest.disabled = true;
@@ -1683,12 +1690,8 @@
     }
   });
 
-  // ===== IMPROVED UPDATE BUTTON with ownership check & detailed revert decoding =====
+  // ===== button with contract address =====
   btnUpdateAgent.addEventListener("click", async () => {
-    const originalText = btnUpdateAgent.innerHTML;
-    btnUpdateAgent.innerHTML = '⏳ Updating...';
-    btnUpdateAgent.disabled = true;
-    
     try {
       if (!signer) throw new Error("Connect wallet first");
       
@@ -1698,99 +1701,107 @@
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
       
-      // --- Ownership check ---
-      const registryContract = new ethers.Contract(
-        REGISTRY_PROXY,
-        ["function ownerOf(uint256) view returns (address)"],
-        provider
-      );
-
-      let owner;
+      setStatus("warn", `Checking Agent #${agentId}...`);
+      
+      // Check if agent exists
       try {
-        owner = await registryContract.ownerOf(agentId);
-      } catch (e) {
-        throw new Error(`Agent #${agentId} does not exist`);
-      }
-
-      const signerAddr = await signer.getAddress();
-      if (owner.toLowerCase() !== signerAddr.toLowerCase()) {
-        throw new Error(`You do not own agent #${agentId}`);
-      }
-
-      // --- Proceed with update ---
-      setStatus("warn", `Updating Agent #${agentId}...`);
-      
-      const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
-      
-      // Estimate gas (this will revert if contract call would revert)
-      console.log("Estimating gas for update...");
-      const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
-      console.log("Gas estimate:", estimatedGas.toString());
-      
-      const feeData = await provider.getFeeData();
-      const gasLimit = estimatedGas * 120n / 100n;
-      
-      // Send transaction
-      console.log("Sending update transaction...");
-      const tx = await contract.setAgentURI(agentId, newUri, {
-        gasLimit: gasLimit,
-        gasPrice: feeData.gasPrice || undefined
-      });
-      
-      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
-      
-      // Wait for transaction (this will throw if revert on-chain)
-      const receipt = await Promise.race([
-        tx.wait(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Transaction timeout")), 60000))
-      ]);
-      
-      console.log("Transaction confirmed:", receipt);
-      
-      const txLink = `https://basescan.org/tx/${tx.hash}`;
-      setStatus("good", `✅ Agent #${agentId} updated!`);
-      statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
-      
-      updateAgentId.value = '';
-      newAgentUri.value = '';
-      updateButtons();
-      
-      // Refresh agents list
-      await fetchAgentsFromBlockscout();
-      
-    } catch (err) {
-      console.error("Update error:", err);
-      
-      // Try to extract a readable revert reason
-      let errorMessage = "Update failed";
-      
-      if (err.shortMessage) {
-        errorMessage = err.shortMessage;
-      } else if (err.message) {
-        // Check if it's a revert with data
-        if (err.message.includes("execution reverted")) {
-          // Attempt to decode revert data if present
-          if (err.data) {
-            try {
-              // If it's a string revert (Error("reason"))
-              const reason = ethers.toUtf8String('0x' + err.data.slice(138));
-              errorMessage = reason.replace(/\0/g, '');
-            } catch (e) {
-              // If decoding fails, keep generic
-              errorMessage = "Contract reverted (no reason string)";
-            }
-          } else {
-            errorMessage = "Contract reverted (no data)";
-          }
-        } else {
-          errorMessage = err.message;
+        const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+        const currentUri = await registryContract.tokenURI(agentId);
+        console.log(`Current URI for agent ${agentId}:`, currentUri);
+      } catch (checkError) {
+        console.error("Agent check error:", checkError);
+        if (!confirm(`⚠️ Agent #${agentId} might not exist. Update anyway?`)) {
+          return;
         }
       }
       
-      setStatus("bad", errorMessage);
-    } finally {
+      if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
+      
+      const originalText = btnUpdateAgent.innerHTML;
+      btnUpdateAgent.innerHTML = '⏳ Updating...';
+      btnUpdateAgent.disabled = true;
+      
+      setStatus("warn", `Updating Agent #${agentId}...`);
+      
+      // Use REGISTRY_PROXY, not REGISTRY_ROUTER
+      const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
+      
+      try {
+        // Estimate gas
+        console.log("Estimating gas for update...");
+        const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
+        console.log("Gas estimate:", estimatedGas.toString());
+        
+        const feeData = await provider.getFeeData();
+        const gasLimit = estimatedGas * 120n / 100n;
+        
+        // Send transaction
+        console.log("Sending update transaction...");
+        const tx = await contract.setAgentURI(agentId, newUri, {
+          gasLimit: gasLimit,
+          gasPrice: feeData.gasPrice || undefined
+        });
+        
+        setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+        
+        // Wait for transaction
+        const receipt = await Promise.race([
+          tx.wait(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Transaction timeout")), 60000))
+        ]);
+        
+        console.log("Transaction confirmed:", receipt);
+        
+        const txLink = `https://basescan.org/tx/${tx.hash}`;
+        setStatus("good", `✅ Agent #${agentId} updated!`);
+        statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+        
+        updateAgentId.value = '';
+        newAgentUri.value = '';
+        updateButtons();
+        
+        // Refresh agents list
+        await fetchAgentsFromBlockscout();
+        
+      } catch (estimateError) {
+        console.error("Update error details:", estimateError);
+        
+        let errorMessage = "Update failed. ";
+        
+        if (estimateError.data) {
+          try {
+            const revertReason = ethers.toUtf8String('0x' + estimateError.data.slice(138));
+            errorMessage += revertReason.replace(/\0/g, '');
+          } catch (e) {
+            console.log("Could not decode revert data");
+          }
+        }
+        
+        if (estimateError.message.includes("execution reverted")) {
+          if (estimateError.message.includes("owner") || errorMessage.includes("owner")) {
+            errorMessage = "❌ You don't own this agent";
+          } else if (estimateError.message.includes("exist") || errorMessage.includes("exist")) {
+            errorMessage = "❌ Agent does not exist";
+          } else {
+            errorMessage = "❌ Contract reverted. You may not own this agent.";
+          }
+        } else if (estimateError.code === 4001) {
+          errorMessage = "Transaction rejected";
+        } else {
+          errorMessage = estimateError.shortMessage || estimateError.message || "Unknown error";
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
       btnUpdateAgent.innerHTML = originalText;
       btnUpdateAgent.disabled = false;
+      
+    } catch (err) {
+      console.error("Final update error:", err);
+      btnUpdateAgent.innerHTML = 'Update Agent';
+      btnUpdateAgent.disabled = false;
+      setStatus("bad", err.message || "Update failed");
     }
   });
 
