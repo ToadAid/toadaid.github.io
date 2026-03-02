@@ -468,7 +468,7 @@
         </div>
         <div style="margin-top:14px" class="row">
           <button class="primary smallbtn" id="btnUpdateAgent" disabled>Update Agent</button>
-          <span class="pill">Calls: setAgentUri(uint256,string)</span>
+          <span class="pill">Calls: setAgentURI(uint256,string)</span>
         </div>
       </div>
 
@@ -614,8 +614,10 @@
   const REGISTRY_ABI = [
     "function agentURI(uint256) view returns (string)"
   ];
+  
+  // FIXED: Uppercase URI to match contract
   const UPDATE_ABI = [
-    "function setAgentUri(uint256 agentId, string calldata newUri) external"
+    "function setAgentURI(uint256 agentId, string calldata newURI) external"
   ];
 
   // IPFS gateways
@@ -1484,24 +1486,52 @@
 
   btnCheckAgent.addEventListener("click", checkAgentExists);
 
+  // ===== FIXED: Forge button with gas estimation =====
   btnForge.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
+      
       const pinned = (pinnedUriIn.value || "").trim();
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
       const agentName = nameIn.value || "Unnamed Agent";
+      
       if (!(pinned && isValidUri(pinned)) && !ok) {
         throw new Error("Fill required fields or paste pinned ipfs:// URI");
       }
+
+      // Check MPASS balance
+      const mpassContract = new ethers.Contract(MPASS_ERC20, MPASS_ABI, provider);
+      const balance = await mpassContract.balanceOf(await signer.getAddress());
+      
+      if (balance === 0n) {
+        throw new Error("You need at least 1 MPASS token to forge");
+      }
+
       const originalText = btnForge.innerHTML;
       btnForge.innerHTML = '⏳ Forging...';
       btnForge.disabled = true;
+
       setStatus("warn", "Forging identity…");
+      
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
-      const tx = await contract.forge(agentURI);
+      
+      // Get gas estimate and fee data
+      const estimatedGas = await contract.forge.estimateGas(agentURI);
+      const feeData = await provider.getFeeData();
+      
+      // Add 20% buffer for gas limit
+      const gasLimit = estimatedGas * 120n / 100n;
+      
+      // Send transaction with explicit gas parameters - THIS FIXES THE UNKNOWN TRANSACTION
+      const tx = await contract.forge(agentURI, {
+        gasLimit: gasLimit,
+        gasPrice: feeData.gasPrice || undefined
+      });
+      
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       const receipt = await tx.wait();
+
       let agentId = null;
       for (const log of receipt.logs) {
         try {
@@ -1512,26 +1542,37 @@
           }
         } catch (_) {}
       }
+      
       if (agentId) {
         agentIdIn.value = agentId;
         addToRecentForges(agentId, agentName, tx.hash);
         addToRecentTxs(tx.hash);
         updateButtons();
+        
         const txLink = `https://basescan.org/tx/${tx.hash}`;
         setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
         statusText.innerHTML = `✅ Forged! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
-        // Refresh agents list
+        
         await fetchAgentsFromBlockscout();
         if (panelMyAgents.style.display === 'block') renderMyAgents();
       } else {
         setStatus("good", "Forged! Check BaseScan.");
       }
+      
       btnForge.innerHTML = originalText;
       btnForge.disabled = false;
+      
     } catch (err) {
       btnForge.innerHTML = 'Forge Identity';
       btnForge.disabled = false;
-      setStatus("bad", err.shortMessage || err.message || "Forge failed");
+      
+      if (err.message.includes("MPASS")) {
+        setStatus("bad", "❌ Need at least 1 MPASS token to forge");
+      } else if (err.code === 4001) {
+        setStatus("bad", "Transaction rejected");
+      } else {
+        setStatus("bad", err.shortMessage || err.message || "Forge failed");
+      }
     }
   });
 
@@ -1561,7 +1602,16 @@
       setStatus("warn", "Attesting…");
       
       const contract = new ethers.Contract(REPUTATION_ROUTER, REP_ABI, signer);
-      const tx = await contract.attest(agentId, kind, refURI, weight);
+      
+      // Get gas estimate
+      const estimatedGas = await contract.attest.estimateGas(agentId, kind, refURI, weight);
+      const feeData = await provider.getFeeData();
+      const gasLimit = estimatedGas * 120n / 100n;
+      
+      const tx = await contract.attest(agentId, kind, refURI, weight, {
+        gasLimit: gasLimit,
+        gasPrice: feeData.gasPrice || undefined
+      });
       
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       await tx.wait();
@@ -1580,36 +1630,118 @@
     }
   });
 
+  // ===== FIXED: Update button with correct contract address =====
   btnUpdateAgent.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
+      
       const agentId = updateAgentId.value.trim();
       const newUri = newAgentUri.value.trim();
+      
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
+      
+      setStatus("warn", `Checking Agent #${agentId}...`);
+      
+      // Check if agent exists
+      try {
+        const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+        const currentUri = await registryContract.tokenURI(agentId);
+        console.log(`Current URI for agent ${agentId}:`, currentUri);
+      } catch (checkError) {
+        console.error("Agent check error:", checkError);
+        if (!confirm(`⚠️ Agent #${agentId} might not exist. Update anyway?`)) {
+          return;
+        }
+      }
+      
       if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
+      
       const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
       btnUpdateAgent.disabled = true;
+      
       setStatus("warn", `Updating Agent #${agentId}...`);
-      const contract = new ethers.Contract(REGISTRY_ROUTER, UPDATE_ABI, signer);
-      const tx = await contract.setAgentUri(agentId, newUri);
-      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
-      await tx.wait();
-      const txLink = `https://basescan.org/tx/${tx.hash}`;
-      setStatus("good", `✅ Agent #${agentId} updated!`);
-      statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
-      updateAgentId.value = '';
-      newAgentUri.value = '';
-      updateButtons();
+      
+      // Use REGISTRY_PROXY, not REGISTRY_ROUTER
+      const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
+      
+      try {
+        // Estimate gas
+        console.log("Estimating gas for update...");
+        const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
+        console.log("Gas estimate:", estimatedGas.toString());
+        
+        const feeData = await provider.getFeeData();
+        const gasLimit = estimatedGas * 120n / 100n;
+        
+        // Send transaction
+        console.log("Sending update transaction...");
+        const tx = await contract.setAgentURI(agentId, newUri, {
+          gasLimit: gasLimit,
+          gasPrice: feeData.gasPrice || undefined
+        });
+        
+        setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+        
+        // Wait for transaction
+        const receipt = await Promise.race([
+          tx.wait(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Transaction timeout")), 60000))
+        ]);
+        
+        console.log("Transaction confirmed:", receipt);
+        
+        const txLink = `https://basescan.org/tx/${tx.hash}`;
+        setStatus("good", `✅ Agent #${agentId} updated!`);
+        statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+        
+        updateAgentId.value = '';
+        newAgentUri.value = '';
+        updateButtons();
+        
+        // Refresh agents list
+        await fetchAgentsFromBlockscout();
+        
+      } catch (estimateError) {
+        console.error("Update error details:", estimateError);
+        
+        let errorMessage = "Update failed. ";
+        
+        if (estimateError.data) {
+          try {
+            const revertReason = ethers.toUtf8String('0x' + estimateError.data.slice(138));
+            errorMessage += revertReason.replace(/\0/g, '');
+          } catch (e) {
+            console.log("Could not decode revert data");
+          }
+        }
+        
+        if (estimateError.message.includes("execution reverted")) {
+          if (estimateError.message.includes("owner") || errorMessage.includes("owner")) {
+            errorMessage = "❌ You don't own this agent";
+          } else if (estimateError.message.includes("exist") || errorMessage.includes("exist")) {
+            errorMessage = "❌ Agent does not exist";
+          } else {
+            errorMessage = "❌ Contract reverted. You may not own this agent.";
+          }
+        } else if (estimateError.code === 4001) {
+          errorMessage = "Transaction rejected";
+        } else {
+          errorMessage = estimateError.shortMessage || estimateError.message || "Unknown error";
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
       btnUpdateAgent.innerHTML = originalText;
       btnUpdateAgent.disabled = false;
-      // Refresh agents list
-      await fetchAgentsFromBlockscout();
+      
     } catch (err) {
+      console.error("Final update error:", err);
       btnUpdateAgent.innerHTML = 'Update Agent';
       btnUpdateAgent.disabled = false;
-      setStatus("bad", err.shortMessage || err.message || "Update failed. Ensure you own this agent.");
+      setStatus("bad", err.message || "Update failed");
     }
   });
 
