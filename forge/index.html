@@ -178,7 +178,7 @@
       flex: 1;
     }
 
-    /* ===== New Styles for IPFS Helper and Templates ===== */
+    /* ===== IPFS Helper and Templates ===== */
     .ipfs-helper {
       margin-top: 12px;
       padding: 12px;
@@ -271,9 +271,9 @@
     👑 Legends
   </a>
 
-  <button class="smallbtn" id="btnConnect">Connect</button>
-  <button class="smallbtn danger" id="btnDisconnect" style="display:none;">Disconnect</button>
-  <button class="primary smallbtn" id="btnForge" disabled>Forge Identity</button>
+  <button class="smallbtn" id="btnConnect" type="button">Connect</button>
+  <button class="smallbtn danger" id="btnDisconnect" style="display:none;" type="button">Disconnect</button>
+  <button class="primary smallbtn" id="btnForge" disabled type="button">Forge Identity</button>
 </div>
 </header>
 
@@ -285,6 +285,8 @@
         <span class="dot warn" id="statusDot"></span>
         <span id="statusText">Connect wallet to begin.</span>
       </div>
+      <pre id="debugBox" style="display:none; margin-top:10px; padding:10px; border:1px solid rgba(255,255,255,0.12); border-radius:12px; background:rgba(0,0,0,0.25); color:var(--muted); overflow:auto; max-height:220px;"></pre>
+
     </div>
     <div class="bd">
       <div class="proxy-selector">
@@ -416,7 +418,7 @@
           <div>
             <label for="agentId">Agent ID *</label>
             <input type="text" id="agentId" name="agentId" placeholder="e.g. 19173" autocomplete="off" />
-            <button class="smallbtn" id="btnCheckAgent" style="margin-top:5px; width:100%;">Check if exists</button>
+            <button class="smallbtn" id="btnCheckAgent" style="margin-top:5px; width:100%;" type="button">Check if exists</button>
           </div>
           <div>
             <label for="kind">Kind *</label>
@@ -446,7 +448,7 @@
         </div>
 
         <div style="margin-top:14px" class="row">
-          <button class="primary smallbtn" id="btnAttest" disabled>Attest</button>
+          <button class="primary smallbtn" id="btnAttest" disabled type="button">Attest</button>
           <span class="pill">Calls: <span style="font-family:var(--mono)">attest(uint256,uint16,string,uint96)</span></span>
         </div>
       </div>
@@ -467,7 +469,7 @@
           ⚠️ This updates the on-chain pointer. The old metadata will still exist on IPFS but won't be linked.
         </div>
         <div style="margin-top:14px" class="row">
-          <button class="primary smallbtn" id="btnUpdateAgent" disabled>Update Agent</button>
+          <button class="primary smallbtn" id="btnUpdateAgent" disabled type="button">Update Agent</button>
           <span class="pill">Calls: setAgentURI(uint256,string)</span>
         </div>
       </div>
@@ -730,6 +732,34 @@
     }
   }
 
+  function setDebug(err) {
+    const box = document.getElementById("debugBox");
+    if (!box) return;
+    if (!err) {
+      box.style.display = "none";
+      box.textContent = "";
+      return;
+    }
+    box.style.display = "block";
+    try {
+      const obj = {
+        name: err?.name,
+        message: err?.message,
+        shortMessage: err?.shortMessage,
+        code: err?.code,
+        reason: err?.reason,
+        data: err?.data,
+        errorName: err?.errorName,
+        errorArgs: err?.errorArgs,
+        stack: ("" + (err?.stack || "")).split("\n").slice(0,6).join("\n")
+      };
+      box.textContent = JSON.stringify(obj, null, 2);
+    } catch (e) {
+      box.textContent = String(err);
+    }
+  }
+
+
   function shortAddr(addr) {
     return addr ? addr.slice(0,6) + "…" + addr.slice(-4) : "—";
   }
@@ -784,8 +814,8 @@
     const aid = (agentIdIn.value || "").trim();
     btnAttest.disabled = !(!!signer && aid.length > 0);
 
-    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim() && isValidUri(newAgentUri.value.trim()));
-  }
+    btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim());
+}
 
   // Update recent chips display
   function updateRecentChips() {
@@ -1488,6 +1518,9 @@
 
   // ===== FINAL: Stable Forge Button (Base Mainnet / MPASS-Gated) =====
   btnForge.addEventListener("click", async () => {
+    setStatus("warn", "⏳ Forge clicked — preparing…");
+    if (typeof setDebug === "function") setDebug(null);
+
     try {
       if (!signer) throw new Error("Connect wallet first");
 
@@ -1637,6 +1670,9 @@
   });
 
   btnAttest.addEventListener("click", async () => {
+    setStatus("warn", "⏳ Attest clicked — preparing…");
+    if (typeof setDebug === "function") setDebug(null);
+
     try {
       if (!signer) throw new Error("Connect wallet first");
       
@@ -1644,16 +1680,12 @@
       const kind = Number(kindIn.value || "1");
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
-
       // Check if agent exists in our list first
       const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
-      
       if (!agentExists) {
-        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
-          return;
-        }
+        // Popup-free mode: proceed, but warn loudly
+        setStatus("warn", `⚠️ Agent ${agentId} not found in explorer cache. Proceeding with attest anyway (popup-free).`);
       }
-
       // Loading state
       const originalText = btnAttest.innerHTML;
       btnAttest.innerHTML = '⏳ Attesting...';
@@ -1690,12 +1722,35 @@
     }
   });
 
-  // ===== FIXED: Update button with correct contract address =====
+  
+  // ===== Global error hooks (show why buttons feel dead) =====
+  window.addEventListener('error', (e) => {
+    try {
+      setStatus('bad', `JS Error: ${e.message || 'unknown'}`);
+      if (typeof setDebug === 'function') setDebug(e.error || e);
+    } catch (_) {}
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    try {
+      const msg = (e.reason && (e.reason.shortMessage || e.reason.message)) ? (e.reason.shortMessage || e.reason.message) : String(e.reason || 'unknown');
+      setStatus('bad', `Promise Rejection: ${msg}`);
+      if (typeof setDebug === 'function') setDebug(e.reason || e);
+    } catch (_) {}
+  });
+
+  // ===== button with contract address =====
   btnUpdateAgent.addEventListener("click", async () => {
+    setStatus("warn", "⏳ Update clicked — preparing…");
+    if (typeof setDebug === "function") setDebug(null);
+
     try {
       if (!signer) throw new Error("Connect wallet first");
       
-      const agentId = updateAgentId.value.trim();
+      
+      // Always show that the click registered (mobile webviews can feel "dead")
+      setDebug(null);
+      setStatus("warn", "⏳ Update clicked — preparing transaction…");
+const agentId = updateAgentId.value.trim();
       const newUri = newAgentUri.value.trim();
       
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
@@ -1710,14 +1765,11 @@
         console.log(`Current URI for agent ${agentId}:`, currentUri);
       } catch (checkError) {
         console.error("Agent check error:", checkError);
-        if (!confirm(`⚠️ Agent #${agentId} might not exist. Update anyway?`)) {
-          return;
-        }
-      }
-      
-      if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
-      
-      const originalText = btnUpdateAgent.innerHTML;
+        setStatus("warn", `⚠️ Agent #${agentId} check failed (might not exist). Proceeding with update anyway (popup-free).`);
+}
+      // Popup-free mode: no browser (setStatus("warn", String(webviews often block popups)), true)
+      setStatus("warn", `⚠️ Updating Agent #${agentId} (popup-free). Make sure the URI is correct.`);
+const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
       btnUpdateAgent.disabled = true;
       
@@ -1802,7 +1854,8 @@
       btnUpdateAgent.innerHTML = 'Update Agent';
       btnUpdateAgent.disabled = false;
       setStatus("bad", err.message || "Update failed");
-    }
+          setDebug(err);
+}
   });
 
   btnCopyUri.addEventListener("click", async () => {
@@ -1851,5 +1904,13 @@
 
   console.log("ToadAid Forge loaded with all pro-grade features!");
 </script>
+
+<div id="statusBar" style="position:fixed; left:12px; right:12px; bottom:12px; z-index:9999; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.55); backdrop-filter: blur(10px); color:var(--text); display:none;">
+  <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
+    <div id="statusBarText" style="font-size:13px; color:var(--text); line-height:1.2;"></div>
+    <button id="statusBarClose" class="smallbtn" type="button" style="padding:6px 10px;">Hide</button>
+  </div>
+</div>
+
 </body>
 </html>
