@@ -1486,53 +1486,102 @@
 
   btnCheckAgent.addEventListener("click", checkAgentExists);
 
-  // ===== FIXED: Forge button with gas estimation =====
+  // ===== FINAL: Stable Forge Button (Base Mainnet / MPASS-Gated) =====
   btnForge.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
-      
+
       const pinned = (pinnedUriIn.value || "").trim();
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
       const agentName = nameIn.value || "Unnamed Agent";
-      
+
       if (!(pinned && isValidUri(pinned)) && !ok) {
         throw new Error("Fill required fields or paste pinned ipfs:// URI");
       }
 
-      // Check MPASS balance
-      const mpassContract = new ethers.Contract(MPASS_ERC20, MPASS_ABI, provider);
-      const balance = await mpassContract.balanceOf(await signer.getAddress());
-      
-      if (balance === 0n) {
-        throw new Error("You need at least 1 MPASS token to forge");
+      const me = await signer.getAddress();
+
+      // ======================================================
+      // 1️⃣ Check if already registered (1 identity per wallet)
+      // ======================================================
+      const registry = new ethers.Contract(
+        REGISTRY_PROXY,
+        ["function balanceOf(address) view returns (uint256)"],
+        provider
+      );
+
+      const owned = await registry.balanceOf(me);
+      if (owned > 0n) {
+        throw new Error("Already registered (one identity per wallet). Use Update.");
       }
 
-      const originalText = btnForge.innerHTML;
-      btnForge.innerHTML = '⏳ Forging...';
-      btnForge.disabled = true;
+      // ======================================================
+      // 2️⃣ Check MPASS ERC-20 balance (≥ 1.0 MPASS)
+      // ======================================================
+      const mpass = new ethers.Contract(
+        MPASS_ERC20,
+        [
+          "function balanceOf(address) view returns (uint256)",
+          "function decimals() view returns (uint8)"
+        ],
+        provider
+      );
 
+      const balance = await mpass.balanceOf(me);
+      const decimals = await mpass.decimals();
+      const oneMPASS = 10n ** BigInt(decimals);
+
+      if (balance < oneMPASS) {
+        throw new Error("Need at least 1.0 MPASS to forge");
+      }
+
+      // ======================================================
+      // UI state
+      // ======================================================
+      const originalText = btnForge.innerHTML;
+      btnForge.innerHTML = "⏳ Forging...";
+      btnForge.disabled = true;
       setStatus("warn", "Forging identity…");
-      
-      const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
-      
-      // Get gas estimate and fee data
+
+      const contract = new ethers.Contract(
+        REGISTRY_ROUTER,
+        ROUTER_ABI,
+        signer
+      );
+
+      // ======================================================
+      // 3️⃣ Gas estimation (EIP-1559 safe)
+      // ======================================================
       const estimatedGas = await contract.forge.estimateGas(agentURI);
+      const gasLimit = (estimatedGas * 120n) / 100n; // 20% buffer
+
       const feeData = await provider.getFeeData();
-      
-      // Add 20% buffer for gas limit
-      const gasLimit = estimatedGas * 120n / 100n;
-      
-      // Send transaction with explicit gas parameters - THIS FIXES THE UNKNOWN TRANSACTION
-      const tx = await contract.forge(agentURI, {
-        gasLimit: gasLimit,
-        gasPrice: feeData.gasPrice || undefined
-      });
-      
-      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+      const overrides = { gasLimit };
+
+      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+        overrides.maxFeePerGas = feeData.maxFeePerGas;
+        overrides.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
+      } else if (feeData.gasPrice) {
+        overrides.gasPrice = feeData.gasPrice;
+      }
+
+      console.log("Estimated Gas:", estimatedGas.toString());
+      console.log("Gas Limit:", gasLimit.toString());
+
+      // ======================================================
+      // 4️⃣ Send transaction
+      // ======================================================
+      const tx = await contract.forge(agentURI, overrides);
+
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0, 10)}…`);
       const receipt = await tx.wait();
 
+      // ======================================================
+      // 5️⃣ Parse Forged event
+      // ======================================================
       let agentId = null;
+
       for (const log of receipt.logs) {
         try {
           const parsed = contract.interface.parseLog(log);
@@ -1542,32 +1591,43 @@
           }
         } catch (_) {}
       }
-      
+
       if (agentId) {
         agentIdIn.value = agentId;
         addToRecentForges(agentId, agentName, tx.hash);
         addToRecentTxs(tx.hash);
         updateButtons();
-        
+
         const txLink = `https://basescan.org/tx/${tx.hash}`;
+
+        statusText.innerHTML = `
+          ✅ Forged! Agent ID: ${agentId}
+          <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>
+        `;
+
         setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
-        statusText.innerHTML = `✅ Forged! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
-        
+
         await fetchAgentsFromBlockscout();
-        if (panelMyAgents.style.display === 'block') renderMyAgents();
+        if (panelMyAgents.style.display === "block") {
+          renderMyAgents();
+        }
       } else {
         setStatus("good", "Forged! Check BaseScan.");
       }
-      
+
       btnForge.innerHTML = originalText;
       btnForge.disabled = false;
-      
+
     } catch (err) {
-      btnForge.innerHTML = 'Forge Identity';
+      console.error("Forge error:", err);
+
+      btnForge.innerHTML = "Forge Identity";
       btnForge.disabled = false;
-      
-      if (err.message.includes("MPASS")) {
-        setStatus("bad", "❌ Need at least 1 MPASS token to forge");
+
+      if ((err.message || "").includes("Already registered")) {
+        setStatus("warn", "⚠️ Already registered. Use Update instead.");
+      } else if ((err.message || "").includes("MPASS")) {
+        setStatus("bad", "❌ Need at least 1.0 MPASS to forge");
       } else if (err.code === 4001) {
         setStatus("bad", "Transaction rejected");
       } else {
