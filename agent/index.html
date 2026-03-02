@@ -666,27 +666,50 @@
 
   function isToadgangAgent(creator, meta, holdsToby = false) {
     // Owner holds $TOBY
-    if (holdsToby) return true;
+    if (holdsToby) {
+      console.log(`🐸 Agent by ${creator} - Has $TOBY: true`);
+      return true;
+    }
     
     // Check official creators list
     const c = (creator || "").toLowerCase();
-    if (OFFICIAL_CREATORS.some(a => a.toLowerCase() === c)) return true;
-
-    // Check metadata for toadgang
-    const attrs = (meta && Array.isArray(meta.attributes)) ? meta.attributes : [];
-    const sys = attrs.find(a => String(a.trait_type || a.traitType || "").toLowerCase() === "system");
+    const isOfficial = OFFICIAL_CREATORS.some(a => a.toLowerCase() === c);
     
-    // Flexible check for "toadgang" variations
-    if (sys) {
-      const value = String(sys.value || "").toLowerCase();
-      if (value.includes("toad") && value.includes("gang")) {
-        return true;
-      }
-      if (value.replace(/\s+/g, '').includes("toadgang")) {
-        return true;
+    if (isOfficial) {
+      console.log(`🐸 Agent by ${creator} - Official creator match!`);
+      return true;
+    } else {
+      // Debug: Show mismatch if creator looks like it should match
+      const possibleMatch = OFFICIAL_CREATORS.find(a => 
+        a.toLowerCase().includes(c.slice(0, 10)) || 
+        c.includes(a.toLowerCase().slice(0, 10))
+      );
+      if (possibleMatch) {
+        console.log(`⚠️ Creator ${creator} similar to ${possibleMatch} but not exact match`);
       }
     }
 
+    // Check metadata for toadgang
+    if (meta && Array.isArray(meta.attributes)) {
+      const sys = meta.attributes.find(a => 
+        String(a.trait_type || a.traitType || "").toLowerCase() === "system"
+      );
+      
+      if (sys) {
+        const value = String(sys.value || "").toLowerCase();
+        if (value.includes("toad") && value.includes("gang")) {
+          console.log(`🐸 Agent by ${creator} - Metadata contains toad+gang`);
+          return true;
+        }
+        if (value.replace(/\s+/g, '').includes("toadgang")) {
+          console.log(`🐸 Agent by ${creator} - Metadata contains toadgang`);
+          return true;
+        }
+      }
+    }
+
+    // If no match
+    console.log(`❌ Agent by ${creator} - No Toadgang status`);
     return false;
   }
 
