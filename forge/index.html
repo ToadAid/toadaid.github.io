@@ -178,7 +178,7 @@
       flex: 1;
     }
 
-    /* ===== New Styles for IPFS Helper and Templates ===== */
+    /* ===== IPFS Helper and Templates ===== */
     .ipfs-helper {
       margin-top: 12px;
       padding: 12px;
@@ -468,7 +468,7 @@
         </div>
         <div style="margin-top:14px" class="row">
           <button class="primary smallbtn" id="btnUpdateAgent" disabled>Update Agent</button>
-          <span class="pill">Calls: setAgentUri(uint256,string)</span>
+          <span class="pill">Calls: setAgentURI(uint256,string)</span>
         </div>
       </div>
 
@@ -612,10 +612,13 @@
     "function decimals() view returns (uint8)"
   ];
   const REGISTRY_ABI = [
-    "function agentURI(uint256) view returns (string)"
+    "function agentURI(uint256) view returns (string)",
+    "function ownerOf(uint256) view returns (address)"
   ];
+  
+  // FIXED: Uppercase URI to match contract
   const UPDATE_ABI = [
-    "function setAgentUri(uint256 agentId, string calldata newUri) external"
+    "function setAgentURI(uint256 agentId, string calldata newURI) external"
   ];
 
   // IPFS gateways
@@ -1484,25 +1487,102 @@
 
   btnCheckAgent.addEventListener("click", checkAgentExists);
 
+  // ===== FINAL: Stable Forge Button (Base Mainnet / MPASS-Gated) =====
   btnForge.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
+
       const pinned = (pinnedUriIn.value || "").trim();
       const { uri, ok } = buildMetadata();
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
       const agentName = nameIn.value || "Unnamed Agent";
+
       if (!(pinned && isValidUri(pinned)) && !ok) {
         throw new Error("Fill required fields or paste pinned ipfs:// URI");
       }
+
+      const me = await signer.getAddress();
+
+      // ======================================================
+      // 1️⃣ Check if already registered (1 identity per wallet)
+      // ======================================================
+      const registry = new ethers.Contract(
+        REGISTRY_PROXY,
+        ["function balanceOf(address) view returns (uint256)"],
+        provider
+      );
+
+      const owned = await registry.balanceOf(me);
+      if (owned > 0n) {
+        throw new Error("Already registered (one identity per wallet). Use Update.");
+      }
+
+      // ======================================================
+      // 2️⃣ Check MPASS ERC-20 balance (≥ 1.0 MPASS)
+      // ======================================================
+      const mpass = new ethers.Contract(
+        MPASS_ERC20,
+        [
+          "function balanceOf(address) view returns (uint256)",
+          "function decimals() view returns (uint8)"
+        ],
+        provider
+      );
+
+      const balance = await mpass.balanceOf(me);
+      const decimals = await mpass.decimals();
+      const oneMPASS = 10n ** BigInt(decimals);
+
+      if (balance < oneMPASS) {
+        throw new Error("Need at least 1.0 MPASS to forge");
+      }
+
+      // ======================================================
+      // UI state
+      // ======================================================
       const originalText = btnForge.innerHTML;
-      btnForge.innerHTML = '⏳ Forging...';
+      btnForge.innerHTML = "⏳ Forging...";
       btnForge.disabled = true;
       setStatus("warn", "Forging identity…");
-      const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
-      const tx = await contract.forge(agentURI);
-      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+
+      const contract = new ethers.Contract(
+        REGISTRY_ROUTER,
+        ROUTER_ABI,
+        signer
+      );
+
+      // ======================================================
+      // 3️⃣ Gas estimation (EIP-1559 safe)
+      // ======================================================
+      const estimatedGas = await contract.forge.estimateGas(agentURI);
+      const gasLimit = (estimatedGas * 120n) / 100n; // 20% buffer
+
+      const feeData = await provider.getFeeData();
+      const overrides = { gasLimit };
+
+      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+        overrides.maxFeePerGas = feeData.maxFeePerGas;
+        overrides.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
+      } else if (feeData.gasPrice) {
+        overrides.gasPrice = feeData.gasPrice;
+      }
+
+      console.log("Estimated Gas:", estimatedGas.toString());
+      console.log("Gas Limit:", gasLimit.toString());
+
+      // ======================================================
+      // 4️⃣ Send transaction
+      // ======================================================
+      const tx = await contract.forge(agentURI, overrides);
+
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0, 10)}…`);
       const receipt = await tx.wait();
+
+      // ======================================================
+      // 5️⃣ Parse Forged event
+      // ======================================================
       let agentId = null;
+
       for (const log of receipt.logs) {
         try {
           const parsed = contract.interface.parseLog(log);
@@ -1512,26 +1592,48 @@
           }
         } catch (_) {}
       }
+
       if (agentId) {
         agentIdIn.value = agentId;
         addToRecentForges(agentId, agentName, tx.hash);
         addToRecentTxs(tx.hash);
         updateButtons();
+
         const txLink = `https://basescan.org/tx/${tx.hash}`;
+
+        statusText.innerHTML = `
+          ✅ Forged! Agent ID: ${agentId}
+          <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>
+        `;
+
         setStatus("good", `✅ Forged! Agent ID: ${agentId}`);
-        statusText.innerHTML = `✅ Forged! Agent ID: ${agentId} <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
-        // Refresh agents list
+
         await fetchAgentsFromBlockscout();
-        if (panelMyAgents.style.display === 'block') renderMyAgents();
+        if (panelMyAgents.style.display === "block") {
+          renderMyAgents();
+        }
       } else {
         setStatus("good", "Forged! Check BaseScan.");
       }
+
       btnForge.innerHTML = originalText;
       btnForge.disabled = false;
+
     } catch (err) {
-      btnForge.innerHTML = 'Forge Identity';
+      console.error("Forge error:", err);
+
+      btnForge.innerHTML = "Forge Identity";
       btnForge.disabled = false;
-      setStatus("bad", err.shortMessage || err.message || "Forge failed");
+
+      if ((err.message || "").includes("Already registered")) {
+        setStatus("warn", "⚠️ Already registered. Use Update instead.");
+      } else if ((err.message || "").includes("MPASS")) {
+        setStatus("bad", "❌ Need at least 1.0 MPASS to forge");
+      } else if (err.code === 4001) {
+        setStatus("bad", "Transaction rejected");
+      } else {
+        setStatus("bad", err.shortMessage || err.message || "Forge failed");
+      }
     }
   });
 
@@ -1543,17 +1645,9 @@
       const kind = Number(kindIn.value || "1");
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
-
-      // Check if agent exists in our list first
-      const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
       
-      if (!agentExists) {
-        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
-          return;
-        }
-      }
-
-      // Loading state
+      // (No popup warning – proceed directly)
+      
       const originalText = btnAttest.innerHTML;
       btnAttest.innerHTML = '⏳ Attesting...';
       btnAttest.disabled = true;
@@ -1561,7 +1655,16 @@
       setStatus("warn", "Attesting…");
       
       const contract = new ethers.Contract(REPUTATION_ROUTER, REP_ABI, signer);
-      const tx = await contract.attest(agentId, kind, refURI, weight);
+      
+      // Get gas estimate
+      const estimatedGas = await contract.attest.estimateGas(agentId, kind, refURI, weight);
+      const feeData = await provider.getFeeData();
+      const gasLimit = estimatedGas * 120n / 100n;
+      
+      const tx = await contract.attest(agentId, kind, refURI, weight, {
+        gasLimit: gasLimit,
+        gasPrice: feeData.gasPrice || undefined
+      });
       
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       await tx.wait();
@@ -1580,36 +1683,114 @@
     }
   });
 
+  // ===== IMPROVED UPDATE BUTTON with ownership check & detailed revert decoding =====
   btnUpdateAgent.addEventListener("click", async () => {
+    const originalText = btnUpdateAgent.innerHTML;
+    btnUpdateAgent.innerHTML = '⏳ Updating...';
+    btnUpdateAgent.disabled = true;
+    
     try {
       if (!signer) throw new Error("Connect wallet first");
+      
       const agentId = updateAgentId.value.trim();
       const newUri = newAgentUri.value.trim();
+      
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
-      if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
-      const originalText = btnUpdateAgent.innerHTML;
-      btnUpdateAgent.innerHTML = '⏳ Updating...';
-      btnUpdateAgent.disabled = true;
+      
+      // --- Ownership check ---
+      const registryContract = new ethers.Contract(
+        REGISTRY_PROXY,
+        ["function ownerOf(uint256) view returns (address)"],
+        provider
+      );
+
+      let owner;
+      try {
+        owner = await registryContract.ownerOf(agentId);
+      } catch (e) {
+        throw new Error(`Agent #${agentId} does not exist`);
+      }
+
+      const signerAddr = await signer.getAddress();
+      if (owner.toLowerCase() !== signerAddr.toLowerCase()) {
+        throw new Error(`You do not own agent #${agentId}`);
+      }
+
+      // --- Proceed with update ---
       setStatus("warn", `Updating Agent #${agentId}...`);
-      const contract = new ethers.Contract(REGISTRY_ROUTER, UPDATE_ABI, signer);
-      const tx = await contract.setAgentUri(agentId, newUri);
+      
+      const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
+      
+      // Estimate gas (this will revert if contract call would revert)
+      console.log("Estimating gas for update...");
+      const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
+      console.log("Gas estimate:", estimatedGas.toString());
+      
+      const feeData = await provider.getFeeData();
+      const gasLimit = estimatedGas * 120n / 100n;
+      
+      // Send transaction
+      console.log("Sending update transaction...");
+      const tx = await contract.setAgentURI(agentId, newUri, {
+        gasLimit: gasLimit,
+        gasPrice: feeData.gasPrice || undefined
+      });
+      
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
-      await tx.wait();
+      
+      // Wait for transaction (this will throw if revert on-chain)
+      const receipt = await Promise.race([
+        tx.wait(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Transaction timeout")), 60000))
+      ]);
+      
+      console.log("Transaction confirmed:", receipt);
+      
       const txLink = `https://basescan.org/tx/${tx.hash}`;
       setStatus("good", `✅ Agent #${agentId} updated!`);
       statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+      
       updateAgentId.value = '';
       newAgentUri.value = '';
       updateButtons();
-      btnUpdateAgent.innerHTML = originalText;
-      btnUpdateAgent.disabled = false;
+      
       // Refresh agents list
       await fetchAgentsFromBlockscout();
+      
     } catch (err) {
-      btnUpdateAgent.innerHTML = 'Update Agent';
+      console.error("Update error:", err);
+      
+      // Try to extract a readable revert reason
+      let errorMessage = "Update failed";
+      
+      if (err.shortMessage) {
+        errorMessage = err.shortMessage;
+      } else if (err.message) {
+        // Check if it's a revert with data
+        if (err.message.includes("execution reverted")) {
+          // Attempt to decode revert data if present
+          if (err.data) {
+            try {
+              // If it's a string revert (Error("reason"))
+              const reason = ethers.toUtf8String('0x' + err.data.slice(138));
+              errorMessage = reason.replace(/\0/g, '');
+            } catch (e) {
+              // If decoding fails, keep generic
+              errorMessage = "Contract reverted (no reason string)";
+            }
+          } else {
+            errorMessage = "Contract reverted (no data)";
+          }
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
+      setStatus("bad", errorMessage);
+    } finally {
+      btnUpdateAgent.innerHTML = originalText;
       btnUpdateAgent.disabled = false;
-      setStatus("bad", err.shortMessage || err.message || "Update failed. Ensure you own this agent.");
     }
   });
 
