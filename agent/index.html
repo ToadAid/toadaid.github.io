@@ -628,53 +628,67 @@
   // ERC-20 ABI (only balanceOf)
   const ERC20_ABI = [ "function balanceOf(address owner) view returns (uint256)" ];
   
-  // Official creator addresses that should display the TOADGANG badge.
-  // Add more addresses here as your builder set expands.
-  const OFFICIAL_CREATORS = [
-    "0x587464fd25Af9147CB4660B03d899c8893378C0A", // Toby7777777 (ZH Scroll Translator minter)
-    "0x2fc60d9c2c572410335d62c6b3244c7f8147e47c", // TommyN9 (Mirror Architect)
-  ];
+  // These will be loaded from toadgang.json
+  let CREATOR_NAMES = {};
+  let OFFICIAL_CREATORS = [];
 
-  // Friendly names for official creators
-  const CREATOR_NAMES = {
-    "0x587464fd25Af9147CB4660B03d899c8893378C0A": "Toby7777777 — ZH Scroll Translator",
-    "0x2fc60d9c2c572410335d62c6b3244c7f8147e47c": "TommyN9 — Mirror Architect"
-  };
+  // Load creator data from JSON
+  async function loadCreatorData() {
+    try {
+      const response = await fetch('/agent/toadgang.json');
+      const data = await response.json();
+      CREATOR_NAMES = data.creators || {};
+      OFFICIAL_CREATORS = data.official_creators || [];
+      console.log(`✅ Loaded ${Object.keys(CREATOR_NAMES).length} creator names from toadgang.json`);
+      console.log('📋 Official creators:', OFFICIAL_CREATORS);
+    } catch (error) {
+      console.warn("⚠️ Could not load toadgang.json, using defaults:", error);
+      // Fallback defaults
+      CREATOR_NAMES = {
+        "0x587464fd25Af9147CB4660B03d899c8893378C0A": "Toby7777777 — ZH Scroll Translator",
+        "0x2fc60d9c2c572410335d62c6b3244c7f8147e47c": "TommyN9 — Mirror Architect"
+      };
+      OFFICIAL_CREATORS = Object.keys(CREATOR_NAMES);
+    }
+  }
 
   function getCreatorDisplay(address) {
     if (!address) return "Unknown";
     const lowerAddr = address.toLowerCase();
+    
+    // Check in loaded CREATOR_NAMES
     for (const [addr, name] of Object.entries(CREATOR_NAMES)) {
       if (addr.toLowerCase() === lowerAddr) return name;
     }
+    
     return shortAddr(address); // Fallback to shortened address
   }
 
-function isToadgangAgent(creator, meta, holdsToby = false) {
-  // New: owner holds $TOBY
-  if (holdsToby) return true;
-  
-  const c = (creator || "").toLowerCase();
-  if (OFFICIAL_CREATORS.some(a => a.toLowerCase() === c)) return true;
+  function isToadgangAgent(creator, meta, holdsToby = false) {
+    // Owner holds $TOBY
+    if (holdsToby) return true;
+    
+    // Check official creators list
+    const c = (creator || "").toLowerCase();
+    if (OFFICIAL_CREATORS.some(a => a.toLowerCase() === c)) return true;
 
-  const attrs = (meta && Array.isArray(meta.attributes)) ? meta.attributes : [];
-  const sys = attrs.find(a => String(a.trait_type || a.traitType || "").toLowerCase() === "system");
-  
-  // More flexible check for "toadgang" variations
-  if (sys) {
-    const value = String(sys.value || "").toLowerCase();
-    // Check for any combination of toad/gang
-    if (value.includes("toad") && value.includes("gang")) {
-      return true;
+    // Check metadata for toadgang
+    const attrs = (meta && Array.isArray(meta.attributes)) ? meta.attributes : [];
+    const sys = attrs.find(a => String(a.trait_type || a.traitType || "").toLowerCase() === "system");
+    
+    // Flexible check for "toadgang" variations
+    if (sys) {
+      const value = String(sys.value || "").toLowerCase();
+      if (value.includes("toad") && value.includes("gang")) {
+        return true;
+      }
+      if (value.replace(/\s+/g, '').includes("toadgang")) {
+        return true;
+      }
     }
-    // Also check for the combined word (in case it's written as one word)
-    if (value.replace(/\s+/g, '').includes("toadgang")) {
-      return true;
-    }
+
+    return false;
   }
-
-  return false;
-}
 
   const RPC_URL = "https://mainnet.base.org";
   // Source of truth for metadata: read tokenURI from the ERC-8004 Registry (proxy).
@@ -710,15 +724,37 @@ function isToadgangAgent(creator, meta, holdsToby = false) {
     }
   }
   
-  async function fetchOwnerAndTobyBalance(tokenId) {
-    try {
-      const owner = await registry.ownerOf(tokenId);
-      if (owner) {
-        const balance = await tobyToken.balanceOf(owner);
-        return { owner, holdsToby: balance > 0 };
+  async function fetchOwnerAndTobyBalance(tokenId, retryCount = 2) {
+    for (let attempt = 0; attempt <= retryCount; attempt++) {
+      try {
+        // Add small delay between retries
+        if (attempt > 0) {
+          await new Promise(r => setTimeout(r, 500 * attempt));
+        }
+        
+        const owner = await registry.ownerOf(tokenId);
+        
+        if (owner && owner !== '0x0000000000000000000000000000000000000000') {
+          try {
+            const balance = await tobyToken.balanceOf(owner);
+            return { owner, holdsToby: balance > 0 };
+          } catch (tobyError) {
+            console.warn(`TOBY balance check failed for #${tokenId}:`, tobyError.message);
+            return { owner, holdsToby: false };
+          }
+        }
+      } catch (e) {
+        // Check if this is a "token doesn't exist" error
+        if (e.code === 'CALL_EXCEPTION' && e.message.includes('execution reverted')) {
+          // Token doesn't exist - return null without logging
+          return { owner: null, holdsToby: false };
+        }
+        
+        // Only log real errors, not rate limiting or temporary issues
+        if (attempt === retryCount) {
+          console.warn(`Failed to fetch owner for #${tokenId} after ${retryCount + 1} attempts:`, e.message);
+        }
       }
-    } catch (e) {
-      console.warn(`Could not fetch owner/balance for #${tokenId}:`, e);
     }
     return { owner: null, holdsToby: false };
   }
@@ -899,7 +935,6 @@ function isToadgangAgent(creator, meta, holdsToby = false) {
     if (trimmed.startsWith('ipfs://') || trimmed.startsWith('Qm') || trimmed.startsWith('bafy')) {
       $("statusMessage").style.display = "block";
       $("statusMessage").innerHTML = `🔍 Searching for agents with URI containing ${trimmed.slice(0,20)}...`;
-      // Filter by URI in metadata
       filterByUri(trimmed);
       return true;
     }
@@ -1127,83 +1162,97 @@ function isToadgangAgent(creator, meta, holdsToby = false) {
         $("statusMessage").style.display = "block";
         $("statusMessage").innerHTML = `✅ Found ${data.result.length} forged agents!`;
         
-        const agents = await pMapLimit(data.result, 6, async (log) => {
-          const agentId = parseInt(log.topics[2], 16);
-          const creator = '0x' + log.topics[1].slice(26);
-          
-          let uri = await fetchTokenURI(agentId);
-          let uriSource = uri ? "TOKENURI_CALL" : null;
-          if (!uri && log.data && log.data !== '0x') {
-            uri = extractUriFromLogData(log.data, agentId);
-            if (uri) uriSource = "FORGED_EVENT_LOG";
-          }
-          
-          // Check current owner and $TOBY balance
-          const { owner, holdsToby } = await fetchOwnerAndTobyBalance(agentId);
-          
-          let name = `Agent #${agentId}`;
-          let description = '';
-          let image = '🪞';
-          let imageUrl = null;
-          let hasMetadata = false;
-          
-          if (uri) {
-            hasMetadata = true;
-            if (uri.startsWith('data:application/json;base64,')) {
-              const base64Data = uri.replace('data:application/json;base64,', '');
-              const parsed = parseBase64Metadata(base64Data);
-              if (parsed) {
-                name = parsed.name || name;
-                description = parsed.description || '';
-                image = parsed.image || '🪞';
-                if (parsed.image && parsed.image.startsWith('http')) {
-                  imageUrl = parsed.image;
-                } else if (parsed.image && parsed.image.startsWith('ipfs://')) {
-                  const hash = parsed.image.replace('ipfs://', '');
-                  imageUrl = IPFS_GATEWAYS[0] + hash;
-                }
-              }
-            } else if (uri.startsWith('ipfs://')) {
-              name = `IPFS Agent #${agentId}`;
-              description = 'Metadata stored on IPFS';
-              try {
-                const ipfsHash = uri.replace('ipfs://', '');
-                const ipfsData = await fetchFromIPFS(ipfsHash);
-                if (ipfsData) {
-                  name = ipfsData.name || name;
-                  description = ipfsData.description || description;
-                  if (ipfsData.image) {
-                    if (ipfsData.image.startsWith('http')) {
-                      imageUrl = ipfsData.image;
-                    } else if (ipfsData.image.startsWith('ipfs://')) {
-                      const imgHash = ipfsData.image.replace('ipfs://', '');
-                      imageUrl = IPFS_GATEWAYS[0] + imgHash;
-                    }
+        // Process in smaller batches to avoid rate limiting
+        const agents = [];
+        const batchSize = 3;
+        
+        for (let i = 0; i < data.result.length; i += batchSize) {
+          const batch = data.result.slice(i, i + batchSize);
+          const batchResults = await pMapLimit(batch, 2, async (log) => {
+            const agentId = parseInt(log.topics[2], 16);
+            const creator = '0x' + log.topics[1].slice(26);
+            
+            let uri = await fetchTokenURI(agentId);
+            let uriSource = uri ? "TOKENURI_CALL" : null;
+            if (!uri && log.data && log.data !== '0x') {
+              uri = extractUriFromLogData(log.data, agentId);
+              if (uri) uriSource = "FORGED_EVENT_LOG";
+            }
+            
+            // Check current owner and $TOBY balance
+            const { owner, holdsToby } = await fetchOwnerAndTobyBalance(agentId);
+            
+            let name = `Agent #${agentId}`;
+            let description = '';
+            let image = '🪞';
+            let imageUrl = null;
+            let hasMetadata = false;
+            
+            if (uri) {
+              hasMetadata = true;
+              if (uri.startsWith('data:application/json;base64,')) {
+                const base64Data = uri.replace('data:application/json;base64,', '');
+                const parsed = parseBase64Metadata(base64Data);
+                if (parsed) {
+                  name = parsed.name || name;
+                  description = parsed.description || '';
+                  image = parsed.image || '🪞';
+                  if (parsed.image && parsed.image.startsWith('http')) {
+                    imageUrl = parsed.image;
+                  } else if (parsed.image && parsed.image.startsWith('ipfs://')) {
+                    const hash = parsed.image.replace('ipfs://', '');
+                    imageUrl = IPFS_GATEWAYS[0] + hash;
                   }
                 }
-              } catch (e) {}
+              } else if (uri.startsWith('ipfs://')) {
+                name = `IPFS Agent #${agentId}`;
+                description = 'Metadata stored on IPFS';
+                try {
+                  const ipfsHash = uri.replace('ipfs://', '');
+                  const ipfsData = await fetchFromIPFS(ipfsHash);
+                  if (ipfsData) {
+                    name = ipfsData.name || name;
+                    description = ipfsData.description || description;
+                    if (ipfsData.image) {
+                      if (ipfsData.image.startsWith('http')) {
+                        imageUrl = ipfsData.image;
+                      } else if (ipfsData.image.startsWith('ipfs://')) {
+                        const imgHash = ipfsData.image.replace('ipfs://', '');
+                        imageUrl = IPFS_GATEWAYS[0] + imgHash;
+                      }
+                    }
+                  }
+                } catch (e) {}
+              }
             }
-          }
+            
+            return {
+              id: agentId,
+              name: name,
+              description: description,
+              image: image,
+              imageUrl: imageUrl,
+              creator: creator,
+              owner: owner,
+              holdsToby: holdsToby,
+              active: true,
+              endorsements: 0,
+              flags: 0,
+              timestamp: parseInt(log.timeStamp) * 1000,
+              uri: uri,
+              uriSource: uriSource,
+              transactionHash: log.transactionHash,
+              hasMetadata: hasMetadata
+            };
+          });
           
-          return {
-            id: agentId,
-            name: name,
-            description: description,
-            image: image,
-            imageUrl: imageUrl,
-            creator: creator,
-            owner: owner,
-            holdsToby: holdsToby,
-            active: true,
-            endorsements: 0,
-            flags: 0,
-            timestamp: parseInt(log.timeStamp) * 1000,
-            uri: uri,
-            uriSource: uriSource,
-            transactionHash: log.transactionHash,
-            hasMetadata: hasMetadata
-          };
-        });
+          agents.push(...batchResults);
+          
+          // Add delay between batches to avoid rate limiting
+          if (i + batchSize < data.result.length) {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        }
         
         agents.sort((a, b) => b.timestamp - a.timestamp);
         allAgents = agents;
@@ -1229,17 +1278,20 @@ function isToadgangAgent(creator, meta, holdsToby = false) {
   }
   
   async function loadAgents() {
+    // Load creator data first
+    await loadCreatorData();
+    
     const success = await fetchAgentsFromBlockscout();
     
     if (!success || allAgents.length === 0) {
       allAgents = [
-        { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", imageUrl: null, creator: OFFICIAL_CREATORS[0], owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30, hasMetadata: true },
-        { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", imageUrl: null, creator: OFFICIAL_CREATORS[0], owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15, hasMetadata: true },
+        { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", imageUrl: null, creator: "0x587464fd25Af9147CB4660B03d899c8893378C0A", owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30, hasMetadata: true },
+        { id: 2, name: "Pond Watcher", description: "Monitors pond liquidity", image: "🌊", imageUrl: null, creator: "0x587464fd25Af9147CB4660B03d899c8893378C0A", owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 28, flags: 1, timestamp: Date.now() - 86400000 * 15, hasMetadata: true },
         { id: 3, name: "MCP Server", description: "Weather data for toads", image: "🌀", imageUrl: null, creator: "0x1234...5678", owner: "0x1234...5678", holdsToby: false, active: true, endorsements: 15, flags: 0, timestamp: Date.now() - 86400000 * 7, hasMetadata: false },
         { id: 4, name: "Toad Trader", description: "Trading bot", image: "🐸", imageUrl: null, creator: "0x9876...4321", owner: "0x9876...4321", holdsToby: false, active: false, endorsements: 8, flags: 3, timestamp: Date.now() - 86400000 * 2, hasMetadata: false },
-        { id: 5, name: "Weather Oracle", description: "Migration weather", image: "☀️", imageUrl: null, creator: OFFICIAL_CREATORS[0], owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 56, flags: 0, timestamp: Date.now() - 86400000 * 45, hasMetadata: true },
+        { id: 5, name: "Weather Oracle", description: "Migration weather", image: "☀️", imageUrl: null, creator: "0x587464fd25Af9147CB4660B03d899c8893378C0A", owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 56, flags: 0, timestamp: Date.now() - 86400000 * 45, hasMetadata: true },
         { id: 6, name: "Pond Monitor", description: "Tracks pond health", image: "🌊", imageUrl: null, creator: "0x5555...5555", owner: "0x5555...5555", holdsToby: false, active: true, endorsements: 19, flags: 1, timestamp: Date.now() - 86400000 * 10, hasMetadata: false },
-        { id: 7, name: "ToadAid Bot", description: "Helps toads daily", image: "🤖", imageUrl: null, creator: OFFICIAL_CREATORS[0], owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 34, flags: 0, timestamp: Date.now() - 86400000 * 5, hasMetadata: true },
+        { id: 7, name: "ToadAid Bot", description: "Helps toads daily", image: "🤖", imageUrl: null, creator: "0x587464fd25Af9147CB4660B03d899c8893378C0A", owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 34, flags: 0, timestamp: Date.now() - 86400000 * 5, hasMetadata: true },
         { id: 8, name: "Liquidity Provider", description: "Pond liquidity data", image: "💧", imageUrl: null, creator: "0x1111...1111", owner: "0x1111...1111", holdsToby: false, active: true, endorsements: 22, flags: 1, timestamp: Date.now() - 86400000 * 3, hasMetadata: false }
       ];
       
@@ -1428,17 +1480,22 @@ function isToadgangAgent(creator, meta, holdsToby = false) {
 
   window.copyShareLink = copyShareLink;
 
-  if (isDetailView) {
-    $("statsBar").style.display = "none";
-    $("filterBar").style.display = "none";
-    $("pagination").style.display = "none";
-    loadSingleAgent(agentId);
-  } else {
-    loadAgents();
-    setInterval(loadAgents, 300000);
-  }
-  
-  console.log("Agent Directory loaded with Blockscout!", isDetailView ? `Showing detail for #${agentId}` : "Showing directory");
+  // Initialize everything
+  (async function init() {
+    await loadCreatorData();
+    
+    if (isDetailView) {
+      $("statsBar").style.display = "none";
+      $("filterBar").style.display = "none";
+      $("pagination").style.display = "none";
+      await loadSingleAgent(agentId);
+    } else {
+      await loadAgents();
+      setInterval(loadAgents, 300000);
+    }
+    
+    console.log("Agent Directory loaded with Blockscout!", isDetailView ? `Showing detail for #${agentId}` : "Showing directory");
+  })();
 </script>
 </body>
 </html>
