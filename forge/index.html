@@ -750,6 +750,23 @@
     return match ? match[1] : null;
   }
 
+  // 👇 MOBILE WALLET DETECTION
+  function isMobileWallet() {
+    // Check user agent for mobile devices
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Check if it's MetaMask mobile app
+    const isMetaMaskMobile = window.ethereum && 
+                            window.ethereum.isMetaMask && 
+                            window.ethereum._metamask?.isMobile;
+    
+    // Check if it's WalletConnect (often used on mobile)
+    const isWalletConnect = window.ethereum && 
+                           window.ethereum.isWalletConnect;
+    
+    return isMobileDevice || isMetaMaskMobile || isWalletConnect;
+  }
+
   function buildMetadata() {
     const meta = {
       type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
@@ -1487,7 +1504,7 @@
 
   btnCheckAgent.addEventListener("click", checkAgentExists);
 
-  // ===== FINAL: Stable Forge Button (Base Mainnet / MPASS-Gated) =====
+  // ===== FORGE BUTTON with mobile timeout =====
   btnForge.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1576,7 +1593,17 @@
       const tx = await contract.forge(agentURI, overrides);
 
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0, 10)}…`);
-      const receipt = await tx.wait();
+      
+      // 👇 Mobile-friendly timeout
+      const timeoutDuration = isMobileWallet() ? 120000 : 60000;
+      console.log(`Using ${timeoutDuration/1000} second timeout for ${isMobileWallet() ? 'mobile' : 'desktop'} wallet`);
+      
+      const receipt = await Promise.race([
+        tx.wait(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Transaction timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
+        )
+      ]);
 
       // ======================================================
       // 5️⃣ Parse Forged event
@@ -1637,7 +1664,7 @@
     }
   });
 
-  // ===== ATTEST BUTTON - NO POPUPS =====
+  // ===== ATTEST BUTTON with mobile timeout =====
   btnAttest.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1667,7 +1694,17 @@
       });
       
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
-      await tx.wait();
+      
+      // 👇 Mobile-friendly timeout
+      const timeoutDuration = isMobileWallet() ? 120000 : 60000;
+      console.log(`Using ${timeoutDuration/1000} second timeout for ${isMobileWallet() ? 'mobile' : 'desktop'} wallet`);
+      
+      await Promise.race([
+        tx.wait(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Transaction timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
+        )
+      ]);
       
       const txLink = `https://basescan.org/tx/${tx.hash}`;
       setStatus("good", `✅ Attested!`);
@@ -1683,7 +1720,7 @@
     }
   });
 
-  // ===== IMPROVED UPDATE BUTTON - NO POPUPS, with ownership check =====
+  // ===== IMPROVED UPDATE BUTTON with existence + ownership check + mobile timeout =====
   btnUpdateAgent.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1694,22 +1731,40 @@
       if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
       
-      setStatus("warn", `Checking Agent #${agentId}...`);
+      setStatus("warn", `🔍 Checking Agent #${agentId}...`);
       
-      // Check ownership using ownerOf
+      // ===== STEP 1: Check if agent exists and get owner =====
       const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
       
       let owner;
+      let currentUri;
+      
       try {
+        // Check existence via ownerOf (will revert if doesn't exist)
         owner = await registryContract.ownerOf(agentId);
+        
+        // Also fetch current URI for reference (optional)
+        try {
+          currentUri = await registryContract.agentURI(agentId);
+          console.log(`Current URI for agent ${agentId}:`, currentUri);
+        } catch (uriError) {
+          console.log("Could not fetch current URI, but agent exists");
+        }
+        
       } catch (e) {
-        throw new Error(`Agent #${agentId} does not exist`);
+        // If ownerOf reverts, agent doesn't exist
+        console.error("Agent check error:", e);
+        throw new Error(`❌ Agent #${agentId} does not exist on-chain`);
       }
       
+      // ===== STEP 2: Check ownership =====
       const signerAddr = await signer.getAddress();
       if (owner.toLowerCase() !== signerAddr.toLowerCase()) {
-        throw new Error(`You do not own agent #${agentId}`);
+        throw new Error(`❌ You do not own agent #${agentId} (owner: ${shortAddr(owner)})`);
       }
+      
+      // ===== STEP 3: Proceed with update =====
+      setStatus("good", `✓ Agent #${agentId} verified. Sending update...`);
       
       const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
@@ -1717,85 +1772,68 @@
       
       setStatus("warn", `Updating Agent #${agentId}...`);
       
-      // Use REGISTRY_PROXY, not REGISTRY_ROUTER
       const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
       
-      try {
-        // Estimate gas
-        console.log("Estimating gas for update...");
-        const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
-        console.log("Gas estimate:", estimatedGas.toString());
-        
-        const feeData = await provider.getFeeData();
-        const gasLimit = estimatedGas * 120n / 100n;
-        
-        // Send transaction
-        console.log("Sending update transaction...");
-        const tx = await contract.setAgentURI(agentId, newUri, {
-          gasLimit: gasLimit,
-          gasPrice: feeData.gasPrice || undefined
-        });
-        
-        setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
-        
-        // Wait for transaction
-        const receipt = await Promise.race([
-          tx.wait(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Transaction timeout")), 60000))
-        ]);
-        
-        console.log("Transaction confirmed:", receipt);
-        
-        const txLink = `https://basescan.org/tx/${tx.hash}`;
-        setStatus("good", `✅ Agent #${agentId} updated!`);
-        statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
-        
-        updateAgentId.value = '';
-        newAgentUri.value = '';
-        updateButtons();
-        
-        // Refresh agents list
-        await fetchAgentsFromBlockscout();
-        
-      } catch (estimateError) {
-        console.error("Update error details:", estimateError);
-        
-        let errorMessage = "Update failed. ";
-        
-        if (estimateError.data) {
-          try {
-            const revertReason = ethers.toUtf8String('0x' + estimateError.data.slice(138));
-            errorMessage += revertReason.replace(/\0/g, '');
-          } catch (e) {
-            console.log("Could not decode revert data");
-          }
-        }
-        
-        if (estimateError.message.includes("execution reverted")) {
-          if (estimateError.message.includes("owner") || errorMessage.includes("owner")) {
-            errorMessage = "❌ You don't own this agent";
-          } else if (estimateError.message.includes("exist") || errorMessage.includes("exist")) {
-            errorMessage = "❌ Agent does not exist";
-          } else {
-            errorMessage = "❌ Contract reverted. You may not own this agent.";
-          }
-        } else if (estimateError.code === 4001) {
-          errorMessage = "Transaction rejected";
-        } else {
-          errorMessage = estimateError.shortMessage || estimateError.message || "Unknown error";
-        }
-        
-        throw new Error(errorMessage);
-      }
+      // Estimate gas
+      console.log("Estimating gas for update...");
+      const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
+      console.log("Gas estimate:", estimatedGas.toString());
       
-      btnUpdateAgent.innerHTML = originalText;
-      btnUpdateAgent.disabled = false;
+      const feeData = await provider.getFeeData();
+      const gasLimit = estimatedGas * 120n / 100n;
+      
+      // Send transaction
+      console.log("Sending update transaction...");
+      const tx = await contract.setAgentURI(agentId, newUri, {
+        gasLimit: gasLimit,
+        gasPrice: feeData.gasPrice || undefined
+      });
+      
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+      
+      // 👇 Mobile-friendly timeout
+      const timeoutDuration = isMobileWallet() ? 120000 : 60000;
+      console.log(`Using ${timeoutDuration/1000} second timeout for ${isMobileWallet() ? 'mobile' : 'desktop'} wallet`);
+      
+      const receipt = await Promise.race([
+        tx.wait(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Transaction timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
+        )
+      ]);
+      
+      console.log("Transaction confirmed:", receipt);
+      
+      const txLink = `https://basescan.org/tx/${tx.hash}`;
+      setStatus("good", `✅ Agent #${agentId} updated!`);
+      statusText.innerHTML = `✅ Agent #${agentId} updated! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+      
+      updateAgentId.value = '';
+      newAgentUri.value = '';
+      updateButtons();
+      
+      // Refresh agents list
+      await fetchAgentsFromBlockscout();
       
     } catch (err) {
-      console.error("Final update error:", err);
+      console.error("Update error:", err);
       btnUpdateAgent.innerHTML = 'Update Agent';
       btnUpdateAgent.disabled = false;
-      setStatus("bad", err.message || "Update failed");
+      
+      // Show user-friendly error
+      let errorMessage = err.message || "Update failed";
+      
+      if (errorMessage.includes("does not exist")) {
+        setStatus("bad", `❌ Agent #${updateAgentId.value} not found on-chain`);
+      } else if (errorMessage.includes("do not own")) {
+        setStatus("bad", errorMessage);
+      } else if (errorMessage.includes("execution reverted")) {
+        setStatus("bad", "❌ Contract reverted - you may not own this agent");
+      } else if (err.code === 4001) {
+        setStatus("bad", "Transaction rejected in wallet");
+      } else {
+        setStatus("bad", errorMessage);
+      }
     }
   });
 
