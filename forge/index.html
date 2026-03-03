@@ -1727,9 +1727,10 @@ async function checkAgentExists() {
       if (!signer) throw new Error("Connect wallet first");
       
       const agentId = updateAgentId.value.trim();
-      const newUri = newAgentUri.value.trim();
-      
-      if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
+      let newUri = (newAgentUri.value || "");
+      // sanitize common mobile copy/paste artifacts
+      newUri = newUri.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       if (!isValidUri(newUri)) throw new Error("Invalid URI format. Use ipfs://, https://, or data:...");
       
       setStatus("warn", `🔍 Checking Agent #${agentId}...`);
@@ -1775,22 +1776,25 @@ async function checkAgentExists() {
       
       const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
       
-      // Estimate gas
-      console.log("Estimating gas for update...");
-      const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
-      console.log("Gas estimate:", estimatedGas.toString());
-      
-      const feeData = await provider.getFeeData();
-      const gasLimit = estimatedGas * 120n / 100n;
-      
-      // Send transaction
+      // Estimate gas (mobile wallets sometimes fail eth_estimateGas with "missing revert data")
+      let overrides = {};
+      try {
+        console.log("Estimating gas for update...");
+        const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
+        console.log("Gas estimate:", estimatedGas.toString());
+        // add 20% buffer
+        const gasLimit = (estimatedGas * 120n) / 100n;
+        overrides = { gasLimit };
+      } catch (gasErr) {
+        console.warn("Gas estimation failed; using fallback gasLimit. Error:", gasErr);
+        // conservative fallback; Base txs for setAgentURI are typically well under this
+        overrides = { gasLimit: 400000n };
+      }
+
+      // Send transaction (do NOT force gasPrice; let wallet/provider pick EIP-1559 fees)
       console.log("Sending update transaction...");
-      const tx = await contract.setAgentURI(agentId, newUri, {
-        gasLimit: gasLimit,
-        gasPrice: feeData.gasPrice || undefined
-      });
-      
-      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+      const tx = await contract.setAgentURI(agentId, newUri, overrides);
+setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       
       // 👇 Mobile-friendly timeout
       const timeoutDuration = isMobileWallet() ? 120000 : 60000;
