@@ -612,9 +612,10 @@
     "function decimals() view returns (uint8)"
   ];
   const REGISTRY_ABI = [
-    "function agentURI(uint256) view returns (string)",
-    "function ownerOf(uint256) view returns (address)"
-  ];
+  {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"agentId","type":"uint256"},{"internalType":"string","name":"newURI","type":"string"}],"name":"setAgentURI","outputs":[],"stateMutability":"nonpayable","type":"function"}
+];
   
   // FIXED: Uppercase URI to match contract
   const UPDATE_ABI = [
@@ -1776,24 +1777,32 @@ if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       
       const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
       
-      // Estimate gas (mobile wallets sometimes fail eth_estimateGas with "missing revert data")
-      let overrides = {};
-      try {
-        console.log("Estimating gas for update...");
-        const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
-        console.log("Gas estimate:", estimatedGas.toString());
-        // add 20% buffer
-        const gasLimit = (estimatedGas * 120n) / 100n;
-        overrides = { gasLimit };
-      } catch (gasErr) {
-        console.warn("Gas estimation failed; using fallback gasLimit. Error:", gasErr);
-        // conservative fallback; Base txs for setAgentURI are typically well under this
-        overrides = { gasLimit: 400000n };
-      }
+      // Send transaction (mobile wallets may fail estimateGas; try direct send first)
+console.log("Sending update transaction...");
 
-      // Send transaction (do NOT force gasPrice; let wallet/provider pick EIP-1559 fees)
-      console.log("Sending update transaction...");
-      const tx = await contract.setAgentURI(agentId, newUri, overrides);
+let tx;
+try {
+  // Try without overrides first (let wallet/provider estimate fees)
+  tx = await contract.setAgentURI(agentId, newUri);
+} catch (sendErr1) {
+  console.warn("Direct send failed, retrying with fallback gasLimit. Error:", sendErr1);
+
+  const msg1 = String((sendErr1 && (sendErr1.shortMessage || sendErr1.reason || sendErr1.message)) || "");
+  const low1 = msg1.toLowerCase();
+
+  // If it's the common mobile/provider estimation issue, retry with a conservative gas limit
+  if (
+    low1.includes("missing revert data") ||
+    low1.includes("call exception") ||
+    low1.includes("execution reverted") ||
+    low1.includes("estimate") ||
+    low1.includes("intrinsic gas too low")
+  ) {
+    tx = await contract.setAgentURI(agentId, newUri, { gasLimit: 400000n });
+  } else {
+    throw sendErr1;
+  }
+}
 setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       
       // 👇 Mobile-friendly timeout
