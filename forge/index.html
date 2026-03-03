@@ -863,48 +863,47 @@
     }
   }
 
-  // Check if agent exists
-  async function checkAgentExists() {
-    const agentId = (agentIdIn.value || "").trim();
-    if (!agentId || !provider) {
-      setStatus("warn", "Enter Agent ID first");
-      return;
-    }
-    
-    try {
-      // Check in our fetched agents list first
-      const agentExists = allAgents.some(a => a.id.toString() === agentId);
-      if (agentExists) {
-        setStatus("good", `✅ Agent ${agentId} exists!`);
-        return;
-      }
-      
-      // If not in our list, try to fetch from Router events
-      const url = `https://base.blockscout.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=${REGISTRY_ROUTER}&topic0=${FORGED_EVENT_SIG}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.status === "1" && data.result) {
-        const found = data.result.some(log => {
-          const id = parseInt(log.topics[2], 16);
-          return id.toString() === agentId;
-        });
-        
-        if (found) {
-          setStatus("good", `✅ Agent ${agentId} exists!`);
-        } else {
-          setStatus("bad", `❌ Agent ${agentId} not found`);
-        }
-      } else {
-        setStatus("bad", `❌ Agent ${agentId} not found`);
-      }
-    } catch (err) {
-      console.error("Check agent error:", err);
+  // Check if agent exists (ON-CHAIN, mobile-safe)
+async function checkAgentExists() {
+  const agentId = (agentIdIn.value || "").trim();
+  if (!agentId) {
+    setStatus("warn", "Enter Agent ID first");
+    return;
+  }
+  if (!provider) {
+    setStatus("warn", "Connect wallet first");
+    return;
+  }
+
+  try {
+    setStatus("warn", `🔍 Checking Agent #${agentId} on-chain...`);
+
+    // On-chain truth: ownerOf() succeeds => exists; reverts => not found (or wrong network)
+    const registry = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+    const owner = await registry.ownerOf(agentId);
+
+    setStatus("good", `✅ Agent ${agentId} exists (owner: ${shortAddr(owner)})`);
+  } catch (err) {
+    console.error("Check agent error:", err);
+
+    const msg = (err && (err.shortMessage || err.reason || err.message)) ? String(err.shortMessage || err.reason || err.message) : "";
+    const low = msg.toLowerCase();
+
+    if (
+      low.includes("missing revert data") ||
+      low.includes("call exception") ||
+      low.includes("execution reverted") ||
+      low.includes("revert")
+    ) {
+      setStatus("bad", `❌ Agent ${agentId} not found on-chain (or wrong network).`);
+    } else {
       setStatus("bad", `Error checking agent ${agentId}`);
     }
   }
+}
 
-  // Fetch image from IPFS with fallback
+// Fetch image from IPFS with fallback
+
   async function getImageUrl(uri) {
     if (!uri) return null;
     if (uri.startsWith('http')) return uri;
@@ -1070,7 +1069,9 @@
       mpassBalanceContainer.style.display = "block";
       mpassBalance.innerHTML = `💰 MPASS Balance: (RPC unavailable)`;
       mpassBalance.style.background = "rgba(255,107,107,.2)";
-    }
+    
+      try { setStatus("warn", "⚠️ Indexing fetch failed in this browser. Use Agent ID directly."); } catch (e) {}
+}
   }
 
   async function estimateGas() {
