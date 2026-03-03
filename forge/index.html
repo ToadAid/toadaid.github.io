@@ -736,6 +736,21 @@
     return addr ? addr.slice(0,6) + "…" + addr.slice(-4) : "—";
   }
 
+
+function isInAppWallet() {
+  const ua = (navigator.userAgent || "").toLowerCase();
+  return (
+    ua.includes("okx") ||
+    ua.includes("coinbasewallet") ||
+    ua.includes("metamask") ||
+    ua.includes("trust") ||
+    ua.includes("tokenpocket") ||
+    ua.includes("imtoken") ||
+    ua.includes("rainbow") ||
+    ua.includes("zerion")
+  );
+}
+
   function isValidUri(s) {
     if (!s) return false;
     const t = s.trim();
@@ -1736,37 +1751,45 @@ if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       
       setStatus("warn", `🔍 Checking Agent #${agentId}...`);
       
-      // ===== STEP 1: Check if agent exists and get owner =====
-      const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-      
-      let owner;
-      let currentUri;
-      
-      try {
-        // Check existence via ownerOf (will revert if doesn't exist)
-        owner = await registryContract.ownerOf(agentId);
-        
-        // Also fetch current URI for reference (optional)
-        try {
-          currentUri = await registryContract.agentURI(agentId);
-          console.log(`Current URI for agent ${agentId}:`, currentUri);
-        } catch (uriError) {
-          console.log("Could not fetch current URI, but agent exists");
-        }
-        
-      } catch (e) {
-        // If ownerOf reverts, agent doesn't exist
-        console.error("Agent check error:", e);
-        throw new Error(`❌ Agent #${agentId} does not exist on-chain`);
+      // ===== STEP 1+2: Preflight checks (skip on in-app wallets for reliability) =====
+const inApp = isInAppWallet();
+
+let owner;
+let currentUri;
+
+if (!inApp) {
+  try {
+    // Check existence via ownerOf (will revert if doesn't exist)
+    owner = await registryContract.ownerOf(agentId);
+
+    // Best-effort: fetch current URI for reference (optional)
+    try {
+      if (registryContract.tokenURI) {
+        currentUri = await registryContract.tokenURI(agentId);
+      } else if (registryContract.agentURI) {
+        currentUri = await registryContract.agentURI(agentId);
       }
-      
-      // ===== STEP 2: Check ownership =====
-      const signerAddr = await signer.getAddress();
-      if (owner.toLowerCase() !== signerAddr.toLowerCase()) {
-        throw new Error(`❌ You do not own agent #${agentId} (owner: ${shortAddr(owner)})`);
-      }
-      
-      // ===== STEP 3: Proceed with update =====
+      if (currentUri) console.log(`Current URI for agent ${agentId}:`, currentUri);
+    } catch (uriError) {
+      console.log("Could not fetch current URI (ok)");
+    }
+  } catch (e) {
+    console.error("Agent check error:", e);
+    throw new Error(`❌ Agent #${agentId} does not exist on-chain`);
+  }
+
+  // Ownership check (desktop path)
+  const signerAddr = await signer.getAddress();
+  if (owner && owner.toLowerCase() !== signerAddr.toLowerCase()) {
+    throw new Error(`❌ You do not own agent #${agentId} (owner: ${shortAddr(owner)})`);
+  }
+} else {
+  // In-app wallets sometimes fail eth_call/estimateGas with generic errors.
+  // Skip reads; the contract will still enforce ownership on-chain.
+  setStatus("warn", "📲 In-app wallet detected — skipping preflight checks...");
+}
+
+// ===== STEP 3: Proceed with update =====
       setStatus("good", `✓ Agent #${agentId} verified. Sending update...`);
       
       const originalText = btnUpdateAgent.innerHTML;
@@ -1777,39 +1800,40 @@ if (!agentId || !newUri) throw new Error("Enter both Agent ID and new URI");
       
       const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
       
-      // Send transaction (mobile wallets may fail estimateGas; try direct send first)
+      // Send transaction (in-app wallets can be sensitive; use a conservative gasLimit)
 console.log("Sending update transaction...");
 
 let tx;
-try {
-  // Try without overrides first (let wallet/provider estimate fees)
-  tx = await contract.setAgentURI(agentId, newUri);
-} catch (sendErr1) {
-  console.warn("Direct send failed, retrying with fallback gasLimit. Error:", sendErr1);
+const inApp2 = isInAppWallet();
 
-  const msg1 = String((sendErr1 && (sendErr1.shortMessage || sendErr1.reason || sendErr1.message)) || "");
-  const low1 = msg1.toLowerCase();
+if (inApp2) {
+  tx = await contract.setAgentURI(agentId, newUri, { gasLimit: 400000n });
+} else {
+  try {
+    // Try without overrides first (let wallet/provider estimate fees)
+    tx = await contract.setAgentURI(agentId, newUri);
+  } catch (sendErr1) {
+    console.warn("Direct send failed, retrying with fallback gasLimit. Error:", sendErr1);
 
-  // If it's the common mobile/provider estimation issue, retry with a conservative gas limit
-  if (
-    low1.includes("missing revert data") ||
-    low1.includes("call exception") ||
-    low1.includes("execution reverted") ||
-    low1.includes("estimate") ||
-    low1.includes("intrinsic gas too low")
-  ) {
-    tx = await contract.setAgentURI(agentId, newUri, { gasLimit: 400000n });
-  } else {
-    throw sendErr1;
+    const msg1 = String((sendErr1 && (sendErr1.shortMessage || sendErr1.reason || sendErr1.message)) || "");
+    const low1 = msg1.toLowerCase();
+
+    // If it's the common provider estimation issue, retry with a conservative gas limit
+    if (
+      low1.includes("missing revert data") ||
+      low1.includes("call exception") ||
+      low1.includes("execution reverted") ||
+      low1.includes("estimate") ||
+      low1.includes("intrinsic gas too low")
+    ) {
+      tx = await contract.setAgentURI(agentId, newUri, { gasLimit: 400000n });
+    } else {
+      throw sendErr1;
+    }
   }
 }
-setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
-      
-      // 👇 Mobile-friendly timeout
-      const timeoutDuration = isMobileWallet() ? 120000 : 60000;
-      console.log(`Using ${timeoutDuration/1000} second timeout for ${isMobileWallet() ? 'mobile' : 'desktop'} wallet`);
-      
-      const receipt = await Promise.race([
+
+const receipt = await Promise.race([
         tx.wait(),
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error(`Transaction timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
