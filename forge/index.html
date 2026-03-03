@@ -597,7 +597,7 @@
   // REAL Forged event signature from your contract!
   const FORGED_EVENT_SIG = "0x32fd3812eeed46543cb7aaca82d2d133bd341f9cda13bba567150c44bda2dc81";
 
-  // ABIs
+  // ABIs - Added ownerOf to REGISTRY_ABI
   const ROUTER_ABI = [
     "function forge(string agentURI) external returns (uint256 agentId)",
     "event Forged(address indexed user, uint256 indexed agentId, address indexed registry, string agentURI)"
@@ -612,7 +612,8 @@
     "function decimals() view returns (uint8)"
   ];
   const REGISTRY_ABI = [
-    "function agentURI(uint256) view returns (string)"
+    "function agentURI(uint256) view returns (string)",
+    "function ownerOf(uint256) view returns (address)"
   ];
   
   // FIXED: Uppercase URI to match contract
@@ -1636,6 +1637,7 @@
     }
   });
 
+  // ===== ATTEST BUTTON - NO POPUPS =====
   btnAttest.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1644,15 +1646,6 @@
       const kind = Number(kindIn.value || "1");
       const refURI = (refUriIn.value || "").trim();
       const weight = BigInt((weightIn.value || "1").trim() || "1");
-
-      // Check if agent exists in our list first
-      const agentExists = allAgents.some(a => a.id.toString() === agentId.toString());
-      
-      if (!agentExists) {
-        if (!confirm(`⚠️ Agent ${agentId} might not exist. Attest anyway?`)) {
-          return;
-        }
-      }
 
       // Loading state
       const originalText = btnAttest.innerHTML;
@@ -1690,7 +1683,7 @@
     }
   });
 
-  // ===== button with contract address =====
+  // ===== IMPROVED UPDATE BUTTON - NO POPUPS, with ownership check =====
   btnUpdateAgent.addEventListener("click", async () => {
     try {
       if (!signer) throw new Error("Connect wallet first");
@@ -1703,19 +1696,20 @@
       
       setStatus("warn", `Checking Agent #${agentId}...`);
       
-      // Check if agent exists
+      // Check ownership using ownerOf
+      const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+      
+      let owner;
       try {
-        const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-        const currentUri = await registryContract.tokenURI(agentId);
-        console.log(`Current URI for agent ${agentId}:`, currentUri);
-      } catch (checkError) {
-        console.error("Agent check error:", checkError);
-        if (!confirm(`⚠️ Agent #${agentId} might not exist. Update anyway?`)) {
-          return;
-        }
+        owner = await registryContract.ownerOf(agentId);
+      } catch (e) {
+        throw new Error(`Agent #${agentId} does not exist`);
       }
       
-      if (!confirm(`Are you sure you want to update Agent #${agentId}?\n\nOld metadata will still exist on IPFS but the on-chain pointer will change.`)) return;
+      const signerAddr = await signer.getAddress();
+      if (owner.toLowerCase() !== signerAddr.toLowerCase()) {
+        throw new Error(`You do not own agent #${agentId}`);
+      }
       
       const originalText = btnUpdateAgent.innerHTML;
       btnUpdateAgent.innerHTML = '⏳ Updating...';
