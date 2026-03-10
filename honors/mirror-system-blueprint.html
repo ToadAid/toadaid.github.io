@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror Runtime · Fully Detached Blueprint | ToadAid</title>
+<meta name="description" content="A blueprint page for the fully detached Mirror Runtime: shell, daemon, provider runtime, policy engine, pond/ocean network, and future agent wallet layer." />
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+<style>
+:root{
+  --bg:#0b1020;
+  --bg2:#0a1326;
+  --ink:#e5eefc;
+  --muted:#9fb4d1;
+  --accent:#7dd3fc;
+  --primary-light:#60a5fa;
+  --primary-dark:#2563eb;
+  --glow-cyan:#22d3ee;
+  --glow-teal:#34d399;
+  --glow-blue:#60a5fa;
+  --card-border: rgba(120,150,200,.45);
+  --card-bg: #0a1222;
+  --card-grad1: rgba(2, 8, 23, 0.85);
+  --card-grad2: rgba(4, 12, 28, 1);
+}
+*{box-sizing:border-box}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, #0f1b38 0, transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, #032a24 0, transparent 55%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  color:var(--ink);
+  line-height:1.65;
+  text-rendering:optimizeLegibility;
+}
+a{color:#9bd2ff;text-decoration:none}
+a:hover{color:#cfe9ff;text-decoration:underline}
+header[role="banner"]{
+  background:
+    radial-gradient(1000px 500px at 10% 10%, #0f172a 0, transparent 60%),
+    radial-gradient(1000px 500px at 90% 90%, #022c22 0, transparent 55%),
+    linear-gradient(180deg, #0b1428 0%, #0a1222 100%);
+  color:#fff;
+  padding:64px 20px 52px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid rgba(120,150,200,.25);
+}
+header[role="banner"]::before{
+  content:"";position:absolute;inset:-40px;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.18)0%,transparent55%),
+    radial-gradient(circle at 82% 18%,rgba(52,211,153,0.16)0%,transparent55%),
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.10)0%,transparent60%);
+  opacity:.9; filter:blur(2px); animation:pulse 12s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.03)}}
+header h1{
+  margin:0 0 12px;
+  font-size:clamp(2rem,4vw,3.1rem);
+  text-shadow:0 6px 24px rgba(0,0,0,.45);
+  position:relative; z-index:1;
+  letter-spacing:.3px;
+}
+header .subtitle{font-size:1.08rem; opacity:.92; margin-bottom:18px; position:relative; z-index:1; max-width:900px; margin-inline:auto;}
+.logo{font-size:4rem; margin-bottom:18px; animation:float 9s ease-in-out infinite; position:relative; z-index:1;}
+@keyframes float{0%,100%{transform:translateY(0)}33%{transform:translateY(-10px)}66%{transform:translateY(6px)}}
+nav.breadcrumb{max-width:1200px; margin:0 auto; padding:15px 25px 0; font-size:.98rem; position:relative; z-index:2;}
+.wrap{max-width:1220px;margin:0 auto;padding:32px 25px 72px}
+.card{
+  background:
+    radial-gradient(800px 400px at 0% 0%, rgba(56,189,248,0.10) 0, transparent 60%),
+    linear-gradient(180deg, var(--card-grad1) 0%, var(--card-grad2) 100%);
+  border-radius:22px;border:1px solid var(--card-border);
+  box-shadow:0 18px 40px rgba(0,0,0,0.65), 0 0 0 1px rgba(15,23,42,0.7);
+  padding:28px;margin-bottom:32px;position:relative;overflow:hidden;
+}
+.card>*{position:relative;z-index:1}
+.meta{color:var(--muted);font-size:.95rem;margin:6px 0 16px}
+h2{margin:6px 0 12px;color:var(--accent);padding-bottom:8px;letter-spacing:.02em;border-bottom:2px solid rgba(34,211,238,.8);display:flex;align-items:center;gap:.5rem}
+h3{margin:18px 0 10px;color:#a5e2ff}
+.small{font-size:.9rem;color:var(--muted)}
+.badge{display:inline-block;background:rgba(10,18,34,0.85);border:1px solid rgba(148,163,184,0.85);color:#dff4ff;border-radius:999px;padding:4px 13px;font-size:.9rem;margin:4px 5px}
+.anchor{font-size:.9rem;opacity:.7;text-decoration:none;border:1px solid rgba(148,163,184,.35);padding:1px 8px;border-radius:999px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:26px 0}
+.module{background:linear-gradient(145deg,#0a1222,#0a1222);border-radius:18px;padding:22px 20px 18px;border:1px solid rgba(148,163,184,0.55);position:relative;overflow:hidden}
+.module:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue));opacity:.9}
+.module .icon{font-size:2rem;margin-bottom:8px}.module .title{font-size:1.18rem;margin-bottom:8px;color:#b7fbe3}
+pre.code{background:#0b152a;border-radius:12px;padding:14px 16px;font-size:.88rem;overflow-x:auto;border:1px solid rgba(30,64,175,0.55);color:#dbeafe;white-space:pre-wrap}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.compare .pane{background:rgba(10,18,34,.92);border:1px solid rgba(148,163,184,.55);border-radius:18px;padding:18px}
+.timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:20px}
+.timeline .step{background:rgba(10,18,34,.92);border:1px solid rgba(148,163,184,.55);border-radius:16px;padding:16px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 4px}
+.kpi .item{background:rgba(10,18,34,0.9);border:1px solid rgba(148,163,184,0.9);border-radius:12px;padding:14px 16px;text-align:center;font-size:.95rem}
+footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;text-align:center;padding:0 0 28px}
+@media (max-width:860px){.compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header role="banner">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror Runtime · Fully Detached Blueprint</span>
+  </nav>
+  <div class="logo" aria-hidden="true">🪞🌊⚙️</div>
+  <h1>Mirror Runtime · Fully Detached Blueprint</h1>
+  <p class="subtitle">A record of the long-path vision: Mirror as its own shell, daemon, provider runtime, policy engine, memory system, pond/ocean network, and future onchain execution layer.</p>
+  <div aria-hidden="true" style="margin-top:14px">
+    <span class="badge">Detached Mirror</span>
+    <span class="badge">Runtime Core</span>
+    <span class="badge">Provider Organ</span>
+    <span class="badge">Pond → Ocean</span>
+    <span class="badge">Policy + Journal</span>
+    <span class="badge">Future Agent Wallet</span>
+    <span class="badge">ToadAid Record</span>
+  </div>
+</header>
+
+<main class="wrap" role="main">
+  <section class="card" id="meaning">
+    <h2>Why this page exists <a class="anchor" href="#meaning">#</a></h2>
+    <div class="meta">Blueprint record · saved for ToadAid memory</div>
+    <p>This page is a memory artifact for the Mirror forge. It records the long-term destination of the system: not only an OpenClaw-assisted runtime, but a <strong>fully detached Mirror</strong> that can stand on its own body, think with its own policy, remember with its own journal, speak through its own provider runtime, and one day execute through a wallet layer on Base.</p>
+    <div class="kpi">
+      <div class="item"><strong>Current truth</strong><br>Hybrid runtime with OpenClaw shell adapters</div>
+      <div class="item"><strong>Future truth</strong><br>Mirror opens the doors, Mirror thinks, Mirror acts</div>
+      <div class="item"><strong>Record purpose</strong><br>Preserve intent, architecture, and sequence</div>
+    </div>
+  </section>
+
+  <section class="card" id="diagram">
+    <h2>Fully Detached Mirror System Diagram <a class="anchor" href="#diagram">#</a></h2>
+    <div class="meta">Detached target state · shell, daemon, policy, provider, wallet</div>
+<pre class="code"><code>Users / Travelers
+  CLI • Web UI • REST API • WebSocket UI • Mobile App • Bots
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│               MIRROR GATEWAY / SHELL LAYER                 │
+│ Native Mirror CLI • Native Web/API gateway • Session ingress│
+│ Operator auth • Optional future channel adapters            │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  MIRRORDAEMON RUNTIME CORE                 │
+│ Lifecycle • Boot-time snapshot • Local auth • Orchestration│
+│ Operator/debug APIs                                         │
+└─────────────────────────────────────────────────────────────┘
+        │                 │                    │
+        ▼                 ▼                    ▼
+┌──────────────┐  ┌──────────────┐    ┌────────────────────┐
+│ POLICY / LAW │  │ MEMORY       │    │ POND / OCEAN       │
+│ allow/deny   │  │ journal/runs │    │ manifests/trust    │
+│ approvals    │  │ evidence     │    │ consult/network    │
+└──────────────┘  └──────────────┘    └────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                PROVIDER RUNTIME ORGAN                      │
+│ config • credentials • status • health • invocation state │
+│ provider-backed internal calls                             │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                AUTH / CREDENTIAL LAYER                     │
+│ OAuth flows • API key storage • auth profiles • refresh    │
+│ (Mirror-native in detached future)                         │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│               MODEL / PROVIDER BACKENDS                    │
+│ local models • hosted APIs • routed model backends         │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  TOOL / ACTION RUNTIME                     │
+│ exec • files • git • onchain read/write gates             │
+│ approval-enforced action orchestration                     │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│               AGENT WALLET LAYER (FUTURE)                  │
+│ Coinbase Base Agent Wallet or pluggable wallet provider    │
+│ Mirror decides → Wallet executes                           │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    BASE / ONCHAIN LAYER                    │
+│ identity • registry • contracts • attestations • assets    │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+  </section>
+
+  <section class="card" id="compare">
+    <h2>Current Hybrid vs Fully Detached <a class="anchor" href="#compare">#</a></h2>
+    <div class="compare">
+      <div class="pane">
+        <h3>Current Hybrid Mirror</h3>
+<pre class="code"><code>Telegram / WhatsApp / Discord / CLI
+        │
+   OpenClaw Adapters
+        │
+   MirrorDaemon Runtime
+        │
+  Provider Runtime + Policy + Journal
+        │
+      Models / Tools / Pond-Ocean</code></pre>
+        <p class="small">OpenClaw opens the doors. Mirror thinks.</p>
+      </div>
+      <div class="pane">
+        <h3>Fully Detached Mirror</h3>
+<pre class="code"><code>CLI / Web UI / REST / WebSocket / Bots
+        │
+     Mirror Gateway
+        │
+    MirrorDaemon Runtime
+        │
+ Provider Runtime + Policy + Journal
+        │
+ Auth / Models / Tools / Wallet / Ocean</code></pre>
+        <p class="small">Mirror opens the doors, Mirror thinks, Mirror acts.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="layers">
+    <h2>Layer Responsibilities <a class="anchor" href="#layers">#</a></h2>
+    <div class="grid">
+      <div class="module"><div class="icon">🧭</div><div class="title">Mirror Gateway / Shell</div><p>Native CLI, native API gateway, request routing, operator auth, and future detached frontdoor experience.</p></div>
+      <div class="module"><div class="icon">🫀</div><div class="title">MirrorDaemon Runtime</div><p>Lifecycle, boot snapshot, local auth boundary, runtime orchestration, and internal control plane.</p></div>
+      <div class="module"><div class="icon">⚖️</div><div class="title">Policy / Law</div><p>Approval rules, allow/deny/require-approval, execution gating, and monk-coder discipline.</p></div>
+      <div class="module"><div class="icon">📜</div><div class="title">Memory / Evidence</div><p>Journal, runs, evidence, auditability, and operator-readable runtime history.</p></div>
+      <div class="module"><div class="icon">🌊</div><div class="title">Pond / Ocean</div><p>Signed manifests, trust, consult-only networking, relationship memory, and sovereign runtime federation.</p></div>
+      <div class="module"><div class="icon">🗣️</div><div class="title">Provider Runtime Organ</div><p>Provider config, credential consumption, status/health/evidence, invocation summary, and internal completion paths.</p></div>
+      <div class="module"><div class="icon">🔐</div><div class="title">Auth / Credentials</div><p>Future detached auth boundary for OAuth, API keys, auth profiles, and credential refresh.</p></div>
+      <div class="module"><div class="icon">🛠️</div><div class="title">Tool / Action Runtime</div><p>Filesystem, exec, git, onchain actions, approvals, and future action orchestration under policy.</p></div>
+      <div class="module"><div class="icon">👛</div><div class="title">Agent Wallet Layer</div><p>Future Coinbase Base Agent Wallet integration as a tool layer: signing, transactions, contract calls, onchain execution.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="boundary">
+    <h2>Clean Boundary Rule <a class="anchor" href="#boundary">#</a></h2>
+<pre class="code"><code>Current truth:
+OpenClaw-assisted Mirror
+• OpenClaw owns shell adapters, OAuth UX, messaging channels
+• MirrorDaemon owns runtime core, policy, memory, provider runtime, pond/ocean
+
+Detached future:
+Mirror-native shell
+• Mirror opens the doors
+• Mirror thinks
+• Mirror executes through policy-gated tools and future wallet layer</code></pre>
+    <p>The detached future does <strong>not</strong> mean collapsing everything into one file or one process. It means the boundaries become Mirror-owned: shell, daemon, provider runtime, auth boundary, tools, and eventually wallet-backed execution.</p>
+  </section>
+
+  <section class="card" id="phases">
+    <h2>Blueprint Phases <a class="anchor" href="#phases">#</a></h2>
+    <div class="timeline">
+      <div class="step"><strong>Phase A</strong><br>OpenClaw shell + Mirror runtime core. Build daemon, policy, journal, pond/ocean, provider seam.</div>
+      <div class="step"><strong>Phase B</strong><br>Hybrid detachment. OpenClaw remains adapters while Mirror owns more provider/auth/runtime internals.</div>
+      <div class="step"><strong>Phase C</strong><br>Mirror-native shell and gateway. Detached frontdoor with preserved runtime discipline.</div>
+      <div class="step"><strong>Phase D</strong><br>Wallet-backed agent actions. Mirror decides, wallet executes, Base records.</div>
+    </div>
+  </section>
+
+  <section class="card" id="wallet">
+    <h2>Future Agent Wallet Placement <a class="anchor" href="#wallet">#</a></h2>
+    <div class="meta">Planned later-stage expansion · not daemon core</div>
+    <p>When the runtime is strong enough, the Coinbase Base Agent Wallet should be added as a <strong>Mirror tool layer</strong>, not embedded inside daemon core. That preserves portability, keeps execution policy-gated, and lets the runtime journal and approval system wrap all onchain actions.</p>
+<pre class="code"><code>Future code shape:
+
+src/
+  mirror-daemon/
+  mirror-runtime/
+  mirror-policy/
+  mirror-provider/
+  mirror-ocean/
+  mirror-tools/
+    wallet/
+      base-agent-wallet.ts
+      signer.ts
+      executor.ts
+
+Rule:
+Mirror decides → Wallet executes → Base records</code></pre>
+  </section>
+
+  <section class="card" id="closing">
+    <h2>Honor Note <a class="anchor" href="#closing">#</a></h2>
+    <p>This blueprint is saved because the path matters. The detached Mirror is not a rush to replace everything at once. It is a patient forge: build the body, law, memory, evidence, voice, and execution discipline first; then widen the pond; then attach the wallet at the right stage. That order is part of the meaning.</p>
+    <p><strong>Blueprint principle:</strong> OpenClaw-assisted Mirror is the bridge. Fully detached Mirror is the horizon.</p>
+  </section>
+</main>
+
+<footer role="contentinfo">
+  <p>ToadAid · Mirror Runtime Blueprint Record · Saved for memory, architecture, and the long forge.</p>
+</footer>
+</body>
+</html>
