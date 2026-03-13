@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror OS · Blueprint | ToadAid</title>
+<meta name="description" content="Blueprint page for Mirror OS: the next phase after Mirror Runtime v1, centered on mirrordaemon, event streams, auth/policy, action runtime, client surfaces, wallet execution, and the Pond/Ocean trust network." />
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+<style>
+:root{
+  --bg:#0b1020;
+  --bg2:#0a1326;
+  --ink:#e5eefc;
+  --muted:#9fb4d1;
+  --accent:#7dd3fc;
+  --primary-light:#60a5fa;
+  --primary-dark:#2563eb;
+  --glow-cyan:#22d3ee;
+  --glow-teal:#34d399;
+  --glow-blue:#60a5fa;
+  --card-border: rgba(120,150,200,.45);
+  --card-bg: #0a1222;
+  --card-grad1: rgba(2, 8, 23, 0.85);
+  --card-grad2: rgba(4, 12, 28, 1);
+}
+*{box-sizing:border-box}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, #0f1b38 0, transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, #032a24 0, transparent 55%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  color:var(--ink);
+  line-height:1.65;
+  text-rendering:optimizeLegibility;
+}
+a{color:#9bd2ff;text-decoration:none}
+a:hover{color:#cfe9ff;text-decoration:underline}
+header[role="banner"]{
+  background:
+    radial-gradient(1000px 500px at 10% 10%, #0f172a 0, transparent 60%),
+    radial-gradient(1000px 500px at 90% 90%, #022c22 0, transparent 55%),
+    linear-gradient(180deg, #0b1428 0%, #0a1222 100%);
+  color:#fff;
+  padding:64px 20px 52px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid rgba(120,150,200,.25);
+}
+header[role="banner"]::before{
+  content:"";position:absolute;inset:-40px;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.18)0%,transparent55%),
+    radial-gradient(circle at 82% 18%,rgba(52,211,153,0.16)0%,transparent55%),
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.10)0%,transparent60%);
+  opacity:.9; filter:blur(2px); animation:pulse 12s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.03)}}
+header h1{margin:0 0 12px;font-size:clamp(2rem,4vw,3.1rem);text-shadow:0 6px 24px rgba(0,0,0,.45);position:relative;z-index:1;letter-spacing:.3px}
+header .subtitle{font-size:1.08rem; opacity:.92; margin-bottom:18px; position:relative; z-index:1; max-width:920px; margin-inline:auto;}
+.logo{font-size:4rem; margin-bottom:18px; animation:float 9s ease-in-out infinite; position:relative; z-index:1;}
+@keyframes float{0%,100%{transform:translateY(0)}33%{transform:translateY(-10px)}66%{transform:translateY(6px)}}
+nav.breadcrumb{max-width:1200px; margin:0 auto; padding:15px 25px 0; font-size:.98rem; position:relative; z-index:2;}
+.wrap{max-width:1220px;margin:0 auto;padding:32px 25px 72px}
+.card{background:radial-gradient(800px 400px at 0% 0%, rgba(56,189,248,0.10) 0, transparent 60%),linear-gradient(180deg, var(--card-grad1) 0%, var(--card-grad2) 100%);border-radius:22px;border:1px solid var(--card-border);box-shadow:0 18px 40px rgba(0,0,0,0.65), 0 0 0 1px rgba(15,23,42,0.7);padding:28px;margin-bottom:32px;position:relative;overflow:hidden}
+.card>*{position:relative;z-index:1}
+.meta{color:var(--muted);font-size:.95rem;margin:6px 0 16px}
+h2{margin:6px 0 12px;color:var(--accent);padding-bottom:8px;letter-spacing:.02em;border-bottom:2px solid rgba(34,211,238,.8);display:flex;align-items:center;gap:.5rem}
+h3{margin:18px 0 10px;color:#a5e2ff}
+.small{font-size:.9rem;color:var(--muted)}
+.badge{display:inline-block;background:rgba(10,18,34,0.85);border:1px solid rgba(148,163,184,0.85);color:#dff4ff;border-radius:999px;padding:4px 13px;font-size:.9rem;margin:4px 5px}
+.anchor{font-size:.9rem;opacity:.7;text-decoration:none;border:1px solid rgba(148,163,184,.35);padding:1px 8px;border-radius:999px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:26px 0}
+.module{background:linear-gradient(145deg,#0a1222,#0a1222);border-radius:18px;padding:22px 20px 18px;border:1px solid rgba(148,163,184,0.55);position:relative;overflow:hidden}
+.module:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue));opacity:.9}
+.module .icon{font-size:2rem;margin-bottom:8px}.module .title{font-size:1.18rem;margin-bottom:8px;color:#b7fbe3}
+pre.code{background:#0b152a;border-radius:12px;padding:14px 16px;font-size:.88rem;overflow-x:auto;border:1px solid rgba(30,64,175,0.55);color:#dbeafe;white-space:pre-wrap}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.compare .pane{background:rgba(10,18,34,.92);border:1px solid rgba(148,163,184,.55);border-radius:18px;padding:18px}
+.timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:20px}
+.timeline .step{background:rgba(10,18,34,.92);border:1px solid rgba(148,163,184,.55);border-radius:16px;padding:16px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 4px}
+.kpi .item{background:rgba(10,18,34,0.9);border:1px solid rgba(148,163,184,0.9);border-radius:12px;padding:14px 16px;text-align:center;font-size:.95rem}
+.callout{background:rgba(7,18,38,.8); border:1px solid rgba(34,211,238,.35); border-radius:16px; padding:16px 18px; margin-top:16px}
+footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;text-align:center;padding:0 0 28px}
+@media (max-width:860px){.compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header role="banner">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror OS · Blueprint</span>
+  </nav>
+  <div style="margin-top:18px; position:relative; z-index:2; text-align:center;">
+    <a href="/honors" style="display:inline-block;padding:8px 16px;border-radius:999px;border:1px solid rgba(148,163,184,0.6);background:rgba(10,18,34,0.85);color:#dff4ff;font-size:.95rem;position:relative;z-index:3;pointer-events:auto;">
+      ← Back to Honors
+    </a>
+  </div>
+  <div class="logo" aria-hidden="true">🪞💻🌊</div>
+  <h1>Mirror OS · Blueprint</h1>
+  <p class="subtitle">The next phase beyond Mirror Runtime v1: a true Mirror operating environment built around <strong>mirrordaemon</strong>, event streams, auth and policy, action runtime, client surfaces, wallet execution, and the Pond/Ocean trust network.</p>
+  <div aria-hidden="true" style="margin-top:14px">
+    <span class="badge">Mirror Runtime v1 Complete</span>
+    <span class="badge">Mirror OS Phase Active</span>
+    <span class="badge">Linux-first</span>
+    <span class="badge">USB Boot First</span>
+    <span class="badge">Cross-platform Runtime</span>
+    <span class="badge">Pond → Ocean</span>
+  </div>
+</header>
+
+<main class="wrap" role="main">
+  <section class="card" id="state">
+    <h2>Current State → Next Horizon <a class="anchor" href="#state">#</a></h2>
+    <div class="meta">Mirror Runtime v1 is real · Mirror OS is the next mountain</div>
+    <p><strong>Mirror Runtime v1</strong> now exists as a coherent standalone system: CLI, service, console, canon engine, workspace, Monk assistance, sync, observability, and the first <strong>mirrordaemon</strong> core. Mirror OS does not replace that truth — it builds on it.</p>
+    <div class="compare">
+      <div class="pane">
+        <h3>What already exists</h3>
+        <ul>
+          <li>Standalone Mirror CLI, service, console, sync, health, observability</li>
+          <li>Canon workflow: interpret → forge → review → commit</li>
+          <li>User workspace: tasks, reminders, heartbeat, continuity</li>
+          <li>Monk assistance: context, resume, follow-up, notes</li>
+          <li>Mirrordaemon foundation: runtime state, sessions, event stream</li>
+        </ul>
+      </div>
+      <div class="pane">
+        <h3>What Mirror OS adds</h3>
+        <ul>
+          <li>A true OS-style runtime spine centered on mirrordaemon</li>
+          <li>Event-driven clients: live UI, mobile, and bot surfaces</li>
+          <li>Mirror-native auth, policy/law, approvals, and action runtime</li>
+          <li>Wallet / onchain execution and trust-aware networking</li>
+          <li>Linux-first portable environment: USB boot first, installable later</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout"><strong>Product truth:</strong> Mirror Runtime remains the engine. Mirror OS becomes the operating environment built around that engine. Runtime should stay cross-platform; Mirror OS should be Linux-first and easy to try through a live USB image.</div>
+  </section>
+
+  <section class="card" id="diagram">
+    <h2>Mirror OS System Diagram <a class="anchor" href="#diagram">#</a></h2>
+    <div class="meta">Target architecture · runtime heart, trust spine, action layer, and client surfaces</div>
+<pre class="code"><code>Users / Travelers / Operators
+  Windows • Linux • macOS (Mirror Runtime)
+  Live USB • Local Install (Mirror OS)
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 MIRROR CLI / UI / CLIENTS                  │
+│ CLI • Web Console • Live UI • Mobile • Bots • API Clients  │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     MIRROR SERVICE LAYER                    │
+│ canonical /mirror/* surface • sync • health • metrics       │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     MIRRORDAEMON CORE                       │
+│ boot snapshot • runtime state • sessions • debug/status     │
+│ canonical event stream • operator surfaces                  │
+└─────────────────────────────────────────────────────────────┘
+        │                  │                    │
+        ▼                  ▼                    ▼
+┌──────────────┐   ┌────────────────┐   ┌────────────────────┐
+│ AUTH LAYER   │   │ POLICY / LAW   │   │ PROVIDER ORGAN     │
+│ credentials  │   │ allow/deny     │   │ config/health/auth │
+│ identity     │   │ approvals       │   │ invocation state   │
+└──────────────┘   └────────────────┘   └────────────────────┘
+        │                  │                    │
+        └──────────────────┴────────────┬───────┘
+                                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  TOOL / ACTION RUNTIME                      │
+│ Mirror-native tools • general actions • workflow runtime    │
+│ explicit execution hooks • no silent autonomy               │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  KNOWLEDGE + PERSONAL STATE                 │
+│ Canon / Lore Graph / Review / Commit                        │
+│ Workspace / Tasks / Reminders / Heartbeat / Monk Context    │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                WALLET / ONCHAIN EXECUTION                   │
+│ signing • Base RPC • approvals • explicit execution         │
+└─────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                POND / OCEAN TRUST NETWORK                   │
+│ manifests • trust graph • consult network • shared nodes    │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+  </section>
+
+  <section class="card" id="principles">
+    <h2>Operating Principles <a class="anchor" href="#principles">#</a></h2>
+    <div class="grid">
+      <div class="module">
+        <div class="icon">🪞</div>
+        <div class="title">Canon stays protected</div>
+        <p>Personal workspace, Monk actions, wallet flows, and client surfaces must never blur with canonical truth. Mirror OS expands execution, not canon mutation.</p>
+      </div>
+      <div class="module">
+        <div class="icon">🏠</div>
+        <div class="title">Workspace stays with the user</div>
+        <p>Core runtime can evolve, but personal state should remain portable, local-first, and migratable across versions, machines, and future Mirror OS environments.</p>
+      </div>
+      <div class="module">
+        <div class="icon">🌱</div>
+        <div class="title">Portable first</div>
+        <p>Mirror Runtime should stay easy to run on Windows, Linux, and macOS. Mirror OS should be easy to try first: live USB, then local install later.</p>
+      </div>
+      <div class="module">
+        <div class="icon">⚖️</div>
+        <div class="title">Action requires trust</div>
+        <p>Every future action layer — tools, bots, wallet execution, network consult — should attach through auth, policy, approvals, and explicit operator intent.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="roadmap">
+    <h2>Ordered Build Roadmap <a class="anchor" href="#roadmap">#</a></h2>
+    <div class="meta">Saved canonical sequence · build in order, do not skip layers</div>
+    <div class="timeline">
+      <div class="step"><strong>Phase 1</strong><br><span class="small">Mirrordaemon core</span><br>Boot snapshot, session registry, runtime state, event stream foundation.</div>
+      <div class="step"><strong>Phase 2</strong><br><span class="small">Event stream / UI foundation</span><br>SSE/WebSocket path for live console, mobile, and bot-facing client updates.</div>
+      <div class="step"><strong>Phase 3</strong><br><span class="small">Auth + policy</span><br>Credentials, approvals, allow/deny, and the law layer.</div>
+      <div class="step"><strong>Phase 4</strong><br><span class="small">Tool / action runtime</span><br>Generalized runtime actions beyond Mirror-native skills.</div>
+      <div class="step"><strong>Phase 5</strong><br><span class="small">Client surfaces</span><br>WebSocket UI, mobile, and Mirror-native bot/channel adapters.</div>
+      <div class="step"><strong>Phase 6</strong><br><span class="small">Wallet / onchain layer</span><br>Signing, chain RPC, safe execution, and explicit approval-gated actions.</div>
+      <div class="step"><strong>Phase 7</strong><br><span class="small">Pond / Ocean network</span><br>Manifest exchange, trust graph, and consult network between Mirror nodes.</div>
+    </div>
+  </section>
+
+  <section class="card" id="modes">
+    <h2>How People Should Reach Mirror <a class="anchor" href="#modes">#</a></h2>
+    <div class="meta">Human-friendly entry paths · not everyone wants the same depth</div>
+    <div class="grid">
+      <div class="module">
+        <div class="icon">🧰</div>
+        <div class="title">Mirror Runtime</div>
+        <p>Cross-platform software for Windows, Linux, and macOS. This is the easiest way to run Mirror where people already live.</p>
+      </div>
+      <div class="module">
+        <div class="icon">💾</div>
+        <div class="title">Mirror OS Live USB</div>
+        <p>The first Mirror OS form should be portable: download, flash, boot, and try. No install risk, no forced commitment, just a full Mirror environment.</p>
+      </div>
+      <div class="module">
+        <div class="icon">🖥️</div>
+        <div class="title">Mirror OS Install</div>
+        <p>Only later, after the live environment is stable, should Mirror OS become installable to local disk for users who want the full pond as daily environment.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="meaning">
+    <h2>Why Mirror OS matters <a class="anchor" href="#meaning">#</a></h2>
+    <div class="meta">ToadAid record · not a hype artifact, but a builder horizon</div>
+    <p>Mirror OS matters because it makes the runtime environment itself reflect the philosophy of the system: truth protected, workspace portable, assistance disciplined, trust explicit, and utility grounded in daily life. It gives builders and travelers a place where the software, the memory, and the rhythm of work belong together.</p>
+    <div class="kpi">
+      <div class="item"><strong>Runtime truth</strong><br>Mirror Runtime is the engine.</div>
+      <div class="item"><strong>OS truth</strong><br>Mirror OS is the environment around that engine.</div>
+      <div class="item"><strong>People first</strong><br>Cross-platform runtime, Linux-first OS, USB first.</div>
+    </div>
+  </section>
+</main>
+
+<footer role="contentinfo">
+  Mirror OS Blueprint · ToadAid Honors · recorded for the next forge after Mirror Runtime v1.
+</footer>
+</body>
+</html>
