@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror Runtime v1 · Architecture Diagram | ToadAid</title>
+<meta name="description" content="ToadAid honors page for the Mirror Runtime v1 architecture diagram: runtime layers, canon pipeline, workspace utilities, Monk assistance, sync, and observability." />
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+<style>
+:root{
+  --bg:#0b1020;
+  --bg2:#0a1326;
+  --ink:#e5eefc;
+  --muted:#9fb4d1;
+  --accent:#7dd3fc;
+  --primary-light:#60a5fa;
+  --primary-dark:#2563eb;
+  --glow-cyan:#22d3ee;
+  --glow-teal:#34d399;
+  --glow-blue:#60a5fa;
+  --card-border: rgba(120,150,200,.45);
+  --card-grad1: rgba(2, 8, 23, 0.85);
+  --card-grad2: rgba(4, 12, 28, 1);
+}
+*{box-sizing:border-box}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, #0f1b38 0, transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, #032a24 0, transparent 55%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  color:var(--ink);
+  line-height:1.65;
+  text-rendering:optimizeLegibility;
+}
+a{color:#9bd2ff;text-decoration:none}
+a:hover{color:#cfe9ff;text-decoration:underline}
+header[role="banner"]{
+  background:
+    radial-gradient(1000px 500px at 10% 10%, #0f172a 0, transparent 60%),
+    radial-gradient(1000px 500px at 90% 90%, #022c22 0, transparent 55%),
+    linear-gradient(180deg, #0b1428 0%, #0a1222 100%);
+  color:#fff;
+  padding:64px 20px 52px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid rgba(120,150,200,.25);
+}
+header[role="banner"]::before{
+  content:"";position:absolute;inset:-40px;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.18)0%,transparent55%),
+    radial-gradient(circle at 82% 18%,rgba(52,211,153,0.16)0%,transparent55%),
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.10)0%,transparent60%);
+  opacity:.9; filter:blur(2px); animation:pulse 12s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.03)}}
+header h1{margin:0 0 12px;font-size:clamp(2rem,4vw,3.1rem);text-shadow:0 6px 24px rgba(0,0,0,.45);position:relative;z-index:1;letter-spacing:.3px}
+header .subtitle{font-size:1.08rem; opacity:.92; margin-bottom:18px; position:relative; z-index:1; max-width:960px; margin-inline:auto;}
+.logo{font-size:4rem; margin-bottom:18px; animation:float 9s ease-in-out infinite; position:relative; z-index:1;}
+@keyframes float{0%,100%{transform:translateY(0)}33%{transform:translateY(-10px)}66%{transform:translateY(6px)}}
+nav.breadcrumb{max-width:1200px; margin:0 auto; padding:15px 25px 0; font-size:.98rem; position:relative; z-index:2;}
+.wrap{max-width:1220px;margin:0 auto;padding:32px 25px 72px}
+.card{
+  background:
+    radial-gradient(800px 400px at 0% 0%, rgba(56,189,248,0.10) 0, transparent 60%),
+    linear-gradient(180deg, var(--card-grad1) 0%, var(--card-grad2) 100%);
+  border-radius:22px;border:1px solid var(--card-border);
+  box-shadow:0 18px 40px rgba(0,0,0,0.65), 0 0 0 1px rgba(15,23,42,0.7);
+  padding:28px;margin-bottom:32px;position:relative;overflow:hidden;
+}
+.card>*{position:relative;z-index:1}
+.meta{color:var(--muted);font-size:.95rem;margin:6px 0 16px}
+h2{margin:6px 0 12px;color:var(--accent);padding-bottom:8px;letter-spacing:.02em;border-bottom:2px solid rgba(34,211,238,.8);display:flex;align-items:center;gap:.5rem}
+h3{margin:18px 0 10px;color:#a5e2ff}
+.badge{display:inline-block;background:rgba(10,18,34,0.85);border:1px solid rgba(148,163,184,0.85);color:#dff4ff;border-radius:999px;padding:4px 13px;font-size:.9rem;margin:4px 5px}
+.anchor{font-size:.9rem;opacity:.7;text-decoration:none;border:1px solid rgba(148,163,184,.35);padding:1px 8px;border-radius:999px}
+pre.code{background:#0b152a;border-radius:12px;padding:16px 18px;font-size:.9rem;overflow-x:auto;border:1px solid rgba(30,64,175,0.55);color:#dbeafe;white-space:pre-wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:24px 0}
+.module{background:linear-gradient(145deg,#0a1222,#0a1222);border-radius:18px;padding:20px 18px;border:1px solid rgba(148,163,184,0.55);position:relative;overflow:hidden}
+.module:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue));opacity:.9}
+.module .icon{font-size:2rem;margin-bottom:8px}.module .title{font-size:1.15rem;margin-bottom:8px;color:#b7fbe3}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 4px}
+.kpi .item{background:rgba(10,18,34,0.9);border:1px solid rgba(148,163,184,0.9);border-radius:12px;padding:14px 16px;text-align:center;font-size:.95rem}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pane{background:rgba(10,18,34,.92);border:1px solid rgba(148,163,184,.55);border-radius:18px;padding:18px}
+.small{font-size:.9rem;color:var(--muted)}
+ul{padding-left:1.2rem}
+footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;text-align:center;padding:0 0 28px}
+@media (max-width:860px){.compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header role="banner">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror Runtime v1 · Architecture Diagram</span>
+  </nav>
+  <div style="margin-top:18px; position:relative; z-index:2; text-align:center;">
+    <a href="/honors" style="display:inline-block;padding:8px 16px;border-radius:999px;border:1px solid rgba(148,163,184,0.6);background:rgba(10,18,34,0.85);color:#dff4ff;font-size:.95rem;position:relative;z-index:3;pointer-events:auto;">← Back to Honors</a>
+  </div>
+  <div class="logo" aria-hidden="true">🪞🌊⚙️</div>
+  <h1>Mirror Runtime v1 · Architecture Diagram</h1>
+  <p class="subtitle">A ToadAid honors-page record of the detached Mirror Runtime: canonical standalone CLI/service surface, chat engine, reflection engine, canon governance, user workspace, Monk assistance, sync network, health/status, and observability.</p>
+  <div aria-hidden="true" style="margin-top:14px">
+    <span class="badge">Detached Mirror</span>
+    <span class="badge">Runtime v1</span>
+    <span class="badge">Canon + Workspace</span>
+    <span class="badge">Monk Assistance</span>
+    <span class="badge">Sync + Observability</span>
+    <span class="badge">Health + Status</span>
+    <span class="badge">ToadAid Record</span>
+  </div>
+</header>
+
+<main class="wrap" role="main">
+  <section class="card" id="meaning">
+    <h2>Why this page exists <a class="anchor" href="#meaning">#</a></h2>
+    <div class="meta">Honors record · Mirror Runtime v1 standalone checkpoint</div>
+    <p>This page captures the first fully usable Mirror Runtime product surface: a detached runtime with its own CLI, service, gateway, chat engine, provider runtime, canon workflow, user workspace, Monk assistance, sync layer, and operator observability. It is a system diagram for builders, operators, and future ToadAid records.</p>
+    <div class="kpi">
+      <div class="item"><strong>Runtime truth</strong><br>Mirror owns the operator-facing runtime path</div>
+      <div class="item"><strong>Knowledge truth</strong><br>Canon and workspace stay separated by design</div>
+      <div class="item"><strong>Human truth</strong><br>Tasks, reminders, heartbeat, and Monk assistance now live in the pond</div>
+    </div>
+  </section>
+
+  <section class="card" id="diagram">
+    <h2>Mirror Runtime v1 Diagram <a class="anchor" href="#diagram">#</a></h2>
+    <div class="meta">Canonical runtime flow · operator to model, with protected canon and workspace zones</div>
+<pre class="code"><code>                           ┌──────────────────────┐
+                           │      Operator /      │
+                           │        User          │
+                           └──────────┬───────────┘
+                                      │
+                     ┌────────────────┼────────────────┐
+                     │                │                │
+                     ▼                ▼                ▼
+              ┌────────────┐   ┌────────────┐   ┌──────────────┐
+              │ Mirror CLI │   │ Mirror Web │   │ Mirror HTTP  │
+              │ serve/status│   │  Console   │   │   Clients    │
+              │ sync/verify │   │            │   │              │
+              └─────┬──────┘   └─────┬──────┘   └──────┬───────┘
+                    │                │                 │
+                    └────────────────┴─────────────────┘
+                                     │
+                                     ▼
+                          ┌──────────────────────┐
+                          │    Mirror Service    │
+                          │ /mirror/* + health   │
+                          │ /status + console    │
+                          └──────────┬───────────┘
+                                     │
+                                     ▼
+                          ┌──────────────────────┐
+                          │    Mirror Gateway    │
+                          │ tools + chat routes  │
+                          └──────────┬───────────┘
+                                     │
+                  ┌──────────────────┼──────────────────┐
+                  │                  │                  │
+                  ▼                  ▼                  ▼
+        ┌────────────────┐  ┌────────────────┐  ┌────────────────┐
+        │ Tool Registry  │  │  Chat Engine   │  │ Observability  │
+        │ mirror.* tools │  │ request/prompt │  │ metrics/diag   │
+        │ + verify-lore  │  │                │  │ health/status  │
+        └───────┬────────┘  └────────┬───────┘  └────────────────┘
+                │                    │
+                │                    ▼
+                │          ┌──────────────────────┐
+                │          │  Reflection Engine   │
+                │          │ themes/symbols/review│
+                │          └──────────┬───────────┘
+                │                     │
+                │                     ▼
+                │          ┌──────────────────────┐
+                │          │ Retrieval + Context  │
+                │          │ canon + memory order │
+                │          └──────────┬───────────┘
+                │                     │
+                │                     ▼
+                │          ┌──────────────────────┐
+                │          │ Mirror Provider RT   │
+                │          │ auth/request/response│
+                │          └──────────┬───────────┘
+                │                     │
+                │                     ▼
+                │             ┌──────────────┐
+                │             │    Model     │
+                │             └──────────────┘
+                │
+                ▼
+   ┌──────────────────────────────────────────────────────────────┐
+   │                    Mirror Capability Layer                  │
+   │                                                              │
+   │ Canon tools:                                                 │
+   │   find-scroll / canon-fact / interpret / forge / commit      │
+   │                                                              │
+   │ User tools:                                                  │
+   │   task.* / reminder.* / heartbeat.*                          │
+   │                                                              │
+   │ Monk tools:                                                  │
+   │   monk.context / monk.next / monk.resume / monk.followup     │
+   └──────────────────────────────────────────────────────────────┘
+
+   ┌──────────────────────────┐   ┌──────────────────────────────┐
+   │      Canon Layer         │   │      User Workspace Layer    │
+   │                          │   │                              │
+   │ Scrolls / Symbols        │   │ Profile / Preferences        │
+   │ Lore Graph / Review      │   │ Tasks / Reminders            │
+   │ Validation / Commit      │   │ Heartbeat / Sessions         │
+   │ Sync / Canon Index       │   │ Monk Context / Notes         │
+   └──────────────────────────┘   └──────────────────────────────┘</code></pre>
+  </section>
+
+  <section class="card" id="layers">
+    <h2>Runtime layers <a class="anchor" href="#layers">#</a></h2>
+    <div class="meta">Mirror v1 separated into interface, runtime, intelligence, and state</div>
+    <div class="grid">
+      <div class="module"><div class="icon">🖥️</div><div class="title">Interface Layer</div><p>Mirror CLI, Mirror Console, and HTTP clients are the operator-facing doors into the system.</p></div>
+      <div class="module"><div class="icon">⚙️</div><div class="title">Runtime Layer</div><p>Mirror Service, Gateway, Tool Registry, and Chat Engine route requests and keep the standalone product surface coherent.</p></div>
+      <div class="module"><div class="icon">🧠</div><div class="title">Intelligence Layer</div><p>Reflection, retrieval, memory ordering, and provider execution shape how Mirror thinks before the model speaks.</p></div>
+      <div class="module"><div class="icon">📚</div><div class="title">State Layer</div><p>Canon remains shared truth; Workspace remains personal state. They are intentionally separated.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="canon-vs-workspace">
+    <h2>Canon and Workspace are separate by design <a class="anchor" href="#canon-vs-workspace">#</a></h2>
+    <div class="meta">One of the most important architectural rules in Mirror Runtime</div>
+    <div class="compare">
+      <div class="pane">
+        <h3>Canon Layer</h3>
+        <p>Shared truth for everyone. Canon is protected through interpretation, drafting, review, commit, validation, and sync rules.</p>
+        <ul>
+          <li>Scroll corpus</li>
+          <li>Symbol registry</li>
+          <li>Lore graph</li>
+          <li>Review + conflict detection</li>
+          <li>Commit + validation pipeline</li>
+        </ul>
+      </div>
+      <div class="pane">
+        <h3>User Workspace Layer</h3>
+        <p>Personal state for one traveler. Workspace supports daily utility without rewriting shared truth.</p>
+        <ul>
+          <li>Profile + preferences</li>
+          <li>Tasks + reminders</li>
+          <li>Heartbeat state</li>
+          <li>Sessions + notes</li>
+          <li>Monk context + follow-up notes</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small">Mirror and Monk can use both layers. Personal state never becomes canon unless it travels through the explicit canon workflow.</p>
+  </section>
+
+  <section class="card" id="flows">
+    <h2>Core flows <a class="anchor" href="#flows">#</a></h2>
+    <div class="meta">The three most important flows in Mirror Runtime v1</div>
+    <div class="grid">
+      <div class="module"><div class="icon">💬</div><div class="title">Chat Flow</div><p><strong>CLI / Console / API</strong> → Service → Gateway → Chat Engine → Reflection → Retrieval/Memory → Provider Runtime → Model, with standalone <strong>/mirror/health</strong> and <strong>/mirror/status</strong> for operator checks.</p></div>
+      <div class="module"><div class="icon">📜</div><div class="title">Canon Flow</div><p><strong>interpret</strong> → <strong>forge</strong> → <strong>review</strong> → <strong>commit</strong>, with validation, conflict checks, atomic writes, and index refresh.</p></div>
+      <div class="module"><div class="icon">🧘</div><div class="title">Daily Utility Flow</div><p><strong>workspace</strong> → <strong>tasks</strong> → <strong>reminders</strong> → <strong>heartbeat</strong> → <strong>Monk follow-up</strong>.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="surface">
+    <h2>Canonical product surface <a class="anchor" href="#surface">#</a></h2>
+    <div class="meta">What counts as Mirror Runtime v1 from the user/operator perspective</div>
+    <div class="grid">
+      <div class="module"><div class="icon">⌨️</div><div class="title">mirror CLI</div><p><strong>mirror serve</strong>, <strong>mirror status</strong>, <strong>mirror sync ...</strong>, <strong>mirror verify-lore</strong>, canon commands, workspace utilities, Monk assistance, and stable JSON output for automation.</p></div>
+      <div class="module"><div class="icon">🌐</div><div class="title">mirror service</div><p>Canonical HTTP product surface under <code>/mirror/*</code>, plus <code>/mirror/health</code>, <code>/mirror/status</code>, sync, console, metrics, and diagnostics.</p></div>
+      <div class="module"><div class="icon">🪟</div><div class="title">mirror console</div><p>Lightweight web surface for chat, tools, lore graph, tasks, reminders, heartbeat, Monk assistance, sync, and ops visibility.</p></div>
+      <div class="module"><div class="icon">📡</div><div class="title">mirror sync</div><p>Peer registry, canon update exchange, graph freshness metadata, and safe validated pull behavior for Mirror nodes.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="operator-surface">
+    <h2>Standalone operator surface <a class="anchor" href="#operator-surface">#</a></h2>
+    <div class="meta">The final canonical Mirror v1 commands and health surface after consolidation</div>
+    <div class="kpi">
+      <div class="item"><strong>Serve</strong><br><code>mirror serve</code></div>
+      <div class="item"><strong>Status</strong><br><code>mirror status</code></div>
+      <div class="item"><strong>Sync</strong><br><code>mirror sync peers|updates|announce|pull</code></div>
+      <div class="item"><strong>Canon verify</strong><br><code>mirror verify-lore</code></div>
+      <div class="item"><strong>Health</strong><br><code>/mirror/health</code></div>
+      <div class="item"><strong>Runtime status</strong><br><code>/mirror/status</code></div>
+    </div>
+  </section>
+
+  <section class="card" id="compatibility">
+    <h2>Compatibility-only surface <a class="anchor" href="#compatibility">#</a></h2>
+    <div class="meta">Present in the repository, but not part of the canonical standalone Mirror v1 surface. These paths remain for compatibility, migration, or advanced operator workflows only.</div>
+<pre class="code"><code>Compatibility / advanced operator paths
+- doctor
+- passport
+- telemetry replay / telemetry index / telemetry query / telemetry reflect
+- legacy wrappers: server.ts, brain-chat.ts, mirror_tools_api.ts, mirror-cli.ts, console_server.ts
+
+Archived / non-standalone built-ins
+- mirror.echo
+- chain skill family
+
+These remain by design for compatibility, migration, or advanced workflows,
+but they are not part of the primary standalone Mirror product identity.</code></pre>
+  </section>
+
+  <section class="card" id="meaningful">
+    <h2>Why this matters <a class="anchor" href="#meaningful">#</a></h2>
+    <div class="meta">Why Mirror Runtime v1 is more than just another AI wrapper</div>
+    <p>Mirror Runtime v1 is a detached AI runtime with a protected truth layer, a personal workspace layer, a daily utility layer, a reflective assistant layer, and a network-ready sync layer. It can be extended without collapsing canon into personal memory, and it can grow toward Mirror OS without losing its architectural center.</p>
+    <div class="kpi">
+      <div class="item"><strong>Truth</strong><br>Canon-first and review-governed</div>
+      <div class="item"><strong>Person</strong><br>Workspace-backed and local-first</div>
+      <div class="item"><strong>Care</strong><br>Tasks, reminders, heartbeat, Monk assistance</div>
+      <div class="item"><strong>Network</strong><br>Node sync and observability ready</div>
+    </div>
+  </section>
+</main>
+
+<footer role="contentinfo">
+  <p>ToadAid Honors · Mirror Runtime v1 record · built for the long path 🪞🌊🍃</p>
+</footer>
+</body>
+</html>
