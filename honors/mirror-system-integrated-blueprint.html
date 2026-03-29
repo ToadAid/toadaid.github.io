@@ -132,7 +132,7 @@ footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;t
     <h2>Integrated system blueprint <a class="anchor" href="#diagram">#</a></h2>
     <div class="meta">6-band architecture map · from hosts to starter lanes</div>
 <pre class="code"><code>  ┌──────────────────────────────────────────────────────────────────────────────┐
-  │                             1. Entrypoints / Hosts                          │
+  │                             1. Entrypoints / Hosts                           │
   │                                                                              │
   │  OpenClaw CLI       Mirror CLI       Mirror Service startMirrorService()     │
   └──────────────────────────────────────────────┬───────────────────────────────┘
@@ -150,10 +150,10 @@ footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;t
   │                             3. Execution Plane                               │
   │                                                                              │
   │  mirror-gateway  →  mirror-adapters  →  mirror-runtime / mirror-actions      │
-  │          │                 │                      │                           │
-  │          └───────────── mirror-policy ────────────┘                           │
-  │                              │                                                │
-  │                         tool registry / native skills                         │
+  │          │                 │                      │                          │
+  │          └───────────── mirror-policy ────────────┘                          │
+  │                              │                                               │
+  │                         tool registry / native skills                        │
   └──────────────────────────────────────────────┬───────────────────────────────┘
                                                  │
                       ┌──────────────────────────┴──────────────────────────┐
@@ -163,13 +163,13 @@ footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;t
   │              4. State / Domain Plane         │       │             5. Contract Surfaces             │
   │                                              │       │                                              │
   │ mirror-user-workspace                        │       │ mirror-ui-api                                │
-  │   profile / preferences / notes / drafts     │       │   discovery / forge / agents / runtime      │
-  │   recent-session / monk-context / heartbeat  │       │   user reads / task create / reminder create│
+  │   profile / preferences / notes / drafts     │       │   discovery / forge / agents / runtime       │
+  │   recent-session / monk-context / heartbeat  │       │   user reads / task create / reminder create │
   │                                              │       │                                              │
   │ mirror-task                                  │       │ mirror-console                               │
-  │ mirror-reminder                              │       │   browser consumers over ui-api / ops / sync│
+  │ mirror-reminder                              │       │   browser consumers over ui-api / ops / sync │
   │                                              │       │                                              │
-  │ file-backed personal state + domain logic    │       │ service runtime / health / status routes    │
+  │ file-backed personal state + domain logic    │       │ service runtime / health / status routes     │
   └──────────────────────────────────────────────┘       └──────────────────────────────────────────────┘
                                                  ▲                          ▲
                                                  │                          │
