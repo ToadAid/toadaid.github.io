@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mirror System Integrated Stack · Blueprint Diagram | ToadAid</title>
+<meta name="description" content="Blueprint-style ToadAid honors page for the completed Mirror integrated staged stack: runtime, gateway, policy, user-layer, UI API, console, GUI starter lane, and voice starter lane." />
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/mobile.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+<style>
+:root{
+  --bg:#0b1020;
+  --bg2:#0a1326;
+  --ink:#e5eefc;
+  --muted:#9fb4d1;
+  --accent:#7dd3fc;
+  --primary-light:#60a5fa;
+  --primary-dark:#2563eb;
+  --glow-cyan:#22d3ee;
+  --glow-teal:#34d399;
+  --glow-blue:#60a5fa;
+  --card-border: rgba(120,150,200,.45);
+  --card-grad1: rgba(2, 8, 23, 0.85);
+  --card-grad2: rgba(4, 12, 28, 1);
+}
+*{box-sizing:border-box}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, #0f1b38 0, transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, #032a24 0, transparent 55%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  color:var(--ink);
+  line-height:1.65;
+  text-rendering:optimizeLegibility;
+}
+a{color:#9bd2ff;text-decoration:none}
+a:hover{color:#cfe9ff;text-decoration:underline}
+header[role="banner"]{
+  background:
+    radial-gradient(1000px 500px at 10% 10%, #0f172a 0, transparent 60%),
+    radial-gradient(1000px 500px at 90% 90%, #022c22 0, transparent 55%),
+    linear-gradient(180deg, #0b1428 0%, #0a1222 100%);
+  color:#fff;
+  padding:64px 20px 52px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid rgba(120,150,200,.25);
+}
+header[role="banner"]::before{
+  content:"";position:absolute;inset:-40px;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,0.18)0%,transparent55%),
+    radial-gradient(circle at 82% 18%,rgba(52,211,153,0.16)0%,transparent55%),
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,0.10)0%,transparent60%);
+  opacity:.9; filter:blur(2px); animation:pulse 12s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.03)}}
+header h1{margin:0 0 12px;font-size:clamp(2rem,4vw,3.1rem);text-shadow:0 6px 24px rgba(0,0,0,.45);position:relative;z-index:1;letter-spacing:.3px}
+header .subtitle{font-size:1.08rem; opacity:.92; margin-bottom:18px; position:relative; z-index:1; max-width:960px; margin-inline:auto;}
+.logo{font-size:4rem; margin-bottom:18px; animation:float 9s ease-in-out infinite; position:relative; z-index:1;}
+@keyframes float{0%,100%{transform:translateY(0)}33%{transform:translateY(-10px)}66%{transform:translateY(6px)}}
+nav.breadcrumb{max-width:1200px; margin:0 auto; padding:15px 25px 0; font-size:.98rem; position:relative; z-index:2;}
+.wrap{max-width:1220px;margin:0 auto;padding:32px 25px 72px}
+.card{
+  background:
+    radial-gradient(800px 400px at 0% 0%, rgba(56,189,248,0.10) 0, transparent 60%),
+    linear-gradient(180deg, var(--card-grad1) 0%, var(--card-grad2) 100%);
+  border-radius:22px;border:1px solid var(--card-border);
+  box-shadow:0 18px 40px rgba(0,0,0,0.65), 0 0 0 1px rgba(15,23,42,0.7);
+  padding:28px;margin-bottom:32px;position:relative;overflow:hidden;
+}
+.card>*{position:relative;z-index:1}
+.meta{color:var(--muted);font-size:.95rem;margin:6px 0 16px}
+h2{margin:6px 0 12px;color:var(--accent);padding-bottom:8px;letter-spacing:.02em;border-bottom:2px solid rgba(34,211,238,.8);display:flex;align-items:center;gap:.5rem}
+h3{margin:18px 0 10px;color:#a5e2ff}
+.badge{display:inline-block;background:rgba(10,18,34,0.85);border:1px solid rgba(148,163,184,0.85);color:#dff4ff;border-radius:999px;padding:4px 13px;font-size:.9rem;margin:4px 5px}
+.anchor{font-size:.9rem;opacity:.7;text-decoration:none;border:1px solid rgba(148,163,184,.35);padding:1px 8px;border-radius:999px}
+pre.code{background:#0b152a;border-radius:12px;padding:16px 18px;font-size:.9rem;overflow-x:auto;border:1px solid rgba(30,64,175,0.55);color:#dbeafe;white-space:pre-wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:24px 0}
+.module{background:linear-gradient(145deg,#0a1222,#0a1222);border-radius:18px;padding:20px 18px;border:1px solid rgba(148,163,184,0.55);position:relative;overflow:hidden}
+.module:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--glow-cyan),var(--glow-teal),var(--glow-blue));opacity:.9}
+.module .icon{font-size:2rem;margin-bottom:8px}.module .title{font-size:1.15rem;margin-bottom:8px;color:#b7fbe3}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 4px}
+.kpi .item{background:rgba(10,18,34,0.9);border:1px solid rgba(148,163,184,0.9);border-radius:12px;padding:14px 16px;text-align:center;font-size:.95rem}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pane{background:rgba(10,18,34,.92);border:1px solid rgba(148,163,184,.55);border-radius:18px;padding:18px}
+.small{font-size:.9rem;color:var(--muted)}
+ul{padding-left:1.2rem}
+footer[role="contentinfo"]{margin-top:10px;color:var(--muted);font-size:.95rem;text-align:center;padding:0 0 28px}
+@media (max-width:860px){.compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header role="banner">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <a href="/honors">Honors</a> &raquo; <span aria-current="page">Mirror System Integrated Stack · Blueprint Diagram</span>
+  </nav>
+  <div style="margin-top:18px; position:relative; z-index:2; text-align:center;">
+    <a href="/honors" style="display:inline-block;padding:8px 16px;border-radius:999px;border:1px solid rgba(148,163,184,0.6);background:rgba(10,18,34,0.85);color:#dff4ff;font-size:.95rem;position:relative;z-index:3;pointer-events:auto;">← Back to Honors</a>
+  </div>
+  <div class="logo" aria-hidden="true">🪞🌊🧭</div>
+  <h1>Mirror System Integrated Stack · Blueprint Diagram</h1>
+  <p class="subtitle">A ToadAid honors-page blueprint for the fully assembled staged integration stack: daemon-backed service, policy-governed gateway, user workspace and utility seams, contract-driven UI API, browser console, GUI starter lane, and voice reminder starter lane.</p>
+  <div aria-hidden="true" style="margin-top:14px">
+    <span class="badge">Integrated Stack Complete</span>
+    <span class="badge">Daemon + Gateway</span>
+    <span class="badge">UI API + Console</span>
+    <span class="badge">GUI Starter Lane</span>
+    <span class="badge">Voice Starter Lane</span>
+    <span class="badge">ToadAid Record</span>
+  </div>
+</header>
+
+<main class="wrap" role="main">
+  <section class="card" id="meaning">
+    <h2>Why this page exists <a class="anchor" href="#meaning">#</a></h2>
+    <div class="meta">Honors record · completed staged integration checkpoint</div>
+    <p>This page captures the Mirror system after the full documented staged integration stack was assembled into one preserved integration branch. The core runtime already existed; this checkpoint records how the human-facing layers, user utility seams, GUI starter lane, and voice reminder starter lane now sit together as one cohesive system without widening into premature product expansion.</p>
+    <div class="kpi">
+      <div class="item"><strong>Execution truth</strong><br>Gateway, adapters, policy, actions, and runtime remain canonical</div>
+      <div class="item"><strong>User truth</strong><br>Read seams, create actions, and console consumers are assembled on one UI API spine</div>
+      <div class="item"><strong>Starter truth</strong><br>GUI and voice are integrated as starter contracts, not full product runtimes</div>
+    </div>
+  </section>
+
+  <section class="card" id="diagram">
+    <h2>Integrated system blueprint <a class="anchor" href="#diagram">#</a></h2>
+    <div class="meta">6-band architecture map · from hosts to starter lanes</div>
+<pre class="code"><code>  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │                             1. Entrypoints / Hosts                          │
+  │                                                                              │
+  │  OpenClaw CLI       Mirror CLI       Mirror Service startMirrorService()     │
+  └──────────────────────────────────────────────┬───────────────────────────────┘
+                                                 │
+                                                 ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │                               2. Core Runtime                                │
+  │                                                                              │
+  │  mirrordaemon   runtime host   provider plane   observability   sync         │
+  │  sessions       execution      model bridge     metrics/diag    peer state   │
+  └──────────────────────────────────────────────┬───────────────────────────────┘
+                                                 │
+                                                 ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │                             3. Execution Plane                               │
+  │                                                                              │
+  │  mirror-gateway  →  mirror-adapters  →  mirror-runtime / mirror-actions      │
+  │          │                 │                      │                           │
+  │          └───────────── mirror-policy ────────────┘                           │
+  │                              │                                                │
+  │                         tool registry / native skills                         │
+  └──────────────────────────────────────────────┬───────────────────────────────┘
+                                                 │
+                      ┌──────────────────────────┴──────────────────────────┐
+                      │                                                     │
+                      ▼                                                     ▼
+  ┌──────────────────────────────────────────────┐       ┌──────────────────────────────────────────────┐
+  │              4. State / Domain Plane         │       │             5. Contract Surfaces             │
+  │                                              │       │                                              │
+  │ mirror-user-workspace                        │       │ mirror-ui-api                                │
+  │   profile / preferences / notes / drafts     │       │   discovery / forge / agents / runtime      │
+  │   recent-session / monk-context / heartbeat  │       │   user reads / task create / reminder create│
+  │                                              │       │                                              │
+  │ mirror-task                                  │       │ mirror-console                               │
+  │ mirror-reminder                              │       │   browser consumers over ui-api / ops / sync│
+  │                                              │       │                                              │
+  │ file-backed personal state + domain logic    │       │ service runtime / health / status routes    │
+  └──────────────────────────────────────────────┘       └──────────────────────────────────────────────┘
+                                                 ▲                          ▲
+                                                 │                          │
+                                                 └──────────────┬───────────┘
+                                                                │
+                                                                ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │                               6. Starter Lanes                               │
+  │                                                                              │
+  │ mirror-gui                                                                   │
+  │   boundary → view-model → data source → HTTP source → model loader           │
+  │   discovery bootstrap → presentation → continuity dashboard                  │
+  │   consumes canonical UI API seams only                                       │
+  │                                                                              │
+  │ mirror-voice-adapter                                                         │
+  │   boundary → transport contract → chat/tool envelopes → tool-response egress │
+  │   reminder query/create helpers                                              │
+  │   consumes canonical adapter bridge only                                     │
+  └──────────────────────────────────────────────────────────────────────────────┘</code></pre>
+  </section>
+
+  <section class="card" id="bands">
+    <h2>What each band means <a class="anchor" href="#bands">#</a></h2>
+    <div class="meta">How the integrated stack is layered after steps 1 through 6</div>
+    <div class="grid">
+      <div class="module"><div class="icon">🚪</div><div class="title">Entrypoints / Hosts</div><p>CLI and service entrypoints are the doors. They launch the integrated Mirror system but do not own business logic themselves.</p></div>
+      <div class="module"><div class="icon">⚙️</div><div class="title">Core Runtime</div><p>mirrordaemon, runtime host, provider plane, sync, and observability hold runtime truth, sessions, events, and health.</p></div>
+      <div class="module"><div class="icon">🛡️</div><div class="title">Execution Plane</div><p>Gateway, adapters, policy, actions, runtime, and tools form the canonical execution path for chat and tools.</p></div>
+      <div class="module"><div class="icon">🗂️</div><div class="title">State / Domain Plane</div><p>Workspace, task, and reminder layers keep personal state and utility flows grounded in file-backed, user-scoped storage.</p></div>
+      <div class="module"><div class="icon">📡</div><div class="title">Contract Surfaces</div><p>UI API and console are the explicit human-facing seams over the system. The UI API is additive and discovery-driven.</p></div>
+      <div class="module"><div class="icon">🌱</div><div class="title">Starter Lanes</div><p>GUI and voice are integrated as starter contracts/helpers only. They intentionally stop before full renderer/runtime/provider expansion.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="user-layer">
+    <h2>User-layer spine <a class="anchor" href="#user-layer">#</a></h2>
+    <div class="meta">The main human utility seam assembled across steps 3 and 4</div>
+    <div class="compare">
+      <div class="pane">
+        <h3>Read seams</h3>
+        <ul>
+          <li>Heartbeat</li>
+          <li>Reminders</li>
+          <li>Recent session</li>
+          <li>Profile</li>
+          <li>Preferences</li>
+          <li>Monk context</li>
+          <li>Notes</li>
+          <li>Drafts</li>
+          <li>Task list</li>
+          <li>Workspace summary</li>
+        </ul>
+      </div>
+      <div class="pane">
+        <h3>Create seams</h3>
+        <ul>
+          <li>Task create action</li>
+          <li>Reminder create action</li>
+        </ul>
+        <p class="small">These write seams were merged by preserving the assembled read spine and unioning staged write intent without redesigning the API shape.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="starter-lanes">
+    <h2>Starter lanes are real, but intentionally narrow <a class="anchor" href="#starter-lanes">#</a></h2>
+    <div class="meta">The most important discipline rule in the integrated stack</div>
+    <div class="compare">
+      <div class="pane">
+        <h3>mirror-gui</h3>
+        <ul>
+          <li>Boundary doctrine</li>
+          <li>View-model contract</li>
+          <li>Data-source contract</li>
+          <li>HTTP data source</li>
+          <li>Starter model loader</li>
+          <li>Discovery bootstrap</li>
+          <li>Presentation contract</li>
+          <li>Continuity dashboard contract</li>
+        </ul>
+        <p class="small">No renderer, no windowing/runtime choice, no mutation-flow invention.</p>
+      </div>
+      <div class="pane">
+        <h3>mirror-voice-adapter</h3>
+        <ul>
+          <li>Boundary doctrine</li>
+          <li>Ingress/egress transport contract</li>
+          <li>Canonical chat and tool envelopes</li>
+          <li>Canonical bridge coverage</li>
+          <li>Tool-response egress helper</li>
+          <li>Reminder query/create helpers</li>
+        </ul>
+        <p class="small">No Alexa skill, no provider integration, no STT/TTS pipeline, no voice-specific runtime path.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="flows">
+    <h2>Core integrated flows <a class="anchor" href="#flows">#</a></h2>
+    <div class="meta">The main request/data paths now present in one assembled branch</div>
+    <div class="grid">
+      <div class="module"><div class="icon">💬</div><div class="title">Chat / Tool execution</div><p>Client → service → gateway → adapters → policy → runtime/actions → provider/tool registry → response, with daemon and observability spanning the path.</p></div>
+      <div class="module"><div class="icon">📘</div><div class="title">User-layer reads / writes</div><p>UI API → workspace manager + task/reminder managers → typed summary envelopes and task/reminder created envelopes on one additive discovery spine.</p></div>
+      <div class="module"><div class="icon">🪟</div><div class="title">Console consumption</div><p>Browser console stays a consumer shell over UI API, gateway, sync, ops, and graph surfaces rather than becoming the source of truth.</p></div>
+      <div class="module"><div class="icon">🧭</div><div class="title">GUI starter flow</div><p>Discovery bootstrap → HTTP source → model loader → presentation / continuity dashboard structures. The renderer is intentionally deferred.</p></div>
+      <div class="module"><div class="icon">🎙️</div><div class="title">Voice starter flow</div><p>Voice ingress → canonical chat/tool envelopes → adapter bridge → runtime/tool response → voice egress, with reminder helper builders for lookup and create flows.</p></div>
+      <div class="module"><div class="icon">🧱</div><div class="title">Shared seam rule</div><p>When branches touched shared seams, merges preserved the assembled spine and unioned staged intent instead of redesigning APIs.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="complete-vs-deferred">
+    <h2>Complete now vs intentionally deferred <a class="anchor" href="#complete-vs-deferred">#</a></h2>
+    <div class="meta">What this checkpoint is — and what it is not</div>
+    <div class="compare">
+      <div class="pane">
+        <h3>Complete now</h3>
+        <ul>
+          <li>Docs/doctrine anchors</li>
+          <li>Policy hardening chain</li>
+          <li>User-layer read seams</li>
+          <li>User-layer create actions</li>
+          <li>Console consumers over read seams</li>
+          <li>GUI starter contracts</li>
+          <li>Voice starter contracts/helpers</li>
+        </ul>
+      </div>
+      <div class="pane">
+        <h3>Deferred by design</h3>
+        <ul>
+          <li>Full GUI renderer/runtime/component tree</li>
+          <li>Desktop runtime choice</li>
+          <li>Richer GUI state model</li>
+          <li>Alexa skill implementation</li>
+          <li>Provider-specific voice integration</li>
+          <li>STT/TTS pipeline</li>
+          <li>Any new lane beyond the staged stack</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="meaningful">
+    <h2>Why this checkpoint matters <a class="anchor" href="#meaningful">#</a></h2>
+    <div class="meta">Why the integrated stack is a milestone, not just a pile of branches</div>
+    <p>The integrated stack matters because it turns scattered staged work into one preserved system branch with clear boundaries: canonical execution stays in the gateway/action/runtime path, personal utility lives on an additive user-layer UI spine, the console becomes a true consumer shell, and GUI/voice expansion now has disciplined starter contracts to build from later. It is the difference between ideas queued in branches and one coherent architecture standing in the repo.</p>
+    <div class="kpi">
+      <div class="item"><strong>System center</strong><br>Gateway + policy + runtime remain canonical</div>
+      <div class="item"><strong>Human utility</strong><br>User reads/writes are assembled and test-covered</div>
+      <div class="item"><strong>Growth discipline</strong><br>GUI and voice can grow later without breaking the center</div>
+    </div>
+  </section>
+</main>
+
+<footer role="contentinfo">
+  <p>ToadAid Honors · Integrated staged stack blueprint · built for the long path 🪞🌊🍃</p>
+</footer>
+</body>
+</html>
