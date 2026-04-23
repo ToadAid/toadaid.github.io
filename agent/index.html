@@ -211,6 +211,14 @@
       margin-bottom: 8px;
       word-break: break-all;
     }
+
+    .agent-card-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      opacity: 0.9;
+    }
     
     .agent-card-footer {
       margin-top: auto;
@@ -1116,7 +1124,7 @@
                   ${isToadgang ? '<span class="toadgang-tag" style="font-size:14px;">🐸 TOADGANG</span>' : ''}
                 </div>
                 <h1 class="detail-name">${metadata.name}</h1>
-                <div class="detail-creator">Created by: ${getCreatorDisplay(creator)}</div>
+                <div class="detail-creator">Forged by: ${getCreatorDisplay(creator)}</div>
                 ${owner ? `<div class="detail-creator" style="margin-top: -10px;">Current owner: ${getCreatorDisplay(owner)} ${holdsToby ? '🐸' : ''}</div>` : ''}
                 <div class="detail-description">${metadata.description}</div>
                 
@@ -1422,8 +1430,7 @@
               <span class="agent-card-badge">${agent.active ? '🟢' : '⚫'}</span>
             </div>
             <div class="agent-card-name">${agent.name}</div>
-            <div class="agent-card-creator" title="${agent.creator}">${getCreatorDisplay(agent.creator)}</div>
-            <div class="badge-container">
+<div class="badge-container">
               ${isLegendary ? '<span class="badge legendary">👑 OG</span>' : ''}
               ${hasMetadata ? '<span class="badge verified">✅ Verified</span>' : ''}
               ${agent.uri ? '<span class="badge registry">📋 Registry</span>' : ''}
