@@ -851,6 +851,11 @@
   function shortAddr(addr) {
     return addr ? addr.slice(0,6) + "…" + addr.slice(-4) : "";
   }
+
+  function cleanAgentName(name) {
+    if (!name) return "";
+    return String(name).replace(/\s*\((?:TEST|Test|test)\)\s*$/g, "").trim();
+  }
   
   function hexToString(hex) {
     try {
@@ -1067,7 +1072,7 @@
       }
       
       let metadata = {
-        name: `Agent #${id}`,
+        name: cleanAgentName(`Agent #${id}`),
         description: "No description available",
         image: "🪞",
         attributes: []
@@ -1094,10 +1099,10 @@
       let imageHtml = '<div class="detail-image-placeholder">🪞</div>';
       if (metadata.image) {
         if (metadata.image.startsWith('http')) {
-          imageHtml = `<img src="${metadata.image}" alt="${metadata.name}" />`;
+          imageHtml = `<img src="${metadata.image}" alt="${cleanAgentName(metadata.name)}" />`;
         } else if (metadata.image.startsWith('ipfs://')) {
           const ipfsHash = metadata.image.replace('ipfs://', '');
-          imageHtml = `<img src="https://ipfs.io/ipfs/${ipfsHash}" alt="${metadata.name}" />`;
+          imageHtml = `<img src="https://ipfs.io/ipfs/${ipfsHash}" alt="${cleanAgentName(metadata.name)}" />`;
         }
       }
       
@@ -1123,9 +1128,9 @@
                   <span class="detail-id">#${id}</span>
                   ${isToadgang ? '<span class="toadgang-tag" style="font-size:14px;">🐸 TOADGANG</span>' : ''}
                 </div>
-                <h1 class="detail-name">${metadata.name}</h1>
+                <h1 class="detail-name">${cleanAgentName(metadata.name)}</h1>
                 <div class="detail-creator">Forged by: ${getCreatorDisplay(creator)}</div>
-                ${owner ? `<div class="detail-creator" style="margin-top: -10px;">Current owner: ${getCreatorDisplay(owner)} ${holdsToby ? '🐸' : ''}</div>` : ''}
+                ${owner && creator && owner.toLowerCase() !== creator.toLowerCase() ? `<div class="detail-creator" style="margin-top: -10px;">Current owner: ${getCreatorDisplay(owner)} ${holdsToby ? '🐸' : ''}</div>` : ''}
                 <div class="detail-description">${metadata.description}</div>
                 
                 ${attributesHtml ? `
@@ -1225,7 +1230,7 @@
                 const base64Data = uri.replace('data:application/json;base64,', '');
                 const parsed = parseBase64Metadata(base64Data);
                 if (parsed) {
-                  name = parsed.name || name;
+                  name = cleanAgentName(parsed.name || name);
                   description = parsed.description || '';
                   image = parsed.image || '🪞';
                   if (parsed.image && parsed.image.startsWith('http')) {
@@ -1242,7 +1247,7 @@
                   const ipfsHash = uri.replace('ipfs://', '');
                   const ipfsData = await fetchFromIPFS(ipfsHash);
                   if (ipfsData) {
-                    name = ipfsData.name || name;
+                    name = cleanAgentName(ipfsData.name || name);
                     description = ipfsData.description || description;
                     if (ipfsData.image) {
                       if (ipfsData.image.startsWith('http')) {
@@ -1410,9 +1415,9 @@
     grid.innerHTML = paginated.map(agent => {
       let imageHtml = `<div class="agent-card-image-placeholder">${agent.image}</div>`;
       if (agent.imageUrl) {
-        imageHtml = `<img src="${agent.imageUrl}" alt="${agent.name}" class="agent-card-image" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'agent-card-image-placeholder\'>🪞</div>';">`;
+        imageHtml = `<img src="${agent.imageUrl}" alt="${cleanAgentName(agent.name)}" class="agent-card-image" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'agent-card-image-placeholder\'>🪞</div>';">`;
       } else if (agent.image && agent.image.startsWith('http')) {
-        imageHtml = `<img src="${agent.image}" alt="${agent.name}" class="agent-card-image" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'agent-card-image-placeholder\'>🪞</div>';">`;
+        imageHtml = `<img src="${agent.image}" alt="${cleanAgentName(agent.name)}" class="agent-card-image" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'agent-card-image-placeholder\'>🪞</div>';">`;
       }
       
       const isToadgang = isToadgangAgent(agent.creator, agent.metadata || agent.meta || null, agent.holdsToby);
@@ -1429,7 +1434,7 @@
               <span class="agent-card-id">#${agent.id}</span>
               <span class="agent-card-badge">${agent.active ? '🟢' : '⚫'}</span>
             </div>
-            <div class="agent-card-name">${agent.name}</div>
+            <div class="agent-card-name">${cleanAgentName(agent.name)}</div>
 <div class="badge-container">
               ${isLegendary ? '<span class="badge legendary">👑 OG</span>' : ''}
               ${hasMetadata ? '<span class="badge verified">✅ Verified</span>' : ''}
