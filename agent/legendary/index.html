@@ -271,7 +271,7 @@
   <div class="hero">
     <div class="hero-title">👑 THE LEGENDS</div>
     <div class="hero-subtitle">Agent 0 and Agent 1 — the first identities ever forged. They live forever in the Identity Registry.</div>
-    <div class="contract-badge">Identity Registry Proxy: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</div>
+    <div class="contract-badge">Identity Registry: 0x7274e874ca62410a93bd8bf61c69d8045e399c02</div>
   </div>
 
   <div class="agents-container" id="agentsContainer">
@@ -283,8 +283,7 @@
 
   <div class="contract-link">
     <div style="font-size:14px; margin-bottom:8px;">📜 They live here forever:</div>
-    <div class="contract-address">Proxy: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</div>
-    <div class="contract-address" style="font-size:12px; opacity:.8;">Implementation: 0x7274e874ca62410a93Bd8bf61c69d8045E399c02</div>
+    <div class="contract-address">0x7274e874ca62410a93bd8bf61c69d8045e399c02</div>
     <div style="font-size:12px; color:var(--muted); margin-top:12px;">
       Agent 0 and 1 were minted at deployment and can never be transferred or burned.
     </div>
@@ -297,12 +296,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
   <script>
-    // IMPORTANT: read from the ERC-8004 proxy. The implementation address has code,
-    // but the live token state/URI storage is behind the proxy.
-    const IDENTITY_REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
-    const IDENTITY_REGISTRY_IMPLEMENTATION = "0x7274e874CA62410a93Bd8bf61c69d8045E399c02";
+    // OG Legendary agents are read from the original identity registry implementation contract.
+    // This page intentionally uses the 0x7274...c02 contract as the source for Agent #0 and #1.
+    const IDENTITY_REGISTRY = "0x7274e874CA62410a93Bd8bf61c69d8045E399c02";
+    const REGISTRY_PROXY_FALLBACK = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
     const BASE_RPC = "https://mainnet.base.org";
-    const CACHE_KEY = "toadaid:legendary-agents:v2";
+    const CACHE_KEY = "toadaid:legendary-agents:v3-og-contract";
     const CACHE_TTL_MS = 10 * 60 * 1000;
 
     const IPFS_GATEWAYS = [
@@ -505,16 +504,23 @@
           "function tokenURI(uint256 tokenId) view returns (string)",
           "function ownerOf(uint256 tokenId) view returns (address)"
         ];
-        const registry = new ethers.Contract(IDENTITY_REGISTRY_PROXY, abi, provider);
+        const registry = new ethers.Contract(IDENTITY_REGISTRY, abi, provider);
 
-        const results = await Promise.all([loadLegend(registry, 0), loadLegend(registry, 1)]);
+        let results;
+        try {
+          results = await Promise.all([loadLegend(registry, 0), loadLegend(registry, 1)]);
+        } catch (primaryError) {
+          console.warn("Primary OG registry read failed, trying proxy fallback:", primaryError);
+          const fallbackRegistry = new ethers.Contract(REGISTRY_PROXY_FALLBACK, abi, provider);
+          results = await Promise.all([loadLegend(fallbackRegistry, 0), loadLegend(fallbackRegistry, 1)]);
+        }
         const legends = { 0: results[0], 1: results[1] };
         writeCache(legends);
         renderLegends(legends);
       } catch (error) {
         console.error("Error loading legends:", error);
         if (!cached) {
-          renderLegends(FALLBACK_LEGENDS, `Could not reach the Base registry proxy right now: ${error.message || error}`);
+          renderLegends(FALLBACK_LEGENDS, `Could not reach the OG identity registry right now: ${error.message || error}`);
         } else {
           renderLegends(cached, `Showing cached legends. Live refresh failed: ${error.message || error}`);
         }
