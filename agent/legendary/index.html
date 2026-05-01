@@ -271,7 +271,7 @@
   <div class="hero">
     <div class="hero-title">👑 THE LEGENDS</div>
     <div class="hero-subtitle">Agent 0 and Agent 1 — the first identities ever forged. They live forever in the Identity Registry.</div>
-    <div class="contract-badge">Identity Registry: 0x7274e874ca62410a93bd8bf61c69d8045e399c02</div>
+    <div class="contract-badge">Identity Registry Proxy: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</div>
   </div>
 
   <div class="agents-container" id="agentsContainer">
@@ -283,7 +283,8 @@
 
   <div class="contract-link">
     <div style="font-size:14px; margin-bottom:8px;">📜 They live here forever:</div>
-    <div class="contract-address">0x7274e874ca62410a93bd8bf61c69d8045e399c02</div>
+    <div class="contract-address">Proxy: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</div>
+    <div class="contract-address" style="font-size:12px; opacity:.8;">Implementation: 0x7274e874ca62410a93Bd8bf61c69d8045E399c02</div>
     <div style="font-size:12px; color:var(--muted); margin-top:12px;">
       Agent 0 and 1 were minted at deployment and can never be transferred or burned.
     </div>
@@ -296,24 +297,104 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
   <script>
-    const IDENTITY_REGISTRY = "0x7274e874ca62410a93bd8bf61c69d8045e399c02";
+    // IMPORTANT: read from the ERC-8004 proxy. The implementation address has code,
+    // but the live token state/URI storage is behind the proxy.
+    const IDENTITY_REGISTRY_PROXY = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432";
+    const IDENTITY_REGISTRY_IMPLEMENTATION = "0x7274e874CA62410a93Bd8bf61c69d8045E399c02";
     const BASE_RPC = "https://mainnet.base.org";
-    
+    const CACHE_KEY = "toadaid:legendary-agents:v2";
+    const CACHE_TTL_MS = 10 * 60 * 1000;
+
     const IPFS_GATEWAYS = [
+      "https://gateway.pinata.cloud/ipfs/",
       "https://ipfs.io/ipfs/",
-      "https://cloudflare-ipfs.com/ipfs/",
-      "https://gateway.pinata.cloud/ipfs/"
+      "https://cloudflare-ipfs.com/ipfs/"
     ];
+
+    const FALLBACK_LEGENDS = {
+      0: {
+        id: 0,
+        name: "The Origin",
+        description: "The very first agent. The one that started it all. Immutable. Eternal.",
+        image: null,
+        owner: null,
+        uri: null,
+        status: "Fallback"
+      },
+      1: {
+        id: 1,
+        name: "The Pond Keeper",
+        description: "The first agent after genesis. Guardian of the pond, keeper of the lore.",
+        image: null,
+        owner: null,
+        uri: null,
+        status: "Fallback"
+      }
+    };
 
     const $ = (id) => document.getElementById(id);
 
+    function shortAddr(addr) {
+      return addr ? `${addr.slice(0,6)}…${addr.slice(-4)}` : "—";
+    }
+
+    function ipfsToHttp(uri) {
+      if (!uri || typeof uri !== "string") return null;
+      if (uri.startsWith("http://") || uri.startsWith("https://")) return uri;
+      if (uri.startsWith("ipfs://")) return IPFS_GATEWAYS[0] + uri.replace("ipfs://", "").replace(/^ipfs\//, "");
+      return null;
+    }
+
+    function parseDataUri(uri) {
+      if (!uri || !uri.startsWith("data:application/json;base64,")) return null;
+      try {
+        const base64 = uri.replace("data:application/json;base64,", "");
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return JSON.parse(new TextDecoder().decode(bytes));
+      } catch (error) {
+        console.warn("Failed to parse data URI metadata:", error);
+        return null;
+      }
+    }
+
+    async function fetchWithTimeout(url, ms = 4500) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      try {
+        const response = await fetch(url, { signal: controller.signal, cache: "force-cache" });
+        if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+        return response;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     async function fetchFromIPFS(ipfsHash) {
+      const cleanHash = ipfsHash.replace(/^ipfs:\/\//, "").replace(/^ipfs\//, "");
       for (const gateway of IPFS_GATEWAYS) {
         try {
-          const response = await fetch(gateway + ipfsHash);
-          if (response.ok) return await response.json();
+          const response = await fetchWithTimeout(gateway + cleanHash);
+          return await response.json();
         } catch (e) {
-          console.warn(`Gateway ${gateway} failed:`, e);
+          console.warn(`Gateway ${gateway} failed:`, e.message || e);
+        }
+      }
+      return null;
+    }
+
+    async function loadMetadata(uri) {
+      if (!uri) return null;
+      const dataUri = parseDataUri(uri);
+      if (dataUri) return dataUri;
+      if (uri.startsWith("ipfs://")) return fetchFromIPFS(uri.replace("ipfs://", ""));
+      if (uri.startsWith("http://") || uri.startsWith("https://")) {
+        try {
+          const response = await fetchWithTimeout(uri);
+          return await response.json();
+        } catch (error) {
+          console.warn("HTTP metadata failed:", error.message || error);
         }
       }
       return null;
@@ -321,122 +402,130 @@
 
     function getImageUrl(metadata) {
       if (!metadata || !metadata.image) return null;
-      if (metadata.image.startsWith('http')) return metadata.image;
-      if (metadata.image.startsWith('ipfs://')) {
-        const hash = metadata.image.replace('ipfs://', '');
-        return IPFS_GATEWAYS[0] + hash;
+      return ipfsToHttp(metadata.image) || metadata.image;
+    }
+
+    function readCache() {
+      try {
+        const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+        if (!cached || !cached.savedAt || !cached.legends) return null;
+        if (Date.now() - cached.savedAt > CACHE_TTL_MS) return null;
+        return cached.legends;
+      } catch (_) {
+        return null;
       }
-      return null;
+    }
+
+    function writeCache(legends) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), legends }));
+      } catch (_) {}
+    }
+
+    function renderLegends(legends, note = "") {
+      const container = $("agentsContainer");
+      const legend0 = legends[0] || FALLBACK_LEGENDS[0];
+      const legend1 = legends[1] || FALLBACK_LEGENDS[1];
+
+      container.innerHTML = [legend0, legend1].map((legend) => {
+        const badge = legend.id === 0 ? "GENESIS" : "PRIME";
+        const placeholder = legend.id === 0 ? "🪞" : "🌊";
+        const imageUrl = legend.imageUrl || getImageUrl(legend.metadata) || ipfsToHttp(legend.image);
+        const uriLabel = legend.uri ? (legend.uri.startsWith("ipfs://") ? "IPFS" : legend.uri.startsWith("data:") ? "On-chain Data URI" : "URI") : "—";
+        const status = legend.status || "🟢 Eternal";
+
+        return `
+          <div class="legend-card">
+            <div class="legend-header">
+              <div class="legend-id">#${legend.id}</div>
+              <div class="legend-badge">${badge}</div>
+            </div>
+            <div class="legend-image-container">
+              ${imageUrl ?
+                `<img src="${imageUrl}" alt="${legend.name || `Agent ${legend.id}`}" class="legend-image" onerror="this.onerror=null; this.parentNode.innerHTML='<span class=\'legend-image-placeholder\'>${placeholder}</span>';">` :
+                `<span class="legend-image-placeholder">${placeholder}</span>`}
+            </div>
+            <div class="legend-content">
+              <div class="legend-name">${legend.name || FALLBACK_LEGENDS[legend.id].name}</div>
+              <div class="legend-description">${legend.description || FALLBACK_LEGENDS[legend.id].description}</div>
+              <div class="legend-meta">
+                <div class="meta-item">
+                  <span class="meta-label">Owner:</span>
+                  <span class="meta-value">${shortAddr(legend.owner)}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Token URI:</span>
+                  <span class="meta-value">${uriLabel}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Status:</span>
+                  <span class="meta-value">${status}</span>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join("") + (note ? `<div style="grid-column:1/-1; text-align:center; color:var(--muted); font-size:12px;">${note}</div>` : "");
+    }
+
+    async function loadLegend(registry, id) {
+      const [uriResult, ownerResult] = await Promise.allSettled([
+        registry.tokenURI(id),
+        registry.ownerOf(id)
+      ]);
+
+      const uri = uriResult.status === "fulfilled" ? uriResult.value : null;
+      const owner = ownerResult.status === "fulfilled" ? ownerResult.value : null;
+      const metadata = await loadMetadata(uri);
+      const fallback = FALLBACK_LEGENDS[id];
+
+      return {
+        id,
+        uri,
+        owner,
+        metadata,
+        name: metadata?.name || fallback.name,
+        description: metadata?.description || fallback.description,
+        image: metadata?.image || fallback.image,
+        imageUrl: getImageUrl(metadata),
+        status: "🟢 Eternal"
+      };
     }
 
     async function loadLegends() {
+      const cached = readCache();
+      if (cached) {
+        $("loadingSpinner")?.remove();
+        renderLegends(cached, "Loaded from local cache while refreshing quietly…");
+      }
+
       try {
+        if (!window.ethers) throw new Error("ethers.js did not load");
         const provider = new ethers.JsonRpcProvider(BASE_RPC);
-        
         const abi = [
           "function tokenURI(uint256 tokenId) view returns (string)",
           "function ownerOf(uint256 tokenId) view returns (address)"
         ];
-        
-        const registry = new ethers.Contract(IDENTITY_REGISTRY, abi, provider);
-        
-        const uri0 = await registry.tokenURI(0);
-        const owner0 = await registry.ownerOf(0);
-        
-        const uri1 = await registry.tokenURI(1);
-        const owner1 = await registry.ownerOf(1);
-        
-        let metadata0 = null;
-        let metadata1 = null;
-        
-        if (uri0.startsWith('ipfs://')) {
-          const hash0 = uri0.replace('ipfs://', '');
-          metadata0 = await fetchFromIPFS(hash0);
-        }
-        
-        if (uri1.startsWith('ipfs://')) {
-          const hash1 = uri1.replace('ipfs://', '');
-          metadata1 = await fetchFromIPFS(hash1);
-        }
-        
-        const container = $("agentsContainer");
-        $("loadingSpinner").style.display = "none";
-        
-        container.innerHTML = `
-          <!-- Agent 0 -->
-          <div class="legend-card">
-            <div class="legend-header">
-              <div class="legend-id">#0</div>
-              <div class="legend-badge">GENESIS</div>
-            </div>
-            <div class="legend-image-container">
-              ${metadata0?.image ? 
-                `<img src="${getImageUrl(metadata0)}" alt="${metadata0?.name || 'Agent 0'}" class="legend-image" onerror="this.onerror=null; this.parentNode.innerHTML='<span class=\'legend-image-placeholder\'>🪞</span>';">` : 
-                '<span class="legend-image-placeholder">🪞</span>'}
-            </div>
-            <div class="legend-content">
-              <div class="legend-name">${metadata0?.name || 'The Origin'}</div>
-              <div class="legend-description">${metadata0?.description || 'The very first agent. The one that started it all. Immutable. Eternal.'}</div>
-              <div class="legend-meta">
-                <div class="meta-item">
-                  <span class="meta-label">Owner:</span>
-                  <span class="meta-value">${owner0.slice(0,6)}…${owner0.slice(-4)}</span>
-                </div>
-                <div class="meta-item">
-                  <span class="meta-label">Token URI:</span>
-                  <span class="meta-value">IPFS</span>
-                </div>
-                <div class="meta-item">
-                  <span class="meta-label">Status:</span>
-                  <span class="meta-value">🟢 Eternal</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        const registry = new ethers.Contract(IDENTITY_REGISTRY_PROXY, abi, provider);
 
-          <!-- Agent 1 -->
-          <div class="legend-card">
-            <div class="legend-header">
-              <div class="legend-id">#1</div>
-              <div class="legend-badge">PRIME</div>
-            </div>
-            <div class="legend-image-container">
-              ${metadata1?.image ? 
-                `<img src="${getImageUrl(metadata1)}" alt="${metadata1?.name || 'Agent 1'}" class="legend-image" onerror="this.onerror=null; this.parentNode.innerHTML='<span class=\'legend-image-placeholder\'>🌊</span>';">` : 
-                '<span class="legend-image-placeholder">🌊</span>'}
-            </div>
-            <div class="legend-content">
-              <div class="legend-name">${metadata1?.name || 'The Pond Keeper'}</div>
-              <div class="legend-description">${metadata1?.description || 'The first agent after genesis. Guardian of the pond, keeper of the lore.'}</div>
-              <div class="legend-meta">
-                <div class="meta-item">
-                  <span class="meta-label">Owner:</span>
-                  <span class="meta-value">${owner1.slice(0,6)}…${owner1.slice(-4)}</span>
-                </div>
-                <div class="meta-item">
-                  <span class="meta-label">Token URI:</span>
-                  <span class="meta-value">IPFS</span>
-                </div>
-                <div class="meta-item">
-                  <span class="meta-label">Status:</span>
-                  <span class="meta-value">🟢 Eternal</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-        
+        const results = await Promise.all([loadLegend(registry, 0), loadLegend(registry, 1)]);
+        const legends = { 0: results[0], 1: results[1] };
+        writeCache(legends);
+        renderLegends(legends);
       } catch (error) {
         console.error("Error loading legends:", error);
-        $("agentsContainer").innerHTML = `
-          <div class="error-message" style="grid-column:span 2; text-align:center; padding:40px; color:var(--bad);">
-            ❌ Failed to load legends. Please try again.
-          </div>
-        `;
+        if (!cached) {
+          renderLegends(FALLBACK_LEGENDS, `Could not reach the Base registry proxy right now: ${error.message || error}`);
+        } else {
+          renderLegends(cached, `Showing cached legends. Live refresh failed: ${error.message || error}`);
+        }
       }
     }
 
-    window.addEventListener('load', loadLegends);
+    if (document.readyState === "loading") {
+      window.addEventListener("DOMContentLoaded", loadLegends);
+    } else {
+      loadLegends();
+    }
   </script>
 </body>
 </html>
