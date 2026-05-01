@@ -639,14 +639,17 @@
   // These will be loaded from toadgang.json
   let CREATOR_NAMES = {};
   let OFFICIAL_CREATORS = [];
+  let creatorDataLoaded = false;
 
   // Load creator data from JSON
   async function loadCreatorData() {
+    if (creatorDataLoaded) return;
     try {
       const response = await fetch('/agent/toadgang.json');
       const data = await response.json();
       CREATOR_NAMES = data.creators || {};
       OFFICIAL_CREATORS = data.official_creators || [];
+      creatorDataLoaded = true;
       console.log(`✅ Loaded ${Object.keys(CREATOR_NAMES).length} creator names from toadgang.json`);
       console.log('📋 Official creators:', OFFICIAL_CREATORS);
     } catch (error) {
@@ -657,6 +660,7 @@
         "0x2fc60d9c2c572410335d62c6b3244c7f8147e47c": "TommyN9 — Mirror Architect"
       };
       OFFICIAL_CREATORS = Object.keys(CREATOR_NAMES);
+      creatorDataLoaded = true;
     }
   }
 
@@ -816,10 +820,47 @@
   const pageSize = 12;
   
   const IPFS_GATEWAYS = [
+    "https://gateway.pinata.cloud/ipfs/",
     "https://ipfs.io/ipfs/",
-    "https://cloudflare-ipfs.com/ipfs/",
-    "https://gateway.pinata.cloud/ipfs/"
+    "https://cloudflare-ipfs.com/ipfs/"
   ];
+
+  const AGENT_CACHE_KEY = "toadaid.agentDirectory.v2";
+  const AGENT_CACHE_TTL_MS = 10 * 60 * 1000;
+  const IPFS_CACHE_KEY = "toadaid.agentMetadata.v1";
+  const IPFS_TIMEOUT_MS = 3500;
+
+  function readJsonCache(key) {
+    try { return JSON.parse(localStorage.getItem(key) || "null"); }
+    catch { return null; }
+  }
+
+  function writeJsonCache(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch (e) { console.warn("Cache write skipped:", e); }
+  }
+
+  function loadAgentCache() {
+    const cached = readJsonCache(AGENT_CACHE_KEY);
+    if (!cached || !cached.savedAt || !Array.isArray(cached.agents)) return null;
+    if (Date.now() - cached.savedAt > AGENT_CACHE_TTL_MS) return null;
+    return cached.agents;
+  }
+
+  function saveAgentCache(agents) {
+    writeJsonCache(AGENT_CACHE_KEY, { savedAt: Date.now(), agents });
+  }
+
+  function readMetadataCache(ipfsHash) {
+    const cached = readJsonCache(IPFS_CACHE_KEY) || {};
+    return cached[ipfsHash] || null;
+  }
+
+  function saveMetadataCache(ipfsHash, metadata) {
+    const cached = readJsonCache(IPFS_CACHE_KEY) || {};
+    cached[ipfsHash] = metadata;
+    writeJsonCache(IPFS_CACHE_KEY, cached);
+  }
   
   function safeBase64Decode(base64) {
     try {
@@ -938,13 +979,31 @@
     return null;
   }
   
+  async function fetchJsonWithTimeout(url, timeoutMs = IPFS_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) return null;
+      return await response.json();
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function fetchFromIPFS(ipfsHash) {
+    const cached = readMetadataCache(ipfsHash);
+    if (cached) return cached;
+
     for (const gateway of IPFS_GATEWAYS) {
       try {
-        const response = await fetch(gateway + ipfsHash);
-        if (response.ok) return await response.json();
+        const data = await fetchJsonWithTimeout(gateway + ipfsHash);
+        if (data) {
+          saveMetadataCache(ipfsHash, data);
+          return data;
+        }
       } catch (e) {
-        console.warn(`Gateway ${gateway} failed:`, e);
+        console.warn(`Gateway ${gateway} failed or timed out:`, e?.message || e);
       }
     }
     return null;
@@ -1181,120 +1240,104 @@
     }
   }
   
-  async function fetchAgentsFromBlockscout() {
+  async function fetchAgentsFromBlockscout({ force = false } = {}) {
     try {
       $("loadingSpinner").style.display = "block";
       $("agentsGrid").style.display = "none";
       $("emptyState").style.display = "none";
       $("errorDisplay").style.display = "none";
       $("statusMessage").style.display = "none";
-      
+
+      if (!force) {
+        const cachedAgents = loadAgentCache();
+        if (cachedAgents) {
+          allAgents = cachedAgents;
+          $("statusMessage").style.display = "block";
+          $("statusMessage").innerHTML = `⚡ Loaded ${cachedAgents.length} agents from local cache. Refresh for latest.`;
+          return true;
+        }
+      }
+
       console.log("Fetching from Blockscout with event sig:", FORGED_EVENT_SIG);
-      
+
       const response = await fetch(BLOCKSCOUT_URL);
       const data = await response.json();
-      
+
       if (data.status === "1" && data.result && data.result.length > 0) {
         $("statusMessage").style.display = "block";
-        $("statusMessage").innerHTML = `✅ Found ${data.result.length} forged agents!`;
-        
-        // Process in smaller batches to avoid rate limiting
-        const agents = [];
-        const batchSize = 3;
-        
-        for (let i = 0; i < data.result.length; i += batchSize) {
-          const batch = data.result.slice(i, i + batchSize);
-          const batchResults = await pMapLimit(batch, 2, async (log) => {
-            const agentId = parseInt(log.topics[2], 16);
-            const creator = '0x' + log.topics[1].slice(26);
-            
-            let uri = await fetchTokenURI(agentId);
-            let uriSource = uri ? "TOKENURI_CALL" : null;
-            if (!uri && log.data && log.data !== '0x') {
-              uri = extractUriFromLogData(log.data, agentId);
-              if (uri) uriSource = "FORGED_EVENT_LOG";
-            }
-            
-            // Check current owner and $TOBY balance
-            const { owner, holdsToby } = await fetchOwnerAndTobyBalance(agentId);
-            
-            let name = `Agent #${agentId}`;
-            let description = '';
-            let image = '🪞';
-            let imageUrl = null;
-            let hasMetadata = false;
-            
+        $("statusMessage").innerHTML = `✅ Found ${data.result.length} forged agents. Rendering fast view...`;
+
+        // Fast directory path: do not call tokenURI(), ownerOf(), or $TOBY.balanceOf()
+        // for every card. Those deep checks run on the detail page.
+        const agents = data.result.map((log) => {
+          const agentId = parseInt(log.topics[2], 16);
+          const creator = '0x' + log.topics[1].slice(26);
+
+          let uri = null;
+          let uriSource = null;
+          let name = `Agent #${agentId}`;
+          let description = '';
+          let image = '🪞';
+          let imageUrl = null;
+          let metadata = null;
+          let hasMetadata = false;
+          let metadataLoaded = false;
+
+          if (log.data && log.data !== '0x') {
+            uri = extractUriFromLogData(log.data, agentId);
             if (uri) {
+              uriSource = "FORGED_EVENT_LOG";
               hasMetadata = true;
-              if (uri.startsWith('data:application/json;base64,')) {
-                const base64Data = uri.replace('data:application/json;base64,', '');
-                const parsed = parseBase64Metadata(base64Data);
-                if (parsed) {
-                  name = cleanAgentName(parsed.name || name);
-                  description = parsed.description || '';
-                  image = parsed.image || '🪞';
-                  if (parsed.image && parsed.image.startsWith('http')) {
-                    imageUrl = parsed.image;
-                  } else if (parsed.image && parsed.image.startsWith('ipfs://')) {
-                    const hash = parsed.image.replace('ipfs://', '');
-                    imageUrl = IPFS_GATEWAYS[0] + hash;
-                  }
-                }
-              } else if (uri.startsWith('ipfs://')) {
-                name = `IPFS Agent #${agentId}`;
-                description = 'Metadata stored on IPFS';
-                try {
-                  const ipfsHash = uri.replace('ipfs://', '');
-                  const ipfsData = await fetchFromIPFS(ipfsHash);
-                  if (ipfsData) {
-                    name = cleanAgentName(ipfsData.name || name);
-                    description = ipfsData.description || description;
-                    if (ipfsData.image) {
-                      if (ipfsData.image.startsWith('http')) {
-                        imageUrl = ipfsData.image;
-                      } else if (ipfsData.image.startsWith('ipfs://')) {
-                        const imgHash = ipfsData.image.replace('ipfs://', '');
-                        imageUrl = IPFS_GATEWAYS[0] + imgHash;
-                      }
-                    }
-                  }
-                } catch (e) {}
+            }
+          }
+
+          if (uri && uri.startsWith('data:application/json;base64,')) {
+            const base64Data = uri.replace('data:application/json;base64,', '');
+            const parsed = parseBase64Metadata(base64Data);
+            if (parsed) {
+              metadata = parsed;
+              metadataLoaded = true;
+              name = cleanAgentName(parsed.name || name);
+              description = parsed.description || '';
+              image = parsed.image || '🪞';
+              if (parsed.image && parsed.image.startsWith('http')) {
+                imageUrl = parsed.image;
+              } else if (parsed.image && parsed.image.startsWith('ipfs://')) {
+                const hash = parsed.image.replace('ipfs://', '');
+                imageUrl = IPFS_GATEWAYS[0] + hash;
               }
             }
-            
-            return {
-              id: agentId,
-              name: name,
-              description: description,
-              image: image,
-              imageUrl: imageUrl,
-              creator: creator,
-              owner: owner,
-              holdsToby: holdsToby,
-              active: true,
-              endorsements: 0,
-              flags: 0,
-              timestamp: parseInt(log.timeStamp) * 1000,
-              uri: uri,
-              uriSource: uriSource,
-              transactionHash: log.transactionHash,
-              hasMetadata: hasMetadata
-            };
-          });
-          
-          agents.push(...batchResults);
-          
-          // Add delay between batches to avoid rate limiting
-          if (i + batchSize < data.result.length) {
-            await new Promise(r => setTimeout(r, 1000));
           }
-        }
-        
+
+          return {
+            id: agentId,
+            name,
+            description,
+            image,
+            imageUrl,
+            creator,
+            owner: null,
+            holdsToby: false,
+            active: true,
+            endorsements: 0,
+            flags: 0,
+            timestamp: parseInt(log.timeStamp) * 1000,
+            uri,
+            uriSource,
+            transactionHash: log.transactionHash,
+            hasMetadata,
+            metadata,
+            metadataLoaded,
+            metadataLoading: false
+          };
+        });
+
         agents.sort((a, b) => b.timestamp - a.timestamp);
         allAgents = agents;
-        $("statusMessage").innerHTML = `✅ Loaded ${agents.length} real agents from Blockscout!`;
+        saveAgentCache(agents);
+        $("statusMessage").innerHTML = `✅ Loaded ${agents.length} agents. Metadata hydrates as cards appear.`;
         return true;
-        
+
       } else if (data.result && data.result.length === 0) {
         $("statusMessage").style.display = "block";
         $("statusMessage").innerHTML = "⚠️ No forged agents found yet.";
@@ -1302,7 +1345,7 @@
       } else {
         throw new Error(data.message || "Unknown error");
       }
-      
+
     } catch (error) {
       console.error("Blockscout error:", error);
       $("errorDisplay").style.display = "block";
@@ -1312,13 +1355,13 @@
       $("loadingSpinner").style.display = "none";
     }
   }
-  
-  async function loadAgents() {
+
+  async function loadAgents(options = {}) {
     // Load creator data first
     await loadCreatorData();
-    
-    const success = await fetchAgentsFromBlockscout();
-    
+
+    const success = await fetchAgentsFromBlockscout(options);
+
     if (!success || allAgents.length === 0) {
       allAgents = [
         { id: 1, name: "Lore Guardian", description: "The keeper of Toadgang lore", image: "🪞", imageUrl: null, creator: "0x587464fd25Af9147CB4660B03d899c8893378C0A", owner: "0x587464fd25Af9147CB4660B03d899c8893378C0A", holdsToby: true, active: true, endorsements: 42, flags: 2, timestamp: Date.now() - 86400000 * 30, hasMetadata: true },
@@ -1394,6 +1437,49 @@
     renderAgents();
   }
   
+  async function hydrateVisibleMetadata(visibleAgents, pageSnapshot) {
+    const needsMetadata = visibleAgents.filter(agent =>
+      agent.uri &&
+      agent.uri.startsWith('ipfs://') &&
+      !agent.metadataLoaded &&
+      !agent.metadataLoading
+    );
+
+    if (!needsMetadata.length) return;
+
+    await pMapLimit(needsMetadata, 4, async (agent) => {
+      agent.metadataLoading = true;
+      try {
+        const ipfsHash = agent.uri.replace('ipfs://', '');
+        const ipfsData = await fetchFromIPFS(ipfsHash);
+        if (ipfsData) {
+          agent.metadata = ipfsData;
+          agent.name = cleanAgentName(ipfsData.name || agent.name);
+          agent.description = ipfsData.description || agent.description;
+          if (ipfsData.image) {
+            agent.image = ipfsData.image;
+            if (ipfsData.image.startsWith('http')) {
+              agent.imageUrl = ipfsData.image;
+            } else if (ipfsData.image.startsWith('ipfs://')) {
+              const imgHash = ipfsData.image.replace('ipfs://', '');
+              agent.imageUrl = IPFS_GATEWAYS[0] + imgHash;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`Metadata hydration failed for #${agent.id}:`, e?.message || e);
+      } finally {
+        agent.metadataLoaded = true;
+        agent.metadataLoading = false;
+      }
+    });
+
+    if (currentPage === pageSnapshot) {
+      renderAgents();
+      saveAgentCache(allAgents);
+    }
+  }
+
   function renderAgents() {
     const grid = $("agentsGrid");
     const pagination = $("pagination");
@@ -1451,6 +1537,8 @@
         </div>
       `;
     }).join('');
+
+    hydrateVisibleMetadata(paginated, currentPage);
     
     pagination.style.display = "flex";
     
@@ -1472,7 +1560,7 @@
   $("sortFilter")?.addEventListener("change", applyFiltersAndRender);
   $("metadataFilter")?.addEventListener("change", applyFiltersAndRender);
   
-  $("refreshBtn")?.addEventListener("click", loadAgents);
+  $("refreshBtn")?.addEventListener("click", () => loadAgents({ force: true }));
   
   $("prevPage")?.addEventListener("click", () => {
     if (currentPage > 1) {
