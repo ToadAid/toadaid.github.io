@@ -25,6 +25,7 @@
       color: #cfc8a3;
       margin-top: 10px;
       font-size: 14px;
+      line-height: 1.8;
     }
 
     .container {
@@ -39,22 +40,32 @@
       gap: 25px;
     }
 
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
     .card {
       background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(240,230,200,0.12);
       border-radius: 16px;
       overflow: hidden;
       transition: 0.3s;
       backdrop-filter: blur(6px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.22);
     }
 
     .card:hover {
       transform: translateY(-5px);
+      border-color: rgba(232,219,160,0.35);
     }
 
     .card img {
       width: 100%;
       height: 180px;
       object-fit: cover;
+      display: block;
     }
 
     .card-content {
@@ -70,6 +81,7 @@
     .card-desc {
       font-size: 13px;
       color: #cfc8a3;
+      line-height: 1.7;
     }
 
     .read {
@@ -101,53 +113,57 @@
 <div class="container">
   <div class="grid">
 
-    <!-- L001 -->
-    <div class="card">
-      <img src="images/wind-bloom.jpg">
-      <div class="card-content">
-        <div class="card-title">L001 · 风与花</div>
-        <div class="card-desc">
-          放慢脚步，看见世界的温柔。
+    <a class="card-link" href="life-scroll.html?id=L001">
+      <div class="card">
+        <img src="images/wind-bloom.jpg" alt="风与花">
+        <div class="card-content">
+          <div class="card-title">L001 · 风与花</div>
+          <div class="card-desc">
+            放慢脚步，看见世界的温柔。
+          </div>
+          <div class="read">Read Scroll →</div>
         </div>
-        <div class="read">Read Scroll →</div>
       </div>
-    </div>
+    </a>
 
-    <!-- L002 -->
-    <div class="card">
-      <img src="images/tea.jpg">
-      <div class="card-content">
-        <div class="card-title">L002 · 一壶见心</div>
-        <div class="card-desc">
-          一冲一泡之间，把自己找回来。
+    <a class="card-link" href="life-scroll.html?id=L002">
+      <div class="card">
+        <img src="images/tea.jpg" alt="一壶见心">
+        <div class="card-content">
+          <div class="card-title">L002 · 一壶见心</div>
+          <div class="card-desc">
+            一冲一泡之间，把自己找回来。
+          </div>
+          <div class="read">Read Scroll →</div>
         </div>
-        <div class="read">Read Scroll →</div>
       </div>
-    </div>
+    </a>
 
-    <!-- L003 -->
-    <div class="card">
-      <img src="images/no-strive.jpg">
-      <div class="card-content">
-        <div class="card-title">L003 · 不争之安</div>
-        <div class="card-desc">
-          不争，不是放弃，是不再消耗自己。
+    <a class="card-link" href="life-scroll.html?id=L003">
+      <div class="card">
+        <img src="images/no-strive.jpg" alt="不争之安">
+        <div class="card-content">
+          <div class="card-title">L003 · 不争之安</div>
+          <div class="card-desc">
+            不争，不是放弃，是不再消耗自己。
+          </div>
+          <div class="read">Read Scroll →</div>
         </div>
-        <div class="read">Read Scroll →</div>
       </div>
-    </div>
+    </a>
 
-    <!-- L004 -->
-    <div class="card">
-      <img src="images/life-shape.jpg">
-      <div class="card-content">
-        <div class="card-title">L004 · 生命的样子</div>
-        <div class="card-desc">
-          看世界，爱自己。
+    <a class="card-link" href="life-scroll.html?id=L004">
+      <div class="card">
+        <img src="images/life-shape.jpg" alt="生命的样子">
+        <div class="card-content">
+          <div class="card-title">L004 · 生命的样子</div>
+          <div class="card-desc">
+            看世界，爱自己。
+          </div>
+          <div class="read">Read Scroll →</div>
         </div>
-        <div class="read">Read Scroll →</div>
       </div>
-    </div>
+    </a>
 
   </div>
 </div>
