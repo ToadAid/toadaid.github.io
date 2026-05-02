@@ -12,64 +12,46 @@
     }
 
     body {
-      margin: 0;
-      font-family: "Noto Serif SC", "Times New Roman", serif;
       background: linear-gradient(#0f1f1c, #091311);
+      font-family: "Noto Serif SC", "Times New Roman", serif;
       color: #f5f3e7;
-      min-height: 100vh;
+      line-height: 1.5;
     }
 
-    header {
+    /* 头部 */
+    .header {
       text-align: center;
-      padding: 60px 20px 30px;
+      padding: 60px 20px 40px;
     }
 
     h1 {
       font-size: 36px;
-      letter-spacing: 2px;
       font-weight: normal;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      color: #fff5d6;
     }
 
     .subtitle {
-      color: #cfc8a3;
-      margin-top: 10px;
+      color: #d8c98a;
       font-size: 14px;
       line-height: 1.8;
     }
 
-    .breadcrumb {
-      text-align: right;
-      padding: 16px 0 0 0;
-      margin: 0 auto;
-      max-width: 1100px;
-    }
-
-    .breadcrumb a {
-      color: white;
-      text-decoration: none;
-      font-size: 14px;
-      opacity: 0.85;
-      transition: 0.2s;
-    }
-
-    .breadcrumb a:hover {
-      opacity: 1;
-      text-decoration: underline;
-    }
-
+    /* 卡片网格 */
     .container {
       max-width: 1100px;
-      margin: auto;
+      margin: 0 auto;
       padding: 20px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
+      gap: 28px;
     }
 
-    /* 整个卡片区域可点击，鼠标变手 */
+    /* 整张卡片可点击，鼠标变手 */
     .card-link {
       text-decoration: none;
       color: inherit;
@@ -78,140 +60,143 @@
     }
 
     .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(240,230,200,0.12);
-      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(240, 230, 200, 0.16);
+      border-radius: 24px;
       overflow: hidden;
-      transition: 0.3s;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.22);
-      cursor: pointer;  /* 确保卡片本身也是手型 */
+      transition: all 0.3s ease;
     }
 
     .card:hover {
-      transform: translateY(-5px);
-      border-color: rgba(232,219,160,0.5);
-      background: rgba(255,255,255,0.08);
+      transform: translateY(-6px);
+      border-color: rgba(232, 219, 160, 0.5);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
-    /* 图片占位背景 - 优雅纯色，不再破碎 */
+    /* 图片区域 - 优雅占位，不会破碎 */
     .card-img {
       width: 100%;
-      height: 180px;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-color: #2a3a34;  /* 深橄榄绿占位 */
+      height: 200px;
+      object-fit: cover;
+      background-color: #2a3a34;  /* 深绿占位色 */
+      display: block;
     }
 
-    /* 不同卡片用不同占位色 / 以后替换真实图片只需改 background-image */
-    .card-img-1 { background-image: url('images/wind-bloom.jpg'); background-color: #3e5a50; }
-    .card-img-2 { background-image: url('images/tea.jpg'); background-color: #5c4e3b; }
-    .card-img-3 { background-image: url('images/no-strive.jpg'); background-color: #4a5b52; }
-    .card-img-4 { background-image: url('images/life-shape.jpg'); background-color: #5f6b5c; }
-
-    /* 当真实图片加载失败时，只显示背景色，看不见破损图标 */
-    .card-img {
-      background-size: cover;
-    }
+    /* 不同卡片不同占位色调（可选，仅为了视觉区分） */
+    .card-img-1 { background-color: #3e5a50; }
+    .card-img-2 { background-color: #5c4e3b; }
+    .card-img-3 { background-color: #4a5b52; }
+    .card-img-4 { background-color: #5f6b5c; }
 
     .card-content {
-      padding: 16px;
+      padding: 20px;
     }
 
     .card-title {
-      font-size: 18px;
-      margin-bottom: 6px;
+      font-size: 20px;
       color: #f0e6c8;
+      margin-bottom: 6px;
     }
 
     .card-title-en {
       font-size: 13px;
       color: #d8c98a;
-      margin-bottom: 8px;
       letter-spacing: 0.5px;
+      margin-bottom: 10px;
     }
 
     .card-desc {
       font-size: 13px;
       color: #cfc8a3;
-      line-height: 1.7;
+      line-height: 1.6;
+      margin-bottom: 12px;
     }
 
     .read {
-      margin-top: 12px;
-      display: inline-block;
       font-size: 12px;
       color: #e8dba0;
       border-bottom: 1px dashed #e8dba0;
+      display: inline-block;
     }
 
     footer {
       text-align: center;
-      padding: 40px;
+      padding: 40px 20px;
       font-size: 12px;
-      color: #888;
+      color: #aaa083;
+    }
+
+    @media (max-width: 640px) {
+      .header { padding: 40px 20px 30px; }
+      h1 { font-size: 28px; }
+      .card-title { font-size: 18px; }
+      .card-img { height: 160px; }
     }
   </style>
 </head>
 <body>
 
-<header>
+<div class="header">
   <h1>人生感 · Life Reflections</h1>
   <div class="subtitle">
-    不教你什么，只陪你慢下来。🍃🪞 <br>
+    不教你什么，只陪你慢下来。🍃🪞<br>
     Not to teach, but to help you slow down.
   </div>
-  <nav class="breadcrumb"><a href="/">← Back to Home</a></nav>
-</header>
+</div>
 
 <div class="container">
   <div class="grid">
 
+    <!-- L001 卡片 -->
     <a class="card-link" href="life-scroll.html?id=L001">
       <div class="card">
-        <div class="card-img card-img-1"></div>
+        <img class="card-img card-img-1" src="images/wind-bloom.jpg" alt="Wind & Bloom" onerror="this.style.opacity='0.6'">
         <div class="card-content">
           <div class="card-title">L001 · 风与花</div>
           <div class="card-title-en">Wind & Bloom</div>
           <div class="card-desc">放慢脚步，看见世界的温柔。</div>
-          <div class="read">Read Scroll →</div>
+          <div class="read">阅读静文 →</div>
         </div>
       </div>
     </a>
 
+    <!-- L002 卡片 -->
     <a class="card-link" href="life-scroll.html?id=L002">
       <div class="card">
-        <div class="card-img card-img-2"></div>
+        <img class="card-img card-img-2" src="images/tea.jpg" alt="A Cup Reflects the Self" onerror="this.style.opacity='0.6'">
         <div class="card-content">
           <div class="card-title">L002 · 一壶见心</div>
           <div class="card-title-en">A Cup Reflects the Self</div>
           <div class="card-desc">一冲一泡之间，把自己找回来。</div>
-          <div class="read">Read Scroll →</div>
+          <div class="read">阅读静文 →</div>
         </div>
       </div>
     </a>
 
+    <!-- L003 卡片 -->
     <a class="card-link" href="life-scroll.html?id=L003">
       <div class="card">
-        <div class="card-img card-img-3"></div>
+        <img class="card-img card-img-3" src="images/no-strive.jpg" alt="The Ease of Non-Striving" onerror="this.style.opacity='0.6'">
         <div class="card-content">
           <div class="card-title">L003 · 不争之安</div>
           <div class="card-title-en">The Ease of Non-Striving</div>
           <div class="card-desc">不争，不是放弃，是不再消耗自己。</div>
-          <div class="read">Read Scroll →</div>
+          <div class="read">阅读静文 →</div>
         </div>
       </div>
     </a>
 
+    <!-- L004 卡片 -->
     <a class="card-link" href="life-scroll.html?id=L004">
       <div class="card">
-        <div class="card-img card-img-4"></div>
+        <img class="card-img card-img-4" src="images/life-shape.jpg" alt="The Shape of Life" onerror="this.style.opacity='0.6'">
         <div class="card-content">
           <div class="card-title">L004 · 生命的样子</div>
           <div class="card-title-en">The Shape of Life</div>
           <div class="card-desc">看世界，爱自己。</div>
-          <div class="read">Read Scroll →</div>
+          <div class="read">阅读静文 →</div>
         </div>
       </div>
     </a>
