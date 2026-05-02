@@ -2,11 +2,14 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Life Reflection Scroll</title>
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      font-family: "Noto Serif SC", serif;
+      font-family: "Noto Serif SC", "Times New Roman", serif;
       background: linear-gradient(#0f1f1c, #07100e);
       color: #f5f3e7;
     }
@@ -25,11 +28,14 @@
       font-size: 14px;
     }
 
+    .back:hover { color: #fff5d6; }
+
     .hero {
       border-radius: 24px;
       overflow: hidden;
       margin-bottom: 28px;
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      background: rgba(255,255,255,0.04);
     }
 
     .hero img {
@@ -65,9 +71,7 @@
       line-height: 1.8;
     }
 
-    .section {
-      margin: 26px 0;
-    }
+    .section { margin: 26px 0; }
 
     .section h2 {
       color: #f0e6c8;
@@ -88,18 +92,52 @@
       margin: 28px 0;
     }
 
+    .nav {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 34px;
+    }
+
+    .nav-btn {
+      display: inline-block;
+      color: #fff5d6;
+      background: rgba(216, 201, 138, 0.10);
+      border: 1px solid rgba(232, 219, 160, 0.28);
+      border-radius: 999px;
+      padding: 12px 18px;
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+      transition: all 0.25s ease;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(216, 201, 138, 0.16);
+      border-color: rgba(232, 219, 160, 0.48);
+    }
+
     footer {
       text-align: center;
       margin-top: 40px;
       color: #aaa083;
       font-size: 13px;
     }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 22px 14px 50px; }
+      .scroll-card { padding: 22px; }
+      h1 { font-size: 28px; }
+      .hook { font-size: 16px; }
+      .section p { font-size: 15px; }
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <a class="back" href="life.html">← 返回人生感</a>
+    <a class="back" href="life.html">← 返回人生感 · Life Reflections</a>
 
     <div class="hero">
       <img id="image" src="" alt="">
@@ -125,6 +163,10 @@
       <div class="section">
         <h2>✨ 传播短句</h2>
         <p id="quote"></p>
+      </div>
+
+      <div class="nav">
+        <a id="next" class="nav-btn" href="life.html">Continue →</a>
       </div>
     </article>
 
@@ -270,6 +312,70 @@ just a life lived clear and warm.`,
 EN：See the world. Love yourself.`
       },
 
+      L006: {
+        id: "L006",
+        title: "低谷之光 · The Quiet Strength",
+        image: "images/quiet-strength.jpg",
+        hook: "低谷不是否定你，只是让你看清一切。",
+        body: `当一个人落在低谷，
+很多声音会变得很远。
+
+不是你变差了，
+而是世界更现实了。
+
+有些时候，
+不必急着解释。
+
+不是因为你没话说，
+而是因为此刻的世界，听不见。
+
+低谷，会让很多东西显形：
+关系，人心，
+以及你真正能依靠的部分。
+
+困难的时候，
+只需要一件事：站住。
+
+不是完美地走，
+而是不倒下。
+
+最深的夜，也会有星。
+
+当你走过一段看不见光的路，
+你反而更知道该往哪里去。
+
+尊严，不是别人给的，
+而是你在泥泞中，依然不弯的脊背。`,
+        en: `When a person falls low,
+many voices fade away.
+
+It’s not that you became less—
+the world just became clearer.
+
+Sometimes,
+there is no need to explain.
+
+Not because you have nothing to say,
+but because the moment cannot hear you.
+
+Hard times reveal things:
+people, relationships,
+and what truly remains.
+
+In difficulty,
+you only need one thing: stand.
+
+Not perfectly—
+just don’t fall.
+
+The darkest nights still hold stars.
+
+And those who walk through them
+learn direction.`,
+        quote: `CN：低谷不是否定你，只是让你看清一切。🍃🪞
+EN：The low is not your failure—it's your clarity. 🍃🪞`
+      },
+
       L005: {
         id: "L005",
         title: "倒下之后 · Still, You Rise",
@@ -363,80 +469,6 @@ Live as the you you truly love.`,
 EN：You don’t need to be understood—only to stop abandoning yourself. 🍃🪞`
       },
 
-      L006: {
-        id: "L006",
-        title: "低谷之光 · The Quiet Strength",
-        image: "images/quiet-strength.jpg",
-        hook: "低谷不是否定你，只是让你看清一切。",
-        body: `当一个人落在低谷，
-很多声音会变得很远。
-
-不是你变差了，
-而是世界更现实了。
-
-善良、人品、解释——
-在风平浪静时被看见，
-在风雨之中，常被忽略。
-
-所以，有些时候——
-不必急着解释。
-
-不是因为你没话说，
-而是因为此刻的世界，
-听不见。
-
-沉默，不是失败，
-是把力气留给前行。
-
-低谷，会让很多东西显形：
-关系，
-人心，
-以及你真正能依靠的部分。
-
-困难的时候，
-只需要一件事：
-站住。
-
-不是完美地走，
-而是不倒下。
-
-最深的夜，
-也会有星。
-
-尊严，不是别人给的，
-它是你在泥泞之中，
-依然不弯的脊背。`,
-        en: `When a person falls into a low place,
-many voices fade away.
-
-It’s not that you became less—
-it’s that the world became clearer.
-
-Sometimes,
-there’s no need to explain.
-
-Not because you have nothing to say,
-but because the moment cannot hear you.
-
-Hard times reveal things:
-people,
-relationships,
-and what truly remains.
-
-In difficulty,
-you only need one thing:
-stand.
-
-The darkest nights
-still hold stars.
-
-Dignity is not given.
-It is kept—
-even in the mud.`,
-        quote: `CN：低谷不是否定你，只是让你看清一切。🍃🪞
-EN：The low is not your failure—it’s your clarity. 🍃🪞`
-      },
-
       L007: {
         id: "L007",
         title: "自愈 · Return to Yourself",
@@ -450,9 +482,6 @@ EN：The low is not your failure—it’s your clarity. 🍃🪞`
 
 不要太敏感，
 也不要总和自己较劲。
-
-有些压力，
-不必一直扛在心上。
 
 人生最重要的作品，
 其实是你自己。
@@ -470,11 +499,8 @@ EN：The low is not your failure—it’s your clarity. 🍃🪞`
 看淡一点，
 慢一点。
 
-不争，不急，
-心就会轻。
-
 开心与健康，
-才是这一生最重要的事。`,
+才是最重要的事。`,
         en: `You may feel low—
 just don’t stay lost.
 
@@ -482,8 +508,6 @@ Break if you must,
 but learn to return.
 
 Don’t be too hard on yourself.
-Not every weight
-needs to be carried.
 
 The most important creation
 is you.
@@ -501,6 +525,7 @@ EN：Break if you must—just don’t forget to return. 🍃🪞`
       }
     };
 
+    const order = ["L001", "L002", "L003", "L004", "L006", "L005", "L007"];
     const params = new URLSearchParams(window.location.search);
     const key = params.get("id") || "L001";
     const scroll = scrolls[key] || scrolls.L001;
@@ -514,6 +539,18 @@ EN：Break if you must—just don’t forget to return. 🍃🪞`
     document.getElementById("body").textContent = scroll.body;
     document.getElementById("en").textContent = scroll.en;
     document.getElementById("quote").textContent = scroll.quote;
+
+    const currentIndex = order.indexOf(scroll.id);
+    const nextId = order[currentIndex + 1];
+    const nextLink = document.getElementById("next");
+
+    if (nextId && scrolls[nextId]) {
+      nextLink.href = `life-scroll.html?id=${nextId}`;
+      nextLink.textContent = `Continue → ${scrolls[nextId].id}`;
+    } else {
+      nextLink.href = "life.html";
+      nextLink.textContent = "Return to Life Reflections →";
+    }
   </script>
 </body>
 </html>
