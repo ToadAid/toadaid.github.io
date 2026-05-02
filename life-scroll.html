@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>Life Reflection Scroll</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Serif SC", serif;
+      background: linear-gradient(#0f1f1c, #07100e);
+      color: #f5f3e7;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: auto;
+      padding: 30px 20px 60px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 24px;
+      color: #d8c98a;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .hero {
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+
+    .hero img {
+      width: 100%;
+      display: block;
+    }
+
+    .scroll-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(240,230,200,0.16);
+      border-radius: 24px;
+      padding: 30px;
+      backdrop-filter: blur(8px);
+    }
+
+    .id {
+      color: #d8c98a;
+      font-size: 13px;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: 34px;
+      color: #fff5d6;
+    }
+
+    .hook {
+      color: #e6dcae;
+      font-size: 18px;
+      margin-bottom: 30px;
+      line-height: 1.8;
+    }
+
+    .section {
+      margin: 26px 0;
+    }
+
+    .section h2 {
+      color: #f0e6c8;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .section p {
+      color: #e8e2c9;
+      line-height: 2;
+      white-space: pre-line;
+      font-size: 16px;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(240,230,200,0.18);
+      margin: 28px 0;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #aaa083;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <a class="back" href="life.html">← 返回人生感</a>
+
+    <div class="hero">
+      <img id="image" src="" alt="">
+    </div>
+
+    <article class="scroll-card">
+      <div class="id" id="id"></div>
+      <h1 id="title"></h1>
+      <div class="hook" id="hook"></div>
+
+      <div class="divider"></div>
+
+      <div class="section">
+        <h2>🍃 心境 Scroll</h2>
+        <p id="body"></p>
+      </div>
+
+      <div class="section">
+        <h2>🪞 EN Mirror</h2>
+        <p id="en"></p>
+      </div>
+
+      <div class="section">
+        <h2>✨ 传播短句</h2>
+        <p id="quote"></p>
+      </div>
+    </article>
+
+    <footer>一步一叶，一语一光 🍃🪞</footer>
+  </div>
+
+  <script>
+    const scrolls = {
+      L001: {
+        id: "L001",
+        title: "风与花 · Wind & Bloom",
+        image: "images/wind-bloom.jpg",
+        hook: "带着知足而上路，带着晚霞回家。",
+        body: `放慢脚步，听风穿过时间的缝隙。
+半生如梦，轻落在人间的掌心。
+
+不争，不问，不追人海的方向，
+只在此刻，看见一片晴空。
+
+就让岁月开成一朵花，
+不问归期，自有芳华。
+
+光阴流转，不过是温柔的笔画，
+爱，在时间里慢慢发芽。`,
+        en: `Slow down—
+and listen to the wind between moments.
+
+A lifetime drifts like a dream,
+resting lightly in your hands.
+
+Let the years bloom into a flower.
+Time may pass,
+but love will always grow in silence.`,
+        quote: `CN：人生不急，岁月会开花。🍃🪞
+EN：Time will bloom. 🍃🪞`
+      },
+
+      L002: {
+        id: "L002",
+        title: "一壶见心 · A Cup Reflects the Self",
+        image: "images/tea.jpg",
+        hook: "茶可续，心可度。一壶之间，见自己。",
+        body: `桌上有茶，心中无事。
+水未沸，人已静。
+
+烧水，泡茶，出汤，再饮。
+看似重复，实则回归。
+
+每一冲，是放下；
+每一泡，是重来。
+
+茶凉了，可以再续；
+心乱了，需要自度。
+
+修，不在远方，
+就在这一冲一泡之间。`,
+        en: `A cup of tea on the table,
+nothing weighing on the heart.
+
+Boil, pour, steep, sip—
+simple acts, repeated,
+yet each time,
+you return to yourself.
+
+Tea cools—
+it can be poured again.
+The mind scatters—
+it must find its own way back.`,
+        quote: `CN：茶可续，心可度。🍵🪞
+EN：Tea can be poured again. So can the self.`
+      },
+
+      L003: {
+        id: "L003",
+        title: "不争之安 · The Ease of Non-Striving",
+        image: "images/no-strive.jpg",
+        hook: "不争，不是放弃，是不再消耗自己。",
+        body: `不生气，
+不是因为世界温柔，
+而是因为我不再消耗自己。
+
+不计较，
+不是因为我不懂对错，
+而是因为我看见了代价。
+
+输赢，来来去去；
+对错，反反复复。
+
+而身体，只此一副；
+此心，只此一颗。
+
+当我不再执着于比较，
+内心便自然通畅。`,
+        en: `I do not hold anger—
+not because the world is kind,
+but because I no longer spend myself on it.
+
+Wins and losses come and go.
+Right and wrong repeat.
+
+But this body—only one.
+This heart—only one.`,
+        quote: `CN：不再消耗自己，就是一种清醒。🍃🪞
+EN：Peace begins when we stop spending ourselves.`
+      },
+
+      L004: {
+        id: "L004",
+        title: "生命的样子 · The Shape of Life",
+        image: "images/life-shape.jpg",
+        hook: "懂自己的心，活出时光的暖。看世界，爱自己。",
+        body: `生命最好的样子，
+不是拥有多少，
+而是看清自己。
+
+懂得自己的心，
+不被情绪牵走；
+
+活出时光的暖，
+不被岁月辜负。
+
+烟火人间，
+不迷失于喧嚣；
+
+独善其身，
+也温柔待世界。
+
+这一生不求完美，
+只求清醒而温暖地活着。`,
+        en: `The best shape of life
+is not what you hold,
+but how clearly you see yourself.
+
+Know your own heart,
+without being carried away.
+
+Be in the world,
+yet not consumed by it.
+
+Not perfection—
+just a life lived clear and warm.`,
+        quote: `CN：看世界，爱自己。🍃🪞
+EN：See the world. Love yourself.`
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const key = params.get("id") || "L001";
+    const scroll = scrolls[key] || scrolls.L001;
+
+    document.title = scroll.title;
+    document.getElementById("id").textContent = scroll.id + " · 人生感 Life Reflections";
+    document.getElementById("title").textContent = scroll.title;
+    document.getElementById("hook").textContent = scroll.hook;
+    document.getElementById("image").src = scroll.image;
+    document.getElementById("image").alt = scroll.title;
+    document.getElementById("body").textContent = scroll.body;
+    document.getElementById("en").textContent = scroll.en;
+    document.getElementById("quote").textContent = scroll.quote;
+  </script>
+</body>
+</html>
