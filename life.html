@@ -18,7 +18,6 @@
       line-height: 1.5;
     }
 
-    /* 头部 */
     .header {
       text-align: center;
       padding: 60px 20px 40px;
@@ -38,7 +37,6 @@
       line-height: 1.8;
     }
 
-    /* 卡片网格 */
     .container {
       max-width: 1100px;
       margin: 0 auto;
@@ -51,7 +49,6 @@
       gap: 28px;
     }
 
-    /* 整张卡片可点击，鼠标变手 */
     .card-link {
       text-decoration: none;
       color: inherit;
@@ -75,16 +72,14 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
-    /* 图片区域 - 优雅占位，不会破碎 */
     .card-img {
       width: 100%;
       height: 200px;
       object-fit: cover;
-      background-color: #2a3a34;  /* 深绿占位色 */
+      background-color: #2a3a34;
       display: block;
     }
 
-    /* 不同卡片不同占位色调（可选，仅为了视觉区分） */
     .card-img-1 { background-color: #3e5a50; }
     .card-img-2 { background-color: #5c4e3b; }
     .card-img-3 { background-color: #4a5b52; }
@@ -111,14 +106,21 @@
       font-size: 13px;
       color: #cfc8a3;
       line-height: 1.6;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
-    .read {
-      font-size: 12px;
+    /* 双语阅读提示 */
+    .read-cn {
+      font-size: 13px;
       color: #e8dba0;
-      border-bottom: 1px dashed #e8dba0;
-      display: inline-block;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .read-en {
+      font-size: 11px;
+      color: #b8ae82;
+      letter-spacing: 0.3px;
     }
 
     footer {
@@ -157,7 +159,8 @@
           <div class="card-title">L001 · 风与花</div>
           <div class="card-title-en">Wind & Bloom</div>
           <div class="card-desc">放慢脚步，看见世界的温柔。</div>
-          <div class="read">阅读静文 →</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
         </div>
       </div>
     </a>
@@ -170,7 +173,8 @@
           <div class="card-title">L002 · 一壶见心</div>
           <div class="card-title-en">A Cup Reflects the Self</div>
           <div class="card-desc">一冲一泡之间，把自己找回来。</div>
-          <div class="read">阅读静文 →</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
         </div>
       </div>
     </a>
@@ -183,7 +187,8 @@
           <div class="card-title">L003 · 不争之安</div>
           <div class="card-title-en">The Ease of Non-Striving</div>
           <div class="card-desc">不争，不是放弃，是不再消耗自己。</div>
-          <div class="read">阅读静文 →</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
         </div>
       </div>
     </a>
@@ -196,7 +201,8 @@
           <div class="card-title">L004 · 生命的样子</div>
           <div class="card-title-en">The Shape of Life</div>
           <div class="card-desc">看世界，爱自己。</div>
-          <div class="read">阅读静文 →</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
         </div>
       </div>
     </a>
