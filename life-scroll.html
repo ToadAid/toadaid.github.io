@@ -34,7 +34,7 @@
 
     .hero img {
       width: 100%;
-      display: block;       /* 全宽 + 原始比例，不裁剪 */
+      display: block;
     }
 
     .scroll-card {
@@ -82,19 +82,6 @@
       font-size: 16px;
     }
 
-    /* 传播短句专用：两行样式 */
-    .quote-line {
-      margin: 6px 0;
-      line-height: 1.6;
-    }
-    .quote-cn {
-      color: #e8dba0;
-    }
-    .quote-en {
-      color: #c9bc84;
-      font-style: italic;
-    }
-
     .divider {
       height: 1px;
       background: rgba(240,230,200,0.18);
@@ -137,7 +124,7 @@
 
       <div class="section">
         <h2>✨ 传播短句</h2>
-        <div id="quote-container"></div>   <!-- 这里显示拆好的两行 -->
+        <p id="quote"></p>
       </div>
     </article>
 
@@ -171,9 +158,10 @@ resting lightly in your hands.
 Let the years bloom into a flower.
 Time may pass,
 but love will always grow in silence.`,
-        quoteCn: "人生不急，岁月会开花。🍃🪞",
-        quoteEn: "Time will bloom. 🍃🪞"
+        quote: `CN：人生不急，岁月会开花。🍃🪞
+EN：Time will bloom. 🍃🪞`
       },
+
       L002: {
         id: "L002",
         title: "一壶见心 · A Cup Reflects the Self",
@@ -205,9 +193,10 @@ Tea cools—
 it can be poured again.
 The mind scatters—
 it must find its own way back.`,
-        quoteCn: "茶可续，心可度。🍵🪞",
-        quoteEn: "Tea can be poured again. So can the self."
+        quote: `CN：茶可续，心可度。🍵🪞
+EN：Tea can be poured again. So can the self.`
       },
+
       L003: {
         id: "L003",
         title: "不争之安 · The Ease of Non-Striving",
@@ -238,9 +227,10 @@ Right and wrong repeat.
 
 But this body—only one.
 This heart—only one.`,
-        quoteCn: "不再消耗自己，就是一种清醒。🍃🪞",
-        quoteEn: "Peace begins when we stop spending ourselves."
+        quote: `CN：不再消耗自己，就是一种清醒。🍃🪞
+EN：Peace begins when we stop spending ourselves.`
       },
+
       L004: {
         id: "L004",
         title: "生命的样子 · The Shape of Life",
@@ -276,8 +266,8 @@ yet not consumed by it.
 
 Not perfection—
 just a life lived clear and warm.`,
-        quoteCn: "看世界，爱自己。🍃🪞",
-        quoteEn: "See the world. Love yourself."
+        quote: `CN：看世界，爱自己。🍃🪞
+EN：See the world. Love yourself.`
       }
     };
 
@@ -293,13 +283,7 @@ just a life lived clear and warm.`,
     document.getElementById("image").alt = scroll.title;
     document.getElementById("body").textContent = scroll.body;
     document.getElementById("en").textContent = scroll.en;
-
-    // 传播短句拆成两行
-    const quoteContainer = document.getElementById("quote-container");
-    quoteContainer.innerHTML = `
-      <div class="quote-line quote-cn">📖 ${scroll.quoteCn}</div>
-      <div class="quote-line quote-en">✨ ${scroll.quoteEn}</div>
-    `;
+    document.getElementById("quote").textContent = scroll.quote;
   </script>
 </body>
 </html>
