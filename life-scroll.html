@@ -2,7 +2,6 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Life Reflection Scroll</title>
   <style>
     body {
@@ -25,10 +24,6 @@
       text-decoration: none;
       font-size: 14px;
     }
-    .back:hover {
-      color: #e8dba0;
-      text-decoration: underline;
-    }
 
     .hero {
       border-radius: 24px;
@@ -39,10 +34,7 @@
 
     .hero img {
       width: 100%;
-      display: block;
-      background-color: #2a3a34;
-      object-fit: cover;
-      aspect-ratio: 16 / 9;
+      display: block;       /* 全宽 + 原始比例，不裁剪 */
     }
 
     .scroll-card {
@@ -90,7 +82,7 @@
       font-size: 16px;
     }
 
-    /* 传播短句拆行专用 */
+    /* 传播短句专用：两行样式 */
     .quote-line {
       margin: 6px 0;
       line-height: 1.6;
@@ -114,13 +106,6 @@
       margin-top: 40px;
       color: #aaa083;
       font-size: 13px;
-    }
-
-    @media (max-width: 560px) {
-      .scroll-card { padding: 20px; }
-      h1 { font-size: 26px; }
-      .hook { font-size: 16px; }
-      .section p { font-size: 14px; }
     }
   </style>
 </head>
@@ -152,7 +137,7 @@
 
       <div class="section">
         <h2>✨ 传播短句</h2>
-        <div id="quote-container"></div>  <!-- 这里动态注入两行 -->
+        <div id="quote-container"></div>   <!-- 这里显示拆好的两行 -->
       </div>
     </article>
 
@@ -309,7 +294,7 @@ just a life lived clear and warm.`,
     document.getElementById("body").textContent = scroll.body;
     document.getElementById("en").textContent = scroll.en;
 
-    // 传播短句：拆成两行分别显示
+    // 传播短句拆成两行
     const quoteContainer = document.getElementById("quote-container");
     quoteContainer.innerHTML = `
       <div class="quote-line quote-cn">📖 ${scroll.quoteCn}</div>
