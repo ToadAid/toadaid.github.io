@@ -18,6 +18,21 @@
       line-height: 1.5;
     }
 
+
+    .back-home {
+      display: inline-block;
+      margin: 24px 0 0 24px;
+      color: #d8c98a;
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      transition: color 0.2s ease;
+    }
+
+    .back-home:hover {
+      color: #fff5d6;
+    }
+
     .header {
       text-align: center;
       padding: 60px 20px 40px;
@@ -123,6 +138,38 @@
       letter-spacing: 0.3px;
     }
 
+
+
+    .start-here {
+      display: block;
+      width: fit-content;
+      max-width: calc(100% - 40px);
+      margin: 0 auto 34px;
+      padding: 14px 22px;
+      color: #fff5d6;
+      background: rgba(216, 201, 138, 0.10);
+      border: 1px solid rgba(232, 219, 160, 0.28);
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+      transition: all 0.25s ease;
+    }
+
+    .start-here:hover {
+      transform: translateY(-2px);
+      background: rgba(216, 201, 138, 0.16);
+      border-color: rgba(232, 219, 160, 0.48);
+    }
+
+    .start-here-en {
+      color: #d8c98a;
+      font-size: 12px;
+      margin-top: 4px;
+      text-align: center;
+    }
+
     footer {
       text-align: center;
       padding: 40px 20px;
@@ -135,10 +182,13 @@
       h1 { font-size: 28px; }
       .card-title { font-size: 18px; }
       .card-img { height: 160px; }
+      .start-here { font-size: 13px; padding: 12px 18px; }
     }
   </style>
 </head>
 <body>
+
+<a class="back-home" href="index.html">← Back to Home</a>
 
 <div class="header">
   <h1>人生感 · Life Reflections</h1>
@@ -147,6 +197,11 @@
     Not to teach, but to help you slow down.
   </div>
 </div>
+
+<a class="start-here" href="life-scroll.html?id=L001">
+  🌿 从这里开始 · Begin with L001
+  <div class="start-here-en">Start Here → Wind & Bloom</div>
+</a>
 
 <div class="container">
   <div class="grid">
@@ -215,6 +270,34 @@
           <div class="card-title">L005 · 倒下之后</div>
           <div class="card-title-en">Still, You Rise</div>
           <div class="card-desc">倒下之后，你依然可以向前。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L006 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L006">
+      <div class="card">
+        <img class="card-img" src="images/quiet-strength.jpg" alt="The Quiet Strength" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L006 · 低谷之光</div>
+          <div class="card-title-en">The Quiet Strength</div>
+          <div class="card-desc">低谷不是否定你，只是让你看清一切。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L007 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L007">
+      <div class="card">
+        <img class="card-img" src="images/self-healing.jpg" alt="Return to Yourself" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L007 · 自愈</div>
+          <div class="card-title-en">Return to Yourself</div>
+          <div class="card-desc">允许自己崩溃，也记得把自己带回来。</div>
           <div class="read-cn">阅读静文 →</div>
           <div class="read-en">Read Scroll →</div>
         </div>
