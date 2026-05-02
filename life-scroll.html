@@ -522,10 +522,86 @@ In letting go,
 you begin to heal.`,
         quote: `CN：允许自己崩溃，也记得把自己带回来。🍃🪞
 EN：Break if you must—just don’t forget to return. 🍃🪞`
+      },
+
+      L008: {
+        id: "L008",
+        title: "只在场 · Presence",
+        image: "images/presence.jpg",
+        hook: "不想，不做，只在场。",
+        body: `不追过去，
+也不赶未来。
+
+这一刻，
+已经足够。
+
+不需要想太多，
+也不需要做什么。
+
+呼吸在，
+你就在。
+
+有些念头，
+来就来，走就走。
+
+不用抓住，
+也不用赶走。
+
+世界依旧在动，
+而你可以慢下来。
+
+不必改变什么，
+只需要在这里。
+
+一杯水，
+一阵风，
+一束光。
+
+这些，就已经很好。
+
+当你不再用力，
+你就回来了。
+
+回到自己，
+回到此刻。`,
+        en: `No past to chase,
+no future to rush.
+
+This moment
+is enough.
+
+Be here.
+Nothing more is needed.
+
+Your breath is here—
+so are you.
+
+Let thoughts come,
+let them go.
+
+No need to hold,
+no need to resist.
+
+The world moves,
+you can be still.
+
+A cup of water,
+a breeze,
+a ray of light—
+
+this is enough.
+
+When you stop trying,
+you return.
+
+To yourself,
+to now.`,
+        quote: `CN：不想，不做，只在场。🍃🪞
+EN：Do nothing. Just be here. 🍃🪞`
       }
     };
 
-    const order = ["L001", "L002", "L003", "L004", "L006", "L005", "L007"];
+    const order = ["L001", "L002", "L003", "L004", "L006", "L005", "L007", "L008"];
     const params = new URLSearchParams(window.location.search);
     const key = params.get("id") || "L001";
     const scroll = scrolls[key] || scrolls.L001;
