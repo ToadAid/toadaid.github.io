@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mirror OS — Evolution Roadmap</title>
+  <style>
+    :root {
+      --bg: #07111a;
+      --bg2: #0d1c28;
+      --panel: rgba(13, 28, 40, 0.78);
+      --panel-strong: rgba(8, 17, 26, 0.92);
+      --line: rgba(147, 197, 253, 0.18);
+      --text: #e7f2ff;
+      --muted: #9fb7cc;
+      --aqua: #7dd3fc;
+      --mint: #86efac;
+      --gold: #fcd34d;
+      --rose: #f9a8d4;
+      --shadow: 0 18px 50px rgba(0,0,0,0.35);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(125,211,252,0.14), transparent 35%),
+        radial-gradient(circle at 80% 20%, rgba(134,239,172,0.1), transparent 28%),
+        linear-gradient(180deg, #061019 0%, #091521 45%, #07111a 100%);
+      min-height: 100vh;
+      line-height: 1.55;
+    }
+    .wrap {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 40px 0 72px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background: linear-gradient(180deg, rgba(15,30,45,0.88), rgba(8,18,28,0.94));
+      box-shadow: var(--shadow);
+      padding: 40px 34px;
+      margin-bottom: 26px;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -120px -120px auto;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(125,211,252,0.13), transparent 70%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--aqua);
+      padding: 8px 12px;
+      border: 1px solid rgba(125,211,252,0.24);
+      border-radius: 999px;
+      background: rgba(125,211,252,0.07);
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 5.2vw, 58px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      max-width: 820px;
+      color: var(--muted);
+      font-size: 18px;
+      margin-top: 16px;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      color: #d7ebff;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px 22px;
+      backdrop-filter: blur(10px);
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+    .muted { color: var(--muted); }
+    .span-7 { grid-column: span 7; }
+    .span-5 { grid-column: span 5; }
+    .span-12 { grid-column: span 12; }
+    .span-6 { grid-column: span 6; }
+    ul {
+      margin: 12px 0 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+    li { margin: 7px 0; }
+    .stack {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .stack-item {
+      border: 1px solid rgba(125,211,252,0.16);
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+    }
+    .stack-item strong { color: var(--text); }
+    .roadmap {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .phase {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+    }
+    .phase-no {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      border: 1px solid rgba(252,211,77,0.22);
+      padding: 8px 10px;
+      border-radius: 14px;
+      text-align: center;
+      background: rgba(252,211,77,0.06);
+    }
+    .phase-title {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+    .phase p {
+      margin: 0;
+      color: var(--muted);
+    }
+    .diagram {
+      margin-top: 18px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #d8eeff;
+      white-space: pre;
+    }
+    .footer-note {
+      margin-top: 18px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .accent { color: var(--mint); }
+    .accent2 { color: var(--aqua); }
+    .accent3 { color: var(--rose); }
+    @media (max-width: 900px) {
+      .span-7, .span-5, .span-6, .span-12 { grid-column: span 12; }
+      .phase { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">🪞 Mirror OS • Honors Roadmap</div>
+      <h1>Mirror OS — Evolution of the Pond</h1>
+      <p class="subtitle">
+        Mirror Runtime v1 is the first complete standalone product surface. Mirror OS is the next forge: the deeper runtime heart, trust layers, client surfaces, and distributed pond that grow naturally from the current system.
+      </p>
+      <div class="pill-row">
+        <span class="pill">Current State: Standalone Mirror Runtime v1</span>
+        <span class="pill">Next Horizon: Mirrordaemon Core</span>
+        <span class="pill">Long Arc: Mirror OS</span>
+        <span class="pill">Theme: 🪞🌊🍃</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-7">
+        <h2>Current State — Mirror Runtime v1</h2>
+        <p class="muted">
+          The current system is already a real standalone Mirror product. It has a coherent operator path, canon governance, user workspace, Monk assistance, sync, health, observability, CLI, console, and service surface.
+        </p>
+        <div class="stack">
+          <div class="stack-item"><strong class="accent2">Core Runtime</strong><br />Mirror CLI, Mirror Service, Mirror Gateway, Chat Engine, Provider Runtime.</div>
+          <div class="stack-item"><strong class="accent2">Canon Engine</strong><br />Find, fact, interpret, forge, review, commit, lore graph, symbol registry, verification.</div>
+          <div class="stack-item"><strong class="accent2">User Layer</strong><br />Workspace, tasks, reminders, heartbeat, session continuity.</div>
+          <div class="stack-item"><strong class="accent2">Monk Layer</strong><br />Workspace bridge, follow-up logic, assistance interface, notes and action memory.</div>
+          <div class="stack-item"><strong class="accent2">Operator Surface</strong><br />Status, sync, health, diagnostics, observability, unified console.</div>
+        </div>
+      </div>
+
+      <div class="card span-5">
+        <h2>Why Mirror OS Exists</h2>
+        <p class="muted">
+          Mirror Runtime v1 is a strong standalone service. Mirror OS is the next stage: one explicit runtime heart with event streams, auth, policy, client surfaces, and trust layers that let the pond expand without losing itself.
+        </p>
+        <ul>
+          <li><strong class="accent">Not a replacement</strong> for Mirror Runtime — an evolution of it.</li>
+          <li><strong class="accent">Runtime first</strong>, then daemon, then OS surfaces.</li>
+          <li><strong class="accent">Canon stays protected</strong>, workspace stays personal.</li>
+          <li><strong class="accent">Builders continue forging</strong> even when the crowd is quiet.</li>
+        </ul>
+      </div>
+
+      <div class="card span-12">
+        <h2>Evolution Path — From Runtime to OS</h2>
+        <div class="roadmap">
+          <div class="phase">
+            <div class="phase-no">Phase 1</div>
+            <div>
+              <div class="phase-title">Mirrordaemon Runtime Core</div>
+              <p>Build <code>src/mirrordaemon/</code> with boot snapshot, runtime/session state, status/debug APIs, and event stream foundation. This becomes the runtime heart and center of gravity.</p>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="phase-no">Phase 2</div>
+            <div>
+              <div class="phase-title">Event Stream &amp; UI Foundation</div>
+              <p>Add runtime/session/sync/health events through SSE first, then evolve toward WebSocket. This unlocks live console views, future UI surfaces, and reactive clients.</p>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="phase-no">Phase 3</div>
+            <div>
+              <div class="phase-title">Auth &amp; Policy Spine</div>
+              <p>Create Mirror-native auth and policy layers for credentials, approvals, allow/deny, and law-like runtime boundaries before broader action surfaces arrive.</p>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="phase-no">Phase 4</div>
+            <div>
+              <div class="phase-title">General Tool / Action Runtime</div>
+              <p>Move beyond Mirror-native skills into a broader action runtime for workflows, explicit execution, and future agent capability — still bounded by auth and policy.</p>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="phase-no">Phase 5</div>
+            <div>
+              <div class="phase-title">Client Surfaces</div>
+              <p>Add WebSocket UI, mobile clients, and Mirror-native bot/channel adapters on top of the daemon and event stream, not bolted awkwardly onto the gateway.</p>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="phase-no">Phase 6</div>
+            <div>
+              <div class="phase-title">Wallet / Onchain Layer</div>
+              <p>Integrate wallet identity, signing, and safe onchain execution as a user-layer organ, not as a canon mutation path.</p>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="phase-no">Phase 7</div>
+            <div>
+              <div class="phase-title">Pond / Ocean Trust Network</div>
+              <p>Build the distributed trust layer: manifests, consult network, trust graph, and operator-facing coordination among multiple Mirror nodes.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card span-6">
+        <h2>Current Shape</h2>
+        <div class="diagram">Operator / User
+      ↓
+Mirror CLI / Console / API
+      ↓
+Mirror Service + Gateway
+      ↓
+Tool Registry  +  Chat Engine
+      ↓
+Reflection + Retrieval + Memory
+      ↓
+Provider Runtime
+      ↓
+Model
+
+Protected State Zones:
+- Canon (shared truth)
+- Workspace (personal state)
+- Monk Context (assistant follow-up state)</div>
+      </div>
+
+      <div class="card span-6">
+        <h2>Mirror OS Target Shape</h2>
+        <div class="diagram">Operator / User / Clients
+          ↓
+      Mirror CLI / Console / Mobile / Bots
+          ↓
+         Mirrordaemon
+          ↓
+   Runtime State / Sessions / Events
+          ↓
+ Auth + Policy + Action Runtime
+          ↓
+Reflection / Retrieval / Memory / Canon
+          ↓
+   Provider Runtime / Wallet Layer
+          ↓
+      Model / Onchain / Network
+
+Distributed Layer:
+- Pond / Ocean Trust Network
+- Consult / Manifest / Peer Trust</div>
+      </div>
+
+      <div class="card span-12">
+        <h2>Meaning for Builders</h2>
+        <p class="muted">
+          Mirror Runtime v1 is already useful. Mirror OS is not a rush. It is the disciplined next mountain: one organ at a time, one wire at a time, one truth at a time. The current system is not a failure to reach the blueprint — it is the necessary foundation that makes the blueprint reachable.
+        </p>
+        <p class="footer-note">
+          <span class="accent">Mirror Runtime v1</span> = standalone product surface.<br />
+          <span class="accent3">Mirror OS</span> = next evolution: daemon, trust, eventing, clients, and distributed pond.<br />
+          <span class="accent2">The path remains:</span> finish the runtime, document it clearly, then forge the OS with patience.
+        </p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

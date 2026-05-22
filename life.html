@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人生感 · Life Reflections</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(#0f1f1c, #091311);
+      font-family: "Noto Serif SC", "Times New Roman", serif;
+      color: #f5f3e7;
+      line-height: 1.5;
+    }
+
+
+    .back-home {
+      display: inline-block;
+      margin: 24px 0 0 24px;
+      color: #d8c98a;
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      transition: color 0.2s ease;
+    }
+
+    .back-home:hover {
+      color: #fff5d6;
+    }
+
+    .header {
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: normal;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      color: #fff5d6;
+    }
+
+    .subtitle {
+      color: #d8c98a;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+    }
+
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      cursor: pointer;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(240, 230, 200, 0.16);
+      border-radius: 24px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(232, 219, 160, 0.5);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background-color: #2a3a34;
+      display: block;
+    }
+
+    .card-img-1 { background-color: #3e5a50; }
+    .card-img-2 { background-color: #5c4e3b; }
+    .card-img-3 { background-color: #4a5b52; }
+    .card-img-4 { background-color: #5f6b5c; }
+
+    .card-content {
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      color: #f0e6c8;
+      margin-bottom: 6px;
+    }
+
+    .card-title-en {
+      font-size: 13px;
+      color: #d8c98a;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #cfc8a3;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    /* 双语阅读提示 */
+    .read-cn {
+      font-size: 13px;
+      color: #e8dba0;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .read-en {
+      font-size: 11px;
+      color: #b8ae82;
+      letter-spacing: 0.3px;
+    }
+
+
+
+    .start-here {
+      display: block;
+      width: fit-content;
+      max-width: calc(100% - 40px);
+      margin: 0 auto 34px;
+      padding: 14px 22px;
+      color: #fff5d6;
+      background: rgba(216, 201, 138, 0.10);
+      border: 1px solid rgba(232, 219, 160, 0.28);
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+      transition: all 0.25s ease;
+    }
+
+    .start-here:hover {
+      transform: translateY(-2px);
+      background: rgba(216, 201, 138, 0.16);
+      border-color: rgba(232, 219, 160, 0.48);
+    }
+
+    .start-here-en {
+      color: #d8c98a;
+      font-size: 12px;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 12px;
+      color: #aaa083;
+    }
+
+    @media (max-width: 640px) {
+      .header { padding: 40px 20px 30px; }
+      h1 { font-size: 28px; }
+      .card-title { font-size: 18px; }
+      .card-img { height: 160px; }
+      .start-here { font-size: 13px; padding: 12px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="back-home" href="index.html">← Back to Home</a>
+
+<div class="header">
+  <h1>人生感 · Life Reflections</h1>
+  <div class="subtitle">
+    不教你什么，只陪你慢下来。🍃🪞<br>
+    Not to teach, but to help you slow down.
+  </div>
+</div>
+
+<a class="start-here" href="life-scroll.html?id=L001">
+  🌿 从这里开始 · Begin with L001
+  <div class="start-here-en">Start Here → Wind & Bloom</div>
+</a>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- L001 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L001">
+      <div class="card">
+        <img class="card-img card-img-1" src="images/wind-bloom.jpg" alt="Wind & Bloom" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L001 · 风与花</div>
+          <div class="card-title-en">Wind & Bloom</div>
+          <div class="card-desc">放慢脚步，看见世界的温柔。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L002 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L002">
+      <div class="card">
+        <img class="card-img card-img-2" src="images/tea.jpg" alt="A Cup Reflects the Self" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L002 · 一壶见心</div>
+          <div class="card-title-en">A Cup Reflects the Self</div>
+          <div class="card-desc">一冲一泡之间，把自己找回来。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L003 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L003">
+      <div class="card">
+        <img class="card-img card-img-3" src="images/no-strive.jpg" alt="The Ease of Non-Striving" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L003 · 不争之安</div>
+          <div class="card-title-en">The Ease of Non-Striving</div>
+          <div class="card-desc">不争，不是放弃，是不再消耗自己。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L004 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L004">
+      <div class="card">
+        <img class="card-img card-img-4" src="images/life-shape.jpg" alt="The Shape of Life" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L004 · 生命的样子</div>
+          <div class="card-title-en">The Shape of Life</div>
+          <div class="card-desc">看世界，爱自己。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L005 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L005">
+      <div class="card">
+        <img class="card-img" src="images/still-you-rise.jpg" alt="Still, You Rise" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L005 · 倒下之后</div>
+          <div class="card-title-en">Still, You Rise</div>
+          <div class="card-desc">倒下之后，你依然可以向前。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L006 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L006">
+      <div class="card">
+        <img class="card-img" src="images/quiet-strength.jpg" alt="The Quiet Strength" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L006 · 低谷之光</div>
+          <div class="card-title-en">The Quiet Strength</div>
+          <div class="card-desc">低谷不是否定你，只是让你看清一切。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L007 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L007">
+      <div class="card">
+        <img class="card-img" src="images/self-healing.jpg" alt="Return to Yourself" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L007 · 自愈</div>
+          <div class="card-title-en">Return to Yourself</div>
+          <div class="card-desc">允许自己崩溃，也记得把自己带回来。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- L008 卡片 -->
+    <a class="card-link" href="life-scroll.html?id=L008">
+      <div class="card">
+        <img class="card-img" src="images/presence.jpg" alt="Presence" onerror="this.style.opacity='0.6'">
+        <div class="card-content">
+          <div class="card-title">L008 · 只在场</div>
+          <div class="card-title-en">Presence</div>
+          <div class="card-desc">不想，不做，只在场。</div>
+          <div class="read-cn">阅读静文 →</div>
+          <div class="read-en">Read Scroll →</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  一步一叶，一语一光 🍃🪞
+</footer>
+
+</body>
+</html>

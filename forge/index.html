@@ -308,6 +308,7 @@
         <div class="tab active" id="tabForge">🪙 Forge</div>
         <div class="tab" id="tabAttest">⭐ Attest</div>
         <div class="tab" id="tabUpdate">✏️ Update</div>
+        <div class="tab" id="tabTransfer">📤 Transfer</div>
         <div class="tab" id="tabMyAgents">👤 My Agents</div>
       </div>
 
@@ -472,6 +473,30 @@
         </div>
       </div>
 
+
+      <!-- Transfer Panel -->
+      <div id="panelTransfer" style="display:none;">
+        <div class="grid">
+          <div>
+            <label for="transferAgentId">Agent ID *</label>
+            <input type="text" id="transferAgentId" name="transferAgentId" placeholder="e.g. 19173" autocomplete="off" />
+          </div>
+          <div>
+            <label for="transferTo">Recipient Wallet *</label>
+            <input type="text" id="transferTo" name="transferTo" placeholder="0x..." autocomplete="off" />
+          </div>
+        </div>
+        <div class="hint" style="margin-top:8px;">
+          ⚠️ This transfers the ERC-721 Agent NFT to another wallet. After transfer, only the new owner can update the agent metadata. This may help wallet custody/display, but it does not guarantee OpenSea or any wallet will index the NFT.
+        </div>
+        <div id="transferCheck" class="mono" style="display:none; margin-top:12px;"></div>
+        <div style="margin-top:14px" class="row">
+          <button class="smallbtn" id="btnCheckTransferOwner" disabled>Check Owner</button>
+          <button class="primary smallbtn" id="btnTransferAgent" disabled>Transfer Agent</button>
+          <span class="pill">Calls: safeTransferFrom(address,address,uint256)</span>
+        </div>
+      </div>
+
       <!-- My Agents Panel -->
       <div id="panelMyAgents" style="display:none;">
         <div style="margin-bottom:12px;">
@@ -526,7 +551,8 @@
     <li><strong>Forge</strong> mints an ERC‑8004 Agent ID through the Registry Router (MPASS‑gated onchain).</li>
     <li><strong>Attest</strong> emits reputation events for any agentId (also MPASS‑gated).</li>
     <li><strong>Update</strong> lets you change the metadata URI of an agent you own.</li>
-    <li><strong>My Agents</strong> dashboard shows all your minted agents with images and quick actions.</li>
+    <li><strong>Transfer</strong> lets the current owner move an ERC-721 Agent NFT to another wallet.</li>
+    <li><strong>My Agents</strong> dashboard shows all your current owned agents with images and quick actions.</li>
     <li><strong>Agent 0 & 1</strong> live forever in the Base implementation contract.</li>
   </ul>
   <p style="margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
@@ -612,12 +638,20 @@
     "function decimals() view returns (uint8)"
   ];
   const REGISTRY_ABI = [
-    "function agentURI(uint256) view returns (string)"
+    "function agentURI(uint256) view returns (string)",
+    "function tokenURI(uint256 tokenId) view returns (string)",
+    "function ownerOf(uint256 tokenId) view returns (address)",
+    "function balanceOf(address owner) view returns (uint256)"
   ];
-  
+
   // FIXED: Uppercase URI to match contract
   const UPDATE_ABI = [
     "function setAgentURI(uint256 agentId, string calldata newURI) external"
+  ];
+
+  const ERC721_TRANSFER_ABI = [
+    "function ownerOf(uint256 tokenId) view returns (address)",
+    "function safeTransferFrom(address from, address to, uint256 tokenId) external"
   ];
 
   // IPFS gateways
@@ -646,10 +680,12 @@
   const tabForge = $("tabForge");
   const tabAttest = $("tabAttest");
   const tabUpdate = $("tabUpdate");
+  const tabTransfer = $("tabTransfer");
   const tabMyAgents = $("tabMyAgents");
   const panelForge = $("panelForge");
   const panelAttest = $("panelAttest");
   const panelUpdate = $("panelUpdate");
+  const panelTransfer = $("panelTransfer");
   const panelMyAgents = $("panelMyAgents");
   
   const nameIn = $("name");
@@ -669,6 +705,12 @@
   const updateAgentId = $("updateAgentId");
   const newAgentUri = $("newAgentUri");
   const btnUpdateAgent = $("btnUpdateAgent");
+
+  const transferAgentId = $("transferAgentId");
+  const transferTo = $("transferTo");
+  const btnCheckTransferOwner = $("btnCheckTransferOwner");
+  const btnTransferAgent = $("btnTransferAgent");
+  const transferCheck = $("transferCheck");
   
   const jsonOut = $("jsonOut");
   const uriOut = $("uriOut");
@@ -734,6 +776,43 @@
     return addr ? addr.slice(0,6) + "…" + addr.slice(-4) : "—";
   }
 
+  function isUserRejected(err) {
+    const msg = String(err?.shortMessage || err?.message || "").toLowerCase();
+    return err?.code === 4001 || err?.code === "ACTION_REJECTED" || msg.includes("user rejected") || msg.includes("rejected the request");
+  }
+
+  async function sendWalletSafe(label, sendSimple, estimateGas) {
+    // Some in-wallet browsers fail when dapps pre-fill EIP-1559/gasPrice fields.
+    // First let the wallet build its own transaction. If that provider cannot estimate,
+    // retry once with gasLimit only and still let the wallet choose fees.
+    try {
+      return await sendSimple({});
+    } catch (err) {
+      if (isUserRejected(err)) throw err;
+      console.warn(`${label}: simple wallet send failed; retrying once with gasLimit only`, err);
+
+      try {
+        const estimated = await estimateGas();
+        const gasLimit = (estimated * 125n) / 100n;
+        return await sendSimple({ gasLimit });
+      } catch (fallbackErr) {
+        if (!fallbackErr.shortMessage && err.shortMessage) fallbackErr.shortMessage = err.shortMessage;
+        throw fallbackErr;
+      }
+    }
+  }
+
+  async function readCurrentAgentUri(agentId) {
+    const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
+    if (typeof registryContract.tokenURI === "function") {
+      try { return await registryContract.tokenURI(agentId); } catch (_) {}
+    }
+    if (typeof registryContract.agentURI === "function") {
+      return await registryContract.agentURI(agentId);
+    }
+    throw new Error("Registry URI read method unavailable");
+  }
+
   function isValidUri(s) {
     if (!s) return false;
     const t = s.trim();
@@ -785,6 +864,12 @@
     btnAttest.disabled = !(!!signer && aid.length > 0);
 
     btnUpdateAgent.disabled = !(signer && updateAgentId.value.trim() && isValidUri(newAgentUri.value.trim()));
+
+    const transferId = (transferAgentId?.value || "").trim();
+    const recipient = (transferTo?.value || "").trim();
+    const transferReady = !!signer && /^\d+$/.test(transferId) && ethers.isAddress(recipient);
+    if (btnCheckTransferOwner) btnCheckTransferOwner.disabled = !(!!signer && /^\d+$/.test(transferId));
+    if (btnTransferAgent) btnTransferAgent.disabled = !transferReady;
   }
 
   // Update recent chips display
@@ -1063,12 +1148,17 @@
       const agentURI = (pinned && isValidUri(pinned)) ? pinned : uri;
       if (!(pinned && isValidUri(pinned)) && !ok) return;
       const contract = new ethers.Contract(REGISTRY_ROUTER, ROUTER_ABI, signer);
-      const gasEstimate = await contract.forge.estimateGas(agentURI);
-      const feeData = await provider.getFeeData();
-      const gasCost = gasEstimate * (feeData.gasPrice || 0n);
-      const ethCost = ethers.formatEther(gasCost);
-      gasEstimate.innerHTML = `⛽ Estimated gas: ${gasEstimate.toString()} (~${ethCost} ETH)`;
-    } catch (err) {}
+      const gasUnits = await contract.forge.estimateGas(agentURI);
+      let feePerGas = 0n;
+      try {
+        const feeData = await provider.getFeeData();
+        feePerGas = feeData.gasPrice || feeData.maxFeePerGas || 0n;
+      } catch (_) {}
+      const ethCost = feePerGas ? ` (~${ethers.formatEther(gasUnits * feePerGas)} ETH)` : "";
+      gasEstimate.innerHTML = `⛽ Estimated gas: ${gasUnits.toString()}${ethCost}`;
+    } catch (err) {
+      gasEstimate.innerHTML = "";
+    }
   }
 
   function addToRecentForges(agentId, name, txHash) {
@@ -1221,10 +1311,12 @@
     tabForge.classList.add("active");
     tabAttest.classList.remove("active");
     tabUpdate.classList.remove("active");
+    tabTransfer.classList.remove("active");
     tabMyAgents.classList.remove("active");
     panelForge.style.display = "block";
     panelAttest.style.display = "none";
     panelUpdate.style.display = "none";
+    panelTransfer.style.display = "none";
     panelMyAgents.style.display = "none";
   }
   
@@ -1232,10 +1324,12 @@
     tabAttest.classList.add("active");
     tabForge.classList.remove("active");
     tabUpdate.classList.remove("active");
+    tabTransfer.classList.remove("active");
     tabMyAgents.classList.remove("active");
     panelForge.style.display = "none";
     panelAttest.style.display = "block";
     panelUpdate.style.display = "none";
+    panelTransfer.style.display = "none";
     panelMyAgents.style.display = "none";
   }
 
@@ -1243,11 +1337,27 @@
     tabUpdate.classList.add("active");
     tabForge.classList.remove("active");
     tabAttest.classList.remove("active");
+    tabTransfer.classList.remove("active");
     tabMyAgents.classList.remove("active");
     panelForge.style.display = "none";
     panelAttest.style.display = "none";
     panelUpdate.style.display = "block";
+    panelTransfer.style.display = "none";
     panelMyAgents.style.display = "none";
+  }
+
+  function showTransfer() {
+    tabTransfer.classList.add("active");
+    tabForge.classList.remove("active");
+    tabAttest.classList.remove("active");
+    tabUpdate.classList.remove("active");
+    tabMyAgents.classList.remove("active");
+    panelForge.style.display = "none";
+    panelAttest.style.display = "none";
+    panelUpdate.style.display = "none";
+    panelTransfer.style.display = "block";
+    panelMyAgents.style.display = "none";
+    updateButtons();
   }
 
   function showMyAgents() {
@@ -1255,11 +1365,58 @@
     tabForge.classList.remove("active");
     tabAttest.classList.remove("active");
     tabUpdate.classList.remove("active");
+    tabTransfer.classList.remove("active");
     panelForge.style.display = "none";
     panelAttest.style.display = "none";
     panelUpdate.style.display = "none";
+    panelTransfer.style.display = "none";
     panelMyAgents.style.display = "block";
     renderMyAgents();
+  }
+
+  // ===== RENDER MY AGENTS =====
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  async function getCurrentOwner(agentId) {
+    const registryContract = new ethers.Contract(REGISTRY_PROXY, ERC721_TRANSFER_ABI, provider);
+    try {
+      return await registryContract.ownerOf(agentId);
+    } catch (e) {
+      console.warn(`Could not read owner for agent #${agentId}:`, e);
+      return null;
+    }
+  }
+
+  async function checkTransferOwner(showResult = true) {
+    if (!signer) throw new Error("Connect wallet first");
+
+    const agentId = (transferAgentId.value || "").trim();
+    if (!/^\d+$/.test(agentId)) throw new Error("Enter a valid numeric Agent ID");
+    if (agentId === "0" || agentId === "1") {
+      throw new Error("Legendary Agent #0 and #1 are not transferable from this tool.");
+    }
+
+    const me = await signer.getAddress();
+    const owner = await getCurrentOwner(agentId);
+
+    if (!owner) throw new Error(`Could not read owner for Agent #${agentId}`);
+
+    const isOwner = owner.toLowerCase() === me.toLowerCase();
+
+    if (showResult) {
+      transferCheck.style.display = "block";
+      transferCheck.textContent =
+        `Agent #${agentId}\nCurrent owner: ${owner}\nConnected wallet: ${me}\nStatus: ${isOwner ? "✅ You are the owner" : "❌ Connected wallet is not the owner"}`;
+    }
+
+    return { agentId, owner, me, isOwner };
   }
 
   // ===== RENDER MY AGENTS =====
@@ -1279,37 +1436,46 @@
     const addr = await signer.getAddress();
     const addrLower = addr.toLowerCase();
     console.log("Connected address:", addrLower);
-    
+
     // Fetch agents if we don't have them yet
     if (allAgents.length === 0) {
       console.log("No agents in memory, fetching from Blockscout...");
       await fetchAgentsFromBlockscout();
     }
-    
-    // Filter agents by creator
-    const userAgents = allAgents.filter(a => a.creator.toLowerCase() === addrLower);
-    console.log(`Found ${userAgents.length} agents for this wallet`);
-    
+
+    // The forge event only records creator. For transfers, current owner is the ERC-721 source of truth.
+    const ownershipRows = await Promise.allSettled(allAgents.map(async (agent) => {
+      const owner = await getCurrentOwner(agent.id);
+      return { ...agent, owner };
+    }));
+
+    const userAgents = ownershipRows
+      .filter(r => r.status === "fulfilled" && r.value.owner && r.value.owner.toLowerCase() === addrLower)
+      .map(r => r.value);
+
+    console.log(`Found ${userAgents.length} currently owned agents for this wallet`);
+
     myAgentsLoading.style.display = 'none';
 
     if (userAgents.length === 0) {
       myAgentsEmpty.style.display = 'block';
-      myAgentsEmpty.innerHTML = '<div style="font-size:32px;">🪞</div><div>You haven\'t forged any agents yet.</div><div class="sub">Head over to the Forge tab to create your first identity.</div>';
+      myAgentsEmpty.innerHTML = '<div style="font-size:32px;">🪞</div><div>No ERC-721 agents currently owned by this wallet.</div><div class="sub">If you forged with another wallet or transferred the agent, connect that wallet.</div>';
       return;
     }
 
     myAgentsGrid.style.display = 'grid';
-    
+
     // Build HTML with images
     let html = '';
     for (const agent of userAgents) {
+      const safeName = escapeHtml(agent.name || `Agent #${agent.id}`);
       let imageHtml = '';
       if (agent.imageUrl) {
-        imageHtml = `<img src="${agent.imageUrl}" alt="${agent.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<span>🪞</span>';" />`;
+        imageHtml = `<img src="${escapeHtml(agent.imageUrl)}" alt="${safeName}" onerror="this.onerror=null; this.parentNode.innerHTML='<span>🪞</span>';" />`;
       } else {
-        imageHtml = `<span>${agent.image}</span>`;
+        imageHtml = `<span>${escapeHtml(agent.image || '🪞')}</span>`;
       }
-      
+
       html += `
         <div class="agent-mini-card">
           <div class="agent-mini-image">
@@ -1317,17 +1483,19 @@
           </div>
           <div class="agent-mini-header">
             <span class="agent-mini-id">#${agent.id}</span>
-            <span class="agent-mini-name" title="${agent.name}">${agent.name.length > 15 ? agent.name.slice(0,12)+'…' : agent.name}</span>
+            <span class="agent-mini-name" title="${safeName}">${safeName.length > 15 ? safeName.slice(0,12)+'…' : safeName}</span>
           </div>
+          <div class="hint" style="margin-top:2px;">Owner: ${shortAddr(agent.owner)}</div>
           <div class="agent-mini-actions">
             <button class="smallbtn" data-action="update" data-id="${agent.id}">✏️ Update</button>
             <button class="smallbtn" data-action="attest" data-id="${agent.id}">⭐ Attest</button>
+            <button class="smallbtn" data-action="transfer" data-id="${agent.id}">📤 Transfer</button>
             <button class="smallbtn" data-action="view" data-id="${agent.id}">👁️ View</button>
           </div>
         </div>
       `;
     }
-    
+
     myAgentsGrid.innerHTML = html;
 
     // Attach event listeners to the buttons
@@ -1336,7 +1504,7 @@
         e.stopPropagation();
         const action = btn.dataset.action;
         const id = btn.dataset.id;
-        
+
         if (action === 'update') {
           showUpdate();
           updateAgentId.value = id;
@@ -1344,6 +1512,11 @@
         } else if (action === 'attest') {
           showAttest();
           agentIdIn.value = id;
+          updateButtons();
+        } else if (action === 'transfer') {
+          showTransfer();
+          transferAgentId.value = id;
+          transferTo.focus();
           updateButtons();
         } else if (action === 'view') {
           // Use the correct URL format with query parameter
@@ -1354,7 +1527,7 @@
   }
 
   // Event listeners
-  [nameIn, descIn, imageIn, activeIn, x402In, endpointIn, endpointTypeIn, pinnedUriIn, agentIdIn, kindIn, refUriIn, weightIn, updateAgentId, newAgentUri].forEach(el => {
+  [nameIn, descIn, imageIn, activeIn, x402In, endpointIn, endpointTypeIn, pinnedUriIn, agentIdIn, kindIn, refUriIn, weightIn, updateAgentId, newAgentUri, transferAgentId, transferTo].forEach(el => {
     if (el) {
       el.addEventListener("input", updateButtons);
       el.addEventListener("change", updateButtons);
@@ -1456,6 +1629,7 @@
   tabForge.addEventListener("click", showForge);
   tabAttest.addEventListener("click", showAttest);
   tabUpdate.addEventListener("click", showUpdate);
+  tabTransfer.addEventListener("click", showTransfer);
   tabMyAgents.addEventListener("click", showMyAgents);
 
   btnConnect.addEventListener("click", () => {
@@ -1551,28 +1725,13 @@
       );
 
       // ======================================================
-      // 3️⃣ Gas estimation (EIP-1559 safe)
+      // 3️⃣ Send transaction — wallet-safe mode
       // ======================================================
-      const estimatedGas = await contract.forge.estimateGas(agentURI);
-      const gasLimit = (estimatedGas * 120n) / 100n; // 20% buffer
-
-      const feeData = await provider.getFeeData();
-      const overrides = { gasLimit };
-
-      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
-        overrides.maxFeePerGas = feeData.maxFeePerGas;
-        overrides.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
-      } else if (feeData.gasPrice) {
-        overrides.gasPrice = feeData.gasPrice;
-      }
-
-      console.log("Estimated Gas:", estimatedGas.toString());
-      console.log("Gas Limit:", gasLimit.toString());
-
-      // ======================================================
-      // 4️⃣ Send transaction
-      // ======================================================
-      const tx = await contract.forge(agentURI, overrides);
+      const tx = await sendWalletSafe(
+        "Forge",
+        (overrides = {}) => contract.forge(agentURI, overrides),
+        () => contract.forge.estimateGas(agentURI)
+      );
 
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0, 10)}…`);
       const receipt = await tx.wait();
@@ -1663,15 +1822,11 @@
       
       const contract = new ethers.Contract(REPUTATION_ROUTER, REP_ABI, signer);
       
-      // Get gas estimate
-      const estimatedGas = await contract.attest.estimateGas(agentId, kind, refURI, weight);
-      const feeData = await provider.getFeeData();
-      const gasLimit = estimatedGas * 120n / 100n;
-      
-      const tx = await contract.attest(agentId, kind, refURI, weight, {
-        gasLimit: gasLimit,
-        gasPrice: feeData.gasPrice || undefined
-      });
+      const tx = await sendWalletSafe(
+        "Attest",
+        (overrides = {}) => contract.attest(agentId, kind, refURI, weight, overrides),
+        () => contract.attest.estimateGas(agentId, kind, refURI, weight)
+      );
       
       setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
       await tx.wait();
@@ -1690,6 +1845,91 @@
     }
   });
 
+  btnCheckTransferOwner.addEventListener("click", async () => {
+    try {
+      setStatus("warn", "Checking current owner…");
+      const result = await checkTransferOwner(true);
+      setStatus(result.isOwner ? "good" : "bad", result.isOwner ? `✅ You own Agent #${result.agentId}` : `❌ You do not own Agent #${result.agentId}`);
+    } catch (err) {
+      transferCheck.style.display = "block";
+      transferCheck.textContent = err.message || "Owner check failed";
+      setStatus("bad", err.message || "Owner check failed");
+    }
+  });
+
+  btnTransferAgent.addEventListener("click", async () => {
+    const originalText = btnTransferAgent.innerHTML;
+    try {
+      if (!signer) throw new Error("Connect wallet first");
+
+      const recipient = (transferTo.value || "").trim();
+      if (!ethers.isAddress(recipient)) throw new Error("Enter a valid recipient wallet address");
+
+      const { agentId, owner, me, isOwner } = await checkTransferOwner(true);
+      if (!isOwner) throw new Error("Connected wallet is not the current owner");
+
+      if (recipient.toLowerCase() === me.toLowerCase()) {
+        throw new Error("Recipient is the same as the connected wallet");
+      }
+
+      const warning =
+        `Transfer Agent #${agentId}?\n\n` +
+        `From: ${owner}\n` +
+        `To:   ${recipient}\n\n` +
+        `After transfer, only the new owner can update this agent. This does not guarantee marketplace indexing.`;
+
+      if (!confirm(warning)) return;
+
+      btnTransferAgent.innerHTML = "⏳ Transferring...";
+      btnTransferAgent.disabled = true;
+      setStatus("warn", `Transferring Agent #${agentId}…`);
+
+      const contract = new ethers.Contract(REGISTRY_PROXY, ERC721_TRANSFER_ABI, signer);
+      const tokenId = BigInt(agentId);
+
+      const tx = await sendWalletSafe(
+        "Transfer",
+        (overrides = {}) => contract["safeTransferFrom(address,address,uint256)"](owner, recipient, tokenId, overrides),
+        () => contract["safeTransferFrom(address,address,uint256)"].estimateGas(owner, recipient, tokenId)
+      );
+      setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
+
+      const receipt = await Promise.race([
+        tx.wait(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Transaction timeout")), 90000))
+      ]);
+
+      console.log("Transfer confirmed:", receipt);
+      const txLink = `https://basescan.org/tx/${tx.hash}`;
+
+      transferCheck.style.display = "block";
+      transferCheck.textContent = `✅ Transfer complete\nAgent #${agentId}\nNew owner: ${recipient}\nTx: ${tx.hash}`;
+
+      statusText.innerHTML = `✅ Agent #${agentId} transferred! <a href="${txLink}" target="_blank" style="color:var(--accent2)">[View]</a>`;
+      setStatus("good", `✅ Agent #${agentId} transferred!`);
+
+      transferAgentId.value = "";
+      transferTo.value = "";
+      updateButtons();
+
+      await fetchAgentsFromBlockscout();
+      if (panelMyAgents.style.display === "block") {
+        renderMyAgents();
+      }
+
+    } catch (err) {
+      console.error("Transfer error:", err);
+      if (err.code === 4001) {
+        setStatus("bad", "Transaction rejected");
+      } else {
+        setStatus("bad", err.shortMessage || err.message || "Transfer failed");
+      }
+    } finally {
+      btnTransferAgent.innerHTML = originalText;
+      updateButtons();
+    }
+  });
+
   // ===== button with contract address =====
   btnUpdateAgent.addEventListener("click", async () => {
     try {
@@ -1705,8 +1945,7 @@
       
       // Check if agent exists
       try {
-        const registryContract = new ethers.Contract(REGISTRY_PROXY, REGISTRY_ABI, provider);
-        const currentUri = await registryContract.tokenURI(agentId);
+        const currentUri = await readCurrentAgentUri(agentId);
         console.log(`Current URI for agent ${agentId}:`, currentUri);
       } catch (checkError) {
         console.error("Agent check error:", checkError);
@@ -1727,20 +1966,12 @@
       const contract = new ethers.Contract(REGISTRY_PROXY, UPDATE_ABI, signer);
       
       try {
-        // Estimate gas
-        console.log("Estimating gas for update...");
-        const estimatedGas = await contract.setAgentURI.estimateGas(agentId, newUri);
-        console.log("Gas estimate:", estimatedGas.toString());
-        
-        const feeData = await provider.getFeeData();
-        const gasLimit = estimatedGas * 120n / 100n;
-        
-        // Send transaction
-        console.log("Sending update transaction...");
-        const tx = await contract.setAgentURI(agentId, newUri, {
-          gasLimit: gasLimit,
-          gasPrice: feeData.gasPrice || undefined
-        });
+        console.log("Sending update transaction in wallet-safe mode...");
+        const tx = await sendWalletSafe(
+          "Update",
+          (overrides = {}) => contract.setAgentURI(agentId, newUri, overrides),
+          () => contract.setAgentURI.estimateGas(agentId, newUri)
+        );
         
         setStatus("warn", `⏳ Submitted: ${tx.hash.slice(0,10)}…`);
         

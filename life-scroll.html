@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Reflection Scroll</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Noto Serif SC", "Times New Roman", serif;
+      background: linear-gradient(#0f1f1c, #07100e);
+      color: #f5f3e7;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: auto;
+      padding: 30px 20px 60px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 24px;
+      color: #d8c98a;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back:hover { color: #fff5d6; }
+
+    .hero {
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .hero img {
+      width: 100%;
+      display: block;
+    }
+
+    .scroll-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(240,230,200,0.16);
+      border-radius: 24px;
+      padding: 30px;
+      backdrop-filter: blur(8px);
+    }
+
+    .id {
+      color: #d8c98a;
+      font-size: 13px;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: 34px;
+      color: #fff5d6;
+    }
+
+    .hook {
+      color: #e6dcae;
+      font-size: 18px;
+      margin-bottom: 30px;
+      line-height: 1.8;
+    }
+
+    .section { margin: 26px 0; }
+
+    .section h2 {
+      color: #f0e6c8;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .section p {
+      color: #e8e2c9;
+      line-height: 2;
+      white-space: pre-line;
+      font-size: 16px;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(240,230,200,0.18);
+      margin: 28px 0;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 34px;
+    }
+
+    .nav-btn {
+      display: inline-block;
+      color: #fff5d6;
+      background: rgba(216, 201, 138, 0.10);
+      border: 1px solid rgba(232, 219, 160, 0.28);
+      border-radius: 999px;
+      padding: 12px 18px;
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+      transition: all 0.25s ease;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(216, 201, 138, 0.16);
+      border-color: rgba(232, 219, 160, 0.48);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #aaa083;
+      font-size: 13px;
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 22px 14px 50px; }
+      .scroll-card { padding: 22px; }
+      h1 { font-size: 28px; }
+      .hook { font-size: 16px; }
+      .section p { font-size: 15px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <a class="back" href="life.html">← 返回人生感 · Life Reflections</a>
+
+    <div class="hero">
+      <img id="image" src="" alt="">
+    </div>
+
+    <article class="scroll-card">
+      <div class="id" id="id"></div>
+      <h1 id="title"></h1>
+      <div class="hook" id="hook"></div>
+
+      <div class="divider"></div>
+
+      <div class="section">
+        <h2>🍃 心境 Scroll</h2>
+        <p id="body"></p>
+      </div>
+
+      <div class="section">
+        <h2>🪞 EN Mirror</h2>
+        <p id="en"></p>
+      </div>
+
+      <div class="section">
+        <h2>✨ 传播短句</h2>
+        <p id="quote"></p>
+      </div>
+
+      <div class="nav">
+        <a id="next" class="nav-btn" href="life.html">Continue →</a>
+      </div>
+    </article>
+
+    <footer>一步一叶，一语一光 🍃🪞</footer>
+  </div>
+
+  <script>
+    const scrolls = {
+      L001: {
+        id: "L001",
+        title: "风与花 · Wind & Bloom",
+        image: "images/wind-bloom.jpg",
+        hook: "带着知足而上路，带着晚霞回家。",
+        body: `放慢脚步，听风穿过时间的缝隙。
+半生如梦，轻落在人间的掌心。
+
+不争，不问，不追人海的方向，
+只在此刻，看见一片晴空。
+
+就让岁月开成一朵花，
+不问归期，自有芳华。
+
+光阴流转，不过是温柔的笔画，
+爱，在时间里慢慢发芽。`,
+        en: `Slow down—
+and listen to the wind between moments.
+
+A lifetime drifts like a dream,
+resting lightly in your hands.
+
+Let the years bloom into a flower.
+Time may pass,
+but love will always grow in silence.`,
+        quote: `CN：人生不急，岁月会开花。🍃🪞
+EN：Time will bloom. 🍃🪞`
+      },
+
+      L002: {
+        id: "L002",
+        title: "一壶见心 · A Cup Reflects the Self",
+        image: "images/tea.jpg",
+        hook: "茶可续，心可度。一壶之间，见自己。",
+        body: `桌上有茶，心中无事。
+水未沸，人已静。
+
+烧水，泡茶，出汤，再饮。
+看似重复，实则回归。
+
+每一冲，是放下；
+每一泡，是重来。
+
+茶凉了，可以再续；
+心乱了，需要自度。
+
+修，不在远方，
+就在这一冲一泡之间。`,
+        en: `A cup of tea on the table,
+nothing weighing on the heart.
+
+Boil, pour, steep, sip—
+simple acts, repeated,
+yet each time,
+you return to yourself.
+
+Tea cools—
+it can be poured again.
+The mind scatters—
+it must find its own way back.`,
+        quote: `CN：茶可续，心可度。🍵🪞
+EN：Tea can be poured again. So can the self.`
+      },
+
+      L003: {
+        id: "L003",
+        title: "不争之安 · The Ease of Non-Striving",
+        image: "images/no-strive.jpg",
+        hook: "不争，不是放弃，是不再消耗自己。",
+        body: `不生气，
+不是因为世界温柔，
+而是因为我不再消耗自己。
+
+不计较，
+不是因为我不懂对错，
+而是因为我看见了代价。
+
+输赢，来来去去；
+对错，反反复复。
+
+而身体，只此一副；
+此心，只此一颗。
+
+当我不再执着于比较，
+内心便自然通畅。`,
+        en: `I do not hold anger—
+not because the world is kind,
+but because I no longer spend myself on it.
+
+Wins and losses come and go.
+Right and wrong repeat.
+
+But this body—only one.
+This heart—only one.`,
+        quote: `CN：不再消耗自己，就是一种清醒。🍃🪞
+EN：Peace begins when we stop spending ourselves.`
+      },
+
+      L004: {
+        id: "L004",
+        title: "生命的样子 · The Shape of Life",
+        image: "images/life-shape.jpg",
+        hook: "懂自己的心，活出时光的暖。看世界，爱自己。",
+        body: `生命最好的样子，
+不是拥有多少，
+而是看清自己。
+
+懂得自己的心，
+不被情绪牵走；
+
+活出时光的暖，
+不被岁月辜负。
+
+烟火人间，
+不迷失于喧嚣；
+
+独善其身，
+也温柔待世界。
+
+这一生不求完美，
+只求清醒而温暖地活着。`,
+        en: `The best shape of life
+is not what you hold,
+but how clearly you see yourself.
+
+Know your own heart,
+without being carried away.
+
+Be in the world,
+yet not consumed by it.
+
+Not perfection—
+just a life lived clear and warm.`,
+        quote: `CN：看世界，爱自己。🍃🪞
+EN：See the world. Love yourself.`
+      },
+
+      L006: {
+        id: "L006",
+        title: "低谷之光 · The Quiet Strength",
+        image: "images/quiet-strength.jpg",
+        hook: "低谷不是否定你，只是让你看清一切。",
+        body: `当一个人落在低谷，
+很多声音会变得很远。
+
+不是你变差了，
+而是世界更现实了。
+
+有些时候，
+不必急着解释。
+
+不是因为你没话说，
+而是因为此刻的世界，听不见。
+
+低谷，会让很多东西显形：
+关系，人心，
+以及你真正能依靠的部分。
+
+困难的时候，
+只需要一件事：站住。
+
+不是完美地走，
+而是不倒下。
+
+最深的夜，也会有星。
+
+当你走过一段看不见光的路，
+你反而更知道该往哪里去。
+
+尊严，不是别人给的，
+而是你在泥泞中，依然不弯的脊背。`,
+        en: `When a person falls low,
+many voices fade away.
+
+It’s not that you became less—
+the world just became clearer.
+
+Sometimes,
+there is no need to explain.
+
+Not because you have nothing to say,
+but because the moment cannot hear you.
+
+Hard times reveal things:
+people, relationships,
+and what truly remains.
+
+In difficulty,
+you only need one thing: stand.
+
+Not perfectly—
+just don’t fall.
+
+The darkest nights still hold stars.
+
+And those who walk through them
+learn direction.`,
+        quote: `CN：低谷不是否定你，只是让你看清一切。🍃🪞
+EN：The low is not your failure—it's your clarity. 🍃🪞`
+      },
+
+      L005: {
+        id: "L005",
+        title: "倒下之后 · Still, You Rise",
+        image: "images/still-you-rise.jpg",
+        hook: "你不需要被所有人理解，只需要不再委屈自己。",
+        body: `蝴蝶不向苍蝇解释花香，
+雄鹰不向麻雀证明天空。
+
+真正的成长，
+是不再需要被理解。
+
+人生不是考场，
+你不需要向任何人交卷。
+
+生活不是舞台，
+你也不必为每一个观众表演。
+
+不是所有故事，
+都要写到最后一页。
+
+不是所有关系，
+都要耗尽最后一丝热情。
+
+沉默，不是无声，
+而是结束的开始。
+
+每一个选择离开的人，
+都曾在寒风中站了很久。
+
+转身，不是逃避，
+而是当下最清醒的选择。
+
+明智的放弃，
+胜过盲目的执着。
+
+花开两朵，各自天涯。
+
+你的春天，
+在前方。
+
+不在回头的路上。
+
+人生有三把钥匙：
+
+接受，
+改变，
+放下。
+
+能改变的，就去做；
+改变不了的，就放下。
+
+余生很贵。
+去活成你真正喜欢的自己。`,
+        en: `Butterflies don’t explain fragrance to flies.
+Eagles don’t prove the sky to sparrows.
+
+Growth begins
+when you no longer need to be understood.
+
+Life is not an exam.
+You don’t need to submit answers.
+
+Life is not a stage.
+You don’t need to perform.
+
+Not every story
+needs an ending.
+
+Not every connection
+needs to be exhausted.
+
+Those who walk away
+have stood in the cold for a long time.
+
+Leaving is not weakness—
+it is clarity.
+
+Let go wisely.
+Walk forward quietly.
+
+Your spring
+is still ahead.
+
+Accept.
+Change.
+Let go.
+
+Life is precious.
+Live as the you you truly love.`,
+        quote: `CN：你不需要被所有人理解，只需要不再委屈自己。🍃🪞
+EN：You don’t need to be understood—only to stop abandoning yourself. 🍃🪞`
+      },
+
+      L007: {
+        id: "L007",
+        title: "自愈 · Return to Yourself",
+        image: "images/self-healing.jpg",
+        hook: "允许自己崩溃，也记得把自己带回来。",
+        body: `可以短暂不开心，
+但不要长期迷失。
+
+允许自己崩溃，
+但也要学会回来。
+
+不要太敏感，
+也不要总和自己较劲。
+
+人生最重要的作品，
+其实是你自己。
+
+即使无人欣赏，
+也要安静地开花。
+
+对自己，随性一点；
+对他人，随缘一点。
+
+看自己的路，
+走自己的方向。
+
+想开一点，
+看淡一点，
+慢一点。
+
+开心与健康，
+才是最重要的事。`,
+        en: `You may feel low—
+just don’t stay lost.
+
+Break if you must,
+but learn to return.
+
+Don’t be too hard on yourself.
+
+The most important creation
+is you.
+
+Even unseen,
+you can still bloom.
+
+Be gentle with yourself.
+Walk your path.
+
+In letting go,
+you begin to heal.`,
+        quote: `CN：允许自己崩溃，也记得把自己带回来。🍃🪞
+EN：Break if you must—just don’t forget to return. 🍃🪞`
+      },
+
+      L008: {
+        id: "L008",
+        title: "只在场 · Presence",
+        image: "images/presence.jpg",
+        hook: "不想，不做，只在场。",
+        body: `不追过去，
+也不赶未来。
+
+这一刻，
+已经足够。
+
+不需要想太多，
+也不需要做什么。
+
+呼吸在，
+你就在。
+
+有些念头，
+来就来，走就走。
+
+不用抓住，
+也不用赶走。
+
+世界依旧在动，
+而你可以慢下来。
+
+不必改变什么，
+只需要在这里。
+
+一杯水，
+一阵风，
+一束光。
+
+这些，就已经很好。
+
+当你不再用力，
+你就回来了。
+
+回到自己，
+回到此刻。`,
+        en: `No past to chase,
+no future to rush.
+
+This moment
+is enough.
+
+Be here.
+Nothing more is needed.
+
+Your breath is here—
+so are you.
+
+Let thoughts come,
+let them go.
+
+No need to hold,
+no need to resist.
+
+The world moves,
+you can be still.
+
+A cup of water,
+a breeze,
+a ray of light—
+
+this is enough.
+
+When you stop trying,
+you return.
+
+To yourself,
+to now.`,
+        quote: `CN：不想，不做，只在场。🍃🪞
+EN：Do nothing. Just be here. 🍃🪞`
+      }
+    };
+
+    const order = ["L001", "L002", "L003", "L004", "L006", "L005", "L007", "L008"];
+    const params = new URLSearchParams(window.location.search);
+    const key = params.get("id") || "L001";
+    const scroll = scrolls[key] || scrolls.L001;
+
+    document.title = scroll.title;
+    document.getElementById("id").textContent = scroll.id + " · 人生感 Life Reflections";
+    document.getElementById("title").textContent = scroll.title;
+    document.getElementById("hook").textContent = scroll.hook;
+    document.getElementById("image").src = scroll.image;
+    document.getElementById("image").alt = scroll.title;
+    document.getElementById("body").textContent = scroll.body;
+    document.getElementById("en").textContent = scroll.en;
+    document.getElementById("quote").textContent = scroll.quote;
+
+    const currentIndex = order.indexOf(scroll.id);
+    const nextId = order[currentIndex + 1];
+    const nextLink = document.getElementById("next");
+
+    if (nextId && scrolls[nextId]) {
+      nextLink.href = `life-scroll.html?id=${nextId}`;
+      nextLink.textContent = `Continue → ${scrolls[nextId].id}`;
+    } else {
+      nextLink.href = "life.html";
+      nextLink.textContent = "Return to Life Reflections →";
+    }
+  </script>
+</body>
+</html>
