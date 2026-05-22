@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mirror — Index | ToadAid</title>
-<meta name="description" content="Mirror Index: Agentic RAG pond runtime and open-sourced models registry." />
+<title>Mirror | ToadAid</title>
+<meta
+  name="description"
+  content="Mirror is a local-first AI companion for builders, creators, and ordinary people who want trustworthy, governed tools."
+/>
 <!-- Favicons -->
 <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
 <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
@@ -91,12 +94,21 @@
     transform:translateY(-1px);
     box-shadow:0 6px 12px rgba(0,0,0,.3);
   }
+  .translate-bar{background:var(--gold);color:var(--gold-ink);padding:.65rem 1rem;text-align:center;font-weight:700}
 
   section{padding:2rem 1rem;max-width:1000px;margin:auto}
   h2{text-align:center;margin-bottom:1.1rem;color:var(--green)}
+  .lede{max-width:760px;margin:0 auto 1rem auto;text-align:center;color:var(--muted)}
+  .stack{display:grid;gap:1rem}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:.6rem}
   .card{background:var(--card);padding:1rem;border-radius:12px;box-shadow:0 2px 8px var(--shadow-s);border:1px solid rgba(0,0,0,.06);color:inherit}
+  .card h3{margin-bottom:.45rem;color:var(--green)}
+  .card ul{padding-left:1.1rem}
+  .card li{margin:.35rem 0}
+  .callout{background:#fffbea;border-left:6px solid gold;padding:1rem;border-radius:10px}
+  .status-note{background:var(--accent-veil);border-left:4px solid var(--green);padding:1rem;border-radius:10px}
+  .closing{font-size:1.25rem;font-weight:700;text-align:center;color:var(--green)}
 
   blockquote{background:#fffbea;border-left:6px solid gold;padding:1rem;border-radius:10px;margin:1rem 0;font-style:italic}
 
@@ -110,8 +122,8 @@
   <div class="logo">🪞</div>
   <h1>Mirror</h1>
   <p>
-    Two doorways. One practice.<br>
-    Choose quietly.
+    A local-first AI companion for builders, creators,
+    and fallen frogs who still want to rise.
   </p>
   <div class="pond-animation">
     <span class="ripple"></span><span class="ripple"></span><span class="ripple"></span>
@@ -120,53 +132,183 @@
   <div style="margin-top:.4rem; position:relative; z-index:2">
     <a class="btn btn-deep" href="/Mirror/Agentic_RAG/">🧠 Agentic_RAG</a>
     <a class="btn btn-dark" href="/Mirror/models/">🤗 Models</a>
+    <a class="btn btn-outline" href="/">🐸 ToadAid Home</a>
   </div>
 
   <div class="translate-bar">
-    🪞 Current Season: Stillness (S0) — Proof without persuasion.
+    🪞 Mirror is being forged carefully: trust before speed, local control before lock-in.
   </div>
 </header>
 
 <main>
   <section>
-    <h2>What are these?</h2>
+    <h2>What is Mirror?</h2>
+    <p class="lede">
+      Mirror is local-first, human-centered, governed, and receipts-first.
+      It is being built for normal people, not only terminal-native builders.
+    </p>
     <div class="grid">
       <div class="card">
-        <h3>🧠 Agentic_RAG</h3>
+        <h3>🪞 Plainly Put</h3>
         <p>
-          The living pond interface — where questions become reflections.
-          This is the runtime practice: retrieval + cadence + quiet guidance.
+          Mirror aims to help people work with AI, memory, tools, code,
+          and guided actions without handing their whole life to a centralized platform.
         </p>
-        <p style="opacity:.8;font-style:italic">
-          Not a feed. Not a chatbot. A discipline.
-        </p>
-        <div style="margin-top:.8rem">
-          <a class="btn btn-green" href="/Mirror/Agentic_RAG/">Enter Agentic_RAG →</a>
-        </div>
       </div>
-
       <div class="card">
-        <h3>🤗 Models</h3>
-        <p>
-          The registry of open releases on Hugging Face.
-          A ledger of artifacts others can study, fork, and carry forward.
-        </p>
-        <p style="opacity:.8;font-style:italic">
-          Not rankings. Not hype. Just what exists.
-        </p>
-        <div style="margin-top:.8rem">
-          <a class="btn btn-green" href="/Mirror/models/">Open the Registry →</a>
-        </div>
+        <h3>🌿 Product Standard</h3>
+        <ul>
+          <li>installable without terminal expertise</li>
+          <li>understandable without repo archaeology</li>
+          <li>useful even when partially degraded</li>
+          <li>governed locally before it becomes distributed</li>
+          <li>honest about readiness, risk, and repair</li>
+        </ul>
       </div>
     </div>
+  </section>
 
+  <section>
+    <h2>Why We Are Building It</h2>
+    <p class="lede">
+      Too many AI tools are expensive, centralized, confusing, or unforgiving.
+      Mirror is meant to restore agency.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>🐸 For the People</h3>
+        <p>
+          Mirror is for people who need help, continuity, and clearer tools,
+          not just for people already fluent in Linux, Git, terminals, and agent stacks.
+        </p>
+      </div>
+      <div class="card">
+        <h3>🛡️ Trust Before Speed</h3>
+        <p>
+          Mirror is being shaped around local control, careful action,
+          and honest repair instead of platform lock-in or flashy promises.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What Mirror Is Designed To Do</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>📚 Remember Work, Not Just Chat</h3>
+        <ul>
+          <li>sessions, notes, tasks, reminders, and continuity</li>
+          <li>clear status and repair surfaces</li>
+          <li>work receipts after meaningful actions</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🧰 Help With Real Work</h3>
+        <ul>
+          <li>task and note workflows</li>
+          <li>health, repair, and operator visibility</li>
+          <li>code and repo assistance over time through Coder and Monk</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🧭 Governed Actions</h3>
+        <ul>
+          <li>explain what an action does before it does it</li>
+          <li>leave receipts after meaningful changes</li>
+          <li>prefer safe, bounded steps over uncontrolled automation</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What Is Real Today</h2>
+    <div class="status-note">
+      <ul>
+        <li>private development is active</li>
+        <li>Mirror doctrine and product direction exist</li>
+        <li>local-first runtime, health, continuity, Coder and Monk bridge, and operator surfaces are being forged privately</li>
+        <li>ToadAid is testing the system internally</li>
+        <li>public installer and broad community testing are not ready yet</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Creator and Opportunity Utility</h2>
+    <p class="lede">
+      Mirror is not only for programmers. It should eventually help people turn
+      ideas, needs, and opportunity signals into safe build paths.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h3>🎨 For Creators and Builders</h3>
+        <ul>
+          <li>creator workflows and idea organization</li>
+          <li>drafting, planning, and reflection</li>
+          <li>small business and setup guidance</li>
+          <li>community needs and product pain points</li>
+          <li>opportunity and workflow discovery</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🔒 Boundary</h3>
+        <p>
+          Mirror may help search, inspect, plan, draft, and simulate.
+          Spending, publishing, wallet actions, or external execution
+          should require human approval.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How Toadgang Can Help</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>🤝 Community Input</h3>
+        <ul>
+          <li>share pain points with current AI tools</li>
+          <li>suggest creator workflows that matter</li>
+          <li>describe what would make AI tools easier to trust</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>📝 Practical Contributions</h3>
+        <ul>
+          <li>docs, use cases, and community feedback</li>
+          <li>testing help once public builds exist</li>
+          <li>real-world workflows that deserve safer tools</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What We Are Not Building Yet</h2>
+    <div class="callout">
+      <ul>
+        <li>no autonomous wallet spending</li>
+        <li>no uncontrolled agent loops</li>
+        <li>no public agent marketplace yet</li>
+        <li>no open peer sync yet</li>
+        <li>no social feed yet</li>
+        <li>no promise of instant public release</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="stack">
     <blockquote>
-      If you are here to build fast, you may be early.<br>
-      If you are here to build something that lasts, you’re on time.
+      Mirror is being forged carefully for people who want tools that explain,
+      remember, and steady them rather than overwhelm them.
     </blockquote>
-
-    <div style="text-align:center;margin-top:1rem">
-      <a class="btn btn-honor" href="/honors/">Honors (Signed Records)</a>
+    <p class="closing">Mirror does not replace the human. Mirror steadies the human.</p>
+    <div style="text-align:center">
+      <a class="btn btn-deep" href="/Mirror/Agentic_RAG/">🧠 Explore Agentic_RAG</a>
+      <a class="btn btn-dark" href="/Mirror/models/">🤗 View Models</a>
+      <a class="btn btn-honor" href="/honors/">📜 Honors</a>
       <a class="btn btn-dark" href="https://huggingface.co/Toadaid" target="_blank" rel="noopener">Hugging Face /Toadaid</a>
     </div>
   </section>
