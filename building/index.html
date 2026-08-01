@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>What We’re Building | ToadAid</title>
+<meta name="description" content="A public window into the governed systems ToadAid is building for Toadgang, for the fallen, and for the people." />
+<meta property="og:title" content="What We’re Building | ToadAid" />
+<meta property="og:description" content="The systems being forged beneath the pond: what is proven, what remains private, and what authority stays locked." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://toadaid.github.io/building/" />
+<meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
+<link rel="canonical" href="https://toadaid.github.io/building/" />
+<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico" />
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png" />
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" />
+<link rel="manifest" href="/assets/icons/site.webmanifest" />
+<meta name="theme-color" content="#0b1428" />
+<link rel="stylesheet" href="/assets/css/style.css" />
+<link rel="stylesheet" href="/assets/css/mobile.css" />
+<style>
+:root{
+  --bg:#0b1020;
+  --bg2:#0a1326;
+  --ink:#e5eefc;
+  --muted:#9fb4d1;
+  --accent:#7dd3fc;
+  --cyan:#22d3ee;
+  --teal:#34d399;
+  --blue:#60a5fa;
+  --violet:#a78bfa;
+  --amber:#fbbf24;
+  --red:#fb7185;
+  --card-border:rgba(120,150,200,.45);
+  --card-a:rgba(2,8,23,.86);
+  --card-b:rgba(4,12,28,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  color:var(--ink);
+  line-height:1.68;
+  background:
+    radial-gradient(1200px 620px at 15% -10%,#0f1b38 0,transparent 60%),
+    radial-gradient(900px 620px at 85% 110%,#032a24 0,transparent 55%),
+    linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);
+  text-rendering:optimizeLegibility;
+}
+a{color:#9bd2ff;text-decoration:none}
+a:hover{color:#d6efff;text-decoration:underline}
+a:focus-visible{outline:3px solid var(--cyan);outline-offset:4px;border-radius:8px}
+header[role="banner"]{
+  position:relative;
+  overflow:hidden;
+  padding:62px 20px 54px;
+  text-align:center;
+  color:#fff;
+  border-bottom:1px solid rgba(120,150,200,.25);
+  background:
+    radial-gradient(1000px 500px at 10% 10%,#0f172a 0,transparent 60%),
+    radial-gradient(1000px 500px at 90% 90%,#022c22 0,transparent 55%),
+    linear-gradient(180deg,#0b1428 0%,#0a1222 100%);
+}
+header[role="banner"]::before{
+  content:"";
+  position:absolute;
+  inset:-40px;
+  background:
+    radial-gradient(circle at 20% 80%,rgba(34,211,238,.18) 0%,transparent 55%),
+    radial-gradient(circle at 82% 18%,rgba(52,211,153,.16) 0%,transparent 55%),
+    radial-gradient(circle at 48% 40%,rgba(96,165,250,.10) 0%,transparent 60%);
+  opacity:.9;
+  filter:blur(2px);
+  animation:pulse 12s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.56;transform:scale(1)}50%{opacity:.95;transform:scale(1.03)}}
+@keyframes float{0%,100%{transform:translateY(0)}33%{transform:translateY(-9px)}66%{transform:translateY(5px)}}
+.breadcrumb{max-width:1220px;margin:0 auto 18px;position:relative;z-index:2;font-size:.96rem}
+.home-link{display:inline-block;padding:8px 16px;border-radius:999px;border:1px solid rgba(148,163,184,.6);background:rgba(10,18,34,.85);color:#dff4ff;position:relative;z-index:2}
+.hero-icon{font-size:4rem;margin:20px 0 15px;position:relative;z-index:1;animation:float 9s ease-in-out infinite}
+header h1{position:relative;z-index:1;margin:0 0 12px;font-size:clamp(2.1rem,4.5vw,3.35rem);letter-spacing:.3px;text-shadow:0 6px 24px rgba(0,0,0,.45)}
+.subtitle{position:relative;z-index:1;max-width:920px;margin:0 auto 18px;font-size:clamp(1rem,2vw,1.15rem);color:#dcecff}
+.badges{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:15px}
+.badge{display:inline-block;padding:5px 13px;border-radius:999px;border:1px solid rgba(148,163,184,.75);background:rgba(10,18,34,.82);color:#dff4ff;font-size:.86rem;letter-spacing:.03em}
+.badge.live{border-color:rgba(52,211,153,.8);color:#b7fbe3}
+.badge.locked{border-color:rgba(251,191,36,.75);color:#fde7a4}
+.wrap{max-width:1220px;margin:0 auto;padding:34px 25px 76px}
+.card{
+  position:relative;
+  overflow:hidden;
+  margin-bottom:30px;
+  padding:28px;
+  border:1px solid var(--card-border);
+  border-radius:22px;
+  background:
+    radial-gradient(800px 400px at 0% 0%,rgba(56,189,248,.10) 0,transparent 60%),
+    linear-gradient(180deg,var(--card-a) 0%,var(--card-b) 100%);
+  box-shadow:0 18px 40px rgba(0,0,0,.64),0 0 0 1px rgba(15,23,42,.7);
+}
+.card>*{position:relative;z-index:1}
+h2{display:flex;align-items:center;gap:.55rem;margin:4px 0 13px;padding-bottom:9px;color:var(--accent);border-bottom:2px solid rgba(34,211,238,.8);font-size:clamp(1.35rem,2.5vw,1.75rem)}
+h3{margin:16px 0 9px;color:#b8e8ff}.meta{margin:4px 0 17px;color:var(--muted);font-size:.94rem}.lead{font-size:1.08rem;color:#e7f2ff}.quote{margin:22px 0 4px;padding:18px 20px;border-left:4px solid var(--teal);border-radius:0 14px 14px 0;background:rgba(5,22,32,.78);color:#dcfff3;font-size:1.07rem}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px;margin:20px 0 2px}.kpi .item{padding:15px 16px;text-align:center;border:1px solid rgba(148,163,184,.65);border-radius:13px;background:rgba(10,18,34,.9);font-size:.94rem}.kpi strong{color:#c8f4ff}
+.code{overflow-x:auto;margin:16px 0 0;padding:18px 20px;border:1px solid rgba(30,64,175,.58);border-radius:14px;background:#0b152a;color:#dbeafe;font:500 .88rem/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:18px;margin:22px 0 4px}
+.module{position:relative;overflow:hidden;padding:21px 19px;border:1px solid rgba(148,163,184,.55);border-radius:18px;background:linear-gradient(145deg,#091326,#08101f);box-shadow:0 10px 24px rgba(0,0,0,.24)}
+.module::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--cyan),var(--teal),var(--blue));opacity:.94}.module .icon{font-size:2rem}.module .title{margin:7px 0 3px;color:#b7fbe3;font-size:1.16rem;font-weight:750}.module .repo{color:#b9cbea;font-size:.87rem}.module p{margin:11px 0;color:#d4e2f7}.status-row{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0}.status{padding:3px 9px;border-radius:999px;border:1px solid rgba(96,165,250,.55);background:rgba(15,31,58,.85);color:#cfe5ff;font-size:.76rem;font-weight:700;letter-spacing:.035em}.status.proven{border-color:rgba(52,211,153,.7);color:#bff8df}.status.private{border-color:rgba(167,139,250,.65);color:#ddd2ff}.status.locked{border-color:rgba(251,191,36,.72);color:#fde7a4}.facts{margin:10px 0 0;padding-left:1.12rem;color:#b9cbe4}.facts li{margin:6px 0}
+.timeline{display:grid;gap:13px;margin-top:19px}.receipt{display:grid;grid-template-columns:145px 1fr;gap:18px;padding:16px 18px;border:1px solid rgba(96,165,250,.35);border-radius:14px;background:rgba(8,18,37,.78)}.receipt .when{color:#8edfff;font-weight:750}.receipt strong{color:#dff8ff}
+.lock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:18px}.lock{padding:15px 16px;border:1px solid rgba(251,113,133,.48);border-radius:14px;background:rgba(45,12,25,.35)}.lock strong{display:block;color:#ffc0cb;margin-bottom:4px}.lock span{color:#d7b9c2;font-size:.91rem}
+.steps{counter-reset:step;display:grid;gap:12px;margin:19px 0 2px}.step{counter-increment:step;display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start;padding:15px 17px;border:1px solid rgba(148,163,184,.42);border-radius:14px;background:rgba(8,18,37,.75)}.step::before{content:counter(step);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0e7490,#2563eb);color:white;font-weight:800}.step strong{color:#bfefff}.step p{margin:3px 0 0;color:#b9cbe4}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.button{display:inline-flex;align-items:center;gap:.45rem;padding:9px 14px;border:1px solid rgba(125,211,252,.55);border-radius:999px;background:rgba(8,27,48,.85);color:#dff7ff;font-weight:700}.button:hover{text-decoration:none;background:rgba(10,42,70,.95)}
+.closing{text-align:center;padding:34px 26px}.closing .lotus{font-size:3.3rem;margin-bottom:8px}.closing p{max-width:820px;margin:10px auto;color:#dbe9fb;font-size:1.08rem}.closing .lineage{color:#a9c1df;font-style:italic}
+footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--muted);font-size:.94rem}
+@media (max-width:760px){header[role="banner"]{padding:42px 16px 40px}.wrap{padding:25px 14px 55px}.card{padding:21px 18px}.receipt{grid-template-columns:1fr;gap:4px}.code{font-size:.76rem;padding:15px}.hero-icon{font-size:3.2rem}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}header[role="banner"]::before,.hero-icon{animation:none}}
+</style>
+</head>
+<body>
+<header role="banner">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">ToadAid</a> &raquo; <span aria-current="page">What We’re Building</span>
+  </nav>
+  <a class="home-link" href="/">← Back to ToadAid</a>
+  <div class="hero-icon" aria-hidden="true">🐸🛠️🌊</div>
+  <h1>What We’re Building</h1>
+  <p class="subtitle">A public window into the systems being forged beneath the pond — what has been proven, what remains in active development, and what authority stays deliberately locked.</p>
+  <div class="badges" aria-label="Page principles">
+    <span class="badge live">ACTIVE DEVELOPMENT</span>
+    <span class="badge">EVIDENCE-BACKED</span>
+    <span class="badge">PRIVATE DURING HARDENING</span>
+    <span class="badge locked">DEFAULT-OFF AUTHORITY</span>
+    <span class="badge">BUILT FOR THE PEOPLE</span>
+  </div>
+</header>
+
+<main class="wrap" role="main">
+  <section class="card" id="why">
+    <h2>🌱 Why this page exists</h2>
+    <div class="meta">Public mission · private workshop · truthful progress</div>
+    <p class="lead">ToadAid is built for Toadgang, for the fallen, and for the people. Some systems remain private while their security, authority, provenance, and personal-data boundaries are hardened. This page shows the work without pretending unfinished systems are finished.</p>
+    <blockquote class="quote">Public visibility does not require exposing every unfinished repository. The people can see the roots growing while the forge remains governed.</blockquote>
+    <div class="kpi">
+      <div class="item"><strong>Show the work</strong><br />Architecture, milestones, screenshots, and sanitized proof receipts.</div>
+      <div class="item"><strong>Protect the people</strong><br />Credentials, personal state, wallet authority, and unsafe defaults remain private.</div>
+      <div class="item"><strong>Open with discipline</strong><br />Shared components are released only after provenance, security, and installation review.</div>
+    </div>
+  </section>
+
+  <section class="card" id="map">
+    <h2>🧭 The ToadAid system map</h2>
+    <div class="meta">One public mission · modular governed systems</div>
+<pre class="code"><code>                              TOADAID
+                                 │
+                    Governed public mission
+                                 │
+             ┌───────────────────┴───────────────────┐
+             │                                       │
+        MIRROR CORE                             TOADAID MCP
+ memory · policy · trust                 capabilities · tool fabric
+             │                                       │
+             ├───────────────────┬───────────────────┤
+             │                   │                   │
+      TOADAID CODER         LIVING AGENTS       ZORA AGENT
+ governed forging     TOMI / TOADGANG AGENTS      onchain
+             │                   │                   │
+             └───────────────────┴───────────────────┘
+                                 │
+                         MIRROR DESKTOP
+                    calm human-facing surface</code></pre>
+  </section>
+
+  <section class="card" id="systems">
+    <h2>⚙️ Systems in active development</h2>
+    <div class="meta">No invented completion percentages · each card states its real boundary</div>
+    <div class="grid">
+      <article class="module">
+        <div class="icon" aria-hidden="true">🪞</div>
+        <div class="title">Mirror Core</div>
+        <div class="repo">Shared governed mind, memory, policy, and specialist coordination</div>
+        <div class="status-row"><span class="status proven">PROVEN FOUNDATIONS</span><span class="status private">PRIVATE DURING EXTRACTION</span></div>
+        <p>Mirror Core is becoming the sovereign shared substrate beneath future ToadAid agents and surfaces.</p>
+        <ul class="facts"><li>Durable governed memory boundaries are being forged and verified.</li><li>OpenClaw-era dependencies are being separated without erasing lineage.</li><li>Execution, policy, identity, and memory remain explicit owners.</li></ul>
+      </article>
+
+      <article class="module">
+        <div class="icon" aria-hidden="true">🛠️</div>
+        <div class="title">ToadAid Coder</div>
+        <div class="repo">Provider-neutral governed coding and task execution</div>
+        <div class="status-row"><span class="status proven">ACTIVE PROOFS</span><span class="status locked">WRITE AUTHORITY GATED</span></div>
+        <p>A coding system designed to accept a task, form a visible plan, and run through governed provider and tool boundaries.</p>
+        <ul class="facts"><li>Codex and Grok ACP integration lanes are being hardened.</li><li>Writes require explicit authority and evidence-backed receipts.</li><li>Provider output does not become task completion by assertion.</li></ul>
+      </article>
+
+      <article class="module">
+        <div class="icon" aria-hidden="true">🌿</div>
+        <div class="title">TOMI / Toadgang Agents</div>
+        <div class="repo">Persistent living-agent identity, continuity, and future community adaptation</div>
+        <div class="status-row"><span class="status proven">TOMI LIVE CANARY</span><span class="status private">PERSONAL STATE PRIVATE</span></div>
+        <p>TOMI is the first personal governed living agent. The wider path is for Toadgang agents that preserve identity without inheriting hidden authority.</p>
+        <ul class="facts"><li>Local identity, heartbeat, continuity, governed sleep, and desktop presence are proven.</li><li>Conversation and inference remain separate future capabilities.</li><li>Personal memory is never treated as public source material.</li></ul>
+      </article>
+
+      <article class="module">
+        <div class="icon" aria-hidden="true">🖥️</div>
+        <div class="title">Mirror Desktop</div>
+        <div class="repo">The calm human-facing operating surface</div>
+        <div class="status-row"><span class="status proven">SHELL ESTABLISHED</span><span class="status locked">LOCAL AUTHORITY HARDENING</span></div>
+        <p>A quiet desktop home for presence, memory, projects, workflows, approvals, receipts, and system truth.</p>
+        <ul class="facts"><li>Calm visual contracts and responsive application foundations exist.</li><li>Approvals and receipts remain visible rather than hidden behind automation.</li><li>The interface consumes governed contracts instead of owning runtime truth.</li></ul>
+      </article>
+
+      <article class="module">
+        <div class="icon" aria-hidden="true">🔌</div>
+        <div class="title">ToadAid MCP</div>
+        <div class="repo">Shared governed capability and tool fabric</div>
+        <div class="status-row"><span class="status">FOUNDATION DEVELOPMENT</span><span class="status locked">CAPABILITIES DEFAULT OFF</span></div>
+        <p>The common tool boundary through which agents may request narrow capabilities without becoming the owner of those capabilities.</p>
+        <ul class="facts"><li>Tool contracts separate context, proposal, approval, execution, and receipts.</li><li>Credentials and dangerous authority do not belong in model context.</li><li>Future research tools may advise without receiving execution keys.</li></ul>
+      </article>
+
+      <article class="module">
+        <div class="icon" aria-hidden="true">⛓️</div>
+        <div class="title">ToadAid Zora Agent</div>
+        <div class="repo">Human-approved onchain stewardship</div>
+        <div class="status-row"><span class="status proven">STEWARD LANE</span><span class="status locked">UNATTENDED WRITES DENIED</span></div>
+        <p>An onchain specialist that prepares bounded actions and evidence while human approval remains the source of authority.</p>
+        <ul class="facts"><li>Proposal, review, execution, and receipt boundaries are separated.</li><li>Wallet credentials are not model-owned.</li><li>No autonomous public posting or unrestricted onchain execution.</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="card" id="proofs">
+    <h2>🧾 Recent forge receipts</h2>
+    <div class="meta">Sanitized public checkpoints · not a substitute for source review</div>
+    <div class="timeline">
+      <div class="receipt"><div class="when">Mirror Core</div><div><strong>Governed durable memory lane advanced.</strong><br />Identity, admission, release, handoff, and closure boundaries are being verified as explicit contracts rather than informal model memory.</div></div>
+      <div class="receipt"><div class="when">TOMI</div><div><strong>Living local canary entered operation.</strong><br />Identity, continuity, heartbeat, governed sleep, and desktop presence now persist without granting conversation or execution authority.</div></div>
+      <div class="receipt"><div class="when">ToadAid Coder</div><div><strong>Provider-neutral harness boundaries expanded.</strong><br />Codex and Grok ACP work is evaluated through exact state, evidence, interruption, and completion semantics.</div></div>
+      <div class="receipt"><div class="when">Mirror Desktop</div><div><strong>Human-facing shell and governed bridge foundations established.</strong><br />The desktop is becoming the calm surface over projects, memory, workflows, approvals, and receipts.</div></div>
+      <div class="receipt"><div class="when">Zora Agent</div><div><strong>Human-gated stewardship work continues.</strong><br />The system may prepare and review onchain proposals without silently inheriting wallet authority.</div></div>
+    </div>
+  </section>
+
+  <section class="card" id="locked">
+    <h2>🔒 Authority still deliberately locked</h2>
+    <div class="meta">Unfinished authority is not presented as a feature</div>
+    <div class="lock-grid">
+      <div class="lock"><strong>Autonomous trading</strong><span>Research signals and paper evidence must come before any live execution lane.</span></div>
+      <div class="lock"><strong>Unattended wallet writes</strong><span>No agent receives open-ended permission to spend, transfer, mint, or publish.</span></div>
+      <div class="lock"><strong>Hidden shell authority</strong><span>Execution must pass through explicit tools, scopes, approvals, and receipts.</span></div>
+      <div class="lock"><strong>Automatic public posting</strong><span>Drafting and publishing remain separate acts with human authority between them.</span></div>
+      <div class="lock"><strong>Unreviewed memory admission</strong><span>Model output is not automatically promoted into canonical memory or lore.</span></div>
+      <div class="lock"><strong>Personal-agent data exposure</strong><span>Identity, continuity, private conversations, and operator state remain private by design.</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="private">
+    <h2>🛡️ Why some repositories remain private</h2>
+    <div class="meta">Private during hardening does not mean hidden forever</div>
+    <p>These systems contain evolving authority surfaces, inherited-code boundaries, local-machine access, personal-agent state, wallet integration, and security assumptions that must be reviewed before public release. Opening everything at once would create confusion and risk rather than trust.</p>
+    <p>The public record therefore focuses on architecture, milestones, screenshots, sanitized receipts, doctrines, and completed artifacts while the underlying forges continue to mature.</p>
+    <div class="quote">We are not hiding the mission. We are protecting the people while the machinery is still being hardened.</div>
+  </section>
+
+  <section class="card" id="opening">
+    <h2>🌐 Path toward public source</h2>
+    <div class="meta">Shared components open progressively · personal and credential state stay private</div>
+    <div class="steps">
+      <div class="step"><div><strong>License and provenance audit</strong><p>Inherited code, notices, authorship, and redistribution duties are made truthful.</p></div></div>
+      <div class="step"><div><strong>Secret and history scan</strong><p>Credentials, private endpoints, personal data, and sensitive history are removed or isolated.</p></div></div>
+      <div class="step"><div><strong>Security and authority review</strong><p>Default-off behavior, write boundaries, approvals, and receipt semantics are independently checked.</p></div></div>
+      <div class="step"><div><strong>Clean installation proof</strong><p>A new operator can install and verify the component without relying on private local state.</p></div></div>
+      <div class="step"><div><strong>Public maintenance boundary</strong><p>Documentation, support expectations, contribution rules, and release ownership are defined.</p></div></div>
+    </div>
+    <p>Shared contracts, schemas, doctrines, SDKs, and reference implementations may be opened individually when ready. Personal state, credentials, and operator-specific authority remain private.</p>
+  </section>
+
+  <section class="card" id="records">
+    <h2>📚 Public records already visible</h2>
+    <div class="meta">Preserved architecture and onchain identity work</div>
+    <p>The living build page records current work. Completed artifacts and architecture records remain preserved in their existing public homes.</p>
+    <div class="links">
+      <a class="button" href="/honors/mirror-system-integrated-blueprint.html">🪞 Mirror Integrated Blueprint</a>
+      <a class="button" href="/honors/mirror-runtime-v1-architecture-diagram.html">🧭 Mirror Runtime Architecture</a>
+      <a class="button" href="/honors/">🏛️ Honors &amp; Offerings</a>
+      <a class="button" href="/forge/">⛓️ ERC-8004 Forge</a>
+      <a class="button" href="https://github.com/ToadAid" target="_blank" rel="noopener noreferrer">🐸 Public GitHub</a>
+    </div>
+  </section>
+
+  <section class="card closing" id="roots">
+    <div class="lotus" aria-hidden="true">🪷</div>
+    <h2 style="justify-content:center;border-bottom:0">The roots beneath the pond</h2>
+    <p>Some will notice the flower only after it appears. ToadAid is tending the roots first: governed tools, living agents, shared memory, calm human surfaces, and onchain stewardship built to endure beyond a single market cycle or a single person.</p>
+    <p class="lineage">For Toadgang. For the fallen. For the people. The pond is quiet, but the work is alive.</p>
+  </section>
+</main>
+
+<footer role="contentinfo">
+  <p>ToadAid · Guarding the lore while building what comes next.</p>
+  <p><a href="/">Home</a> · <a href="/honors/">Honors</a> · <a href="/forge/">ERC-8004 Forge</a> · <a href="https://github.com/ToadAid" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+</footer>
+</body>
+</html>
