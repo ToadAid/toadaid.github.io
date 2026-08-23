@@ -163,7 +163,7 @@ document.querySelector('#app').innerHTML = `
         </article>
       </div>
 
-      <p class="notice pending">This panel is a deterministic human-readable review map only. It does not encode calldata, choose a deadline, request signatures, or submit transactions. The official Tobyworld activation flow must still be verified before any execution cut.</p>
+      <p class="notice pending">This public helper is a deterministic human-readable review map only. It does not encode calldata, choose a deadline, request signatures, or submit transactions. Transaction execution remains a separate governed cut.</p>
     </section>
   </main>
   <footer><img src="/TOADAID-logo.png" alt="" /><p>Read the chain. Verify the bindings. Sign nothing here.</p></footer>
@@ -181,7 +181,7 @@ landForm.addEventListener('submit', handleLandCheck)
 async function handleConnect() {
   connectButton.disabled = true
   setText('connection-status', 'Opening WalletConnect…')
-  setNotice('connection-message', 'Confirm the read-only connection inside your wallet.', 'pending')
+  setNotice('connection-message', 'Confirm the wallet identity connection inside your wallet. No signing request will be created.', 'pending')
   try {
     const session = await connectWallet()
     if (session.chainId !== BASE_CHAIN_ID) {
@@ -193,8 +193,8 @@ async function handleConnect() {
     attachProviderEvents()
     setText('wallet-address', shortAddress(state.account))
     setText('chain-status', `Base mainnet · ${state.chainId}`)
-    setText('connection-status', 'Connected · read only')
-    setNotice('connection-message', 'Connected for contract reads only. No signing request will be created.', 'pass')
+    setText('connection-status', 'Connected · identity only')
+    setNotice('connection-message', 'Wallet identity connected on Base. Contract reads use the fixed Base public RPC; no signing request will be created.', 'pass')
     disconnectButton.disabled = false
     landButton.disabled = false
     await loadLiveProtocol()
@@ -234,49 +234,157 @@ async function loadLiveProtocol() {
     return false
   }
 
+  const connectionStable = () => (
+    state.connectionVersion === connectionVersion
+    && state.client === client
+    && state.account === account
+    && state.chainId === chainId
+  )
+
   setNotice('connection-message', 'Reading fixed Base contracts…', 'pending')
   try {
-    const manager = (name, args) => read(CONTRACTS.manager, activationManagerAbi, name, args)
-    const vault = (name, args) => read(CONTRACTS.vault, activationVaultAbi, name, args)
-    const patience = (name, args) => read(CONTRACTS.patience, patienceAbi, name, args)
-    const toby = (name, args) => read(CONTRACTS.toby, tobyAbi, name, args)
-    const depositorRole = await vault('DEPOSITOR_ROLE')
-    const values = await Promise.all([
-      manager('nft2'), manager('tokenX'), manager('vault'), manager('tokenXDecimals'), manager('LOCK_DURATION'),
-      vault('tokenY'), patience('decimals'), toby('decimals'), vault('hasRole', [depositorRole, CONTRACTS.manager]),
-      manager('activationStarted'), manager('activationYCost'), manager('activationXAmount'),
-      manager('minActivationY'), manager('maxActivationY'), manager('minActivationX'), manager('maxActivationX'),
-      manager('protocolCustody', [state.account]), manager('operationPaused', [ACTIVATION_OPERATION_ID]),
-      patience('balanceOf', [state.account]), patience('allowance', [state.account, CONTRACTS.vault]),
-      toby('balanceOf', [state.account]), toby('allowance', [state.account, CONTRACTS.manager]),
-      patience('txFee'), patience('burnFee'), patience('FeeAddress'), patience('owner'),
-      patience('name'), patience('symbol'), toby('name'), toby('symbol'),
-      read(CONTRACTS.lore, nft2Abi, 'name'), read(CONTRACTS.lore, nft2Abi, 'symbol'),
-      vault('balance'), vault('totalGrossQuoted'), vault('totalActuallyReceived'), vault('totalWithdrawn'), vault('totalActivationsCollected'),
-    ])
-    const [managerNft2, managerTokenX, managerVault, tokenXDecimals, lockDuration, vaultTokenY, patienceDecimals, tobyDecimals, managerHasDepositorRole,
-      activationStarted, activationYCost, activationXAmount, minActivationY, maxActivationY, minActivationX, maxActivationX, protocolCustody, activationPaused,
-      patienceBalance, patienceAllowance, tobyBalance, tobyAllowance, txFee, burnFee, feeAddress, patienceOwner,
-      patienceName, patienceSymbol, tobyName, tobySymbol, loreName, loreSymbol,
-      vaultBalance, totalGrossQuoted, totalActuallyReceived, totalWithdrawn, totalActivationsCollected] = values
+    const depositorRole = await client.readContract({
+      address: CONTRACTS.vault,
+      abi: activationVaultAbi,
+      functionName: 'DEPOSITOR_ROLE',
+    })
 
-    if (
-      state.connectionVersion !== connectionVersion
-      || state.client !== client
-      || state.account !== account
-      || state.chainId !== chainId
-    ) {
+    if (!connectionStable()) {
       throw new Error('Wallet connection changed during live verification.')
     }
 
-    state.live = { chainId, managerNft2, managerTokenX, managerVault, tokenXDecimals, lockDuration, vaultTokenY,
-      patienceDecimals, tobyDecimals, managerHasDepositorRole, activationStarted, activationYCost, activationXAmount,
-      minActivationY, maxActivationY, minActivationX, maxActivationX, protocolCustody, activationPaused, patienceBalance, patienceAllowance,
-      tobyBalance, tobyAllowance, txFee, burnFee, feeAddress, patienceOwner, patienceName, patienceSymbol,
-      tobyName, tobySymbol, loreName, loreSymbol, vaultBalance, totalGrossQuoted,
-      totalActuallyReceived, totalWithdrawn, totalActivationsCollected }
+    const contracts = [
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'nft2' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'tokenX' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'vault' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'tokenXDecimals' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'LOCK_DURATION' },
+      { address: CONTRACTS.vault, abi: activationVaultAbi, functionName: 'tokenY' },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'decimals' },
+      { address: CONTRACTS.toby, abi: tobyAbi, functionName: 'decimals' },
+      { address: CONTRACTS.vault, abi: activationVaultAbi, functionName: 'hasRole', args: [depositorRole, CONTRACTS.manager] },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'activationStarted' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'activationYCost' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'activationXAmount' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'minActivationY' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'maxActivationY' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'minActivationX' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'maxActivationX' },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'protocolCustody', args: [account] },
+      { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'operationPaused', args: [ACTIVATION_OPERATION_ID] },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'balanceOf', args: [account] },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'allowance', args: [account, CONTRACTS.vault] },
+      { address: CONTRACTS.toby, abi: tobyAbi, functionName: 'balanceOf', args: [account] },
+      { address: CONTRACTS.toby, abi: tobyAbi, functionName: 'allowance', args: [account, CONTRACTS.manager] },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'txFee' },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'burnFee' },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'FeeAddress' },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'owner' },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'name' },
+      { address: CONTRACTS.patience, abi: patienceAbi, functionName: 'symbol' },
+      { address: CONTRACTS.toby, abi: tobyAbi, functionName: 'name' },
+      { address: CONTRACTS.toby, abi: tobyAbi, functionName: 'symbol' },
+      { address: CONTRACTS.lore, abi: nft2Abi, functionName: 'name' },
+      { address: CONTRACTS.lore, abi: nft2Abi, functionName: 'symbol' },
+      { address: CONTRACTS.vault, abi: activationVaultAbi, functionName: 'balance' },
+      { address: CONTRACTS.vault, abi: activationVaultAbi, functionName: 'totalGrossQuoted' },
+      { address: CONTRACTS.vault, abi: activationVaultAbi, functionName: 'totalActuallyReceived' },
+      { address: CONTRACTS.vault, abi: activationVaultAbi, functionName: 'totalWithdrawn' },
+      { address: CONTRACTS.vault, abi: activationVaultAbi, functionName: 'totalActivationsCollected' },
+    ]
+
+    const values = await client.multicall({
+      contracts,
+      allowFailure: false,
+    })
+
+    if (!connectionStable()) {
+      throw new Error('Wallet connection changed during live verification.')
+    }
+
+    const [
+      managerNft2,
+      managerTokenX,
+      managerVault,
+      tokenXDecimals,
+      lockDuration,
+      vaultTokenY,
+      patienceDecimals,
+      tobyDecimals,
+      managerHasDepositorRole,
+      activationStarted,
+      activationYCost,
+      activationXAmount,
+      minActivationY,
+      maxActivationY,
+      minActivationX,
+      maxActivationX,
+      protocolCustody,
+      activationPaused,
+      patienceBalance,
+      patienceAllowance,
+      tobyBalance,
+      tobyAllowance,
+      txFee,
+      burnFee,
+      feeAddress,
+      patienceOwner,
+      patienceName,
+      patienceSymbol,
+      tobyName,
+      tobySymbol,
+      loreName,
+      loreSymbol,
+      vaultBalance,
+      totalGrossQuoted,
+      totalActuallyReceived,
+      totalWithdrawn,
+      totalActivationsCollected,
+    ] = values
+
+    state.live = {
+      chainId,
+      managerNft2,
+      managerTokenX,
+      managerVault,
+      tokenXDecimals,
+      lockDuration,
+      vaultTokenY,
+      patienceDecimals,
+      tobyDecimals,
+      managerHasDepositorRole,
+      activationStarted,
+      activationYCost,
+      activationXAmount,
+      minActivationY,
+      maxActivationY,
+      minActivationX,
+      maxActivationX,
+      protocolCustody,
+      activationPaused,
+      patienceBalance,
+      patienceAllowance,
+      tobyBalance,
+      tobyAllowance,
+      txFee,
+      burnFee,
+      feeAddress,
+      patienceOwner,
+      patienceName,
+      patienceSymbol,
+      tobyName,
+      tobySymbol,
+      loreName,
+      loreSymbol,
+      vaultBalance,
+      totalGrossQuoted,
+      totalActuallyReceived,
+      totalWithdrawn,
+      totalActivationsCollected,
+    }
+
     renderLiveProtocol()
-    setNotice('connection-message', 'Live contract reads complete. Any mismatch is shown without correction.', 'pass')
+    setNotice('connection-message', 'Live contract snapshot complete. Any mismatch is shown without correction.', 'pass')
     return true
   } catch (error) {
     state.live = null

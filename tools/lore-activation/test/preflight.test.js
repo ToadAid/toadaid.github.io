@@ -176,6 +176,45 @@ test('in-flight review reads fail closed when the wallet connection changes', as
   assert.match(source, /state\.provider\.on\('chainChanged', resetConnection\)/)
 })
 
+test('fixed decimal expectations preserve deployment ABI decode types', async () => {
+  const directory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src')
+  const contractsSource = await readFile(path.join(directory, 'contracts.js'), 'utf8')
+  const preflightSource = await readFile(path.join(directory, 'preflight.js'), 'utf8')
+
+  assert.match(contractsSource, /EXPECTED_MANAGER_TOKEN_X_DECIMALS = 18\b/)
+  assert.match(contractsSource, /EXPECTED_ERC20_DECIMALS = 18n\b/)
+  assert.match(preflightSource, /PATIENCE\.decimals\(\).*EXPECTED_ERC20_DECIMALS/)
+  assert.match(preflightSource, /TOBY\.decimals\(\).*EXPECTED_ERC20_DECIMALS/)
+})
+
+test('live protocol preflight uses one dependency read plus one fail-closed multicall snapshot', async () => {
+  const mainPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src/main.js')
+  const source = await readFile(mainPath, 'utf8')
+
+  const start = source.indexOf('async function loadLiveProtocol()')
+  const end = source.indexOf('function renderLiveProtocol()', start)
+  assert.ok(start >= 0 && end > start)
+  const body = source.slice(start, end)
+
+  assert.match(body, /functionName: 'DEPOSITOR_ROLE'/)
+  assert.match(body, /client\.multicall\(\{/)
+  assert.match(body, /allowFailure: false/)
+  assert.doesNotMatch(body, /Promise\.all\s*\(/)
+  assert.match(body, /Wallet connection changed during live verification\./)
+})
+
+test('WalletConnect is identity-only and contract reads use the fixed independent Base RPC', async () => {
+  const directory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src')
+  const walletSource = await readFile(path.join(directory, 'wallet.js'), 'utf8')
+  const mainSource = await readFile(path.join(directory, 'main.js'), 'utf8')
+
+  assert.match(walletSource, /export const BASE_READ_RPC_URL = 'https:\/\/mainnet\.base\.org'/)
+  assert.match(walletSource, /createPublicClient\(\{ chain: base, transport: http\(BASE_READ_RPC_URL\) \}\)/)
+  assert.doesNotMatch(walletSource, /\bcustom\s*\(/)
+  assert.match(mainSource, /Connected · identity only/)
+  assert.match(mainSource, /Contract reads use the fixed Base public RPC/)
+})
+
 test('transaction review rejects token ID zero and malformed numeric inputs', () => {
   assert.throws(() => buildTransactionReview({
     tokenId: 0n,
