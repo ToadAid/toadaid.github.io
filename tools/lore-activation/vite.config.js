@@ -22,6 +22,16 @@ export default defineConfig(({ mode }) => {
     if (forbidden.some(f => rpcUrl.toLowerCase().includes(f))) {
       throw new Error('VITE_BASE_RPC_URL cannot be a placeholder')
     }
+
+    let parsedRpc
+    try {
+      parsedRpc = new URL(rpcUrl)
+    } catch {
+      throw new Error('VITE_BASE_RPC_URL must be an absolute URL')
+    }
+    if (parsedRpc.protocol !== 'https:') {
+      throw new Error('VITE_BASE_RPC_URL must use HTTPS')
+    }
   }
   return {
     base: '/lore-activation/',

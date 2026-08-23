@@ -553,13 +553,18 @@ function renderTransactionReview(eligible) {
   // Capture state snapshot for stale-state detection
   state.preparedSnapshot = {
     connectionVersion: state.connectionVersion,
+    provider: state.provider,
+    client: state.client,
     account: state.account,
+    chainId: state.chainId,
     tokenId: state.land.tokenId,
     transferNonce: state.land.transferNonce,
     activationYCost: state.live.activationYCost,
     activationXAmount: state.live.activationXAmount,
     txFee: state.live.txFee,
     burnFee: state.live.burnFee,
+    feeAddress: state.live.feeAddress,
+    patienceOwner: state.live.patienceOwner,
   }
 
   setText('review-patience-token', review.patience.token)
@@ -605,152 +610,243 @@ function renderTransactionReview(eligible) {
 /**
  * Mechanically shared full fresh transaction gate.
  * Used before EVERY approval and before activation.
- * Any failure stops the flow and forces a fresh Land check.
+ * Any failure invalidates the prepared transaction and forces a fresh Land check.
  */
-async function freshTransactionGate(label) {
-  const snap = state.preparedSnapshot
+function ensurePreparedConnectionStable(snap, label) {
   if (!snap) throw new Error(`${label}: No prepared snapshot. Run a fresh Land check first.`)
   if (state.connectionVersion !== snap.connectionVersion) throw new Error(`${label}: Wallet connection changed.`)
+  if (state.provider !== snap.provider) throw new Error(`${label}: Wallet provider changed.`)
+  if (state.client !== snap.client) throw new Error(`${label}: Base read client changed.`)
   if (state.account !== snap.account) throw new Error(`${label}: Connected account changed.`)
-  if (!state.client || !state.provider) throw new Error(`${label}: Wallet client disconnected.`)
-  if (state.chainId !== BASE_CHAIN_ID) throw new Error(`${label}: Wallet must be on Base chain (8453).`)
-
-  if (!state.live) throw new Error(`${label}: Live protocol state unavailable.`)
-
-  const liveChecks = bindingChecks(state.live)
-  if (!liveChecks.every(c => c.pass)) throw new Error(`${label}: Live protocol bindings drifted.`)
-  if (!state.live.managerHasDepositorRole) throw new Error(`${label}: ActivationManager lacks DEPOSITOR_ROLE.`)
-
-  if (state.live.txFee !== snap.txFee || state.live.burnFee !== snap.burnFee) {
-    throw new Error(`${label}: PATIENCE fee configuration changed. Run a fresh Land check.`)
+  if (state.chainId !== snap.chainId || state.chainId !== BASE_CHAIN_ID) {
+    throw new Error(`${label}: Wallet must remain on Base chain (8453).`)
   }
-
-  if (state.live.protocolCustody) throw new Error(`${label}: Protocol custody is true.`)
-  if (!state.live.activationStarted) throw new Error(`${label}: Activation is not started.`)
-  if (state.live.activationPaused) throw new Error(`${label}: Activation operation is paused.`)
-
-  if (state.live.activationYCost > state.live.maxActivationY || state.live.activationYCost < state.live.minActivationY) {
-    throw new Error(`${label}: PATIENCE cost outside live protocol range.`)
+  if (!state.land || state.land.tokenId !== snap.tokenId) {
+    throw new Error(`${label}: Lore Land selection changed.`)
   }
-  if (state.live.activationXAmount > state.live.maxActivationX || state.live.activationXAmount < state.live.minActivationX) {
-    throw new Error(`${label}: TOBY requirement outside live protocol range.`)
+}
+
+function invalidatePreparedTransaction(message) {
+  state.preparedSnapshot = null
+  disableAllStepButtons()
+  setText('review-deadline', 'UNSET — fresh Land check required')
+  setNotice('transaction-review-status', message, 'fail')
+}
+
+async function freshTransactionGate(label, { requireAllowances = false } = {}) {
+  const snap = state.preparedSnapshot
+
+  try {
+    ensurePreparedConnectionStable(snap, label)
+
+    // The gate owns the refresh. Callers must not rely on previously cached
+    // protocol values before a write.
+    const liveFresh = await loadLiveProtocol()
+    if (!liveFresh || !state.live) {
+      throw new Error(`${label}: Fresh protocol verification failed.`)
+    }
+
+    ensurePreparedConnectionStable(snap, label)
+
+    const liveChecks = bindingChecks(state.live)
+    if (!liveChecks.every(c => c.pass)) throw new Error(`${label}: Live protocol bindings drifted.`)
+    if (!state.live.managerHasDepositorRole) throw new Error(`${label}: ActivationManager lacks DEPOSITOR_ROLE.`)
+
+    if (state.live.txFee !== snap.txFee || state.live.burnFee !== snap.burnFee) {
+      throw new Error(`${label}: PATIENCE fee configuration changed. Run a fresh Land check.`)
+    }
+    if (!isAddressEqual(state.live.feeAddress, snap.feeAddress)) {
+      throw new Error(`${label}: PATIENCE FeeAddress changed. Run a fresh Land check.`)
+    }
+    if (!isAddressEqual(state.live.patienceOwner, snap.patienceOwner)) {
+      throw new Error(`${label}: PATIENCE owner changed. Run a fresh Land check.`)
+    }
+
+    if (
+      state.live.activationYCost !== snap.activationYCost
+      || state.live.activationXAmount !== snap.activationXAmount
+    ) {
+      throw new Error(`${label}: Protocol economics changed. Run a fresh Land check.`)
+    }
+
+    if (state.live.protocolCustody) throw new Error(`${label}: Protocol custody is true.`)
+    if (!state.live.activationStarted) throw new Error(`${label}: Activation is not started.`)
+    if (state.live.activationPaused) throw new Error(`${label}: Activation operation is paused.`)
+
+    if (state.live.activationYCost > state.live.maxActivationY || state.live.activationYCost < state.live.minActivationY) {
+      throw new Error(`${label}: PATIENCE cost outside live protocol range.`)
+    }
+    if (state.live.activationXAmount > state.live.maxActivationX || state.live.activationXAmount < state.live.minActivationX) {
+      throw new Error(`${label}: TOBY requirement outside live protocol range.`)
+    }
+
+    if (state.live.patienceBalance < state.live.activationYCost) throw new Error(`${label}: PATIENCE balance insufficient.`)
+    if (state.live.tobyBalance < state.live.activationXAmount) throw new Error(`${label}: TOBY balance insufficient.`)
+
+    const [
+      currentNonce,
+      owner,
+      freshIsActive,
+    ] = await state.client.multicall({
+      contracts: [
+        { address: CONTRACTS.lore, abi: nft2Abi, functionName: 'transferNonce', args: [snap.tokenId] },
+        { address: CONTRACTS.lore, abi: nft2Abi, functionName: 'ownerOf', args: [snap.tokenId] },
+        { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'isActive', args: [snap.tokenId] },
+      ],
+      allowFailure: false,
+    })
+
+    ensurePreparedConnectionStable(snap, label)
+
+    if (currentNonce !== snap.transferNonce) {
+      throw new Error(`${label}: Lore Land ownership nonce changed. Run a fresh Land check.`)
+    }
+
+    if (!isAddressEqual(getAddress(owner), state.account)) {
+      throw new Error(`${label}: Connected account is not the owner of the Lore Land.`)
+    }
+
+    if (freshIsActive) throw new Error(`${label}: Lore Land is already active.`)
+
+    const freshPatienceAllowance = state.live.patienceAllowance
+    const freshTobyAllowance = state.live.tobyAllowance
+
+    if (requireAllowances) {
+      if (freshPatienceAllowance < state.live.activationYCost) {
+        throw new Error(`${label}: PATIENCE allowance insufficient.`)
+      }
+      if (freshTobyAllowance < state.live.activationXAmount) {
+        throw new Error(`${label}: TOBY allowance insufficient.`)
+      }
+    }
+
+    return Object.freeze({
+      snap,
+      provider: state.provider,
+      client: state.client,
+      account: state.account,
+      currentNonce,
+      owner: getAddress(owner),
+      activationYCost: state.live.activationYCost,
+      activationXAmount: state.live.activationXAmount,
+      freshPatienceAllowance,
+      freshTobyAllowance,
+    })
+  } catch (error) {
+    state.preparedSnapshot = null
+    throw error
   }
-
-  if (state.live.patienceBalance < state.live.activationYCost) throw new Error(`${label}: PATIENCE balance insufficient.`)
-  if (state.live.tobyBalance < state.live.activationXAmount) throw new Error(`${label}: TOBY balance insufficient.`)
-
-  const currentNonce = await read(CONTRACTS.lore, nft2Abi, 'transferNonce', [snap.tokenId])
-  if (currentNonce !== snap.transferNonce) {
-    throw new Error(`${label}: Lore Land ownership nonce changed. Run a fresh Land check.`)
-  }
-
-  const owner = await read(CONTRACTS.lore, nft2Abi, 'ownerOf', [snap.tokenId])
-  if (!isAddressEqual(getAddress(owner), state.account)) {
-    throw new Error(`${label}: Connected account is not the owner of the Lore Land.`)
-  }
-
-  const freshIsActive = await read(CONTRACTS.manager, activationManagerAbi, 'isActive', [snap.tokenId])
-  if (freshIsActive) throw new Error(`${label}: Lore Land is already active.`)
 }
 
 async function handlePatienceApprove() {
   if (btnPatienceApprove.disabled) return
   disableAllStepButtons()
-  setStepStatus('patience-step-status', 'Verifying state…', 'pending')
-  try {
-    // Refresh live protocol state before building transaction
-    const liveFresh = await loadLiveProtocol()
-    if (!liveFresh || !state.live) throw new Error('Protocol re-read failed. Try again.')
-    await freshTransactionGate('PATIENCE approve')
+  setStepStatus('patience-step-status', 'Running full fresh transaction gate…', 'pending')
 
-    // Re-read current allowance fresh
-    const freshAllowance = await read(CONTRACTS.patience, patienceAbi, 'allowance', [state.account, CONTRACTS.vault])
-    const required = state.live.activationYCost
-    if (freshAllowance >= required) {
-      setStepStatus('patience-step-status', '✓ Allowance already sufficient', 'pass')
-      btnPatienceApprove.disabled = true
-      // Re-render to reflect updated allowances
-      state.live.patienceAllowance = freshAllowance
+  try {
+    const gate = await freshTransactionGate('PATIENCE approve')
+    const required = gate.activationYCost
+
+    if (gate.freshPatienceAllowance >= required) {
+      state.live.patienceAllowance = gate.freshPatienceAllowance
       renderTransactionReview(true)
+      setStepStatus('patience-step-status', '✓ Allowance already sufficient', 'pass')
       return
     }
 
     const tx = buildPatienceApprove(required)
-    setStepStatus('patience-step-status', 'Waiting for wallet approval…', 'pending')
-    const txHash = await state.provider.request({
-      method: 'eth_sendTransaction',
-      params: [{ from: state.account, to: tx.to, data: tx.data, value: tx.value }],
-    })
-    setStepStatus('patience-step-status', `Submitted · waiting for receipt…`, 'pending')
-    await waitForReceipt(state.client, txHash)
+    ensurePreparedConnectionStable(gate.snap, 'PATIENCE approve')
 
-    // After confirmed receipt, re-read allowance
-    const confirmedAllowance = await read(CONTRACTS.patience, patienceAbi, 'allowance', [state.account, CONTRACTS.vault])
-    if (confirmedAllowance < required) {
-      throw new Error('Approval confirmed but allowance is still insufficient. Check BaseScan.')
+    setStepStatus(
+      'patience-step-status',
+      `Wallet review: exact ${formatToken(required)} PATIENCE allowance to ActivationVault`,
+      'pending',
+    )
+
+    const txHash = await gate.provider.request({
+      method: 'eth_sendTransaction',
+      params: [{ from: gate.account, to: tx.to, data: tx.data, value: tx.value }],
+    })
+
+    setStepStatus('patience-step-status', 'Submitted · waiting for successful Base receipt…', 'pending')
+    await waitForReceipt(gate.client, txHash)
+
+    const postGate = await freshTransactionGate('PATIENCE approval confirmation')
+    if (postGate.freshPatienceAllowance < required) {
+      throw new Error('PATIENCE approval confirmed but the fresh allowance is still insufficient.')
     }
-    state.live.patienceAllowance = confirmedAllowance
-    setStepStatus('patience-step-status', '✓ Approved and confirmed', 'pass')
-    btnPatienceApprove.disabled = true
-    // Update TOBY and activate button state
+
+    state.live.patienceAllowance = postGate.freshPatienceAllowance
     renderTransactionReview(true)
+    setStepStatus('patience-step-status', '✓ Exact allowance approved and confirmed', 'pass')
   } catch (error) {
-    const msg = readableError(error)
-    if (isUserRejection(error)) {
-      setStepStatus('patience-step-status', 'Rejected in wallet — no retry', 'fail')
-    } else {
-      setStepStatus('patience-step-status', `Failed: ${msg}`, 'fail')
-    }
-    // Re-enable button for retry unless rejection
-    if (!isUserRejection(error)) {
-      btnPatienceApprove.disabled = false
-    }
+    const rejected = isUserRejection(error)
+    setStepStatus(
+      'patience-step-status',
+      rejected ? 'Rejected in wallet — no retry' : `Stopped: ${readableError(error)}`,
+      'fail',
+    )
+    invalidatePreparedTransaction(
+      rejected
+        ? 'PATIENCE approval rejected in wallet — no retry. Run a fresh Land check to try again.'
+        : `PATIENCE approval stopped: ${readableError(error)} Run a fresh Land check before retrying.`,
+    )
   }
 }
 
 async function handleTobyApprove() {
   if (btnTobyApprove.disabled) return
   disableAllStepButtons()
-  setStepStatus('toby-step-status', 'Verifying state…', 'pending')
-  try {
-    const liveFresh = await loadLiveProtocol()
-    if (!liveFresh || !state.live) throw new Error('Protocol re-read failed. Try again.')
-    await freshTransactionGate('TOBY approve')
+  setStepStatus('toby-step-status', 'Running full fresh transaction gate…', 'pending')
 
-    const freshAllowance = await read(CONTRACTS.toby, tobyAbi, 'allowance', [state.account, CONTRACTS.manager])
-    const required = state.live.activationXAmount
-    if (freshAllowance >= required) {
-      setStepStatus('toby-step-status', '✓ Allowance already sufficient', 'pass')
-      btnTobyApprove.disabled = true
-      state.live.tobyAllowance = freshAllowance
+  try {
+    const gate = await freshTransactionGate('TOBY approve')
+    const required = gate.activationXAmount
+
+    if (gate.freshTobyAllowance >= required) {
+      state.live.tobyAllowance = gate.freshTobyAllowance
       renderTransactionReview(true)
+      setStepStatus('toby-step-status', '✓ Allowance already sufficient', 'pass')
       return
     }
 
     const tx = buildTobyApprove(required)
-    setStepStatus('toby-step-status', 'Waiting for wallet approval…', 'pending')
-    const txHash = await state.provider.request({
-      method: 'eth_sendTransaction',
-      params: [{ from: state.account, to: tx.to, data: tx.data, value: tx.value }],
-    })
-    setStepStatus('toby-step-status', 'Submitted · waiting for receipt…', 'pending')
-    await waitForReceipt(state.client, txHash)
+    ensurePreparedConnectionStable(gate.snap, 'TOBY approve')
 
-    const confirmedAllowance = await read(CONTRACTS.toby, tobyAbi, 'allowance', [state.account, CONTRACTS.manager])
-    if (confirmedAllowance < required) {
-      throw new Error('Approval confirmed but allowance is still insufficient. Check BaseScan.')
+    setStepStatus(
+      'toby-step-status',
+      `Wallet review: exact ${formatToken(required)} TOBY allowance to ActivationManager`,
+      'pending',
+    )
+
+    const txHash = await gate.provider.request({
+      method: 'eth_sendTransaction',
+      params: [{ from: gate.account, to: tx.to, data: tx.data, value: tx.value }],
+    })
+
+    setStepStatus('toby-step-status', 'Submitted · waiting for successful Base receipt…', 'pending')
+    await waitForReceipt(gate.client, txHash)
+
+    const postGate = await freshTransactionGate('TOBY approval confirmation')
+    if (postGate.freshTobyAllowance < required) {
+      throw new Error('TOBY approval confirmed but the fresh allowance is still insufficient.')
     }
-    state.live.tobyAllowance = confirmedAllowance
-    setStepStatus('toby-step-status', '✓ Approved and confirmed', 'pass')
-    btnTobyApprove.disabled = true
+
+    state.live.tobyAllowance = postGate.freshTobyAllowance
     renderTransactionReview(true)
+    setStepStatus('toby-step-status', '✓ Exact allowance approved and confirmed', 'pass')
   } catch (error) {
-    if (isUserRejection(error)) {
-      setStepStatus('toby-step-status', 'Rejected in wallet — no retry', 'fail')
-    } else {
-      setStepStatus('toby-step-status', `Failed: ${readableError(error)}`, 'fail')
-      btnTobyApprove.disabled = false
-    }
+    const rejected = isUserRejection(error)
+    setStepStatus(
+      'toby-step-status',
+      rejected ? 'Rejected in wallet — no retry' : `Stopped: ${readableError(error)}`,
+      'fail',
+    )
+    invalidatePreparedTransaction(
+      rejected
+        ? 'TOBY approval rejected in wallet — no retry. Run a fresh Land check to try again.'
+        : `TOBY approval stopped: ${readableError(error)} Run a fresh Land check before retrying.`,
+    )
   }
 }
 
@@ -758,73 +854,113 @@ async function handleActivate() {
   if (btnActivate.disabled) return
   disableAllStepButtons()
   setStepStatus('activate-step-status', 'Running full pre-activation verification…', 'pending')
+
   try {
-    // Full eligibility re-verification immediately before activation
-    const liveFresh = await loadLiveProtocol()
-    if (!liveFresh || !state.live) throw new Error('Protocol re-read failed. Cannot activate.')
-    await freshTransactionGate('Activation')
+    const initialSnap = state.preparedSnapshot
+    ensurePreparedConnectionStable(initialSnap, 'Activation')
 
-    // Fresh allowance checks — both must be sufficient
-    const [freshPatienceAllowance, freshTobyAllowance] = await Promise.all([
-      read(CONTRACTS.patience, patienceAbi, 'allowance', [state.account, CONTRACTS.vault]),
-      read(CONTRACTS.toby, tobyAbi, 'allowance', [state.account, CONTRACTS.manager]),
-    ])
-    if (freshPatienceAllowance < state.live.activationYCost) {
-      throw new Error('PATIENCE allowance insufficient. Complete PATIENCE approval first.')
-    }
-    if (freshTobyAllowance < state.live.activationXAmount) {
-      throw new Error('TOBY allowance insufficient. Complete TOBY approval first.')
-    }
-
-    const snap = state.preparedSnapshot
-
-    // Read latest block timestamp to derive a finite deadline
+    // Obtain the deadline source first. The full transaction gate below is
+    // deliberately the final network verification before tx construction.
     const block = await state.client.getBlock({ blockTag: 'latest' })
+    ensurePreparedConnectionStable(initialSnap, 'Activation')
+
+    const gate = await freshTransactionGate('Activation', { requireAllowances: true })
+
     const deadline = block.timestamp + BigInt(DEADLINE_WINDOW_SECONDS)
     const deadlineDisplay = new Date(Number(deadline) * 1000).toUTCString()
 
     setText('review-deadline', `${formatRaw(deadline)} · ${deadlineDisplay}`)
-    setStepStatus('activate-step-status', `Deadline set: ${deadlineDisplay}. Approve in wallet.`, 'pending')
+    setStepStatus(
+      'activate-step-status',
+      `Wallet review: Lore #${formatRaw(gate.snap.tokenId)} · maxYIn ${formatToken(gate.activationYCost)} PATIENCE · expectedX ${formatToken(gate.activationXAmount)} TOBY · deadline ${deadlineDisplay}`,
+      'pending',
+    )
 
     const tx = buildActivate(
-      snap.tokenId,
-      state.live.activationYCost,
-      state.live.activationXAmount,
+      gate.snap.tokenId,
+      gate.activationYCost,
+      gate.activationXAmount,
       deadline,
     )
 
-    const txHash = await state.provider.request({
+    ensurePreparedConnectionStable(gate.snap, 'Activation')
+
+    const txHash = await gate.provider.request({
       method: 'eth_sendTransaction',
-      params: [{ from: state.account, to: tx.to, data: tx.data, value: tx.value }],
+      params: [{ from: gate.account, to: tx.to, data: tx.data, value: tx.value }],
     })
-    setStepStatus('activate-step-status', 'Submitted · waiting for receipt…', 'pending')
-    await waitForReceipt(state.client, txHash)
 
-    // Post-receipt on-chain verification
-    setStepStatus('activate-step-status', 'Verifying activation on-chain…', 'pending')
-    const [verifiedIsActive, verifiedLockId] = await Promise.all([
-      read(CONTRACTS.manager, activationManagerAbi, 'isActive', [snap.tokenId]),
-      read(CONTRACTS.manager, activationManagerAbi, 'activeLockId', [snap.tokenId]),
-    ])
-    if (!verifiedIsActive) throw new Error('Receipt confirmed but isActive() is still false. Contact ToadAid.')
-    if (verifiedLockId === 0n) throw new Error('Receipt confirmed but activeLockId() is zero. Contact ToadAid.')
-    const lockRecord = await read(CONTRACTS.manager, activationManagerAbi, 'getLock', [verifiedLockId])
+    setStepStatus('activate-step-status', 'Submitted · waiting for successful Base receipt…', 'pending')
+    await waitForReceipt(gate.client, txHash)
 
-    setStepStatus('activate-step-status', `✓ Activation complete · Lock #${formatRaw(verifiedLockId)} · ${formatToken(lockRecord.xAmount)} TOBY locked`, 'pass')
-    setNotice('transaction-review-status', `Activation complete. Lock ID ${formatRaw(verifiedLockId)}, locker ${lockRecord.locker}, TOBY locked ${formatToken(lockRecord.xAmount)}, unlock ${new Date(Number(lockRecord.unlockTime) * 1000).toISOString()}.`, 'pass')
-    setVerdict('pass', 'Lore Land activated', `Lock #${formatRaw(verifiedLockId)} · unlock ${new Date(Number(lockRecord.unlockTime) * 1000).toISOString()}`)
-    // Refresh displayed state
-    state.live.patienceAllowance = freshPatienceAllowance
-    state.live.tobyAllowance = freshTobyAllowance
-    await loadLiveProtocol()
-  } catch (error) {
-    if (isUserRejection(error)) {
-      setStepStatus('activate-step-status', 'Rejected in wallet — no retry', 'fail')
-    } else {
-      setStepStatus('activate-step-status', `Failed: ${readableError(error)}`, 'fail')
+    setStepStatus('activate-step-status', 'Receipt successful · verifying activation on-chain…', 'pending')
+
+    const [
+      verifiedIsActive,
+      verifiedLockId,
+      verifiedTransferNonce,
+    ] = await gate.client.multicall({
+      contracts: [
+        { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'isActive', args: [gate.snap.tokenId] },
+        { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'activeLockId', args: [gate.snap.tokenId] },
+        { address: CONTRACTS.lore, abi: nft2Abi, functionName: 'transferNonce', args: [gate.snap.tokenId] },
+      ],
+      allowFailure: false,
+    })
+
+    if (!verifiedIsActive) throw new Error('Receipt succeeded but isActive() is still false.')
+    if (verifiedLockId === 0n) throw new Error('Receipt succeeded but activeLockId() is zero.')
+    if (verifiedTransferNonce !== gate.currentNonce) {
+      throw new Error('Activation receipt succeeded but the Lore ownership nonce changed.')
     }
-    // Do not re-enable activate automatically on failure; require fresh Land check
-    setNotice('transaction-review-status', `Activation stopped: ${readableError(error)} Run a fresh Land check before retrying.`, 'fail')
+
+    const lockRecord = await gate.client.readContract({
+      address: CONTRACTS.manager,
+      abi: activationManagerAbi,
+      functionName: 'getLock',
+      args: [verifiedLockId],
+    })
+
+    if (lockRecord.tokenId !== gate.snap.tokenId) throw new Error('Activation lock token ID mismatch.')
+    if (!isAddressEqual(lockRecord.locker, gate.account)) throw new Error('Activation lock locker mismatch.')
+    if (lockRecord.xAmount !== gate.activationXAmount) throw new Error('Activation lock TOBY amount mismatch.')
+    if (lockRecord.ownershipNonceAtActivation !== gate.currentNonce) throw new Error('Activation lock ownership nonce mismatch.')
+    if (lockRecord.withdrawn) throw new Error('Activation lock is unexpectedly marked withdrawn.')
+
+    state.preparedSnapshot = null
+    disableAllStepButtons()
+
+    setStepStatus(
+      'activate-step-status',
+      `✓ Activation complete · Lock #${formatRaw(verifiedLockId)} · ${formatToken(lockRecord.xAmount)} TOBY locked`,
+      'pass',
+    )
+    setNotice(
+      'transaction-review-status',
+      `Activation complete. Lock ID ${formatRaw(verifiedLockId)}, locker ${lockRecord.locker}, TOBY locked ${formatToken(lockRecord.xAmount)}, unlock ${new Date(Number(lockRecord.unlockTime) * 1000).toISOString()}.`,
+      'pass',
+    )
+    setVerdict(
+      'pass',
+      'Lore Land activated',
+      `Lock #${formatRaw(verifiedLockId)} · unlock ${new Date(Number(lockRecord.unlockTime) * 1000).toISOString()}`,
+    )
+
+    if (state.client === gate.client && state.account === gate.account && state.chainId === BASE_CHAIN_ID) {
+      await loadLiveProtocol()
+    }
+  } catch (error) {
+    const rejected = isUserRejection(error)
+    setStepStatus(
+      'activate-step-status',
+      rejected ? 'Rejected in wallet — no retry' : `Stopped: ${readableError(error)}`,
+      'fail',
+    )
+    invalidatePreparedTransaction(
+      rejected
+        ? 'Activation rejected in wallet — no retry. Run a fresh Land check to try again.'
+        : `Activation stopped: ${readableError(error)} Run a fresh Land check before retrying.`,
+    )
   }
 }
 

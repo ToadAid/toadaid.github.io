@@ -27,8 +27,8 @@ function validLive(overrides = {}) {
     tokenXDecimals: 18,
     lockDuration: EXPECTED_LOCK_DURATION,
     vaultTokenY: CONTRACTS.patience,
-    patienceDecimals: 18,
-    tobyDecimals: 18,
+    patienceDecimals: 18n,
+    tobyDecimals: 18n,
     managerHasDepositorRole: true,
     ...overrides,
   }
@@ -346,7 +346,7 @@ test('receipt failure stops workflow: receipt timeout throws', async () => {
 test('receipt failure stops workflow: main stops on receipt failure without retry', async () => {
   const source = await readSrc('main.js')
   // After waitForReceipt throws, we fall through to catch and do not re-enable activate
-  assert.match(source, /waitForReceipt\(state\.client/)
+  assert.match(source, /waitForReceipt\(/)
   // catch block does NOT call handleActivate() recursively
   const catchBlocks = source.match(/} catch \(error\) \{[^}]+}/sg) ?? []
   for (const block of catchBlocks) {
@@ -606,4 +606,110 @@ test('transaction-review UI refreshes mutable protocol state before reading Lore
   assert.ok(refreshIndex > clearIndex)
   assert.ok(landReadIndex > refreshIndex)
   assert.match(source, /return true[\s\S]*catch \(error\)[\s\S]*return false/)
+})
+
+
+// ─── Stage 3 final hardening regressions ──────────────────────────────────────
+
+test('prepared snapshot pins provider client chain and PATIENCE mutable addresses', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /provider:\s*state\.provider/)
+  assert.match(source, /client:\s*state\.client/)
+  assert.match(source, /chainId:\s*state\.chainId/)
+  assert.match(source, /feeAddress:\s*state\.live\.feeAddress/)
+  assert.match(source, /patienceOwner:\s*state\.live\.patienceOwner/)
+})
+
+test('freshTransactionGate owns the final protocol refresh and delegates provider/client/chain pinning', async () => {
+  const source = await readSrc('main.js')
+
+  const helperStart = source.indexOf('function ensurePreparedConnectionStable')
+  const helperEnd = source.indexOf('function invalidatePreparedTransaction', helperStart)
+  assert.ok(helperStart >= 0 && helperEnd > helperStart)
+  const helper = source.slice(helperStart, helperEnd)
+
+  assert.match(helper, /state\.provider !== snap\.provider/)
+  assert.match(helper, /state\.client !== snap\.client/)
+  assert.match(helper, /state\.chainId !== snap\.chainId/)
+  assert.match(helper, /state\.connectionVersion !== snap\.connectionVersion/)
+  assert.match(helper, /state\.account !== snap\.account/)
+
+  const gateStart = source.indexOf('async function freshTransactionGate')
+  const gateEnd = source.indexOf('async function handlePatienceApprove', gateStart)
+  assert.ok(gateStart >= 0 && gateEnd > gateStart)
+  const gate = source.slice(gateStart, gateEnd)
+
+  assert.match(gate, /ensurePreparedConnectionStable\(snap, label\)/)
+  assert.match(gate, /await loadLiveProtocol\(\)/)
+  const stableCalls = gate.match(/ensurePreparedConnectionStable\(snap, label\)/g) ?? []
+  assert.ok(stableCalls.length >= 2, 'fresh gate must pin connection before and after the protocol refresh')
+})
+
+test('freshTransactionGate invalidates reviewed economics and PATIENCE mutable-address drift', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /activationYCost !== snap\.activationYCost/)
+  assert.match(source, /activationXAmount !== snap\.activationXAmount/)
+  assert.match(source, /feeAddress, snap\.feeAddress/)
+  assert.match(source, /patienceOwner, snap\.patienceOwner/)
+  assert.match(source, /Protocol economics changed/)
+})
+
+test('freshTransactionGate requires both fresh allowances for activation', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /requireAllowances/)
+  assert.match(source, /freshPatienceAllowance < state\.live\.activationYCost/)
+  assert.match(source, /freshTobyAllowance < state\.live\.activationXAmount/)
+  assert.match(source, /freshTransactionGate\('Activation', \{ requireAllowances: true \}\)/)
+})
+
+test('write failures invalidate prepared state and require a fresh Land check', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /function invalidatePreparedTransaction/)
+  assert.match(source, /state\.preparedSnapshot = null/)
+  assert.match(source, /fresh Land check/i)
+})
+
+test('activation final gate occurs after deadline source read and before tx construction', async () => {
+  const source = await readSrc('main.js')
+  const start = source.indexOf('async function handleActivate')
+  const end = source.indexOf('function isUserRejection', start)
+  const body = source.slice(start, end)
+  const block = body.indexOf("getBlock({ blockTag: 'latest' })")
+  const gate = body.indexOf("freshTransactionGate('Activation', { requireAllowances: true })")
+  const build = body.indexOf('buildActivate(')
+  const send = body.indexOf("method: 'eth_sendTransaction'")
+  assert.ok(block >= 0 && gate > block && build > gate && send > build)
+})
+
+test('post-activation proof validates full lock record invariants', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /lockRecord\.tokenId !== gate\.snap\.tokenId/)
+  assert.match(source, /lockRecord\.locker, gate\.account/)
+  assert.match(source, /lockRecord\.xAmount !== gate\.activationXAmount/)
+  assert.match(source, /lockRecord\.ownershipNonceAtActivation !== gate\.currentNonce/)
+  assert.match(source, /lockRecord\.withdrawn/)
+})
+
+test('receipt polling swallows only TransactionReceiptNotFoundError', async () => {
+  const source = await readFile(path.join(srcDir, 'receipt.js'), 'utf8')
+  assert.match(source, /error\?\.name === 'TransactionReceiptNotFoundError'/)
+  assert.doesNotMatch(source, /message\?\.includes\('not found'\)/)
+})
+
+test('receipt polling validates transaction hashes before RPC polling', async () => {
+  const { waitForReceipt } = await import('../src/receipt.js')
+  const client = { async getTransactionReceipt() { throw new Error('must not be called') } }
+  await assert.rejects(waitForReceipt(client, '0x1234', 1), /invalid transaction hash/i)
+})
+
+test('receipt polling propagates non-not-found RPC failures immediately', async () => {
+  const { waitForReceipt } = await import('../src/receipt.js')
+  const client = { async getTransactionReceipt() { throw new Error('RPC authorization failed') } }
+  const hash = `0x${'11'.repeat(32)}`
+  await assert.rejects(waitForReceipt(client, hash, 1000), /RPC authorization failed/)
+})
+
+test('production RPC config requires HTTPS', async () => {
+  const source = await readFile(path.resolve(DIR, '../vite.config.js'), 'utf8')
+  assert.match(source, /parsedRpc\.protocol !== 'https:'/)
 })
