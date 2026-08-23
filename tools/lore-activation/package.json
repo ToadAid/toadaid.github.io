@@ -1,0 +1,17 @@
+{
+  "name": "toadaid-lore-activation-preflight",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@walletconnect/ethereum-provider": "2.23.10",
+    "viem": "2.55.19"
+  },
+  "devDependencies": {
+    "vite": "8.2.2"
+  }
+}
