@@ -1,5 +1,11 @@
 import { isAddressEqual } from 'viem'
-import { BASE_CHAIN_ID, CONTRACTS, EXPECTED_DECIMALS, EXPECTED_LOCK_DURATION } from './contracts.js'
+import {
+  BASE_CHAIN_ID,
+  CONTRACTS,
+  EXPECTED_ERC20_DECIMALS,
+  EXPECTED_LOCK_DURATION,
+  EXPECTED_MANAGER_TOKEN_X_DECIMALS,
+} from './contracts.js'
 
 export const MAX_SAFE_TOKEN_ID = BigInt(Number.MAX_SAFE_INTEGER)
 
@@ -19,11 +25,11 @@ export function bindingChecks(live) {
     addressCheck('Manager.nft2()', live.managerNft2, CONTRACTS.lore),
     addressCheck('Manager.tokenX()', live.managerTokenX, CONTRACTS.toby),
     addressCheck('Manager.vault()', live.managerVault, CONTRACTS.vault),
-    check('Manager.tokenXDecimals()', live.tokenXDecimals, EXPECTED_DECIMALS),
+    check('Manager.tokenXDecimals()', live.tokenXDecimals, EXPECTED_MANAGER_TOKEN_X_DECIMALS),
     check('Manager.LOCK_DURATION()', live.lockDuration, EXPECTED_LOCK_DURATION),
     addressCheck('Vault.tokenY()', live.vaultTokenY, CONTRACTS.patience),
-    check('PATIENCE.decimals()', live.patienceDecimals, EXPECTED_DECIMALS),
-    check('TOBY.decimals()', live.tobyDecimals, EXPECTED_DECIMALS),
+    check('PATIENCE.decimals()', live.patienceDecimals, EXPECTED_ERC20_DECIMALS),
+    check('TOBY.decimals()', live.tobyDecimals, EXPECTED_ERC20_DECIMALS),
     check('Vault depositor role for Manager', live.managerHasDepositorRole, true),
   ]
 }

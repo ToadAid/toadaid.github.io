@@ -2,7 +2,10 @@ import { getAddress } from 'viem'
 
 export const BASE_CHAIN_ID = 8453
 export const EXPECTED_LOCK_DURATION = 7_776_000n
-export const EXPECTED_DECIMALS = 18
+// Manager.tokenXDecimals() is uint8 -> Viem decodes to number.
+export const EXPECTED_MANAGER_TOKEN_X_DECIMALS = 18
+// PATIENCE/TOBY decimals() are deployment-specific uint256 -> Viem decodes to bigint.
+export const EXPECTED_ERC20_DECIMALS = 18n
 // Source-pinned from the verified deployment: keccak256("ACTIVATION").
 export const ACTIVATION_OPERATION_ID = '0xfa502000117f63b5e128376c49fb9ce174ea7d81f4e6aca78aec26b844e91f68'
 
