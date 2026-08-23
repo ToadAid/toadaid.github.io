@@ -28,7 +28,6 @@ code { font-family: "SFMono-Regular", Consolas, monospace; overflow-wrap: anywhe
 h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(3.5rem, 10vw, 7.4rem); font-weight: 400; line-height: .83; letter-spacing: -.055em; }
 h1 em { color: var(--lime); font-weight: 400; }
 .subtitle { margin: 30px auto 22px; color: var(--muted); font-size: clamp(1rem, 2.2vw, 1.3rem); }
-.readonly-banner { display: inline-block; border: 1px solid rgba(242,196,109,.55); padding: 10px 15px; color: var(--amber); background: rgba(242,196,109,.08); font-size: .73rem; font-weight: 800; letter-spacing: .12em; }
 .disclaimer { max-width: 570px; margin: 24px auto 0; color: #a9bab3; font-size: .82rem; line-height: 1.65; }
 
 main { width: min(100% - 32px, 980px); margin: 0 auto 80px; display: grid; gap: 18px; }
@@ -97,7 +96,6 @@ input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(200,239,121,
 .no-approval strong { color: var(--lime); font-size: clamp(2rem, 8vw, 4rem); }
 .warning { margin: 20px 0 14px; color: var(--amber); font-weight: 800; }
 .security > p:last-child { margin-bottom: 0; color: var(--muted); line-height: 1.65; }
-.review-boundary { border: 1px solid rgba(242,196,109,.45); border-radius: 9px; padding: 11px 13px; color: var(--amber); background: rgba(242,196,109,.06); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-align: center; }
 .review-stack { display: grid; gap: 10px; margin-top: 16px; }
 .review-card { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: rgba(4,14,11,.35); }
 .review-card-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 13px; }
@@ -109,6 +107,13 @@ input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(200,239,121,
 .review-value { min-width: 0; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: rgba(5,16,13,.42); }
 .review-value span { display: block; margin-bottom: 6px; color: var(--muted); font-size: .66rem; letter-spacing: .04em; text-transform: uppercase; }
 .review-value strong { display: block; overflow-wrap: anywhere; font-family: "SFMono-Regular", Consolas, monospace; font-size: .72rem; }
+.step-actions { display: flex; align-items: center; gap: 14px; margin-top: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+.step-status { font-size: .77rem; color: var(--muted); }
+.step-status.pass { color: var(--moss); }
+.step-status.fail { color: var(--red); }
+.step-status.pending { color: var(--amber); }
+.activate-btn { background: var(--moss); color: #07120f; }
+.activate-btn:not(:disabled):hover { background: #a5e6b8; }
 footer { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 0 20px 60px; color: var(--muted); font-size: .75rem; }
 footer img { width: 28px; height: 28px; object-fit: contain; opacity: .7; }
 footer p { margin: 0; }

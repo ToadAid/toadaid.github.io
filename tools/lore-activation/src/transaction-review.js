@@ -6,6 +6,15 @@ function requireUint(name, value) {
   }
 }
 
+/**
+ * Build a human-readable transaction review snapshot from freshly-read state.
+ * Used to populate the UI review grid before each wallet prompt.
+ *
+ * This function does not encode calldata or construct transactions.
+ * Targets and spenders are derived exclusively from CONTRACTS constants.
+ *
+ * @returns {Readonly<ReviewSnapshot>}
+ */
 export function buildTransactionReview({
   tokenId,
   activationYCost,
@@ -22,9 +31,6 @@ export function buildTransactionReview({
   if (tokenId === 0n) throw new RangeError('Lore Land token ID 0 does not exist')
 
   const review = {
-    executable: false,
-    calldataPresent: false,
-    signingPresent: false,
     loreApprovalRequired: false,
     patience: {
       token: CONTRACTS.patience,
@@ -45,7 +51,7 @@ export function buildTransactionReview({
       tokenId,
       maxYIn: activationYCost,
       expectedXAmount: activationXAmount,
-      deadline: null,
+      deadline: null, // Set immediately before signing
     },
   }
 
