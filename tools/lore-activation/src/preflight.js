@@ -8,6 +8,7 @@ export function parseTokenId(raw) {
   if (!value) return { ok: false, error: 'Enter a Lore Land token ID.' }
   if (!/^\d+$/.test(value)) return { ok: false, error: 'Token ID must be a non-negative whole number.' }
   const tokenId = BigInt(value)
+  if (tokenId === 0n) return { ok: false, error: 'Lore Land token ID 0 does not exist.' }
   if (tokenId > MAX_SAFE_TOKEN_ID) return { ok: false, error: 'Token ID exceeds the safe browser integer range.' }
   return { ok: true, value: tokenId }
 }
@@ -35,12 +36,26 @@ export function economicsStatus(txFee, burnFee) {
   }
 }
 
-export function expectedPatienceReceipt(gross, txFee, burnFee) {
+export function expectedPatienceReceipt(gross, txFee, burnFee, payer, feeAddress) {
   if (!economicsStatus(txFee, burnFee).reviewed) return null
-  return (gross * 99n) / 100n
+  if (payer && feeAddress && isAddressEqual(payer, feeAddress)) return gross
+  return gross - (gross / 100n)
 }
 
-export function assessEligibility({ checks, wallet, owner, isActive, protocolCustody, activationStarted, pauseStatus, economicsReviewed }) {
+export function assessEligibility({
+  checks,
+  wallet,
+  owner,
+  isActive,
+  protocolCustody,
+  activationStarted,
+  pauseStatus,
+  economicsReviewed,
+  patienceBalance,
+  activationYCost,
+  tobyBalance,
+  activationXAmount,
+}) {
   const reasons = []
   for (const item of checks) if (!item.pass) reasons.push(`${item.label} mismatch`)
   if (!wallet || !owner || !isAddressEqual(wallet, owner)) reasons.push('Connected wallet is not the NFT owner')
@@ -50,6 +65,16 @@ export function assessEligibility({ checks, wallet, owner, isActive, protocolCus
   if (pauseStatus === 'paused') reasons.push('Activation operation is paused')
   else if (pauseStatus !== 'clear') reasons.push('Activation pause status is unresolved')
   if (!economicsReviewed) reasons.push('PATIENCE economic configuration requires review')
+  if (
+    typeof patienceBalance !== 'bigint'
+    || typeof activationYCost !== 'bigint'
+    || patienceBalance < activationYCost
+  ) reasons.push('Insufficient PATIENCE balance')
+  if (
+    typeof tobyBalance !== 'bigint'
+    || typeof activationXAmount !== 'bigint'
+    || tobyBalance < activationXAmount
+  ) reasons.push('Insufficient TOBY balance')
   return { eligible: reasons.length === 0, reasons }
 }
 

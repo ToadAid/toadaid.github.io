@@ -5,6 +5,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { CONTRACTS, EXPECTED_LOCK_DURATION } from '../src/contracts.js'
 import { assessEligibility, bindingChecks, economicsStatus, expectedPatienceReceipt, parseTokenId } from '../src/preflight.js'
+import { WALLETCONNECT_OPTIONAL_EVENTS, WALLETCONNECT_OPTIONAL_METHODS } from '../src/wallet-policy.js'
 
 const wallet = '0x1111111111111111111111111111111111111111'
 const other = '0x2222222222222222222222222222222222222222'
@@ -35,6 +36,10 @@ function eligibleInput(overrides = {}) {
     activationStarted: true,
     pauseStatus: 'clear',
     economicsReviewed: true,
+    patienceBalance: 100n,
+    activationYCost: 37n,
+    tobyBalance: 5_000_000_000n,
+    activationXAmount: 4_000_000_000n,
     ...overrides,
   }
 }
@@ -84,15 +89,35 @@ test('PATIENCE fee drift refuses reviewed economics', () => {
   assert.equal(expectedPatienceReceipt(1000n, 2n, 0n), null)
 })
 
-test('reviewed PATIENCE economics preserves exact bigint receipt arithmetic', () => {
-  const gross = 900719925474099312345678901234567890n
-  assert.equal(expectedPatienceReceipt(gross, 1n, 0n), gross * 99n / 100n)
-  assert.equal(typeof expectedPatienceReceipt(gross, 1n, 0n), 'bigint')
+test('reviewed PATIENCE receipt mirrors exact integer fee arithmetic', () => {
+  assert.equal(expectedPatienceReceipt(101n, 1n, 0n, wallet, other), 100n)
 })
 
-test('unsafe browser token IDs are rejected before contract reads', () => {
+test('reviewed PATIENCE FeeAddress payer receives the sender exemption', () => {
+  assert.equal(expectedPatienceReceipt(101n, 1n, 0n, wallet, wallet), 101n)
+})
+
+test('reviewed PATIENCE economics preserves exact large-bigint receipt arithmetic', () => {
+  const gross = 900719925474099312345678901234567890n
+  const expected = gross - (gross / 100n)
+  assert.equal(expectedPatienceReceipt(gross, 1n, 0n, wallet, other), expected)
+  assert.equal(typeof expectedPatienceReceipt(gross, 1n, 0n, wallet, other), 'bigint')
+})
+
+test('token ID zero and unsafe browser token IDs are rejected before contract reads', () => {
+  assert.equal(parseTokenId('0').ok, false)
   assert.equal(parseTokenId('9007199254740992').ok, false)
   assert.deepEqual(parseTokenId('777'), { ok: true, value: 777n })
+})
+
+test('insufficient live funding refuses activation eligibility', () => {
+  assert.equal(assessEligibility(eligibleInput({ patienceBalance: 36n })).eligible, false)
+  assert.equal(assessEligibility(eligibleInput({ tobyBalance: 3_999_999_999n })).eligible, false)
+})
+
+test('WalletConnect session permission envelope is explicitly read-only', () => {
+  assert.deepEqual([...WALLETCONNECT_OPTIONAL_METHODS], ['eth_call'])
+  assert.deepEqual([...WALLETCONNECT_OPTIONAL_EVENTS], ['accountsChanged', 'chainChanged'])
 })
 
 test('production source contains no transaction invocation surface', async () => {
@@ -101,11 +126,19 @@ test('production source contains no transaction invocation surface', async () =>
   const source = (await Promise.all(files.map(file => readFile(path.join(directory, file), 'utf8')))).join('\n')
   const forbidden = [
     /eth_sendTransaction/,
+    /eth_sendRawTransaction/,
     /wallet_sendCalls/,
+    /personal_sign/,
+    /eth_sign(?:Transaction|TypedData(?:_v3|_v4)?)?/,
+    /wallet_switchEthereumChain/,
+    /wallet_addEthereumChain/,
     /writeContract\s*\(/,
     /sendTransaction\s*\(/,
     /collectActivationY\s*\(/,
     /\bactivate\s*\(/,
+    /\bapprove\s*\(/,
+    /\btransferFrom\s*\(/,
+    /\bcreateAccount\s*\(/,
     /setApprovalForAll\s*\(/,
     /safeTransferFrom\s*\(/,
   ]

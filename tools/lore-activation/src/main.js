@@ -1,5 +1,5 @@
 import './style.css'
-import { getAddress } from 'viem'
+import { getAddress, isAddressEqual } from 'viem'
 import { activationManagerAbi, activationVaultAbi, nft2Abi, patienceAbi, tobyAbi } from './abi.js'
 import { ACTIVATION_OPERATION_ID, BASE_CHAIN_ID, CONTRACT_LABELS, CONTRACTS } from './contracts.js'
 import { escapeHtml, formatRaw, formatToken, shortAddress } from './format.js'
@@ -254,8 +254,20 @@ function renderLiveProtocol() {
   setText('x-range', `${formatToken(state.live.minActivationX)}–${formatToken(state.live.maxActivationX)}`)
   const economics = economicsStatus(state.live.txFee, state.live.burnFee)
   if (economics.reviewed) {
-    setText('patience-receipt', `${formatToken(expectedPatienceReceipt(state.live.activationYCost, state.live.txFee, state.live.burnFee))} PATIENCE`)
-    setNotice('fee-status', `Reviewed fee state matches. Wallet debit: ${formatToken(state.live.activationYCost)} PATIENCE. Vault expected gain: 99% of gross. Fee destination: ${state.live.feeAddress}.`, 'pass')
+    const payerIsFeeAddress = isAddressEqual(state.account, state.live.feeAddress)
+    const expectedReceipt = expectedPatienceReceipt(
+      state.live.activationYCost,
+      state.live.txFee,
+      state.live.burnFee,
+      state.account,
+      state.live.feeAddress,
+    )
+    setText('patience-receipt', `${formatToken(expectedReceipt)} PATIENCE`)
+    if (payerIsFeeAddress) {
+      setNotice('fee-status', `Reviewed fee state matches. Connected payer is the live FeeAddress, so the PATIENCE sender exemption applies. Wallet debit: ${formatToken(state.live.activationYCost)} PATIENCE. Vault expected gain: ${formatToken(expectedReceipt)} PATIENCE.`, 'pass')
+    } else {
+      setNotice('fee-status', `Reviewed fee state matches. Wallet debit: ${formatToken(state.live.activationYCost)} PATIENCE. Vault expected gain follows exact token arithmetic: gross minus floor(gross / 100). Fee destination: ${state.live.feeAddress}.`, 'pass')
+    }
   } else {
     setText('patience-receipt', 'Withheld')
     setNotice('fee-status', `${economics.label}. Receipt calculation withheld pending fee review.`, 'fail')
@@ -305,6 +317,8 @@ function renderEligibility() {
     checks: bindingChecks(state.live), wallet: state.account, owner: state.land.owner, isActive: state.land.isActive,
     protocolCustody: state.live.protocolCustody, activationStarted: state.live.activationStarted,
     pauseStatus: state.live.activationPaused ? 'paused' : 'clear', economicsReviewed: economics.reviewed,
+    patienceBalance: state.live.patienceBalance, activationYCost: state.live.activationYCost,
+    tobyBalance: state.live.tobyBalance, activationXAmount: state.live.activationXAmount,
   })
   if (result.eligible) {
     setVerdict('pass', 'Read-only eligibility checks pass', 'This preview still cannot create approvals or activation transactions.')

@@ -5,7 +5,7 @@ function read(name, inputs, outputs) {
 const tokenReadAbi = [
   read('name', [], [{ type: 'string' }]),
   read('symbol', [], [{ type: 'string' }]),
-  read('decimals', [], [{ type: 'uint8' }]),
+  read('decimals', [], [{ type: 'uint256' }]),
   read('balanceOf', [{ name: 'account', type: 'address' }], [{ type: 'uint256' }]),
   read('allowance', [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }], [{ type: 'uint256' }]),
 ]
