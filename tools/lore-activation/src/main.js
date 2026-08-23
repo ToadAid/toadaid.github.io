@@ -1,10 +1,12 @@
 import './style.css'
 import { getAddress, isAddressEqual } from 'viem'
 import { activationManagerAbi, activationVaultAbi, nft2Abi, patienceAbi, tobyAbi } from './abi.js'
-import { ACTIVATION_OPERATION_ID, BASE_CHAIN_ID, CONTRACT_LABELS, CONTRACTS } from './contracts.js'
+import { ACTIVATION_OPERATION_ID, BASE_CHAIN_ID, CONTRACT_LABELS, CONTRACTS, DEADLINE_WINDOW_SECONDS } from './contracts.js'
 import { escapeHtml, formatRaw, formatToken, shortAddress } from './format.js'
 import { assessEligibility, bindingChecks, economicsStatus, expectedPatienceReceipt, parseTokenId } from './preflight.js'
 import { buildTransactionReview } from './transaction-review.js'
+import { buildActivate, buildPatienceApprove, buildTobyApprove } from './tx-builder.js'
+import { waitForReceipt } from './receipt.js'
 import { connectWallet, disconnectWallet, walletConnectProjectId } from './wallet.js'
 
 const state = {
@@ -15,6 +17,8 @@ const state = {
   live: null,
   land: null,
   connectionVersion: 0,
+  // Snapshot used for stale-state detection during the activation stepper
+  preparedSnapshot: null,
 }
 
 document.querySelector('#app').innerHTML = `
@@ -23,11 +27,10 @@ document.querySelector('#app').innerHTML = `
       <img src="/TOADAID-logo.png" alt="ToadAid" />
       <span>TOADAID</span>
     </nav>
-    <div class="eyebrow">Unofficial ToadAid compatibility helper</div>
+    <div class="eyebrow">Unofficial ToadAid Lore Activation</div>
     <h1>Lore Activation<br /><em>Helper</em></h1>
-    <p class="subtitle">Tangem / WalletConnect compatibility preflight</p>
-    <div class="readonly-banner">READ-ONLY PREVIEW — TRANSACTIONS DISABLED</div>
-    <p class="disclaimer">Unofficial ToadAid compatibility helper.<br />No wallet keys are collected or stored.<br />Activation transactions are disabled in this preview.<br />Verify all contract addresses and transactions before signing.</p>
+    <p class="subtitle">Tangem / WalletConnect activation tool</p>
+    <p class="disclaimer">Unofficial ToadAid activation helper.<br />No wallet keys are collected or stored.<br />Verify all contract addresses and transactions before signing.<br />Every transaction requires your explicit wallet approval.</p>
   </header>
 
   <main>
@@ -123,65 +126,82 @@ document.querySelector('#app').innerHTML = `
     </section>
 
     <section class="panel transaction-panel" aria-labelledby="transactions-title">
-      <div class="section-heading"><span>06</span><div><p>Human review only</p><h2 id="transactions-title">Activation transaction review</h2></div></div>
-      <div class="review-boundary">REVIEW ONLY — NO SIGNING, NO CALLDATA, NO TRANSACTION PATH</div>
-      <p id="transaction-review-status" class="notice pending">Connect a Base wallet and check one Lore Land to populate fresh review values.</p>
+      <div class="section-heading"><span>06</span><div><p>User-operated transaction stepper</p><h2 id="transactions-title">Activate Lore Land</h2></div></div>
+      <p id="transaction-review-status" class="notice pending">Connect a Base wallet and check one Lore Land to enable activation.</p>
 
-      <div class="review-stack" aria-label="Non-executable activation review">
-        <article class="review-card">
-          <div class="review-card-head"><span>01</span><div><strong>PATIENCE allowance review</strong><small>Token Y · spender must be ActivationVault</small></div></div>
+      <div class="review-stack" aria-label="Activation transaction stepper">
+        <article class="review-card" id="step-patience-card">
+          <div class="review-card-head"><span>01</span><div><strong>PATIENCE allowance</strong><small>Token Y · spender must be ActivationVault · exact amount only</small></div></div>
           <div class="review-grid">
-            ${reviewValue('Token', 'review-patience-token')}
-            ${reviewValue('Spender', 'review-patience-spender')}
-            ${reviewValue('Exact reviewed amount', 'review-patience-amount')}
+            ${reviewValue('Token (PATIENCE)', 'review-patience-token')}
+            ${reviewValue('Spender (ActivationVault)', 'review-patience-spender')}
+            ${reviewValue('Exact amount', 'review-patience-amount')}
             ${reviewValue('Current allowance', 'review-patience-current')}
             ${reviewValue('Allowance state', 'review-patience-state')}
           </div>
-        </article>
-
-        <article class="review-card">
-          <div class="review-card-head"><span>02</span><div><strong>TOBY allowance review</strong><small>Token X · spender must be ActivationManager</small></div></div>
-          <div class="review-grid">
-            ${reviewValue('Token', 'review-toby-token')}
-            ${reviewValue('Spender', 'review-toby-spender')}
-            ${reviewValue('Exact reviewed amount', 'review-toby-amount')}
-            ${reviewValue('Current allowance', 'review-toby-current')}
-            ${reviewValue('Allowance state', 'review-toby-state')}
+          <div class="step-actions">
+            <button id="btn-patience-approve" class="primary" disabled>Approve PATIENCE in wallet</button>
+            <span id="patience-step-status" class="step-status"></span>
           </div>
         </article>
 
-        <article class="review-card">
-          <div class="review-card-head"><span>03</span><div><strong>Activation call review</strong><small>Target must be ActivationManager</small></div></div>
+        <article class="review-card" id="step-toby-card">
+          <div class="review-card-head"><span>02</span><div><strong>TOBY allowance</strong><small>Token X · spender must be ActivationManager · exact amount only</small></div></div>
           <div class="review-grid">
-            ${reviewValue('Target', 'review-activation-target')}
+            ${reviewValue('Token (TOBY)', 'review-toby-token')}
+            ${reviewValue('Spender (ActivationManager)', 'review-toby-spender')}
+            ${reviewValue('Exact amount', 'review-toby-amount')}
+            ${reviewValue('Current allowance', 'review-toby-current')}
+            ${reviewValue('Allowance state', 'review-toby-state')}
+          </div>
+          <div class="step-actions">
+            <button id="btn-toby-approve" class="primary" disabled>Approve TOBY in wallet</button>
+            <span id="toby-step-status" class="step-status"></span>
+          </div>
+        </article>
+
+        <article class="review-card" id="step-activate-card">
+          <div class="review-card-head"><span>03</span><div><strong>Activation call</strong><small>Target must be ActivationManager · fresh values re-read immediately before signing</small></div></div>
+          <div class="review-grid">
+            ${reviewValue('Target (ActivationManager)', 'review-activation-target')}
             ${reviewValue('Lore Land token ID', 'review-token-id')}
             ${reviewValue('maxYIn', 'review-max-y')}
             ${reviewValue('expectedXAmount', 'review-expected-x')}
             ${reviewValue('Deadline', 'review-deadline', 'UNSET')}
             ${reviewValue('LORE approval required', 'review-lore-approval', 'NO')}
           </div>
+          <div class="step-actions">
+            <button id="btn-activate" class="primary activate-btn" disabled>Activate Lore Land in wallet</button>
+            <span id="activate-step-status" class="step-status"></span>
+          </div>
         </article>
       </div>
 
-      <p class="notice pending">This public helper is a deterministic human-readable review map only. It does not encode calldata, choose a deadline, request signatures, or submit transactions. Transaction execution remains a separate governed cut.</p>
+      <p class="notice">All reads use the independent Base public client. WalletConnect is used only for wallet identity and transaction submission. Each transaction requires explicit approval in your wallet.</p>
     </section>
   </main>
-  <footer><img src="/TOADAID-logo.png" alt="" /><p>Read the chain. Verify the bindings. Sign nothing here.</p></footer>
+  <footer><img src="/TOADAID-logo.png" alt="" /><p>Read the chain. Verify the bindings. Approve every transaction in your wallet.</p></footer>
 `
 
 const connectButton = byId('connect-button')
 const disconnectButton = byId('disconnect-button')
 const landForm = byId('land-form')
 const landButton = landForm.querySelector('button')
+const btnPatienceApprove = byId('btn-patience-approve')
+const btnTobyApprove = byId('btn-toby-approve')
+const btnActivate = byId('btn-activate')
 
 connectButton.addEventListener('click', handleConnect)
 disconnectButton.addEventListener('click', handleDisconnect)
 landForm.addEventListener('submit', handleLandCheck)
+btnPatienceApprove.addEventListener('click', handlePatienceApprove)
+btnTobyApprove.addEventListener('click', handleTobyApprove)
+btnActivate.addEventListener('click', handleActivate)
 
 async function handleConnect() {
   connectButton.disabled = true
   setText('connection-status', 'Opening WalletConnect…')
-  setNotice('connection-message', 'Confirm the wallet identity connection inside your wallet. No signing request will be created.', 'pending')
+  setNotice('connection-message', 'Confirm the session inside your wallet. Only eth_sendTransaction is requested.', 'pending')
   try {
     const session = await connectWallet()
     if (session.chainId !== BASE_CHAIN_ID) {
@@ -193,8 +213,8 @@ async function handleConnect() {
     attachProviderEvents()
     setText('wallet-address', shortAddress(state.account))
     setText('chain-status', `Base mainnet · ${state.chainId}`)
-    setText('connection-status', 'Connected · identity only')
-    setNotice('connection-message', 'Wallet identity connected on Base. Contract reads use the fixed Base public RPC; no signing request will be created.', 'pass')
+    setText('connection-status', 'Connected · identity + transactions')
+    setNotice('connection-message', 'Connected on Base. Contract reads use the fixed Base public RPC; transactions require explicit wallet approval.', 'pass')
     disconnectButton.disabled = false
     landButton.disabled = false
     await loadLiveProtocol()
@@ -515,7 +535,7 @@ function renderEligibility() {
   })
   renderTransactionReview(result.eligible)
   if (result.eligible) {
-    setVerdict('pass', 'Read-only eligibility checks pass', 'Exact review values are populated below, but this preview still cannot create approvals or activation transactions.')
+    setVerdict('pass', 'Eligibility checks pass', 'Review the activation steps below and approve each transaction in your wallet.')
   } else {
     setVerdict('fail', 'Eligibility not established', result.reasons.join(' · '))
   }
@@ -530,33 +550,435 @@ function renderTransactionReview(eligible) {
     tobyAllowance: state.live.tobyAllowance,
   })
 
+  // Capture state snapshot for stale-state detection
+  state.preparedSnapshot = {
+    connectionVersion: state.connectionVersion,
+    provider: state.provider,
+    client: state.client,
+    account: state.account,
+    chainId: state.chainId,
+    tokenId: state.land.tokenId,
+    transferNonce: state.land.transferNonce,
+    activationYCost: state.live.activationYCost,
+    activationXAmount: state.live.activationXAmount,
+    txFee: state.live.txFee,
+    burnFee: state.live.burnFee,
+    feeAddress: state.live.feeAddress,
+    patienceOwner: state.live.patienceOwner,
+  }
+
   setText('review-patience-token', review.patience.token)
   setText('review-patience-spender', review.patience.spender)
   setText('review-patience-amount', `${formatToken(review.patience.exactAmount)} PATIENCE`)
   setText('review-patience-current', `${formatToken(review.patience.currentAllowance)} PATIENCE`)
-  setText('review-patience-state', review.patience.allowanceSufficient ? 'Existing allowance is sufficient' : 'Exact allowance would be required')
+  setText('review-patience-state', review.patience.allowanceSufficient ? 'Existing allowance is sufficient — approval skippable' : 'Exact allowance required — approval needed')
 
   setText('review-toby-token', review.toby.token)
   setText('review-toby-spender', review.toby.spender)
   setText('review-toby-amount', `${formatToken(review.toby.exactAmount)} TOBY`)
   setText('review-toby-current', `${formatToken(review.toby.currentAllowance)} TOBY`)
-  setText('review-toby-state', review.toby.allowanceSufficient ? 'Existing allowance is sufficient' : 'Exact allowance would be required')
+  setText('review-toby-state', review.toby.allowanceSufficient ? 'Existing allowance is sufficient — approval skippable' : 'Exact allowance required — approval needed')
 
   setText('review-activation-target', review.activation.target)
   setText('review-token-id', formatRaw(review.activation.tokenId))
   setText('review-max-y', `${formatToken(review.activation.maxYIn)} PATIENCE`)
   setText('review-expected-x', `${formatToken(review.activation.expectedXAmount)} TOBY`)
-  setText('review-deadline', 'UNSET — official-flow verification required')
+  setText('review-deadline', 'Set immediately before activation signing')
   setText('review-lore-approval', review.loreApprovalRequired ? 'YES' : 'NO')
 
+  // Enable step buttons based on eligibility and allowance state
+  const patienceNeeded = !review.patience.allowanceSufficient
+  const tobyNeeded = !review.toby.allowanceSufficient
+
   if (eligible) {
-    setNotice('transaction-review-status', 'Fresh reviewed targets and amounts loaded. Human review only; execution remains disabled.', 'pending')
+    setNotice('transaction-review-status', 'Fresh values loaded. Approve each transaction in your wallet. Allowances already sufficient are skippable.', 'pass')
+    btnPatienceApprove.disabled = !patienceNeeded
+    btnTobyApprove.disabled = !tobyNeeded
+    btnActivate.disabled = patienceNeeded || tobyNeeded
+    setStepStatus('patience-step-status', patienceNeeded ? '' : '✓ Sufficient', patienceNeeded ? '' : 'pass')
+    setStepStatus('toby-step-status', tobyNeeded ? '' : '✓ Sufficient', tobyNeeded ? '' : 'pass')
+    setStepStatus('activate-step-status', (patienceNeeded || tobyNeeded) ? 'Waiting for allowances' : 'Ready', (patienceNeeded || tobyNeeded) ? 'pending' : '')
   } else {
-    setNotice('transaction-review-status', 'Review values loaded, but eligibility failed. Nothing can be signed or submitted.', 'fail')
+    setNotice('transaction-review-status', 'Eligibility not established. Resolve issues in sections 02–05 before activating.', 'fail')
+    btnPatienceApprove.disabled = true
+    btnTobyApprove.disabled = true
+    btnActivate.disabled = true
+    clearStepStatuses()
   }
 }
 
-function resetTransactionReview(message = 'Connect a Base wallet and check one Lore Land to populate fresh review values.') {
+/**
+ * Mechanically shared full fresh transaction gate.
+ * Used before EVERY approval and before activation.
+ * Any failure invalidates the prepared transaction and forces a fresh Land check.
+ */
+function ensurePreparedConnectionStable(snap, label) {
+  if (!snap) throw new Error(`${label}: No prepared snapshot. Run a fresh Land check first.`)
+  if (state.connectionVersion !== snap.connectionVersion) throw new Error(`${label}: Wallet connection changed.`)
+  if (state.provider !== snap.provider) throw new Error(`${label}: Wallet provider changed.`)
+  if (state.client !== snap.client) throw new Error(`${label}: Base read client changed.`)
+  if (state.account !== snap.account) throw new Error(`${label}: Connected account changed.`)
+  if (state.chainId !== snap.chainId || state.chainId !== BASE_CHAIN_ID) {
+    throw new Error(`${label}: Wallet must remain on Base chain (8453).`)
+  }
+  if (!state.land || state.land.tokenId !== snap.tokenId) {
+    throw new Error(`${label}: Lore Land selection changed.`)
+  }
+}
+
+function invalidatePreparedTransaction(message) {
+  state.preparedSnapshot = null
+  disableAllStepButtons()
+  setText('review-deadline', 'UNSET — fresh Land check required')
+  setNotice('transaction-review-status', message, 'fail')
+}
+
+async function freshTransactionGate(label, { requireAllowances = false } = {}) {
+  const snap = state.preparedSnapshot
+
+  try {
+    ensurePreparedConnectionStable(snap, label)
+
+    // The gate owns the refresh. Callers must not rely on previously cached
+    // protocol values before a write.
+    const liveFresh = await loadLiveProtocol()
+    if (!liveFresh || !state.live) {
+      throw new Error(`${label}: Fresh protocol verification failed.`)
+    }
+
+    ensurePreparedConnectionStable(snap, label)
+
+    const liveChecks = bindingChecks(state.live)
+    if (!liveChecks.every(c => c.pass)) throw new Error(`${label}: Live protocol bindings drifted.`)
+    if (!state.live.managerHasDepositorRole) throw new Error(`${label}: ActivationManager lacks DEPOSITOR_ROLE.`)
+
+    if (state.live.txFee !== snap.txFee || state.live.burnFee !== snap.burnFee) {
+      throw new Error(`${label}: PATIENCE fee configuration changed. Run a fresh Land check.`)
+    }
+    if (!isAddressEqual(state.live.feeAddress, snap.feeAddress)) {
+      throw new Error(`${label}: PATIENCE FeeAddress changed. Run a fresh Land check.`)
+    }
+    if (!isAddressEqual(state.live.patienceOwner, snap.patienceOwner)) {
+      throw new Error(`${label}: PATIENCE owner changed. Run a fresh Land check.`)
+    }
+
+    if (
+      state.live.activationYCost !== snap.activationYCost
+      || state.live.activationXAmount !== snap.activationXAmount
+    ) {
+      throw new Error(`${label}: Protocol economics changed. Run a fresh Land check.`)
+    }
+
+    if (state.live.protocolCustody) throw new Error(`${label}: Protocol custody is true.`)
+    if (!state.live.activationStarted) throw new Error(`${label}: Activation is not started.`)
+    if (state.live.activationPaused) throw new Error(`${label}: Activation operation is paused.`)
+
+    if (state.live.activationYCost > state.live.maxActivationY || state.live.activationYCost < state.live.minActivationY) {
+      throw new Error(`${label}: PATIENCE cost outside live protocol range.`)
+    }
+    if (state.live.activationXAmount > state.live.maxActivationX || state.live.activationXAmount < state.live.minActivationX) {
+      throw new Error(`${label}: TOBY requirement outside live protocol range.`)
+    }
+
+    if (state.live.patienceBalance < state.live.activationYCost) throw new Error(`${label}: PATIENCE balance insufficient.`)
+    if (state.live.tobyBalance < state.live.activationXAmount) throw new Error(`${label}: TOBY balance insufficient.`)
+
+    const [
+      currentNonce,
+      owner,
+      freshIsActive,
+    ] = await state.client.multicall({
+      contracts: [
+        { address: CONTRACTS.lore, abi: nft2Abi, functionName: 'transferNonce', args: [snap.tokenId] },
+        { address: CONTRACTS.lore, abi: nft2Abi, functionName: 'ownerOf', args: [snap.tokenId] },
+        { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'isActive', args: [snap.tokenId] },
+      ],
+      allowFailure: false,
+    })
+
+    ensurePreparedConnectionStable(snap, label)
+
+    if (currentNonce !== snap.transferNonce) {
+      throw new Error(`${label}: Lore Land ownership nonce changed. Run a fresh Land check.`)
+    }
+
+    if (!isAddressEqual(getAddress(owner), state.account)) {
+      throw new Error(`${label}: Connected account is not the owner of the Lore Land.`)
+    }
+
+    if (freshIsActive) throw new Error(`${label}: Lore Land is already active.`)
+
+    const freshPatienceAllowance = state.live.patienceAllowance
+    const freshTobyAllowance = state.live.tobyAllowance
+
+    if (requireAllowances) {
+      if (freshPatienceAllowance < state.live.activationYCost) {
+        throw new Error(`${label}: PATIENCE allowance insufficient.`)
+      }
+      if (freshTobyAllowance < state.live.activationXAmount) {
+        throw new Error(`${label}: TOBY allowance insufficient.`)
+      }
+    }
+
+    return Object.freeze({
+      snap,
+      provider: state.provider,
+      client: state.client,
+      account: state.account,
+      currentNonce,
+      owner: getAddress(owner),
+      activationYCost: state.live.activationYCost,
+      activationXAmount: state.live.activationXAmount,
+      freshPatienceAllowance,
+      freshTobyAllowance,
+    })
+  } catch (error) {
+    state.preparedSnapshot = null
+    throw error
+  }
+}
+
+async function handlePatienceApprove() {
+  if (btnPatienceApprove.disabled) return
+  disableAllStepButtons()
+  setStepStatus('patience-step-status', 'Running full fresh transaction gate…', 'pending')
+
+  try {
+    const gate = await freshTransactionGate('PATIENCE approve')
+    const required = gate.activationYCost
+
+    if (gate.freshPatienceAllowance >= required) {
+      state.live.patienceAllowance = gate.freshPatienceAllowance
+      renderTransactionReview(true)
+      setStepStatus('patience-step-status', '✓ Allowance already sufficient', 'pass')
+      return
+    }
+
+    const tx = buildPatienceApprove(required)
+    ensurePreparedConnectionStable(gate.snap, 'PATIENCE approve')
+
+    setStepStatus(
+      'patience-step-status',
+      `Wallet review: exact ${formatToken(required)} PATIENCE allowance to ActivationVault`,
+      'pending',
+    )
+
+    const txHash = await gate.provider.request({
+      method: 'eth_sendTransaction',
+      params: [{ from: gate.account, to: tx.to, data: tx.data, value: tx.value }],
+    })
+
+    setStepStatus('patience-step-status', 'Submitted · waiting for successful Base receipt…', 'pending')
+    await waitForReceipt(gate.client, txHash)
+
+    const postGate = await freshTransactionGate('PATIENCE approval confirmation')
+    if (postGate.freshPatienceAllowance < required) {
+      throw new Error('PATIENCE approval confirmed but the fresh allowance is still insufficient.')
+    }
+
+    state.live.patienceAllowance = postGate.freshPatienceAllowance
+    renderTransactionReview(true)
+    setStepStatus('patience-step-status', '✓ Exact allowance approved and confirmed', 'pass')
+  } catch (error) {
+    const rejected = isUserRejection(error)
+    setStepStatus(
+      'patience-step-status',
+      rejected ? 'Rejected in wallet — no retry' : `Stopped: ${readableError(error)}`,
+      'fail',
+    )
+    invalidatePreparedTransaction(
+      rejected
+        ? 'PATIENCE approval rejected in wallet — no retry. Run a fresh Land check to try again.'
+        : `PATIENCE approval stopped: ${readableError(error)} Run a fresh Land check before retrying.`,
+    )
+  }
+}
+
+async function handleTobyApprove() {
+  if (btnTobyApprove.disabled) return
+  disableAllStepButtons()
+  setStepStatus('toby-step-status', 'Running full fresh transaction gate…', 'pending')
+
+  try {
+    const gate = await freshTransactionGate('TOBY approve')
+    const required = gate.activationXAmount
+
+    if (gate.freshTobyAllowance >= required) {
+      state.live.tobyAllowance = gate.freshTobyAllowance
+      renderTransactionReview(true)
+      setStepStatus('toby-step-status', '✓ Allowance already sufficient', 'pass')
+      return
+    }
+
+    const tx = buildTobyApprove(required)
+    ensurePreparedConnectionStable(gate.snap, 'TOBY approve')
+
+    setStepStatus(
+      'toby-step-status',
+      `Wallet review: exact ${formatToken(required)} TOBY allowance to ActivationManager`,
+      'pending',
+    )
+
+    const txHash = await gate.provider.request({
+      method: 'eth_sendTransaction',
+      params: [{ from: gate.account, to: tx.to, data: tx.data, value: tx.value }],
+    })
+
+    setStepStatus('toby-step-status', 'Submitted · waiting for successful Base receipt…', 'pending')
+    await waitForReceipt(gate.client, txHash)
+
+    const postGate = await freshTransactionGate('TOBY approval confirmation')
+    if (postGate.freshTobyAllowance < required) {
+      throw new Error('TOBY approval confirmed but the fresh allowance is still insufficient.')
+    }
+
+    state.live.tobyAllowance = postGate.freshTobyAllowance
+    renderTransactionReview(true)
+    setStepStatus('toby-step-status', '✓ Exact allowance approved and confirmed', 'pass')
+  } catch (error) {
+    const rejected = isUserRejection(error)
+    setStepStatus(
+      'toby-step-status',
+      rejected ? 'Rejected in wallet — no retry' : `Stopped: ${readableError(error)}`,
+      'fail',
+    )
+    invalidatePreparedTransaction(
+      rejected
+        ? 'TOBY approval rejected in wallet — no retry. Run a fresh Land check to try again.'
+        : `TOBY approval stopped: ${readableError(error)} Run a fresh Land check before retrying.`,
+    )
+  }
+}
+
+async function handleActivate() {
+  if (btnActivate.disabled) return
+  disableAllStepButtons()
+  setStepStatus('activate-step-status', 'Running full pre-activation verification…', 'pending')
+
+  try {
+    const initialSnap = state.preparedSnapshot
+    ensurePreparedConnectionStable(initialSnap, 'Activation')
+
+    // Obtain the deadline source first. The full transaction gate below is
+    // deliberately the final network verification before tx construction.
+    const block = await state.client.getBlock({ blockTag: 'latest' })
+    ensurePreparedConnectionStable(initialSnap, 'Activation')
+
+    const gate = await freshTransactionGate('Activation', { requireAllowances: true })
+
+    const deadline = block.timestamp + BigInt(DEADLINE_WINDOW_SECONDS)
+    const deadlineDisplay = new Date(Number(deadline) * 1000).toUTCString()
+
+    setText('review-deadline', `${formatRaw(deadline)} · ${deadlineDisplay}`)
+    setStepStatus(
+      'activate-step-status',
+      `Wallet review: Lore #${formatRaw(gate.snap.tokenId)} · maxYIn ${formatToken(gate.activationYCost)} PATIENCE · expectedX ${formatToken(gate.activationXAmount)} TOBY · deadline ${deadlineDisplay}`,
+      'pending',
+    )
+
+    const tx = buildActivate(
+      gate.snap.tokenId,
+      gate.activationYCost,
+      gate.activationXAmount,
+      deadline,
+    )
+
+    ensurePreparedConnectionStable(gate.snap, 'Activation')
+
+    const txHash = await gate.provider.request({
+      method: 'eth_sendTransaction',
+      params: [{ from: gate.account, to: tx.to, data: tx.data, value: tx.value }],
+    })
+
+    setStepStatus('activate-step-status', 'Submitted · waiting for successful Base receipt…', 'pending')
+    await waitForReceipt(gate.client, txHash)
+
+    setStepStatus('activate-step-status', 'Receipt successful · verifying activation on-chain…', 'pending')
+
+    const [
+      verifiedIsActive,
+      verifiedLockId,
+      verifiedTransferNonce,
+    ] = await gate.client.multicall({
+      contracts: [
+        { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'isActive', args: [gate.snap.tokenId] },
+        { address: CONTRACTS.manager, abi: activationManagerAbi, functionName: 'activeLockId', args: [gate.snap.tokenId] },
+        { address: CONTRACTS.lore, abi: nft2Abi, functionName: 'transferNonce', args: [gate.snap.tokenId] },
+      ],
+      allowFailure: false,
+    })
+
+    if (!verifiedIsActive) throw new Error('Receipt succeeded but isActive() is still false.')
+    if (verifiedLockId === 0n) throw new Error('Receipt succeeded but activeLockId() is zero.')
+    if (verifiedTransferNonce !== gate.currentNonce) {
+      throw new Error('Activation receipt succeeded but the Lore ownership nonce changed.')
+    }
+
+    const lockRecord = await gate.client.readContract({
+      address: CONTRACTS.manager,
+      abi: activationManagerAbi,
+      functionName: 'getLock',
+      args: [verifiedLockId],
+    })
+
+    if (lockRecord.tokenId !== gate.snap.tokenId) throw new Error('Activation lock token ID mismatch.')
+    if (!isAddressEqual(lockRecord.locker, gate.account)) throw new Error('Activation lock locker mismatch.')
+    if (lockRecord.xAmount !== gate.activationXAmount) throw new Error('Activation lock TOBY amount mismatch.')
+    if (lockRecord.ownershipNonceAtActivation !== gate.currentNonce) throw new Error('Activation lock ownership nonce mismatch.')
+    if (lockRecord.withdrawn) throw new Error('Activation lock is unexpectedly marked withdrawn.')
+
+    state.preparedSnapshot = null
+    disableAllStepButtons()
+
+    setStepStatus(
+      'activate-step-status',
+      `✓ Activation complete · Lock #${formatRaw(verifiedLockId)} · ${formatToken(lockRecord.xAmount)} TOBY locked`,
+      'pass',
+    )
+    setNotice(
+      'transaction-review-status',
+      `Activation complete. Lock ID ${formatRaw(verifiedLockId)}, locker ${lockRecord.locker}, TOBY locked ${formatToken(lockRecord.xAmount)}, unlock ${new Date(Number(lockRecord.unlockTime) * 1000).toISOString()}.`,
+      'pass',
+    )
+    setVerdict(
+      'pass',
+      'Lore Land activated',
+      `Lock #${formatRaw(verifiedLockId)} · unlock ${new Date(Number(lockRecord.unlockTime) * 1000).toISOString()}`,
+    )
+
+    if (state.client === gate.client && state.account === gate.account && state.chainId === BASE_CHAIN_ID) {
+      await loadLiveProtocol()
+    }
+  } catch (error) {
+    const rejected = isUserRejection(error)
+    setStepStatus(
+      'activate-step-status',
+      rejected ? 'Rejected in wallet — no retry' : `Stopped: ${readableError(error)}`,
+      'fail',
+    )
+    invalidatePreparedTransaction(
+      rejected
+        ? 'Activation rejected in wallet — no retry. Run a fresh Land check to try again.'
+        : `Activation stopped: ${readableError(error)} Run a fresh Land check before retrying.`,
+    )
+  }
+}
+
+function isUserRejection(error) {
+  const msg = error?.message || ''
+  const code = error?.code
+  // EIP-1193 user rejection codes
+  return code === 4001 || code === 'ACTION_REJECTED' || /user (rejected|denied)/i.test(msg) || /rejected/i.test(msg)
+}
+
+function disableAllStepButtons() {
+  btnPatienceApprove.disabled = true
+  btnTobyApprove.disabled = true
+  btnActivate.disabled = true
+}
+
+function resetTransactionReview(message = 'Connect a Base wallet and check one Lore Land to enable activation.') {
+  state.preparedSnapshot = null
   for (const id of [
     'review-patience-token', 'review-patience-spender', 'review-patience-amount', 'review-patience-current', 'review-patience-state',
     'review-toby-token', 'review-toby-spender', 'review-toby-amount', 'review-toby-current', 'review-toby-state',
@@ -565,6 +987,16 @@ function resetTransactionReview(message = 'Connect a Base wallet and check one L
   setText('review-deadline', 'UNSET')
   setText('review-lore-approval', 'NO')
   setNotice('transaction-review-status', message, 'pending')
+  btnPatienceApprove.disabled = true
+  btnTobyApprove.disabled = true
+  btnActivate.disabled = true
+  clearStepStatuses()
+}
+
+function clearStepStatuses() {
+  setStepStatus('patience-step-status', '', '')
+  setStepStatus('toby-step-status', '', '')
+  setStepStatus('activate-step-status', '', '')
 }
 
 function renderBindingFailure(error) {
@@ -573,7 +1005,7 @@ function renderBindingFailure(error) {
 
 function resetConnection() {
   state.connectionVersion += 1
-  Object.assign(state, { provider: null, client: null, account: null, chainId: null, live: null, land: null })
+  Object.assign(state, { provider: null, client: null, account: null, chainId: null, live: null, land: null, preparedSnapshot: null })
   resetTransactionReview()
   setText('wallet-address', 'Not connected')
   setText('chain-status', 'Not verified')
@@ -599,12 +1031,18 @@ function setNotice(id, message, kind) {
   element.textContent = message
 }
 
+function setStepStatus(id, message, kind) {
+  const element = byId(id)
+  element.textContent = message
+  element.className = `step-status${kind ? ' ' + kind : ''}`
+}
+
 function setText(id, value) {
   byId(id).textContent = value
 }
 
 function readableError(error) {
-  return error?.shortMessage || error?.message || 'Unknown read error'
+  return error?.shortMessage || error?.message || 'Unknown error'
 }
 
 function byId(id) {

@@ -2,14 +2,16 @@ import EthereumProvider from '@walletconnect/ethereum-provider'
 import { createPublicClient, http } from 'viem'
 import { base } from 'viem/chains'
 import { BASE_CHAIN_ID } from './contracts.js'
-import { WALLETCONNECT_OPTIONAL_EVENTS, WALLETCONNECT_OPTIONAL_METHODS } from './wallet-policy.js'
 
 export const walletConnectProjectId = (import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '').trim()
-export const BASE_READ_RPC_URL = 'https://mainnet.base.org'
+
+// Production read endpoint — domain-restricted credential intended for browser exposure.
+// Falls back to public endpoint for local dev when VITE_BASE_RPC_URL is unset.
+export const BASE_READ_RPC_URL = (import.meta.env.VITE_BASE_RPC_URL || 'https://mainnet.base.org').trim()
 
 const metadata = Object.freeze({
-  name: 'ToadAid Lore Activation Helper',
-  description: 'Tangem / WalletConnect compatibility preflight for Tobyworld Lore activation',
+  name: 'ToadAid Lore Activation',
+  description: 'Tangem / WalletConnect Lore Activation for Tobyworld',
   url: 'https://toadaid.github.io/lore-activation/',
   icons: ['https://toadaid.github.io/TOADAID-logo.png'],
 })
@@ -18,9 +20,9 @@ export async function connectWallet() {
   if (!walletConnectProjectId) throw new Error('WalletConnect configuration pending')
   const provider = await EthereumProvider.init({
     projectId: walletConnectProjectId,
-    optionalChains: [BASE_CHAIN_ID],
-    optionalMethods: WALLETCONNECT_OPTIONAL_METHODS,
-    optionalEvents: WALLETCONNECT_OPTIONAL_EVENTS,
+    chains: [BASE_CHAIN_ID],
+    methods: ['eth_sendTransaction'],
+    events: ['accountsChanged', 'chainChanged'],
     showQrModal: true,
     metadata,
   })
@@ -35,9 +37,8 @@ export async function connectWallet() {
     await provider.disconnect()
     throw new Error('WalletConnect returned no account')
   }
-  // WalletConnect is intentionally used only for wallet identity/session state.
-  // All contract reads use a fixed independent Base RPC transport so wallet
-  // method support cannot change read-only preflight behavior.
+  // All contract reads use a fixed independent Base RPC transport.
+  // WalletConnect is used only for wallet identity and eth_sendTransaction requests.
   const client = createPublicClient({ chain: base, transport: http(BASE_READ_RPC_URL) })
   return { provider, client, account, chainId }
 }

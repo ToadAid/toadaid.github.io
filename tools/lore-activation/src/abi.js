@@ -39,6 +39,19 @@ export const activationManagerAbi = [
     ],
   }]),
   read('operationPaused', [{ name: 'operation', type: 'bytes32' }], [{ type: 'bool' }]),
+  // Write: exact call for activation. No other write methods.
+  {
+    type: 'function',
+    name: 'activate',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'tokenId', type: 'uint256' },
+      { name: 'maxYIn', type: 'uint256' },
+      { name: 'expectedXAmount', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+    outputs: [],
+  },
 ]
 
 export const activationVaultAbi = [
@@ -58,9 +71,33 @@ export const patienceAbi = [
   read('burnFee', [], [{ type: 'uint256' }]),
   read('FeeAddress', [], [{ type: 'address' }]),
   read('owner', [], [{ type: 'address' }]),
+  // Write: approve for PATIENCE token (spender must be ActivationVault). No other write methods.
+  {
+    type: 'function',
+    name: 'approve',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ type: 'bool' }],
+  },
 ]
 
-export const tobyAbi = tokenReadAbi
+export const tobyAbi = [
+  ...tokenReadAbi,
+  // Write: approve for TOBY token (spender must be ActivationManager). No other write methods.
+  {
+    type: 'function',
+    name: 'approve',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ type: 'bool' }],
+  },
+]
 
 export const nft2Abi = [
   read('name', [], [{ type: 'string' }]),
