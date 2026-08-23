@@ -2,11 +2,6 @@ import EthereumProvider from '@walletconnect/ethereum-provider'
 import { createPublicClient, http } from 'viem'
 import { base } from 'viem/chains'
 import { BASE_CHAIN_ID } from './contracts.js'
-import {
-  WALLETCONNECT_OPTIONAL_EVENTS,
-  WALLETCONNECT_OPTIONAL_METHODS,
-  WALLETCONNECT_REQUIRED_METHODS,
-} from './wallet-policy.js'
 
 export const walletConnectProjectId = (import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '').trim()
 
@@ -26,10 +21,8 @@ export async function connectWallet() {
   const provider = await EthereumProvider.init({
     projectId: walletConnectProjectId,
     chains: [BASE_CHAIN_ID],
-    optionalChains: [BASE_CHAIN_ID],
-    methods: [...WALLETCONNECT_REQUIRED_METHODS],
-    optionalMethods: [...WALLETCONNECT_OPTIONAL_METHODS],
-    optionalEvents: [...WALLETCONNECT_OPTIONAL_EVENTS],
+    methods: ['eth_sendTransaction'],
+    events: ['accountsChanged', 'chainChanged'],
     showQrModal: true,
     metadata,
   })

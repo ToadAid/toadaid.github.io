@@ -54,38 +54,36 @@ function eligibleInput(overrides = {}) {
 
 // ─── WalletConnect session envelope ─────────────────────────────────────────
 
-test('WalletConnect proposal contains only eth_sendTransaction as required method', () => {
-  assert.deepEqual([...WALLETCONNECT_REQUIRED_METHODS], ['eth_sendTransaction'])
+test('WalletConnect proposal contains exactly eth_sendTransaction as required method', async () => {
+  const source = await readSrc('wallet.js')
+  assert.match(source, /methods:\s*\['eth_sendTransaction'\]/)
 })
 
-test('WalletConnect proposal contains no optional methods', () => {
-  assert.deepEqual([...WALLETCONNECT_OPTIONAL_METHODS], [])
+test('WalletConnect proposal events are exactly accountsChanged and chainChanged', async () => {
+  const source = await readSrc('wallet.js')
+  assert.match(source, /events:\s*\['accountsChanged',\s*'chainChanged'\]/)
 })
 
-test('WalletConnect proposal events are only accountsChanged and chainChanged', () => {
-  assert.deepEqual([...WALLETCONNECT_OPTIONAL_EVENTS], ['accountsChanged', 'chainChanged'])
+test('wallet.js contains no optional namespaces', async () => {
+  const source = await readSrc('wallet.js')
+  assert.doesNotMatch(source, /optionalChains/)
+  assert.doesNotMatch(source, /optionalMethods/)
+  assert.doesNotMatch(source, /optionalEvents/)
 })
 
-test('WalletConnect proposal does not contain personal_sign', () => {
-  assert.ok(!WALLETCONNECT_REQUIRED_METHODS.includes('personal_sign'))
-  assert.ok(!WALLETCONNECT_OPTIONAL_METHODS.includes('personal_sign'))
-})
-
-test('WalletConnect proposal does not contain wallet_sendCalls', () => {
-  assert.ok(!WALLETCONNECT_REQUIRED_METHODS.includes('wallet_sendCalls'))
-  assert.ok(!WALLETCONNECT_OPTIONAL_METHODS.includes('wallet_sendCalls'))
-})
-
-test('WalletConnect proposal does not contain eth_sign or typed-data signing', () => {
-  const allMethods = [...WALLETCONNECT_REQUIRED_METHODS, ...WALLETCONNECT_OPTIONAL_METHODS]
-  for (const forbidden of ['eth_sign', 'eth_signTransaction', 'eth_signTypedData', 'eth_signTypedData_v3', 'eth_signTypedData_v4']) {
-    assert.ok(!allMethods.includes(forbidden), `Should not include ${forbidden}`)
+test('WalletConnect proposal does not contain forbidden methods', async () => {
+  const source = await readSrc('wallet.js')
+  const forbidden = [
+    /personal_sign/,
+    /eth_sign/,
+    /eth_sendRawTransaction/,
+    /wallet_sendCalls/,
+    /wallet_switchEthereumChain/,
+    /wallet_addEthereumChain/
+  ]
+  for (const pattern of forbidden) {
+    assert.doesNotMatch(source, pattern, `Should not include ${pattern}`)
   }
-})
-
-test('WalletConnect proposal does not contain wallet_switchEthereumChain', () => {
-  const allMethods = [...WALLETCONNECT_REQUIRED_METHODS, ...WALLETCONNECT_OPTIONAL_METHODS]
-  assert.ok(!allMethods.includes('wallet_switchEthereumChain'))
 })
 
 // ─── Write ABI inventory ─────────────────────────────────────────────────────
@@ -107,16 +105,15 @@ test('write ABI inventory: only approve and activate exist as write fragments', 
 // ─── No unlimited approval ────────────────────────────────────────────────────
 
 test('no unlimited approval: buildPatienceApprove rejects MaxUint256-equivalent amounts', () => {
-  const MAX = 2n ** 256n - 1n
-  // MaxUint256 is technically positive, but we verify our builder never produces it via zero/negative guards
-  // The builder itself does not block MAX, but the snapshot verifySnapshotStable + economics review
-  // ensures the amount always comes from freshly-read activationYCost (a protocol-specific finite amount).
-  // The guard: amount must be > 0n (no unlimited via zero either).
+  const MAX_UINT256 = 2n ** 256n - 1n
+  assert.throws(() => buildPatienceApprove(MAX_UINT256))
   assert.throws(() => buildPatienceApprove(0n))
   assert.throws(() => buildPatienceApprove(-1n))
 })
 
-test('no unlimited approval: buildTobyApprove rejects zero and negative amounts', () => {
+test('no unlimited approval: buildTobyApprove rejects zero and negative amounts and MaxUint256', () => {
+  const MAX_UINT256 = 2n ** 256n - 1n
+  assert.throws(() => buildTobyApprove(MAX_UINT256))
   assert.throws(() => buildTobyApprove(0n))
   assert.throws(() => buildTobyApprove(-1n))
 })
@@ -263,13 +260,44 @@ test('buildActivate rejects zero maxYIn', () => {
 test('stale state invalidation: main.js tracks preparedSnapshot for stale detection', async () => {
   const source = await readSrc('main.js')
   assert.match(source, /preparedSnapshot/)
-  assert.match(source, /connectionVersion.*snap\.connectionVersion/)
-  assert.match(source, /account.*snap\.account/)
+  assert.match(source, /connectionVersion.*snap\.connectionVersion/s)
+  assert.match(source, /account.*snap\.account/s)
   assert.match(source, /transferNonce.*snap\.transferNonce/s)
-  assert.match(source, /activationYCost.*snap\.activationYCost/)
-  assert.match(source, /activationXAmount.*snap\.activationXAmount/)
-  assert.match(source, /txFee.*snap\.txFee/)
-  assert.match(source, /burnFee.*snap\.burnFee/)
+  assert.match(source, /activationYCost.*snap\.activationYCost/s)
+  assert.match(source, /activationXAmount.*snap\.activationXAmount/s)
+  assert.match(source, /txFee.*snap\.txFee/s)
+  assert.match(source, /burnFee.*snap\.burnFee/s)
+})
+
+test('freshTransactionGate checks for revoked DEPOSITOR_ROLE', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /!state\.live\.managerHasDepositorRole.*DEPOSITOR_ROLE/s)
+})
+
+test('freshTransactionGate checks for protocolCustody', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /state\.live\.protocolCustody.*Protocol custody is true/s)
+})
+
+test('freshTransactionGate checks for activationStarted', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /!state\.live\.activationStarted.*Activation is not started/s)
+})
+
+test('freshTransactionGate checks for owner mismatch', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /isAddressEqual.*owner.*state\.account.*owner of the Lore Land/s)
+})
+
+test('freshTransactionGate checks for already active', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /freshIsActive.*already active/s)
+})
+
+test('freshTransactionGate checks Y/X economics outside live ranges', async () => {
+  const source = await readSrc('main.js')
+  assert.match(source, /activationYCost > state\.live\.maxActivationY.*outside live protocol range/s)
+  assert.match(source, /activationXAmount > state\.live\.maxActivationX.*outside live protocol range/s)
 })
 
 test('stale state invalidation: connection version change invalidates prepared tx', async () => {
@@ -279,7 +307,7 @@ test('stale state invalidation: connection version change invalidates prepared t
 
 test('stale state invalidation: ownership nonce change detected before activation', async () => {
   const source = await readSrc('main.js')
-  assert.match(source, /transferNonce.*changed|ownership nonce changed/i)
+  assert.match(source, /currentNonce !== snap\.transferNonce.*nonce changed/is)
 })
 
 test('stale state invalidation: economics change detected before activation', async () => {

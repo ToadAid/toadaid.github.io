@@ -28,8 +28,12 @@ export async function waitForReceipt(client, txHash, maxWaitMs = DEFAULT_MAX_WAI
     let receipt = null
     try {
       receipt = await client.getTransactionReceipt({ hash: txHash })
-    } catch {
-      // Not yet mined — continue polling
+    } catch (error) {
+      if (error.name === 'TransactionReceiptNotFoundError' || error.message?.includes('not found')) {
+        // Not yet mined — continue polling
+      } else {
+        throw error // Propagate network/RPC/provider errors immediately
+      }
     }
     if (receipt !== null) {
       if (receipt.status === 'reverted') {
