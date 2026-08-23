@@ -5,6 +5,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { CONTRACTS, EXPECTED_LOCK_DURATION } from '../src/contracts.js'
 import { assessEligibility, bindingChecks, economicsStatus, expectedPatienceReceipt, parseTokenId } from '../src/preflight.js'
+import { buildTransactionReview } from '../src/transaction-review.js'
 import { WALLETCONNECT_OPTIONAL_EVENTS, WALLETCONNECT_OPTIONAL_METHODS } from '../src/wallet-policy.js'
 
 const wallet = '0x1111111111111111111111111111111111111111'
@@ -120,6 +121,53 @@ test('WalletConnect session permission envelope is explicitly read-only', () => 
   assert.deepEqual([...WALLETCONNECT_OPTIONAL_EVENTS], ['accountsChanged', 'chainChanged'])
 })
 
+test('transaction review is exact, fixed-target, and non-executable', () => {
+  const review = buildTransactionReview({
+    tokenId: 777n,
+    activationYCost: 37n,
+    activationXAmount: 4_000_000_000n,
+    patienceAllowance: 10n,
+    tobyAllowance: 5_000_000_000n,
+  })
+
+  assert.equal(review.executable, false)
+  assert.equal(review.calldataPresent, false)
+  assert.equal(review.signingPresent, false)
+  assert.equal(review.loreApprovalRequired, false)
+  assert.equal(review.patience.token, CONTRACTS.patience)
+  assert.equal(review.patience.spender, CONTRACTS.vault)
+  assert.equal(review.patience.exactAmount, 37n)
+  assert.equal(review.patience.allowanceSufficient, false)
+  assert.equal(review.toby.token, CONTRACTS.toby)
+  assert.equal(review.toby.spender, CONTRACTS.manager)
+  assert.equal(review.toby.exactAmount, 4_000_000_000n)
+  assert.equal(review.toby.allowanceSufficient, true)
+  assert.equal(review.activation.target, CONTRACTS.manager)
+  assert.equal(review.activation.tokenId, 777n)
+  assert.equal(review.activation.maxYIn, 37n)
+  assert.equal(review.activation.expectedXAmount, 4_000_000_000n)
+  assert.equal(review.activation.deadline, null)
+  assert.equal(Object.isFrozen(review), true)
+})
+
+test('transaction review rejects token ID zero and malformed numeric inputs', () => {
+  assert.throws(() => buildTransactionReview({
+    tokenId: 0n,
+    activationYCost: 37n,
+    activationXAmount: 4_000_000_000n,
+    patienceAllowance: 0n,
+    tobyAllowance: 0n,
+  }))
+
+  assert.throws(() => buildTransactionReview({
+    tokenId: 1n,
+    activationYCost: -1n,
+    activationXAmount: 4_000_000_000n,
+    patienceAllowance: 0n,
+    tobyAllowance: 0n,
+  }))
+})
+
 test('production source contains no transaction invocation surface', async () => {
   const directory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src')
   const files = (await readdir(directory)).filter(file => file.endsWith('.js'))
@@ -132,6 +180,9 @@ test('production source contains no transaction invocation surface', async () =>
     /eth_sign(?:Transaction|TypedData(?:_v3|_v4)?)?/,
     /wallet_switchEthereumChain/,
     /wallet_addEthereumChain/,
+    /encodeFunctionData\s*\(/,
+    /prepareTransactionRequest\s*\(/,
+    /signTransaction\s*\(/,
     /writeContract\s*\(/,
     /sendTransaction\s*\(/,
     /collectActivationY\s*\(/,
