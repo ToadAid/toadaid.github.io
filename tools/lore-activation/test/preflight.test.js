@@ -150,6 +150,32 @@ test('transaction review is exact, fixed-target, and non-executable', () => {
   assert.equal(Object.isFrozen(review), true)
 })
 
+test('transaction review UI refreshes mutable protocol state before reading the Lore Land', async () => {
+  const mainPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src/main.js')
+  const source = await readFile(mainPath, 'utf8')
+
+  const clearIndex = source.indexOf("resetTransactionReview('Refreshing mutable protocol values before transaction review…')")
+  const refreshIndex = source.indexOf('const liveFresh = await loadLiveProtocol()', clearIndex)
+  const landReadIndex = source.indexOf("const nft = (name)", refreshIndex)
+
+  assert.ok(clearIndex >= 0)
+  assert.ok(refreshIndex > clearIndex)
+  assert.ok(landReadIndex > refreshIndex)
+  assert.match(source, /return true[\s\S]*catch \(error\)[\s\S]*return false/)
+})
+
+test('in-flight review reads fail closed when the wallet connection changes', async () => {
+  const mainPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src/main.js')
+  const source = await readFile(mainPath, 'utf8')
+
+  assert.match(source, /connectionVersion:\s*0/)
+  assert.match(source, /state\.connectionVersion \+= 1/)
+  assert.match(source, /Wallet connection changed during live verification\./)
+  assert.match(source, /Wallet connection changed during Lore Land verification\./)
+  assert.match(source, /state\.provider\.on\('accountsChanged', resetConnection\)/)
+  assert.match(source, /state\.provider\.on\('chainChanged', resetConnection\)/)
+})
+
 test('transaction review rejects token ID zero and malformed numeric inputs', () => {
   assert.throws(() => buildTransactionReview({
     tokenId: 0n,

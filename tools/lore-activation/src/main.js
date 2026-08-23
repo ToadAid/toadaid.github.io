@@ -14,6 +14,7 @@ const state = {
   chainId: null,
   live: null,
   land: null,
+  connectionVersion: 0,
 }
 
 document.querySelector('#app').innerHTML = `
@@ -188,6 +189,7 @@ async function handleConnect() {
       throw new Error(`Unsupported chain ${session.chainId}. Switch the wallet to Base mainnet (8453).`)
     }
     Object.assign(state, session)
+    state.connectionVersion += 1
     attachProviderEvents()
     setText('wallet-address', shortAddress(state.account))
     setText('chain-status', `Base mainnet · ${state.chainId}`)
@@ -205,23 +207,33 @@ async function handleConnect() {
 }
 
 async function handleDisconnect() {
-  disconnectButton.disabled = true
+  const provider = state.provider
+  resetConnection()
   try {
-    await disconnectWallet(state.provider)
+    await disconnectWallet(provider)
   } catch (error) {
     setNotice('connection-message', readableError(error), 'fail')
   }
-  resetConnection()
   setNotice('connection-message', 'Wallet disconnected. Protocol values require a fresh connection.', 'pending')
 }
 
 function attachProviderEvents() {
-  state.provider.on('accountsChanged', () => handleDisconnect())
-  state.provider.on('chainChanged', () => handleDisconnect())
+  state.provider.on('accountsChanged', resetConnection)
+  state.provider.on('chainChanged', resetConnection)
   state.provider.on('disconnect', resetConnection)
 }
 
 async function loadLiveProtocol() {
+  const connectionVersion = state.connectionVersion
+  const client = state.client
+  const account = state.account
+  const chainId = state.chainId
+
+  if (!client || !account || chainId !== BASE_CHAIN_ID) {
+    state.live = null
+    return false
+  }
+
   setNotice('connection-message', 'Reading fixed Base contracts…', 'pending')
   try {
     const manager = (name, args) => read(CONTRACTS.manager, activationManagerAbi, name, args)
@@ -247,7 +259,17 @@ async function loadLiveProtocol() {
       patienceBalance, patienceAllowance, tobyBalance, tobyAllowance, txFee, burnFee, feeAddress, patienceOwner,
       patienceName, patienceSymbol, tobyName, tobySymbol, loreName, loreSymbol,
       vaultBalance, totalGrossQuoted, totalActuallyReceived, totalWithdrawn, totalActivationsCollected] = values
-    state.live = { chainId: state.chainId, managerNft2, managerTokenX, managerVault, tokenXDecimals, lockDuration, vaultTokenY,
+
+    if (
+      state.connectionVersion !== connectionVersion
+      || state.client !== client
+      || state.account !== account
+      || state.chainId !== chainId
+    ) {
+      throw new Error('Wallet connection changed during live verification.')
+    }
+
+    state.live = { chainId, managerNft2, managerTokenX, managerVault, tokenXDecimals, lockDuration, vaultTokenY,
       patienceDecimals, tobyDecimals, managerHasDepositorRole, activationStarted, activationYCost, activationXAmount,
       minActivationY, maxActivationY, minActivationX, maxActivationX, protocolCustody, activationPaused, patienceBalance, patienceAllowance,
       tobyBalance, tobyAllowance, txFee, burnFee, feeAddress, patienceOwner, patienceName, patienceSymbol,
@@ -255,10 +277,13 @@ async function loadLiveProtocol() {
       totalActuallyReceived, totalWithdrawn, totalActivationsCollected }
     renderLiveProtocol()
     setNotice('connection-message', 'Live contract reads complete. Any mismatch is shown without correction.', 'pass')
+    return true
   } catch (error) {
     state.live = null
+    resetTransactionReview('Fresh protocol verification failed. Review values withheld.')
     renderBindingFailure(error)
     setNotice('connection-message', `Live verification failed closed: ${readableError(error)}`, 'fail')
+    return false
   }
 }
 
@@ -324,14 +349,36 @@ async function handleLandCheck(event) {
     return
   }
   landButton.disabled = true
-  setVerdict('pending', 'Reading Lore Land', 'Ownership and activation state are being independently checked.')
+  resetTransactionReview('Refreshing mutable protocol values before transaction review…')
+  setVerdict('pending', 'Refreshing review inputs', 'Mutable economics, fee state, balances, allowances, custody, and pause state are being reread.')
   try {
+    const liveFresh = await loadLiveProtocol()
+    if (!liveFresh || !state.live) {
+      throw new Error('Fresh protocol verification failed. Transaction review withheld.')
+    }
+
+    const connectionVersion = state.connectionVersion
+    const client = state.client
+    const accountAtReview = state.account
+
+    setVerdict('pending', 'Reading Lore Land', 'Ownership and activation state are being independently checked against the refreshed protocol state.')
+
     const nft = (name) => read(CONTRACTS.lore, nft2Abi, name, [parsed.value])
     const manager = (name) => read(CONTRACTS.manager, activationManagerAbi, name, [parsed.value])
     const [owner, transferNonce, account, isActive, activeLockId] = await Promise.all([
       nft('ownerOf'), nft('transferNonce'), nft('accountOf'), manager('isActive'), manager('activeLockId'),
     ])
     const lock = activeLockId === 0n ? null : await read(CONTRACTS.manager, activationManagerAbi, 'getLock', [activeLockId])
+
+    if (
+      state.connectionVersion !== connectionVersion
+      || state.client !== client
+      || state.account !== accountAtReview
+      || !state.live
+    ) {
+      throw new Error('Wallet connection changed during Lore Land verification.')
+    }
+
     state.land = { tokenId: parsed.value, owner: getAddress(owner), transferNonce, account, isActive, activeLockId, lock }
     setText('land-owner', owner)
     setText('land-nonce', formatRaw(transferNonce))
@@ -417,6 +464,7 @@ function renderBindingFailure(error) {
 }
 
 function resetConnection() {
+  state.connectionVersion += 1
   Object.assign(state, { provider: null, client: null, account: null, chainId: null, live: null, land: null })
   resetTransactionReview()
   setText('wallet-address', 'Not connected')
