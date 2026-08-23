@@ -9,6 +9,9 @@ export const EXPECTED_ERC20_DECIMALS = 18n
 // Source-pinned from the verified deployment: keccak256("ACTIVATION").
 export const ACTIVATION_OPERATION_ID = '0xfa502000117f63b5e128376c49fb9ce174ea7d81f4e6aca78aec26b844e91f68'
 
+// Deadline window: 20 minutes from latest Base block timestamp.
+export const DEADLINE_WINDOW_SECONDS = 20 * 60
+
 export const CONTRACTS = Object.freeze({
   lore: getAddress('0x0495601Af6f86efb14C9D478eA46b2Aa09cB164A'),
   manager: getAddress('0xdAF88bf803765882A674bC9B2BCE20d47A7250f2'),
