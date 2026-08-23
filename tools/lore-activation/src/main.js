@@ -603,26 +603,54 @@ function renderTransactionReview(eligible) {
 }
 
 /**
- * Verify current state matches the prepared snapshot.
- * Any drift invalidates the prepared transaction and requires a fresh review.
+ * Mechanically shared full fresh transaction gate.
+ * Used before EVERY approval and before activation.
+ * Any failure stops the flow and forces a fresh Land check.
  */
-async function verifySnapshotStable(label) {
+async function freshTransactionGate(label) {
   const snap = state.preparedSnapshot
-  if (!snap) throw new Error('No prepared snapshot. Run a fresh Land check first.')
+  if (!snap) throw new Error(`${label}: No prepared snapshot. Run a fresh Land check first.`)
   if (state.connectionVersion !== snap.connectionVersion) throw new Error(`${label}: Wallet connection changed.`)
   if (state.account !== snap.account) throw new Error(`${label}: Connected account changed.`)
+  if (!state.client || !state.provider) throw new Error(`${label}: Wallet client disconnected.`)
+  if (state.chainId !== BASE_CHAIN_ID) throw new Error(`${label}: Wallet must be on Base chain (8453).`)
+
   if (!state.live) throw new Error(`${label}: Live protocol state unavailable.`)
+
+  const liveChecks = bindingChecks(state.live)
+  if (!liveChecks.every(c => c.pass)) throw new Error(`${label}: Live protocol bindings drifted.`)
+  if (!state.live.managerHasDepositorRole) throw new Error(`${label}: ActivationManager lacks DEPOSITOR_ROLE.`)
+
   if (state.live.txFee !== snap.txFee || state.live.burnFee !== snap.burnFee) {
     throw new Error(`${label}: PATIENCE fee configuration changed. Run a fresh Land check.`)
   }
-  if (state.live.activationYCost !== snap.activationYCost || state.live.activationXAmount !== snap.activationXAmount) {
-    throw new Error(`${label}: Protocol economics changed. Run a fresh Land check.`)
+
+  if (state.live.protocolCustody) throw new Error(`${label}: Protocol custody is true.`)
+  if (!state.live.activationStarted) throw new Error(`${label}: Activation is not started.`)
+  if (state.live.activationPaused) throw new Error(`${label}: Activation operation is paused.`)
+
+  if (state.live.activationYCost > state.live.maxActivationY || state.live.activationYCost < state.live.minActivationY) {
+    throw new Error(`${label}: PATIENCE cost outside live protocol range.`)
   }
-  // Re-read transferNonce to detect ownership change
+  if (state.live.activationXAmount > state.live.maxActivationX || state.live.activationXAmount < state.live.minActivationX) {
+    throw new Error(`${label}: TOBY requirement outside live protocol range.`)
+  }
+
+  if (state.live.patienceBalance < state.live.activationYCost) throw new Error(`${label}: PATIENCE balance insufficient.`)
+  if (state.live.tobyBalance < state.live.activationXAmount) throw new Error(`${label}: TOBY balance insufficient.`)
+
   const currentNonce = await read(CONTRACTS.lore, nft2Abi, 'transferNonce', [snap.tokenId])
   if (currentNonce !== snap.transferNonce) {
-    throw new Error(`${label}: Lore Land ownership nonce changed. The token may have been transferred. Run a fresh Land check.`)
+    throw new Error(`${label}: Lore Land ownership nonce changed. Run a fresh Land check.`)
   }
+
+  const owner = await read(CONTRACTS.lore, nft2Abi, 'ownerOf', [snap.tokenId])
+  if (!isAddressEqual(getAddress(owner), state.account)) {
+    throw new Error(`${label}: Connected account is not the owner of the Lore Land.`)
+  }
+
+  const freshIsActive = await read(CONTRACTS.manager, activationManagerAbi, 'isActive', [snap.tokenId])
+  if (freshIsActive) throw new Error(`${label}: Lore Land is already active.`)
 }
 
 async function handlePatienceApprove() {
@@ -633,7 +661,7 @@ async function handlePatienceApprove() {
     // Refresh live protocol state before building transaction
     const liveFresh = await loadLiveProtocol()
     if (!liveFresh || !state.live) throw new Error('Protocol re-read failed. Try again.')
-    await verifySnapshotStable('PATIENCE approve')
+    await freshTransactionGate('PATIENCE approve')
 
     // Re-read current allowance fresh
     const freshAllowance = await read(CONTRACTS.patience, patienceAbi, 'allowance', [state.account, CONTRACTS.vault])
@@ -687,7 +715,7 @@ async function handleTobyApprove() {
   try {
     const liveFresh = await loadLiveProtocol()
     if (!liveFresh || !state.live) throw new Error('Protocol re-read failed. Try again.')
-    await verifySnapshotStable('TOBY approve')
+    await freshTransactionGate('TOBY approve')
 
     const freshAllowance = await read(CONTRACTS.toby, tobyAbi, 'allowance', [state.account, CONTRACTS.manager])
     const required = state.live.activationXAmount
@@ -734,7 +762,7 @@ async function handleActivate() {
     // Full eligibility re-verification immediately before activation
     const liveFresh = await loadLiveProtocol()
     if (!liveFresh || !state.live) throw new Error('Protocol re-read failed. Cannot activate.')
-    await verifySnapshotStable('Activation')
+    await freshTransactionGate('Activation')
 
     // Fresh allowance checks — both must be sufficient
     const [freshPatienceAllowance, freshTobyAllowance] = await Promise.all([
@@ -748,12 +776,7 @@ async function handleActivate() {
       throw new Error('TOBY allowance insufficient. Complete TOBY approval first.')
     }
 
-    // Re-verify eligibility with fresh state
     const snap = state.preparedSnapshot
-    const freshIsActive = await read(CONTRACTS.manager, activationManagerAbi, 'isActive', [snap.tokenId])
-    if (freshIsActive) throw new Error('Lore Land is already active.')
-    const freshPaused = await read(CONTRACTS.manager, activationManagerAbi, 'operationPaused', [ACTIVATION_OPERATION_ID])
-    if (freshPaused) throw new Error('Activation operation is currently paused.')
 
     // Read latest block timestamp to derive a finite deadline
     const block = await state.client.getBlock({ blockTag: 'latest' })

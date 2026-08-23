@@ -28,6 +28,8 @@ function requireNonNegativeUint(name, value) {
   }
 }
 
+const MAX_UINT256 = 2n ** 256n - 1n
+
 /**
  * Build a PATIENCE approve transaction.
  * Spender is always ActivationVault. Amount is the exact freshly-read activationYCost.
@@ -38,6 +40,7 @@ function requireNonNegativeUint(name, value) {
  */
 export function buildPatienceApprove(exactAmount) {
   requirePositiveUint('exactAmount', exactAmount)
+  if (exactAmount === MAX_UINT256) throw new RangeError('exactAmount must not be MaxUint256')
   const data = encodeFunctionData({
     abi: patienceAbi,
     functionName: 'approve',
@@ -56,6 +59,7 @@ export function buildPatienceApprove(exactAmount) {
  */
 export function buildTobyApprove(exactAmount) {
   requirePositiveUint('exactAmount', exactAmount)
+  if (exactAmount === MAX_UINT256) throw new RangeError('exactAmount must not be MaxUint256')
   const data = encodeFunctionData({
     abi: tobyAbi,
     functionName: 'approve',
@@ -81,7 +85,6 @@ export function buildActivate(tokenId, maxYIn, expectedXAmount, deadline) {
   requireNonNegativeUint('expectedXAmount', expectedXAmount)
   requirePositiveUint('deadline', deadline)
   // Reject obviously wrong deadlines (uint256 max = unlimited = forbidden)
-  const MAX_UINT256 = 2n ** 256n - 1n
   if (deadline === MAX_UINT256) throw new RangeError('deadline must not be MaxUint256')
   const data = encodeFunctionData({
     abi: activationManagerAbi,
