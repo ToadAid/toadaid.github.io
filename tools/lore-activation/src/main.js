@@ -181,7 +181,7 @@ landForm.addEventListener('submit', handleLandCheck)
 async function handleConnect() {
   connectButton.disabled = true
   setText('connection-status', 'Opening WalletConnect…')
-  setNotice('connection-message', 'Confirm the read-only connection inside your wallet.', 'pending')
+  setNotice('connection-message', 'Confirm the wallet identity connection inside your wallet. No signing request will be created.', 'pending')
   try {
     const session = await connectWallet()
     if (session.chainId !== BASE_CHAIN_ID) {
@@ -193,8 +193,8 @@ async function handleConnect() {
     attachProviderEvents()
     setText('wallet-address', shortAddress(state.account))
     setText('chain-status', `Base mainnet · ${state.chainId}`)
-    setText('connection-status', 'Connected · read only')
-    setNotice('connection-message', 'Connected for contract reads only. No signing request will be created.', 'pass')
+    setText('connection-status', 'Connected · identity only')
+    setNotice('connection-message', 'Wallet identity connected on Base. Contract reads use the fixed Base public RPC; no signing request will be created.', 'pass')
     disconnectButton.disabled = false
     landButton.disabled = false
     await loadLiveProtocol()

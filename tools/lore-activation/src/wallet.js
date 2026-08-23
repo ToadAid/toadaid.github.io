@@ -1,10 +1,11 @@
 import EthereumProvider from '@walletconnect/ethereum-provider'
-import { createPublicClient, custom } from 'viem'
+import { createPublicClient, http } from 'viem'
 import { base } from 'viem/chains'
 import { BASE_CHAIN_ID } from './contracts.js'
 import { WALLETCONNECT_OPTIONAL_EVENTS, WALLETCONNECT_OPTIONAL_METHODS } from './wallet-policy.js'
 
 export const walletConnectProjectId = (import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '').trim()
+export const BASE_READ_RPC_URL = 'https://mainnet.base.org'
 
 const metadata = Object.freeze({
   name: 'ToadAid Lore Activation Helper',
@@ -34,7 +35,10 @@ export async function connectWallet() {
     await provider.disconnect()
     throw new Error('WalletConnect returned no account')
   }
-  const client = createPublicClient({ chain: base, transport: custom(provider) })
+  // WalletConnect is intentionally used only for wallet identity/session state.
+  // All contract reads use a fixed independent Base RPC transport so wallet
+  // method support cannot change read-only preflight behavior.
+  const client = createPublicClient({ chain: base, transport: http(BASE_READ_RPC_URL) })
   return { provider, client, account, chainId }
 }
 

@@ -176,6 +176,18 @@ test('in-flight review reads fail closed when the wallet connection changes', as
   assert.match(source, /state\.provider\.on\('chainChanged', resetConnection\)/)
 })
 
+test('WalletConnect is identity-only and contract reads use the fixed independent Base RPC', async () => {
+  const directory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src')
+  const walletSource = await readFile(path.join(directory, 'wallet.js'), 'utf8')
+  const mainSource = await readFile(path.join(directory, 'main.js'), 'utf8')
+
+  assert.match(walletSource, /export const BASE_READ_RPC_URL = 'https:\/\/mainnet\.base\.org'/)
+  assert.match(walletSource, /createPublicClient\(\{ chain: base, transport: http\(BASE_READ_RPC_URL\) \}\)/)
+  assert.doesNotMatch(walletSource, /\bcustom\s*\(/)
+  assert.match(mainSource, /Connected · identity only/)
+  assert.match(mainSource, /Contract reads use the fixed Base public RPC/)
+})
+
 test('transaction review rejects token ID zero and malformed numeric inputs', () => {
   assert.throws(() => buildTransactionReview({
     tokenId: 0n,
