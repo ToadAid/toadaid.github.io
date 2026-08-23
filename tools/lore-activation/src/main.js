@@ -4,6 +4,7 @@ import { activationManagerAbi, activationVaultAbi, nft2Abi, patienceAbi, tobyAbi
 import { ACTIVATION_OPERATION_ID, BASE_CHAIN_ID, CONTRACT_LABELS, CONTRACTS } from './contracts.js'
 import { escapeHtml, formatRaw, formatToken, shortAddress } from './format.js'
 import { assessEligibility, bindingChecks, economicsStatus, expectedPatienceReceipt, parseTokenId } from './preflight.js'
+import { buildTransactionReview } from './transaction-review.js'
 import { connectWallet, disconnectWallet, walletConnectProjectId } from './wallet.js'
 
 const state = {
@@ -13,6 +14,7 @@ const state = {
   chainId: null,
   live: null,
   land: null,
+  connectionVersion: 0,
 }
 
 document.querySelector('#app').innerHTML = `
@@ -121,11 +123,47 @@ document.querySelector('#app').innerHTML = `
     </section>
 
     <section class="panel transaction-panel" aria-labelledby="transactions-title">
-      <div class="section-heading"><span>06</span><div><p>Future cut</p><h2 id="transactions-title">Transactions</h2></div></div>
-      <div class="locked-action" aria-disabled="true">Approve PATIENCE <span>Coming after official-flow verification</span></div>
-      <div class="locked-action" aria-disabled="true">Approve TOBY <span>Coming after official-flow verification</span></div>
-      <div class="locked-action" aria-disabled="true">Activate <span>Coming after official-flow verification</span></div>
-      <p class="notice">Disabled pending verification of the external official Tobyworld frontend. This preview has no transaction path.</p>
+      <div class="section-heading"><span>06</span><div><p>Human review only</p><h2 id="transactions-title">Activation transaction review</h2></div></div>
+      <div class="review-boundary">REVIEW ONLY — NO SIGNING, NO CALLDATA, NO TRANSACTION PATH</div>
+      <p id="transaction-review-status" class="notice pending">Connect a Base wallet and check one Lore Land to populate fresh review values.</p>
+
+      <div class="review-stack" aria-label="Non-executable activation review">
+        <article class="review-card">
+          <div class="review-card-head"><span>01</span><div><strong>PATIENCE allowance review</strong><small>Token Y · spender must be ActivationVault</small></div></div>
+          <div class="review-grid">
+            ${reviewValue('Token', 'review-patience-token')}
+            ${reviewValue('Spender', 'review-patience-spender')}
+            ${reviewValue('Exact reviewed amount', 'review-patience-amount')}
+            ${reviewValue('Current allowance', 'review-patience-current')}
+            ${reviewValue('Allowance state', 'review-patience-state')}
+          </div>
+        </article>
+
+        <article class="review-card">
+          <div class="review-card-head"><span>02</span><div><strong>TOBY allowance review</strong><small>Token X · spender must be ActivationManager</small></div></div>
+          <div class="review-grid">
+            ${reviewValue('Token', 'review-toby-token')}
+            ${reviewValue('Spender', 'review-toby-spender')}
+            ${reviewValue('Exact reviewed amount', 'review-toby-amount')}
+            ${reviewValue('Current allowance', 'review-toby-current')}
+            ${reviewValue('Allowance state', 'review-toby-state')}
+          </div>
+        </article>
+
+        <article class="review-card">
+          <div class="review-card-head"><span>03</span><div><strong>Activation call review</strong><small>Target must be ActivationManager</small></div></div>
+          <div class="review-grid">
+            ${reviewValue('Target', 'review-activation-target')}
+            ${reviewValue('Lore Land token ID', 'review-token-id')}
+            ${reviewValue('maxYIn', 'review-max-y')}
+            ${reviewValue('expectedXAmount', 'review-expected-x')}
+            ${reviewValue('Deadline', 'review-deadline', 'UNSET')}
+            ${reviewValue('LORE approval required', 'review-lore-approval', 'NO')}
+          </div>
+        </article>
+      </div>
+
+      <p class="notice pending">This panel is a deterministic human-readable review map only. It does not encode calldata, choose a deadline, request signatures, or submit transactions. The official Tobyworld activation flow must still be verified before any execution cut.</p>
     </section>
   </main>
   <footer><img src="/TOADAID-logo.png" alt="" /><p>Read the chain. Verify the bindings. Sign nothing here.</p></footer>
@@ -151,6 +189,7 @@ async function handleConnect() {
       throw new Error(`Unsupported chain ${session.chainId}. Switch the wallet to Base mainnet (8453).`)
     }
     Object.assign(state, session)
+    state.connectionVersion += 1
     attachProviderEvents()
     setText('wallet-address', shortAddress(state.account))
     setText('chain-status', `Base mainnet · ${state.chainId}`)
@@ -168,23 +207,33 @@ async function handleConnect() {
 }
 
 async function handleDisconnect() {
-  disconnectButton.disabled = true
+  const provider = state.provider
+  resetConnection()
   try {
-    await disconnectWallet(state.provider)
+    await disconnectWallet(provider)
   } catch (error) {
     setNotice('connection-message', readableError(error), 'fail')
   }
-  resetConnection()
   setNotice('connection-message', 'Wallet disconnected. Protocol values require a fresh connection.', 'pending')
 }
 
 function attachProviderEvents() {
-  state.provider.on('accountsChanged', () => handleDisconnect())
-  state.provider.on('chainChanged', () => handleDisconnect())
+  state.provider.on('accountsChanged', resetConnection)
+  state.provider.on('chainChanged', resetConnection)
   state.provider.on('disconnect', resetConnection)
 }
 
 async function loadLiveProtocol() {
+  const connectionVersion = state.connectionVersion
+  const client = state.client
+  const account = state.account
+  const chainId = state.chainId
+
+  if (!client || !account || chainId !== BASE_CHAIN_ID) {
+    state.live = null
+    return false
+  }
+
   setNotice('connection-message', 'Reading fixed Base contracts…', 'pending')
   try {
     const manager = (name, args) => read(CONTRACTS.manager, activationManagerAbi, name, args)
@@ -210,7 +259,17 @@ async function loadLiveProtocol() {
       patienceBalance, patienceAllowance, tobyBalance, tobyAllowance, txFee, burnFee, feeAddress, patienceOwner,
       patienceName, patienceSymbol, tobyName, tobySymbol, loreName, loreSymbol,
       vaultBalance, totalGrossQuoted, totalActuallyReceived, totalWithdrawn, totalActivationsCollected] = values
-    state.live = { chainId: state.chainId, managerNft2, managerTokenX, managerVault, tokenXDecimals, lockDuration, vaultTokenY,
+
+    if (
+      state.connectionVersion !== connectionVersion
+      || state.client !== client
+      || state.account !== account
+      || state.chainId !== chainId
+    ) {
+      throw new Error('Wallet connection changed during live verification.')
+    }
+
+    state.live = { chainId, managerNft2, managerTokenX, managerVault, tokenXDecimals, lockDuration, vaultTokenY,
       patienceDecimals, tobyDecimals, managerHasDepositorRole, activationStarted, activationYCost, activationXAmount,
       minActivationY, maxActivationY, minActivationX, maxActivationX, protocolCustody, activationPaused, patienceBalance, patienceAllowance,
       tobyBalance, tobyAllowance, txFee, burnFee, feeAddress, patienceOwner, patienceName, patienceSymbol,
@@ -218,10 +277,13 @@ async function loadLiveProtocol() {
       totalActuallyReceived, totalWithdrawn, totalActivationsCollected }
     renderLiveProtocol()
     setNotice('connection-message', 'Live contract reads complete. Any mismatch is shown without correction.', 'pass')
+    return true
   } catch (error) {
     state.live = null
+    resetTransactionReview('Fresh protocol verification failed. Review values withheld.')
     renderBindingFailure(error)
     setNotice('connection-message', `Live verification failed closed: ${readableError(error)}`, 'fail')
+    return false
   }
 }
 
@@ -287,14 +349,36 @@ async function handleLandCheck(event) {
     return
   }
   landButton.disabled = true
-  setVerdict('pending', 'Reading Lore Land', 'Ownership and activation state are being independently checked.')
+  resetTransactionReview('Refreshing mutable protocol values before transaction review…')
+  setVerdict('pending', 'Refreshing review inputs', 'Mutable economics, fee state, balances, allowances, custody, and pause state are being reread.')
   try {
+    const liveFresh = await loadLiveProtocol()
+    if (!liveFresh || !state.live) {
+      throw new Error('Fresh protocol verification failed. Transaction review withheld.')
+    }
+
+    const connectionVersion = state.connectionVersion
+    const client = state.client
+    const accountAtReview = state.account
+
+    setVerdict('pending', 'Reading Lore Land', 'Ownership and activation state are being independently checked against the refreshed protocol state.')
+
     const nft = (name) => read(CONTRACTS.lore, nft2Abi, name, [parsed.value])
     const manager = (name) => read(CONTRACTS.manager, activationManagerAbi, name, [parsed.value])
     const [owner, transferNonce, account, isActive, activeLockId] = await Promise.all([
       nft('ownerOf'), nft('transferNonce'), nft('accountOf'), manager('isActive'), manager('activeLockId'),
     ])
     const lock = activeLockId === 0n ? null : await read(CONTRACTS.manager, activationManagerAbi, 'getLock', [activeLockId])
+
+    if (
+      state.connectionVersion !== connectionVersion
+      || state.client !== client
+      || state.account !== accountAtReview
+      || !state.live
+    ) {
+      throw new Error('Wallet connection changed during Lore Land verification.')
+    }
+
     state.land = { tokenId: parsed.value, owner: getAddress(owner), transferNonce, account, isActive, activeLockId, lock }
     setText('land-owner', owner)
     setText('land-nonce', formatRaw(transferNonce))
@@ -305,6 +389,7 @@ async function handleLandCheck(event) {
     renderEligibility()
   } catch (error) {
     state.land = null
+    resetTransactionReview('Lore Land verification failed. Review values cleared.')
     setVerdict('fail', 'Lore Land verification failed closed', readableError(error))
   } finally {
     landButton.disabled = false
@@ -320,11 +405,58 @@ function renderEligibility() {
     patienceBalance: state.live.patienceBalance, activationYCost: state.live.activationYCost,
     tobyBalance: state.live.tobyBalance, activationXAmount: state.live.activationXAmount,
   })
+  renderTransactionReview(result.eligible)
   if (result.eligible) {
-    setVerdict('pass', 'Read-only eligibility checks pass', 'This preview still cannot create approvals or activation transactions.')
+    setVerdict('pass', 'Read-only eligibility checks pass', 'Exact review values are populated below, but this preview still cannot create approvals or activation transactions.')
   } else {
     setVerdict('fail', 'Eligibility not established', result.reasons.join(' · '))
   }
+}
+
+function renderTransactionReview(eligible) {
+  const review = buildTransactionReview({
+    tokenId: state.land.tokenId,
+    activationYCost: state.live.activationYCost,
+    activationXAmount: state.live.activationXAmount,
+    patienceAllowance: state.live.patienceAllowance,
+    tobyAllowance: state.live.tobyAllowance,
+  })
+
+  setText('review-patience-token', review.patience.token)
+  setText('review-patience-spender', review.patience.spender)
+  setText('review-patience-amount', `${formatToken(review.patience.exactAmount)} PATIENCE`)
+  setText('review-patience-current', `${formatToken(review.patience.currentAllowance)} PATIENCE`)
+  setText('review-patience-state', review.patience.allowanceSufficient ? 'Existing allowance is sufficient' : 'Exact allowance would be required')
+
+  setText('review-toby-token', review.toby.token)
+  setText('review-toby-spender', review.toby.spender)
+  setText('review-toby-amount', `${formatToken(review.toby.exactAmount)} TOBY`)
+  setText('review-toby-current', `${formatToken(review.toby.currentAllowance)} TOBY`)
+  setText('review-toby-state', review.toby.allowanceSufficient ? 'Existing allowance is sufficient' : 'Exact allowance would be required')
+
+  setText('review-activation-target', review.activation.target)
+  setText('review-token-id', formatRaw(review.activation.tokenId))
+  setText('review-max-y', `${formatToken(review.activation.maxYIn)} PATIENCE`)
+  setText('review-expected-x', `${formatToken(review.activation.expectedXAmount)} TOBY`)
+  setText('review-deadline', 'UNSET — official-flow verification required')
+  setText('review-lore-approval', review.loreApprovalRequired ? 'YES' : 'NO')
+
+  if (eligible) {
+    setNotice('transaction-review-status', 'Fresh reviewed targets and amounts loaded. Human review only; execution remains disabled.', 'pending')
+  } else {
+    setNotice('transaction-review-status', 'Review values loaded, but eligibility failed. Nothing can be signed or submitted.', 'fail')
+  }
+}
+
+function resetTransactionReview(message = 'Connect a Base wallet and check one Lore Land to populate fresh review values.') {
+  for (const id of [
+    'review-patience-token', 'review-patience-spender', 'review-patience-amount', 'review-patience-current', 'review-patience-state',
+    'review-toby-token', 'review-toby-spender', 'review-toby-amount', 'review-toby-current', 'review-toby-state',
+    'review-activation-target', 'review-token-id', 'review-max-y', 'review-expected-x',
+  ]) setText(id, '—')
+  setText('review-deadline', 'UNSET')
+  setText('review-lore-approval', 'NO')
+  setNotice('transaction-review-status', message, 'pending')
 }
 
 function renderBindingFailure(error) {
@@ -332,7 +464,9 @@ function renderBindingFailure(error) {
 }
 
 function resetConnection() {
+  state.connectionVersion += 1
   Object.assign(state, { provider: null, client: null, account: null, chainId: null, live: null, land: null })
+  resetTransactionReview()
   setText('wallet-address', 'Not connected')
   setText('chain-status', 'Not verified')
   setText('connection-status', walletConnectProjectId ? 'Ready to connect' : 'WalletConnect configuration pending')
@@ -375,4 +509,8 @@ function dataItem(label, id, initial = '—') {
 
 function metric(label, id, initial = '—') {
   return `<div class="metric"><span>${label}</span><strong id="${id}">${initial}</strong></div>`
+}
+
+function reviewValue(label, id, initial = '—') {
+  return `<div class="review-value"><span>${label}</span><strong id="${id}">${initial}</strong></div>`
 }
