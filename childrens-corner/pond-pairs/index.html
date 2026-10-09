@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toby’s Pond Pairs · Play | ToadAid Children’s Corner</title>
+<meta name="description" content="Turn over the pond cards and find matching pictures of Blue Toby, Taboshi, and Patience. A gentle matching game to play together.">
+<link rel="canonical" href="https://toadaid.github.io/childrens-corner/pond-pairs/">
+<meta property="og:title" content="Toby’s Pond Pairs · ToadAid Children’s Corner">
+<meta property="og:description" content="Six little cards. Three good friends. Can you find the pairs?">
+<meta property="og:image" content="https://toadaid.github.io/childrens-corner/art/welcome-pond.webp">
+<link rel="icon" href="/assets/icons/favicon.svg"><meta name="theme-color" content="#195d75">
+<link rel="stylesheet" href="../corner.css"><link rel="stylesheet" href="game.css">
+<script type="module" src="game.mjs"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the game</a>
+<header class="site-top wrap"><a class="brand" href="../">TOADAID <small>Children’s Corner</small></a><nav aria-label="Children’s Corner"><a href="../#play">More to play</a><a href="../#stories">Read a story</a></nav></header>
+<main id="main" class="game-wrap">
+  <div class="game-heading"><p class="eyebrow">A little game · Play together</p><h1>Toby’s Pond Pairs</h1><p id="instructions">Turn over two cards. Look for the same friend on both. Find Blue Toby, Taboshi, and Patience!</p></div>
+  <div class="game-layout">
+    <figure class="pond-picture"><img src="../art/welcome-pond.webp" width="1672" height="941" alt="Blue Toby, green leaf Taboshi, and red triangle Patience together in their sunny pond garden."><figcaption>Take your time, little explorer. The friends are happy to wait.</figcaption></figure>
+    <section id="game" class="game-panel" aria-label="Pond matching game" hidden>
+      <p id="progress" class="game-progress">0 of 3 pairs found</p>
+      <p id="message" class="game-message" role="status" aria-live="polite" aria-atomic="true">Choose a card to meet a friend.</p>
+      <div id="cards" class="pair-grid" role="group" aria-label="Six pond cards" aria-describedby="instructions"></div>
+      <div class="game-controls"><button id="continue" class="button" type="button" hidden>Turn them back</button><button id="restart" class="button secondary" type="button">Start again</button></div>
+      <div id="win" class="game-win" hidden><h2>Everyone’s here!</h2><p>You found all three pairs. Play again, or take your friends on a story adventure.</p><a class="button gold" style="margin-top:16px" href="../lore-lands.html">Explore the Lore Lands →</a></div>
+    </section>
+  </div>
+  <noscript><div class="notice-box" style="margin-top:24px"><p>This matching game needs JavaScript. You can still <a href="../lore-lands.html">explore the picture stories</a> together.</p></div></noscript>
+  <details class="game-help"><summary>How to play together</summary><ol><li>Choose one card, then another. Say the friends’ names together.</li><li>If the pictures match, your pair stays face up.</li><li>If they are different, look as long as you like. Choose “Turn them back” when you are ready.</li><li>Keep exploring until you have all three pairs. “Start again” mixes the cards for a new game.</li></ol><p>Use touch, a mouse, or Tab and Enter/Space on a keyboard. There is no timer—take turns at your own pace.</p></details>
+</main>
+<footer><div class="wrap"><p>Three friends. A little play. A little wonder.</p><nav aria-label="More from ToadAid"><a href="../">Children’s Corner</a><a href="/">ToadAid Home</a></nav></div></footer>
+</body></html>

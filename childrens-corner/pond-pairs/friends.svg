@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <symbol id="toby" viewBox="0 0 120 120">
+    <g stroke="#243c38" stroke-width="3" stroke-linejoin="round">
+      <path d="M23 52C15 19 47 17 51 37H70C76 16 104 21 99 52C115 80 101 105 60 105S7 83 23 52Z" fill="#35b9ec"/>
+      <ellipse cx="60" cy="79" rx="34" ry="23" fill="#fffaf1" stroke="none"/>
+      <ellipse cx="32" cy="104" rx="13" ry="7" fill="#35b9ec"/><ellipse cx="88" cy="104" rx="13" ry="7" fill="#35b9ec"/>
+      <ellipse cx="37" cy="45" rx="11" ry="14" fill="#182b2b"/><ellipse cx="83" cy="45" rx="11" ry="14" fill="#182b2b"/>
+      <circle cx="40" cy="40" r="4" fill="white" stroke="none"/><circle cx="86" cy="40" r="4" fill="white" stroke="none"/>
+      <path d="M49 70Q54 79 60 72Q66 79 72 70" fill="none" stroke-linecap="round"/>
+    </g>
+  </symbol>
+  <symbol id="taboshi" viewBox="0 0 120 120">
+    <g stroke="#243c38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M54 94Q42 105 47 111H58L65 96M67 95Q72 105 80 109H88Q89 102 76 94" fill="#65bd50"/>
+      <path d="M61 8C37 34 17 48 23 73C29 104 84 109 96 76C105 52 79 34 61 8Z" fill="#87d95f"/>
+      <path d="M61 21L61 95M61 41L40 47M61 41L80 49M61 74L39 85M61 74L84 86" fill="none" stroke="#397145" stroke-width="2"/>
+      <ellipse cx="43" cy="61" rx="5" ry="7" fill="#182b2b" stroke="none"/><ellipse cx="78" cy="61" rx="5" ry="7" fill="#182b2b" stroke="none"/>
+      <path d="M52 73Q61 82 70 73" fill="none"/>
+    </g>
+  </symbol>
+  <symbol id="patience" viewBox="0 0 120 120">
+    <g stroke="#243c38" stroke-width="3" stroke-linejoin="round">
+      <ellipse cx="36" cy="106" rx="12" ry="7" fill="#f35b46"/><ellipse cx="84" cy="106" rx="12" ry="7" fill="#f35b46"/>
+      <path d="M60 12L110 98H10ZM60 43L43 72H77Z" fill="#f35b46" fill-rule="evenodd"/>
+      <path d="M29 84Q34 75 39 84M81 84Q86 75 91 84M51 87Q60 95 69 87" fill="none" stroke-linecap="round"/>
+    </g>
+  </symbol>
+  <symbol id="pond" viewBox="0 0 120 120">
+    <ellipse cx="60" cy="82" rx="46" ry="14" fill="#a4dbe8"/>
+    <path d="M59 77C31 83 18 65 36 50C49 40 61 49 66 60L81 49C101 72 82 85 59 77Z" fill="#9ac97c" stroke="#316642" stroke-width="3"/>
+    <path d="M58 51Q35 32 48 18Q60 24 63 39Q68 23 81 24Q92 44 66 53Z" fill="#f5b8ae" stroke="#895249" stroke-width="3"/>
+    <path d="M28 101H42M77 101H94" stroke="#195d75" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+</svg>
