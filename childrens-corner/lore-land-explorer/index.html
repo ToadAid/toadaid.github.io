@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toby’s Lore Land Explorer · Play | ToadAid Children’s Corner</title>
+<meta name="description" content="Explore three floating Lore Lands with Blue Toby, Taboshi, and Patience. Tap a picture spot to discover a tiny story and something to notice together.">
+<link rel="canonical" href="https://toadaid.github.io/childrens-corner/lore-land-explorer/">
+<meta property="og:title" content="Toby’s Lore Land Explorer · ToadAid Children’s Corner">
+<meta property="og:description" content="Three beautiful places. Three good friends. Fifteen little discoveries.">
+<meta property="og:image" content="https://toadaid.github.io/childrens-corner/art/lore-land-lantern-garden.webp">
+<link rel="icon" href="/assets/icons/favicon.svg"><meta name="theme-color" content="#195d75">
+<link rel="stylesheet" href="../corner.css"><link rel="stylesheet" href="explorer.css">
+<script type="module" src="explorer.mjs"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to exploring</a>
+<header class="site-top wrap"><a class="brand" href="../">TOADAID <small>Children’s Corner</small></a><nav aria-label="Children’s Corner"><a href="../#play">More to play</a><a href="#grown-ups">For grown-ups</a></nav></header>
+<main id="main" class="explorer-wrap">
+  <div class="explorer-heading"><p class="eyebrow">Look · Discover · Read together</p><h1>Toby’s Lore Land Explorer</h1><p>Come along with Blue Toby, Taboshi, and Patience. Tap a numbered spot to find a tiny story, a familiar friend, or something new to notice.</p></div>
+  <div id="explorer" hidden>
+    <div id="land-picker" class="land-picker" role="group" aria-label="Choose a Lore Land"></div>
+    <section aria-labelledby="land-title">
+      <div class="explorer-land-heading"><h2 id="land-title">Lantern Garden</h2><p id="land-subtitle">A little light. Three good friends.</p></div>
+      <div class="explorer-scene"><img id="land-image" src="../art/lore-land-lantern-garden.webp" width="1672" height="941" fetchpriority="high" alt="Blue Toby, Taboshi, and Patience in the floating lantern garden."><div id="pins" role="group" aria-label="Picture discoveries"></div></div>
+      <p class="explorer-instruction">Choose a number in the picture—or a discovery button below. Explore in any order.</p>
+      <div id="discoveries" class="discovery-list" role="group" aria-label="Choose a discovery"></div>
+      <div class="explorer-progress"><p id="progress" role="status" aria-live="polite" aria-atomic="true">0 of 5 discoveries found</p><a id="land-story" href="../lore-lands.html#lantern-garden">Read this land’s story →</a></div>
+      <div id="finished" class="explorer-finish" hidden><h3 id="finish-title">A lovely little adventure!</h3><p id="finish-text"></p><button id="next-land" class="button" type="button">Explore another land</button></div>
+      <p id="save-note" class="explorer-save"></p><button id="reset" class="explorer-reset" type="button">Explore this land again</button>
+    </section>
+  </div>
+  <p id="compatibility" class="notice-box" hidden>This browser can show our <a href="../lore-lands.html">picture stories</a>. Try a newer browser for the interactive explorer.</p>
+  <noscript><div class="notice-box"><p>The explorer needs JavaScript. You can still <a href="../lore-lands.html">visit the picture stories</a> together.</p></div></noscript>
+  <details id="grown-ups" class="parent-notes explorer-notes"><summary>For grown-ups: a little exploring together</summary><p>Each of the three lands has five discoveries. Revisit a spot as often as you like; discoveries stay found until you choose “Explore this land again.” That starts only the current land afresh. There is no timer or required order.</p><p>This browser remembers the last land and discovered spots on this device. If saving is blocked, you can still explore for the current visit. The garden game keeps its own separate progress.</p><p>“Read to me” uses voices available in your browser and starts only when selected. You can stop it at any time, or read together instead. Closing a discovery stops its narration.</p><p>These pictures and tiny stories are imagined Children’s Corner adaptations inspired by the creator’s Lore Land artwork. The original deeds, titles, and Toadgod posts are distinct from this game’s fictional dialogue. Learn more in the <a href="../lore-lands.html#grown-ups">Lore Land story notes</a>.</p></details>
+  <nav class="explorer-footer-links" aria-label="Keep playing"><a href="../#play">Back to play</a><a href="../little-garden/">Toby’s Little Garden</a><a href="../pond-pairs/">Pond Pairs</a></nav>
+</main>
+<dialog id="discovery-dialog" class="discovery-dialog" aria-labelledby="discovery-title" aria-describedby="discovery-story discovery-question">
+  <div class="dialog-top"><svg class="dialog-friend" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><use id="dialog-friend" href="../pond-pairs/friends.svg#toby"></use></svg><button id="close-top" class="dialog-close" type="button" aria-label="Close discovery"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M6 6L18 18M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+  <p class="eyebrow" id="discovery-count">A little discovery</p><h2 id="discovery-title" tabindex="-1">Hello, little explorer</h2><p id="discovery-story"></p>
+  <div class="dialog-question"><h3>Look and talk together</h3><p id="discovery-question"></p></div>
+  <div class="dialog-actions"><button id="close-discovery" class="button" type="button">Keep exploring</button><button id="read-aloud" class="button secondary" type="button" hidden>Read to me</button></div><p id="audio-note" class="audio-note" role="status" aria-live="polite"></p>
+</dialog>
+<footer><div class="wrap"><p>One little discovery. One good friend beside you.</p><nav aria-label="More from ToadAid"><a href="../">Children’s Corner</a><a href="/">ToadAid Home</a></nav></div></footer>
+</body></html>
