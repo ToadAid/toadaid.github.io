@@ -28,6 +28,14 @@
     padding:6px 10px; border:1px solid var(--ring); background:#fff; border-radius:8px;
     cursor:pointer;
   }
+  a.btn{display:inline-flex;align-items:center;color:var(--ink);text-decoration:none}
+  header nav{display:flex;flex-wrap:wrap;gap:8px}
+  .reader-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn,.bm-btn{min-height:44px}
+  .reading-tools{position:relative}
+  .reading-tools summary{cursor:pointer;min-height:44px;display:list-item;list-style-position:inside}
+  .reading-tools-panel{position:absolute;right:0;top:calc(100% + 8px);width:min(360px,calc(100vw - 32px));display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:#fff;border:1px solid var(--ring);border-radius:12px;box-shadow:var(--shadow);z-index:50}
+  .reading-tools summary:focus-visible,.acc-toggle:focus-visible{outline:2px solid #355e3b;outline-offset:3px}
   .btn:hover{background:#fafafa}
   .btn:focus-visible,.pill:focus-visible,.lore-gpt-button:focus-visible{
     outline:2px solid #8ecac7;
@@ -92,7 +100,9 @@
     border-bottom:1px solid #eee;
   }
   .acc-header:hover{background:#fbfbfb}
-  .acc-title{flex:1}
+  .acc-title{flex:1;min-width:0;overflow-wrap:anywhere}
+  .acc-toggle{display:block;width:100%;min-height:44px;border:0;background:transparent;text-align:left;color:var(--ink);font:inherit;cursor:pointer;padding:6px 0}
+  .entry-heading{margin:.15rem 0;font-size:1.05rem}
   .entry-meta{font-size:.85rem; color:#666}
   .entry-title{margin:.15rem 0; font-size:1.05rem}
   .acc-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
@@ -101,7 +111,7 @@
   .acc-body{display:none; padding:12px 14px}
   .acc-body.open{display:block}
   .twocol{display:flex; gap:14px; flex-wrap:wrap}
-  .panel{flex:1; min-width:260px; background:#fafafa; border:1px solid #eee; border-radius:10px; padding:10px}
+  .panel{flex:1 1 260px; min-width:0; overflow-wrap:anywhere; background:#fafafa; border:1px solid #eee; border-radius:10px; padding:10px}
   .panel h3{margin:0 0 6px 0; font-size:.95rem}
 
   .chips{margin-top:8px; display:flex; flex-wrap:wrap; gap:6px}
@@ -114,6 +124,8 @@
   /* Mobile */
   @media (max-width: 768px){
     header{
+      position:static;
+      flex-wrap:wrap;
       align-items:flex-start;
       gap:12px;
     }
@@ -126,7 +138,8 @@
       justify-content:flex-start;
     }
     .btn,.pill{
-      padding:6px 10px;
+      min-height:44px;
+      padding:8px 12px;
     }
     .lore-gpt-callout{
       width:calc(100% - 20px);
@@ -139,8 +152,12 @@
     .lore-gpt-callout p{
       font-size:.98rem;
     }
+    .reading-tools-panel{position:static;width:100%;margin-top:8px}
+    .reader-actions{width:100%;align-items:flex-start}
+    .reading-tools[open]{flex:1 1 100%}
+    .acc-header{flex-wrap:wrap}
     article.scroll{
-      width:94%;
+      width:100%;
       max-width:100%;
     }
   }
@@ -157,15 +174,21 @@
 
 <header>
   <h1>🐸 Toadgod Lore Library</h1>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <button class="btn" id="toggleComm">Toggle Commentary</button>
-    <button class="btn" id="fontPlus">A+</button>
-    <button class="btn" id="fontMinus">A-</button>
+  <nav aria-label="ToadAid"><a href="/" class="btn">Home</a> <a href="https://toadaid.duckdns.org/" class="btn">Talk to Mirror</a></nav>
+  <div class="reader-actions">
     <button class="btn" id="toggleBookmarks">Bookmarks</button>
     <button class="btn" id="goLatest">Latest Lore</button>
-    <button class="btn" id="enterAdmin">Enter Admin</button>
-    <button class="btn hidden" id="exitAdmin">Exit Admin</button>
-    <button class="btn hidden" id="exportBtn">Export JSON</button>
+    <details class="reading-tools">
+      <summary class="btn">Reading tools</summary>
+      <div class="reading-tools-panel">
+        <button class="btn" id="toggleComm" aria-pressed="true">Show commentary</button>
+        <button class="btn" id="fontPlus" aria-label="Increase text size">A+</button>
+        <button class="btn" id="fontMinus" aria-label="Decrease text size">A−</button>
+        <button class="btn" id="enterAdmin">Enter Admin</button>
+        <button class="btn hidden" id="exitAdmin">Exit Admin</button>
+        <button class="btn hidden" id="exportBtn">Export JSON</button>
+      </div>
+    </details>
   </div>
 </header>
 
@@ -174,13 +197,15 @@
 </div>
 
 <section class="lore-gpt-callout" aria-label="Mirror by ToadAid lore study guide">
-  <h2>🪞 Study Tobyworld Lore</h2>
+  <h2>🪞 Explore the Lore with Mirror</h2>
+  <p>Ask a question and continue your conversation in the hosted Mirror app.</p>
+  <a class="lore-gpt-button" href="https://toadaid.duckdns.org/">Talk to Mirror</a>
   <p>
     Open Mirror by ToadAid, a public lore study guide for Toby, Toadgod, Patience, Rune3,
     Taboshi, SatoSwap, fallen frogs, and the pond.
   </p>
   <a class="lore-gpt-button" href="https://chatgpt.com/g/g-6a29788b7eb081919614905c7c837883-mirror-by-toadaid" target="_blank" rel="noopener noreferrer">
-    Study Tobyworld Lore
+    Open the ChatGPT Study Guide
   </a>
   <div class="lore-gpt-open-note">Opens Mirror by ToadAid in ChatGPT.</div>
   <div class="lore-gpt-note">Public lore study only · No financial advice · No promises</div>
@@ -312,10 +337,21 @@ function card(it,i){
   art.id = safeId; 
   art.setAttribute("data-entry-id", safeId);
 
-  const head=document.createElement("button"); head.type="button"; head.className="acc-header";
+  const head=document.createElement("div"); head.className="acc-header";
   const hLeft=document.createElement("div"); hLeft.className="acc-title";
-  hLeft.innerHTML=`<div class="entry-meta">${it.date||""} ${it.url?` · <a href="${it.url}" target="_blank" rel="noopener">Original ↗</a>`:""}</div>
-                   <div class="entry-title">${it.title||""}</div>`;
+  const heading=document.createElement("h2"); heading.className="entry-heading";
+  const toggle=document.createElement("button"); toggle.type="button"; toggle.className="acc-toggle";
+  toggle.textContent=it.title || "Untitled lore";
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", "lore-body-" + safeId);
+  heading.appendChild(toggle);
+  hLeft.appendChild(heading);
+  const meta=document.createElement("div"); meta.className="entry-meta"; meta.textContent=it.date || "";
+  if(it.url){
+    const original=document.createElement("a"); original.href=it.url; original.target="_blank"; original.rel="noopener"; original.textContent="Original ↗";
+    meta.append(" · ",original);
+  }
+  hLeft.appendChild(meta);
   const actions=document.createElement("div"); actions.className="acc-actions";
 
   const bm=document.createElement("button"); bm.className="bm-btn"; 
@@ -339,7 +375,7 @@ function card(it,i){
 
   head.append(hLeft,actions);
 
-  const body=document.createElement("div"); body.className="acc-body";
+  const body=document.createElement("div"); body.className="acc-body"; body.id="lore-body-" + safeId;
   const grid=document.createElement("div"); grid.className="twocol";
   const left=document.createElement("div"); left.className="panel"; left.innerHTML=`<h3>Original Lore</h3>${md(stripFirstH2(it.original))}`;
   const right=document.createElement("div"); right.className="panel"; right.style.display=showComm?"block":"none"; right.innerHTML=`<h3>Commentary</h3>${md(stripFirstH2(it.comment))}`;
@@ -356,8 +392,9 @@ function card(it,i){
   (it.tags||"").split(",").map(s=>s.trim()).filter(Boolean).forEach(t=>{ const s=document.createElement("span"); s.className="chip"; s.textContent=t; chips.appendChild(s); });
   body.append(grid, chips);
 
-  head.addEventListener("click", ()=>{
-    body.classList.toggle("open");
+  toggle.addEventListener("click", ()=>{
+    const expanded=body.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", String(expanded));
     setLastRead(safeId);
   });
 
@@ -522,9 +559,9 @@ function exportJSON(){
 }
 
 /* ====== Events ====== */
-$("#toggleComm").addEventListener("click",()=>{ showComm=!showComm; paint(); });
-$("#fontPlus").addEventListener("click",()=>{ fontScale=Math.min(1.4,fontScale+0.05); document.body.style.fontSize=fontScale+"rem"; });
-$("#fontMinus").addEventListener("click",()=>{ fontScale=Math.max(0.9,fontScale-0.05); document.body.style.fontSize=fontScale+"rem"; });
+$("#toggleComm").addEventListener("click",()=>{ showComm=!showComm; $("#toggleComm").setAttribute("aria-pressed",String(showComm)); paint(); });
+$("#fontPlus").addEventListener("click",()=>{ fontScale=Math.min(1.4,fontScale+0.05); document.documentElement.style.fontSize=(fontScale * 100)+"%"; });
+$("#fontMinus").addEventListener("click",()=>{ fontScale=Math.max(0.9,fontScale-0.05); document.documentElement.style.fontSize=(fontScale * 100)+"%"; });
 $("#toggleBookmarks").addEventListener("click",()=>{
   showingBookmarks=!showingBookmarks;
   $("#toggleBookmarks").textContent = showingBookmarks? "All Entries":"Bookmarks";

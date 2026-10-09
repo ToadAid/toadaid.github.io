@@ -105,7 +105,7 @@ h2{display:flex;align-items:center;gap:.55rem;margin:4px 0 13px;padding-bottom:9
 h3{margin:16px 0 9px;color:#b8e8ff}.meta{margin:4px 0 17px;color:var(--muted);font-size:.94rem}.lead{font-size:1.08rem;color:#e7f2ff}.quote{margin:22px 0 4px;padding:18px 20px;border-left:4px solid var(--teal);border-radius:0 14px 14px 0;background:rgba(5,22,32,.78);color:#dcfff3;font-size:1.07rem}
 .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px;margin:20px 0 2px}.kpi .item{padding:15px 16px;text-align:center;border:1px solid rgba(148,163,184,.65);border-radius:13px;background:rgba(10,18,34,.9);font-size:.94rem}.kpi strong{color:#c8f4ff}
 .code{overflow-x:auto;margin:16px 0 0;padding:18px 20px;border:1px solid rgba(30,64,175,.58);border-radius:14px;background:#0b152a;color:#dbeafe;font:500 .88rem/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:18px;margin:22px 0 4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(285px,100%),1fr));gap:18px;margin:22px 0 4px}
 .module{position:relative;overflow:hidden;padding:21px 19px;border:1px solid rgba(148,163,184,.55);border-radius:18px;background:linear-gradient(145deg,#091326,#08101f);box-shadow:0 10px 24px rgba(0,0,0,.24)}
 .module::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--cyan),var(--teal),var(--blue));opacity:.94}.module .icon{font-size:2rem}.module .title{margin:7px 0 3px;color:#b7fbe3;font-size:1.16rem;font-weight:750}.module .repo{color:#b9cbea;font-size:.87rem}.module p{margin:11px 0;color:#d4e2f7}.status-row{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0}.status{padding:3px 9px;border-radius:999px;border:1px solid rgba(96,165,250,.55);background:rgba(15,31,58,.85);color:#cfe5ff;font-size:.76rem;font-weight:700;letter-spacing:.035em}.status.proven{border-color:rgba(52,211,153,.7);color:#bff8df}.status.private{border-color:rgba(167,139,250,.65);color:#ddd2ff}.status.locked{border-color:rgba(251,191,36,.72);color:#fde7a4}.facts{margin:10px 0 0;padding-left:1.12rem;color:#b9cbe4}.facts li{margin:6px 0}
 .timeline{display:grid;gap:13px;margin-top:19px}.receipt{display:grid;grid-template-columns:145px 1fr;gap:18px;padding:16px 18px;border:1px solid rgba(96,165,250,.35);border-radius:14px;background:rgba(8,18,37,.78)}.receipt .when{color:#8edfff;font-weight:750}.receipt strong{color:#dff8ff}
@@ -149,27 +149,29 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
     </div>
   </section>
 
+  <section class="card" id="available">
+    <h2>🪞 Available now: Mirror conversations</h2>
+    <p>Ask about Tobyworld lore, reflect, or work through a technical question in the public Mirror conversation app.</p>
+    <div class="links"><a class="button" href="https://toadaid.duckdns.org/">Talk to Mirror →</a><a class="button" href="/lore/">Read the Lore Library</a></div>
+    <p class="meta">Web conversation app verified available: 2026-10-09. Desktop, specialist tools, and consequential actions have separate development and authorization boundaries.</p>
+  </section>
+
   <section class="card" id="map">
     <h2>🧭 The ToadAid system map</h2>
     <div class="meta">One public mission · modular governed systems</div>
-<pre class="code"><code>                              TOADAID
-                                 │
-                    Governed public mission
-                                 │
-             ┌───────────────────┴───────────────────┐
-             │                                       │
-        MIRROR CORE                             TOADAID MCP
- memory · policy · trust                 capabilities · tool fabric
-             │                                       │
-             ├───────────────────┬───────────────────┤
-             │                   │                   │
-      TOADAID CODER         LIVING AGENTS       ZORA AGENT
- governed forging     TOMI / TOADGANG AGENTS      onchain
-             │                   │                   │
-             └───────────────────┴───────────────────┘
-                                 │
-                         MIRROR DESKTOP
-                    calm human-facing surface</code></pre>
+    <p><a href="https://github.com/ToadAid/toadaid-architecture/blob/53de8698a6da1c14da752b637b825ca80ebd9d0f/ECOSYSTEM.md">Canonical ecosystem architecture</a> · reviewed 2026-10-09. Architectural roles do not imply that every component is publicly available.</p>
+<pre class="code"><code>TOADAID · governed ecosystem
+
+Mirror             Context, reasoning, and proposals
+Mirror Core        Governance evaluation kernel
+Living Agent       Continuity and scoped knowledge
+ToadAid Coder      Bounded software construction
+ToadAid MCP        Protocol and capability fabric
+Desktop Bridge     Local governed execution boundary
+Specialists        Domain expertise under explicit scope
+Humans             Review and authorize consequences
+
+Capability does not create authority.</code></pre>
   </section>
 
   <section class="card" id="systems">
@@ -179,10 +181,10 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
       <article class="module">
         <div class="icon" aria-hidden="true">🪞</div>
         <div class="title">Mirror Core</div>
-        <div class="repo">Shared governed mind, memory, policy, and specialist coordination</div>
+        <div class="repo">Governance evaluation kernel · explicit capability and authority boundaries</div>
         <div class="status-row"><span class="status proven">PROVEN FOUNDATIONS</span><span class="status private">PRIVATE DURING EXTRACTION</span></div>
-        <p>Mirror Core is becoming the sovereign shared substrate beneath future ToadAid agents and surfaces.</p>
-        <ul class="facts"><li>Durable governed memory boundaries are being forged and verified.</li><li>OpenClaw-era dependencies are being separated without erasing lineage.</li><li>Execution, policy, identity, and memory remain explicit owners.</li></ul>
+        <p>Mirror Core evaluates governance boundaries. Living Agent owns continuity and scoped knowledge; execution remains bounded through governed components.</p>
+        <ul class="facts"><li>Governance evaluation remains separate from reasoning and proposals.</li><li>Living Agent carries continuity and scoped knowledge.</li><li>The Desktop Bridge provides the local governed consequence boundary.</li></ul>
       </article>
 
       <article class="module">
@@ -233,8 +235,8 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
   </section>
 
   <section class="card" id="proofs">
-    <h2>🧾 Recent forge receipts</h2>
-    <div class="meta">Sanitized public checkpoints · not a substitute for source review</div>
+    <h2>🧾 Development milestone summaries</h2>
+    <div class="meta">Historical milestone summaries · current applicability requires dated source and evidence review</div>
     <div class="timeline">
       <div class="receipt"><div class="when">Mirror Core</div><div><strong>Governed durable memory lane advanced.</strong><br />Identity, admission, release, handoff, and closure boundaries are being verified as explicit contracts rather than informal model memory.</div></div>
       <div class="receipt"><div class="when">TOMI</div><div><strong>Living local canary entered operation.</strong><br />Identity, continuity, heartbeat, governed sleep, and desktop presence now persist without granting conversation or execution authority.</div></div>
@@ -279,10 +281,11 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
   </section>
 
   <section class="card" id="records">
-    <h2>📚 Public records already visible</h2>
+    <h2>📚 Architecture and historical records</h2>
     <div class="meta">Preserved architecture and onchain identity work</div>
-    <p>The living build page records current work. Completed artifacts and architecture records remain preserved in their existing public homes.</p>
+    <p>The canonical architecture defines current system roles. Earlier blueprints and honors remain preserved as historical records; they do not establish current deployment or proof applicability.</p>
     <div class="links">
+      <a class="button" href="https://github.com/ToadAid/toadaid-architecture">Canonical Architecture</a>
       <a class="button" href="/honors/mirror-system-integrated-blueprint.html">🪞 Mirror Integrated Blueprint</a>
       <a class="button" href="/honors/mirror-runtime-v1-architecture-diagram.html">🧭 Mirror Runtime Architecture</a>
       <a class="button" href="/honors/">🏛️ Honors &amp; Offerings</a>

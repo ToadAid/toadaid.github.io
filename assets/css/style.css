@@ -1,0 +1,13 @@
+/* Shared structural baseline. Page styles own their visual theme. */
+*, *::before, *::after { box-sizing: border-box; }
+img, video { max-width: 100%; height: auto; }
+iframe { max-width: 100%; }
+pre { overflow-x: auto; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
