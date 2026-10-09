@@ -63,7 +63,59 @@ test('all Pond inline scripts parse after integration',()=>{
    writeFileSync('/tmp/pond-inline-wallet-check.mjs',source);
   }else if(!attributes.includes('src='))new vm.Script(source);
  }
- assert.ok(html.includes('walletBridge.connect()'));
+ assert.ok(html.includes('walletBridge.connect(selectedWallet)'));
  assert.ok(!html.includes('const mockAddress'));
  assert.ok(!html.includes('Please connect wallet first.'));
+});
+
+test('EIP-6963 discovers named wallets even without window.ethereum',async()=>{
+ const events=new EventTarget();
+ const browser={addEventListener:events.addEventListener.bind(events),dispatchEvent:events.dispatchEvent.bind(events)};
+ events.addEventListener('eip6963:requestProvider',()=>{
+  const event=new Event('eip6963:announceProvider');
+  event.detail={info:{name:'Rabby Wallet'},provider:wallet};events.dispatchEvent(event);
+ });
+ const b=bridge(null,browser);const list=await b.listWallets();
+ assert.equal(list.length,1);assert.equal(list[0].name,'Rabby Wallet');
+ assert.equal((await b.connect(list[0])).address,address);
+});
+test('explicit wallet selection does not prompt the other installed extension',async()=>{
+ let first=0,second=0;
+ const p1={request:async()=>{first++;return[address]}};
+ const p2={request:async()=>{second++;return[address]}};
+ const b=bridge(null,{ethereum:{providers:[p1,p2]}});const list=await b.listWallets();
+ await b.connect(list[1]);assert.equal(first,0);assert.equal(second,1);
+});
+test('announced provider takes precedence over conflicting legacy injection',async()=>{
+ const events=new EventTarget();let unwanted=0;
+ const browser={ethereum:{request:async()=>{unwanted++;throw Error('Wrong wallet')}},addEventListener:events.addEventListener.bind(events),dispatchEvent:events.dispatchEvent.bind(events)};
+ const b=bridge(null,browser);const event=new Event('eip6963:announceProvider');
+ event.detail={info:{name:'MetaMask'},provider:wallet};events.dispatchEvent(event);
+ const list=await b.listWallets();assert.equal(list.length,1);assert.equal(list[0].provider,wallet);
+ await b.connect(list[0]);assert.equal(unwanted,0);
+});
+
+function uiHarness(wallets) {
+ const nodes=new Map(),dialogs=[];let chosen=null;
+ function element(){return {hidden:true,children:[],handlers:{},classList:{add(){},remove(){},toggle(){}},setAttribute(){},append(...items){this.children.push(...items)},addEventListener(name,fn){this.handlers[name]=fn},showModal(){dialogs.push(this)},close(){},remove(){}};}
+ const bridge={initialize:async()=>null,listWallets:async()=>wallets,connect:async selection=>{chosen=selection;return{address,provider:selection.provider,name:selection.name,mode:'Browser'}}};
+ const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id)},createElement:element,body:{append(){}}};
+ const browser={addEventListener(){},showStatusMessage(){}};
+ const html=readFileSync(new URL('../pond/index.html',import.meta.url),'utf8');
+ const source=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].find(x=>x[1].includes('type="module"'))[2];
+ const boot=source.slice(0,source.indexOf('    dropBtn.addEventListener')).replace(/import .*?;\n/,'');
+ vm.runInNewContext(boot,{document,window:browser,createWalletBridge:()=>bridge,console});
+ return {nodes,dialogs,getChosen:()=>chosen};
+}
+const flush=()=>new Promise(resolve=>setImmediate(resolve));
+test('no-wallet browser hides Connect Wallet without a failure message',async()=>{
+ const ui=uiHarness([]);await flush();assert.equal(ui.nodes.get('wallet-btn').hidden,true);assert.equal(ui.getChosen(),null);
+});
+test('browser UI chooses an installed wallet before requesting connection',async()=>{
+ const entries=[{name:'MetaMask',provider:{}},{name:'Rabby Wallet',provider:{}}];
+ const ui=uiHarness(entries);await flush();const button=ui.nodes.get('wallet-btn');assert.equal(button.hidden,false);
+ const pending=button.handlers.click();await flush();assert.equal(ui.getChosen(),null);
+ const dialog=ui.dialogs[0];assert.equal(dialog.children[3].textContent,'Rabby Wallet');
+ dialog.children[3].handlers.click();await pending;assert.equal(ui.getChosen(),entries[1]);assert.equal(button.disabled,false);
+ assert.match(button.textContent,/Rabby Wallet/);
 });
