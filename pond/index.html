@@ -446,6 +446,14 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
+    .wallet-picker { background:#0d1117; color:#e6edf3; border:1px solid #52665b; border-radius:16px; width:min(420px,calc(100vw - 32px)); max-height:80vh; overflow:auto; padding:24px; }
+    .wallet-picker::backdrop { background:rgba(0,0,0,.75); }
+    .wallet-picker h2 { font:400 24px Georgia,serif; margin:0 0 12px; }
+    .wallet-picker p { color:#b1bac4; font-size:14px; line-height:1.6; margin:0 0 20px; }
+    .wallet-picker button { display:block; width:100%; min-height:48px; text-align:left; border:1px solid #52665b; border-radius:8px; background:#161b22; padding:12px 16px; margin-top:10px; overflow-wrap:anywhere; }
+    .wallet-picker button:hover { background:#1f3955; }
+    .wallet-picker button:focus-visible { outline:2px solid #79c0ff; outline-offset:3px; }
+    .wallet-picker .wallet-picker-cancel { text-align:center; background:transparent; }
   </style>
 </head>
 
@@ -501,7 +509,7 @@
       <div class="text-[10px] uppercase tracking-widest text-zinc-500">
         POND · v1.0
       </div>
-      <button id="wallet-btn"
+      <button id="wallet-btn" hidden
         class="bg-zinc-900/80 border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest rounded hover:border-emerald-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
         Connect Wallet
       </button>
@@ -1332,7 +1340,7 @@
   </script>
 
   <script type="module">
-    import { createWalletBridge } from "./wallet-bridge.mjs";
+    import { createWalletBridge } from "./wallet-bridge.mjs?v=wallet-picker-1";
     const walletBridge = createWalletBridge();
     // Initialize without delaying any button handlers when a host is absent.
     walletBridge.initialize().then(sdk => { window.__sdk = sdk; });
@@ -1342,6 +1350,54 @@
     shareActions.classList.toggle("visible", Boolean(window.currentReflection));
     const dropBtn = document.getElementById("drop-btn");
     const freezeBtn = document.getElementById("freeze-btn");
+
+    async function updateWalletAvailability() {
+      const wallets = await walletBridge.listWallets();
+      walletBtn.hidden = wallets.length === 0;
+    }
+    // No connection prompt or fake wallet when no provider is installed.
+    updateWalletAvailability();
+    window.addEventListener("eip6963:announceProvider", () => {
+      walletBtn.hidden = false;
+    });
+
+    function chooseWallet(wallets) {
+      return new Promise(resolve => {
+        const dialog = document.createElement("dialog");
+        dialog.className = "wallet-picker";
+        dialog.setAttribute("aria-labelledby", "wallet-picker-title");
+        const heading = document.createElement("h2");
+        heading.id = "wallet-picker-title";
+        heading.textContent = "Choose your wallet";
+        const hint = document.createElement("p");
+        hint.textContent = "Select the wallet you want to connect. You may need to unlock its extension.";
+        dialog.append(heading, hint);
+        let settled = false;
+        function finish(choice) {
+          if (settled) return;
+          settled = true;
+          dialog.close();
+          dialog.remove();
+          resolve(choice);
+        }
+        for (const wallet of wallets) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = wallet.name;
+          button.addEventListener("click", () => finish(wallet));
+          dialog.append(button);
+        }
+        const cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.textContent = "Cancel";
+        cancel.className = "wallet-picker-cancel";
+        cancel.addEventListener("click", () => finish(null));
+        dialog.addEventListener("cancel", event => { event.preventDefault(); finish(null); });
+        dialog.append(cancel);
+        document.body.append(dialog);
+        dialog.showModal();
+      });
+    }
 
     let walletConnected = false;
     let connectedAddress = null;
@@ -1369,6 +1425,7 @@
       walletConnected = false;
       connectedAddress = null;
       walletBtn.textContent = "Connect Wallet";
+      updateWalletAvailability();
       walletBtn.classList.remove("wallet-connected");
       walletBtn.classList.remove("wallet-mock");
       shareActions.classList.toggle("visible", Boolean(window.currentReflection));
@@ -1382,20 +1439,32 @@
       }
 
       walletBtn.disabled = true;
-      walletBtn.textContent = "Connecting…";
+      walletBtn.textContent = "Choose wallet…";
+      let selectedWallet = null;
       try {
-        const connection = await walletBridge.connect();
+        const wallets = await walletBridge.listWallets();
+        if (!wallets.length) {
+          walletBtn.hidden = true;
+          return;
+        }
+        selectedWallet = await chooseWallet(wallets);
+        if (!selectedWallet) {
+          walletBtn.textContent = "Connect Wallet";
+          return;
+        }
+        walletBtn.textContent = "Connecting…";
+        const connection = await walletBridge.connect(selectedWallet);
         ethProvider = connection.provider;
         connectedAddress = connection.address;
         walletConnected = true;
-        setWalletUIConnected(connectedAddress, connection.mode);
+        setWalletUIConnected(connectedAddress, connection.name || connection.mode);
         syncWalletGlobals(connection.mode);
         window.showStatusMessage?.("✅ Wallet connected.", "success");
       } catch (e) {
         console.error("Wallet connect error:", e);
         setWalletUIDisconnected();
         window.showStatusMessage?.(Number(e?.code) === 4001
-          ? "Wallet connection cancelled."
+          ? `${selectedWallet?.name || "The wallet"} declined the connection. Unlock that wallet and try again, or choose another wallet.`
           : "Wallet connection failed: " + (e?.message || "Unknown error"), "info");
       } finally {
         walletBtn.disabled = false;
