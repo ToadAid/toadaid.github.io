@@ -1048,7 +1048,10 @@
     }
 
     window.currentReflection = null;
-    function saveCurrentReflection(q, a) { window.currentReflection = { q, a }; }
+    function saveCurrentReflection(q, a) {
+      window.currentReflection = { q, a };
+      document.getElementById("share-actions")?.classList.add("visible");
+    }
     window.saveCurrentReflection = saveCurrentReflection;
 
     async function processInquiry(qOverride){
@@ -1329,24 +1332,14 @@
   </script>
 
   <script type="module">
-    // Farcaster Miniapp SDK is great inside Warpcast, but this page also runs
-    // in normal browsers + Base/Coinbase app webviews. So we load it *optionally*.
-    let sdk = null;
-    try {
-      const mod = await import("https://esm.sh/@farcaster/miniapp-sdk");
-      sdk = mod?.sdk || null;
-      if (sdk) {
-        window.__sdk = sdk;
-        if (sdk) { try { await sdk.actions.ready(); } catch (e) {} }
-      }
-    } catch (e) {
-      // Not running in Farcaster; continue with plain web fallbacks.
-      sdk = null;
-      window.__sdk = null;
-    }
+    import { createWalletBridge } from "./wallet-bridge.mjs";
+    const walletBridge = createWalletBridge();
+    // Initialize without delaying any button handlers when a host is absent.
+    walletBridge.initialize().then(sdk => { window.__sdk = sdk; });
 
     const walletBtn = document.getElementById("wallet-btn");
     const shareActions = document.getElementById("share-actions");
+    shareActions.classList.toggle("visible", Boolean(window.currentReflection));
     const dropBtn = document.getElementById("drop-btn");
     const freezeBtn = document.getElementById("freeze-btn");
 
@@ -1360,20 +1353,6 @@
     }
     syncWalletGlobals("none");
 
-    async function getProvider() {
-      if (sdk && sdk.wallet && typeof sdk.wallet.getEthereumProvider === "function") {
-        try {
-          const p = await sdk.wallet.getEthereumProvider();
-          if (p) return p;
-        } catch (e) {}
-      }
-      // Fallbacks (Base app / browser wallets)
-      if (window.ethereum) return window.ethereum;
-      if (window?.coinbaseWalletExtension) return window.coinbaseWalletExtension;
-      return null;
-    }
-
-    // ✅ preserve Mock styling + avoid removing wallet-mock unintentionally
     function setWalletUIConnected(addr, modeLabel) {
       const shortAddr = `${addr.slice(0,6)}…${addr.slice(-4)}`;
       walletBtn.textContent = `${shortAddr} (${modeLabel})`;
@@ -1386,12 +1365,13 @@
     }
 
     function setWalletUIDisconnected() {
+      ethProvider = null;
       walletConnected = false;
       connectedAddress = null;
       walletBtn.textContent = "Connect Wallet";
       walletBtn.classList.remove("wallet-connected");
       walletBtn.classList.remove("wallet-mock");
-      shareActions.classList.remove("visible");
+      shareActions.classList.toggle("visible", Boolean(window.currentReflection));
       syncWalletGlobals("none");
     }
 
@@ -1401,41 +1381,28 @@
         return;
       }
 
-      ethProvider = await getProvider();
-
-      if (!ethProvider) {
-        const mockAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
-        walletConnected = true;
-        connectedAddress = mockAddress;
-        setWalletUIConnected(mockAddress, "Mock");
-        syncWalletGlobals("Mock");
-        window.showStatusMessage?.("🔧 No Mini App wallet provider detected — using Mock.", "info");
-        return;
-      }
-
+      walletBtn.disabled = true;
+      walletBtn.textContent = "Connecting…";
       try {
-        const accounts = await ethProvider.request({ method: "eth_requestAccounts" });
-        const addr = (accounts && accounts[0]) ? accounts[0] : null;
-        if (!addr) throw new Error("No address returned");
-
+        const connection = await walletBridge.connect();
+        ethProvider = connection.provider;
+        connectedAddress = connection.address;
         walletConnected = true;
-        connectedAddress = addr;
-        const modeLabel = (ethProvider === window.ethereum ? "Browser" : "Base");
-        setWalletUIConnected(addr, modeLabel);
-        syncWalletGlobals(modeLabel);
+        setWalletUIConnected(connectedAddress, connection.mode);
+        syncWalletGlobals(connection.mode);
         window.showStatusMessage?.("✅ Wallet connected.", "success");
       } catch (e) {
         console.error("Wallet connect error:", e);
-        alert("Wallet connection failed: " + (e?.message || "Unknown error"));
+        setWalletUIDisconnected();
+        window.showStatusMessage?.(Number(e?.code) === 4001
+          ? "Wallet connection cancelled."
+          : "Wallet connection failed: " + (e?.message || "Unknown error"), "info");
+      } finally {
+        walletBtn.disabled = false;
       }
     });
 
     dropBtn.addEventListener("click", async () => {
-      if (!walletConnected) {
-        alert("Please connect wallet first.");
-        return;
-      }
-
       const ref = window.currentReflection || null;
       if (!ref) {
         alert("Please generate a reflection first using the input above.");
@@ -1465,18 +1432,18 @@ ${appUrl}`;
         cancelText: "Cancel"
       });
       if (!ok) return;
-      if (sdk && sdk.actions && typeof sdk.actions.composeCast === "function") {
-        try {
-          await sdk.actions.composeCast({ text: castText, embeds });
-          window.showStatusMessage?.("🌊 Composer opened.", "success");
-          return;
-        } catch (e) {
-          console.error("composeCast failed:", e);
-        }
+      const outcome = await walletBridge.composeCast({ text: castText, embeds });
+      if (outcome === "posted") {
+        window.showStatusMessage?.("🌊 Reflection shared.", "success");
+        return;
       }
-      const url = "https://warpcast.com/~/compose?text=" + encodeURIComponent(castText);
-      window.open(url, "_blank");
-      window.showStatusMessage?.("🌊 Opened Warpcast compose.", "success");
+      if (outcome === "cancelled") {
+        window.showStatusMessage?.("Sharing cancelled. Your reflection is still here.", "info");
+        return;
+      }
+      // A standard web page has no host composer. Use a real navigation rather
+      // than window.open after awaits, which desktop browsers may block.
+      window.location.assign("https://farcaster.xyz/~/compose?text=" + encodeURIComponent(castText));
 
     });
 
