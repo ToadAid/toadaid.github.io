@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toby’s Kindness Quest · A Place Beside Toby | ToadAid Children’s Corner</title>
+<meta name="description" content="Help Blue Toby notice, ask, and make room for a friend. A gentle choice-based story adventure with Taboshi and Patience, to read and play together.">
+<link rel="canonical" href="https://toadaid.github.io/childrens-corner/kindness-quest/">
+<meta property="og:title" content="Toby’s Kindness Quest · A Place Beside Toby">
+<meta property="og:description" content="Three little moments. Different ways to make a friend feel welcome.">
+<meta property="og:image" content="https://toadaid.github.io/childrens-corner/art/welcome-pond.webp">
+<link rel="icon" href="/assets/icons/favicon.svg"><meta name="theme-color" content="#195d75">
+<link rel="stylesheet" href="../corner.css"><link rel="stylesheet" href="quest.css">
+<script type="module" src="quest.mjs"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the adventure</a>
+<header class="site-top wrap"><a class="brand" href="../">TOADAID <small>Children’s Corner</small></a><nav aria-label="Children’s Corner"><a href="../#play">More to play</a><a href="#grown-ups">For grown-ups</a></nav></header>
+<main id="main" class="quest-wrap">
+  <div class="quest-heading"><p class="eyebrow">Toby’s Kindness Quest · Adventure one</p><h1>A Place Beside Toby</h1><p>Help Toby notice a friend, ask what they would like, and make a little room. Choose what to try and see how the story unfolds.</p></div>
+  <div id="quest" class="quest-layout" hidden>
+    <div class="quest-view">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="scene-title scene-description">
+        <title id="scene-title">A place beside the petal game</title><desc id="scene-description">Blue Toby and Taboshi beside a pattern of fallen petals. Patience watches from the garden path.</desc>
+        <defs><linearGradient id="quest-sky" x2="0" y2="1"><stop stop-color="#d7eef5"/><stop offset="1" stop-color="#fff5d9"/></linearGradient><symbol id="petal" viewBox="-16 -22 32 44"><path d="M0-20C-25-8-14 15 0 20C16 12 25-8 0-20Z" fill="#f5b8ae" stroke="#895249" stroke-width="2"/></symbol></defs>
+        <rect width="800" height="450" fill="url(#quest-sky)"/>
+        <circle cx="669" cy="68" r="34" fill="#f3c861"/><g fill="#fffaf1"><path d="M72 88C50 89 45 65 63 57C59 32 101 28 110 50C135 37 157 57 150 72C171 83 157 98 134 95H75Z"/><path d="M464 71C442 69 444 48 461 44C462 20 498 17 509 39C537 28 551 57 532 67Z"/></g>
+        <path d="M0 250Q139 184 325 262Q500 169 800 241V450H0Z" fill="#b8d995"/><path d="M0 334Q377 267 800 332V450H0Z" fill="#d7e8af"/>
+        <ellipse cx="105" cy="320" rx="118" ry="51" fill="#a4dbe8"/><path d="M59 323Q84 296 120 311Q131 329 103 337L98 319Z" fill="#8cc076" stroke="#397145" stroke-width="3"/><path d="M18 352H43M140 342H168" stroke="#6dabb9" stroke-width="3" stroke-linecap="round"/>
+        <path d="M800 290Q622 285 552 450H641Q664 339 800 344Z" fill="#f2d9ab"/>
+        <ellipse cx="367" cy="365" rx="127" ry="39" fill="#fffaf1" opacity=".75"/>
+        <g fill="none" stroke="#9cac79" stroke-width="2" stroke-dasharray="6 8"><ellipse cx="367" cy="363" rx="93" ry="28"/></g>
+        <use href="#petal" x="290" y="332" width="29" height="40" transform="rotate(-45 304 352)"/><use href="#petal" x="337" y="318" width="29" height="40" transform="rotate(-20 351 338)"/><use href="#petal" x="384" y="325" width="29" height="40" transform="rotate(25 398 345)"/>
+        <use id="shared-petal" href="#petal" x="420" y="346" width="29" height="40" transform="rotate(50 434 366)" hidden=""/>
+        <g fill="#f5b8ae" stroke="#895249" stroke-width="2"><ellipse cx="630" cy="379" rx="11" ry="6" transform="rotate(-20 630 379)"/><ellipse cx="676" cy="397" rx="11" ry="6" transform="rotate(35 676 397)"/></g>
+        <use href="../pond-pairs/friends.svg#toby" x="154" y="227" width="167" height="145"/>
+        <use href="../pond-pairs/friends.svg#taboshi" x="330" y="170" width="123" height="153"/>
+        <use id="patience" href="../pond-pairs/friends.svg#patience" x="621" y="205" width="134" height="148"/>
+        <g fill="#fffaf1" stroke="#397145" stroke-width="2"><path d="M43 397v-17M734 400v-17"/><circle cx="43" cy="374" r="7"/><circle cx="734" cy="377" r="7"/></g>
+      </svg>
+      <p id="scene-caption" class="quest-caption">Sometimes a little invitation begins with noticing.</p>
+    </div>
+    <section class="quest-panel" aria-labelledby="moment-title">
+      <p id="progress" class="quest-progress">Moment 1 of 3 · Notice</p>
+      <h2 id="moment-title" tabindex="-1">Someone beside the game</h2><p id="story" class="quest-story"></p>
+      <p id="question" class="quest-question"></p><div id="choices" class="quest-choices" role="group" aria-labelledby="question"></div>
+      <div id="result" class="quest-result" hidden><h3 id="result-title" tabindex="-1"></h3><p id="result-story"></p></div>
+      <div id="ending" class="quest-ending" hidden><p id="ending-story"></p></div>
+      <div id="reflection" class="quest-reflection" hidden><h3>Talk a little together</h3><p id="reflection-text"></p></div>
+      <div class="quest-actions"><button id="next" class="button" type="button" hidden>Continue the story</button><button id="retry" class="button secondary" type="button" hidden>Try another choice</button><button id="play-again" class="button" type="button" hidden>Play the story again</button><button id="read-aloud" class="button secondary" type="button" hidden>Read to me</button></div>
+      <p id="audio-note" class="quest-audio-note" role="status" aria-live="polite"></p>
+      <div class="quest-small-controls"><button id="back" class="quest-text-button" type="button" hidden>Previous moment</button><button id="restart" class="quest-text-button" type="button" hidden>Start the story again</button></div>
+      <p id="save-note" class="quest-save"></p>
+    </section>
+  </div>
+  <noscript><div class="notice-box"><p>This choice-based adventure needs JavaScript. You can still <a href="../lore-lands.html">read the picture stories</a> together.</p></div></noscript>
+  <details id="grown-ups" class="parent-notes quest-note"><summary>For grown-ups: choices and a little conversation</summary><p>This is an original imagined story with three moments and two welcome endings. Choices show different responses rather than awarding points. Read what happens, talk about what the friends say, and try another choice whenever you like.</p><p>Patience can choose to join in or watch beside the friends. Notice the difference between inviting someone and deciding for them. Children can share their own ideas; the personal questions have no required answer.</p><p>“Previous moment” lets you revisit your story. “Try another choice” reopens that moment and clears later choices so you can follow a different path. Starting again begins a fresh story.</p><p>This browser remembers only your story position and selected choices on this device. If saving is unavailable, you can still play for the current visit. Optional “Read to me” uses browser voices and stops whenever the story changes.</p><p>Blue Toby is the main character, Taboshi the green leaf, and Patience the red triangle. This adventure’s dialogue is new Children’s Corner storytelling, not an original Toadgod post.</p></details>
+  <nav class="quest-extra-links" aria-label="Keep exploring"><a href="../#play">Back to play</a><a href="../little-garden/">Toby’s Little Garden</a><a href="../lore-land-explorer/">Lore Land Explorer</a></nav>
+</main>
+<footer><div class="wrap"><p>A little invitation. A place for a friend.</p><nav aria-label="More from ToadAid"><a href="../">Children’s Corner</a><a href="/">ToadAid Home</a></nav></div></footer>
+</body></html>
