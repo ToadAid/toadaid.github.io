@@ -1,234 +1,99 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>ToadAid Children's Corner — One Leaf for the Young</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f5f1e6;
-    color: #2f2f2f;
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
-  }
-  header {
-    background: #355e3b;
-    color: white;
-    text-align: center;
-    padding: 2rem 1rem;
-  }
-  header h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-  header p {
-    font-style: italic;
-    color: #e2e2e2;
-  }
-  main {
-    max-width: 1000px;
-    margin: auto;
-    padding: 2rem 1rem;
-  }
-  .action-buttons {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  .action-buttons a {
-    display: inline-block;
-    margin: 0.3rem;
-    padding: 0.8rem 1.5rem;
-    border-radius: 10px;
-    font-weight: bold;
-    text-decoration: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
-    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  }
-  .action-buttons a.submit-btn {
-    background: gold;
-    color: black;
-  }
-  .action-buttons a.submit-btn:hover {
-    background: darkgoldenrod;
-    color: white;
-  }
-  .action-buttons a.read-btn {
-    background: #355e3b;
-    color: white;
-  }
-  .action-buttons a.read-btn:hover {
-    background: #1f3b2d;
-  }
-  .story-card {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.15s ease-in-out;
-  }
-  .story-card:hover {
-    transform: translateY(-3px);
-  }
-  /* UPDATED story-image for better desktop display */
-  .story-image {
-    width: 100%;
-    aspect-ratio: 4 / 3; /* Balanced for desktop */
-    background-size: contain; /* Show full image without cropping */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: #f5f1e6; /* Matches site background */
-  }
-  .story-content {
-    padding: 1rem;
-  }
-  .story-content h2 {
-    margin: 0 0 0.5rem 0;
-    color: #355e3b;
-  }
-  .story-content p {
-    font-size: 0.95rem;
-    color: #444;
-  }
-  .story-link {
-    display: inline-block;
-    margin-top: 0.8rem;
-    padding: 0.5rem 1rem;
-    background: gold;
-    color: black;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 6px;
-    transition: background 0.2s;
-  }
-  .story-link:hover {
-    background: darkgoldenrod;
-    color: white;
-  }
-  footer {
-    text-align: center;
-    padding: 2rem 1rem;
-    font-size: 0.9rem;
-    color: #666;
-  }
-  footer a {
-    color: #355e3b;
-    text-decoration: none;
-    font-weight: bold;
-  }
-</style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Children’s Corner · Adventures with Blue Toby | ToadAid</title>
+<meta name="description" content="Little stories, gentle adventures, and things to discover with Blue Toby, Taboshi, and Patience. Read and play together in ToadAid’s Children’s Corner.">
+<link rel="canonical" href="https://toadaid.github.io/childrens-corner/">
+<meta property="og:title" content="Adventures with Blue Toby · ToadAid Children’s Corner">
+<meta property="og:description" content="A little pond. Three good friends. A whole world to discover.">
+<meta property="og:image" content="https://toadaid.github.io/childrens-corner/art/welcome-pond.webp">
+<meta property="og:type" content="website">
+<link rel="icon" href="/assets/icons/favicon.svg"><meta name="theme-color" content="#195d75">
+<link rel="stylesheet" href="corner.css"><link rel="preload" as="image" href="art/welcome-pond.webp">
 </head>
 <body>
-
-<header>
-  <h1>🐸📚 ToadAid Children's Corner</h1>
-  <p>One scroll for the wise, one leaf for the young.</p>
+<a class="skip" href="#main">Skip to adventures</a>
+<header class="site-top wrap">
+  <a class="brand" href="/">TOADAID <small>Children’s Corner</small></a>
+  <nav aria-label="ToadAid"><a href="/">Home</a><a href="#family">For families</a></nav>
 </header>
-
-<main>
-
-  <!-- Action Buttons -->
-  <div class="action-buttons">
-    <a href="submit.html" class="submit-btn">🐸📚 Submit Your Story</a>
-    <a href="#stories" class="read-btn">📖 Read Stories</a>
-  
-    <a href="/childrens-corner/qianziwen/index.html" class="read-btn">📜 Qianziwen (千字文)</a>
-  </div>
-
-  <!-- NEW Story Card: Frog’s Life — A Pond’s Secret -->
-  <div id="stories" class="story-card">
-    <div class="story-image" style="background-image: url('images/frogs-life-cover.jpg');"></div>
-    <div class="story-content">
-      <h2>Frog’s Life — A Pond’s Secret</h2>
-      <p>A dual-layer children’s book: simple story for kids, gentle commentary for parents — fairness, patience, courage, belief, and the eternal return of the pond.</p>
-      <a class="story-link" href="frogs-life/frogs-life.html">Read Book</a>
+<main id="main" class="wrap">
+  <section class="welcome" aria-labelledby="welcome-title">
+    <img src="art/welcome-pond.webp" width="1672" height="941" fetchpriority="high" alt="Blue Toby, green leaf Taboshi, and red triangle Patience together beside a sunny pond, with flowers, a little bridge, and floating islands.">
+    <div class="welcome-copy">
+      <p class="eyebrow">Welcome, little explorer</p>
+      <h1 id="welcome-title">A little pond.<br>A world of wonder.</h1>
+      <p class="intro">Come along with Blue Toby, Taboshi, and Patience. There are stories to share, small things to notice, and good friends to meet.</p>
+      <nav class="actions" aria-label="Choose an adventure">
+        <a class="button" href="#stories">Read a story</a>
+        <a class="button gold" href="#play">Play with Toby</a>
+        <a class="button secondary" href="#friends">Meet the friends</a>
+      </nav>
+      <p class="meta" style="margin-top:16px">Made for curious children and the grown-ups reading beside them.</p>
     </div>
-  </div>
+  </section>
 
-  <!-- Story Card: Blue Toby’s First Leap -->
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/blue-toby.jpg');"></div>
-    <div class="story-content">
-      <h2>Blue Toby’s First Leap</h2>
-      <p>Follow Blue Toby’s very first adventure across the lily pads and discover the Lore of Patience.</p>
-      <a class="story-link" href="blue-toby-first-leap.html">Read Story</a>
+  <section id="stories" class="section" aria-labelledby="stories-title">
+    <div class="section-heading"><h2 id="stories-title">One story. One small adventure.</h2><p>Pick a place to begin.</p></div>
+    <article class="featured">
+      <img src="art/little-seed.webp" width="1672" height="941" loading="lazy" alt="Blue Toby, Taboshi, and Patience gathered around a little seedling in a flowerpot beside the pond.">
+      <div class="feature-copy">
+        <p class="eyebrow">A new adventure · Read together</p>
+        <h3>Blue Toby and the Little Seed</h3>
+        <p>Toby wants his seed to grow right away. His friends help him discover the small, kind things he can do while he waits.</p>
+        <p class="meta">A gentle story about care, patience, and growing together.</p>
+        <a class="button" href="blue-toby-and-the-little-seed.html">Let’s read →</a>
+      </div>
+    </article>
+    <div class="story-grid">
+      <article class="story-card"><img src="images/blue-toby.jpg" width="400" height="300" loading="lazy" alt="Artwork for Blue Toby’s First Leap"><div class="card-copy"><h3>Blue Toby’s First Leap</h3><p>A big journey begins with one little hop.</p><a href="blue-toby-first-leap.html">Read the story →</a></div></article>
+      <article class="story-card"><img src="images/lantern-lily-placeholder.jpg" width="400" height="300" loading="lazy" alt="A lantern lily on the pond"><div class="card-copy"><h3>The Lantern Lily</h3><p>A little light helps Toby find his courage.</p><a href="lantern-lily.html">Read the story →</a></div></article>
+      <article class="story-card"><img src="images/skys-mirror-placeholder.jpg" width="400" height="300" loading="lazy" alt="The sky reflected in the pond"><div class="card-copy"><h3>The Sky’s Mirror</h3><p>What can Toby see when the water is still?</p><a href="skys-mirror.html">Read the story →</a></div></article>
+      <article class="story-card"><img src="images/frogs-life-cover.jpg" width="400" height="300" loading="lazy" alt="Cover art for Frog’s Life"><div class="card-copy"><h3>Frog’s Life</h3><p>From a tiny egg to a frog, discover how pond life grows.</p><a href="frogs-life/frogs-life.html">Read the book →</a></div></article>
     </div>
-  </div>
+  </section>
 
-  <!-- Story Card: Blue Toby and the Lantern Lily -->
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/lantern-lily-placeholder.jpg');"></div>
-    <div class="story-content">
-      <h2>Blue Toby and the Lantern Lily</h2>
-      <p>One moonlit night, a glowing lily appears in the pond — and Blue Toby learns that courage sometimes blooms in the dark.</p>
-      <a class="story-link" href="lantern-lily.html">Read Story</a>
+  <section id="lands" class="section" aria-labelledby="lands-title">
+    <div class="section-heading"><h2 id="lands-title">Explore the Lore Lands.</h2><p>Three friends. Three new places.</p></div>
+    <p class="lands-intro">Float into a picture-book world of lanterns, leafy paths, and little ponds. Choose a tiny adventure to read together.</p>
+    <div class="land-grid">
+      <article class="land-card"><img src="art/lore-land-lantern-garden.webp" width="1672" height="941" loading="lazy" alt="Blue Toby, Taboshi, and Patience on a little bridge beneath glowing lanterns and a purple blossom tree."><div class="card-copy"><p class="eyebrow">A little courage</p><h3>The Lantern Garden</h3><p>Evening comes to the floating garden. Toby discovers he can ask a friend to walk beside him.</p><a href="lore-lands.html#lantern-garden">Visit the lantern garden →</a></div></article>
+      <article class="land-card"><img src="art/lore-land-kind-step.webp" width="1672" height="941" loading="lazy" alt="Blue Toby leads Taboshi and Patience along round stepping stones on a green floating island, with a little sprout and blue crystal below."><div class="card-copy"><p class="eyebrow">A little kindness</p><h3>One Kind Step</h3><p>The path is full of wonders. Toby learns that looking back can be part of going forward.</p><a href="lore-lands.html#kind-step">Follow the leafy path →</a></div></article>
+      <article class="land-card"><img src="art/lore-land-three-stumps.webp" width="1672" height="941" loading="lazy" alt="The three friends beside a blue pond with three wooden stumps, pink lotus flowers, red bridges, and garden pavilions."><div class="card-copy"><p class="eyebrow">A little discovery</p><h3>The Pond of Three Little Stumps</h3><p>One, two, three! The friends slow down and notice different things in the same pond.</p><a href="lore-lands.html#three-stumps">Discover the little pond →</a></div></article>
     </div>
-  </div>
+    <p class="meta land-note">New imagined adventures inspired by the creator’s Lore Land artwork.</p>
+  </section>
 
-  <!-- Story Card: The Day Toby Found the Sky’s Mirror -->
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/skys-mirror-placeholder.jpg');"></div>
-    <div class="story-content">
-      <h2>The Day Toby Found the Sky’s Mirror</h2>
-      <p>When the pond becomes still as glass, Blue Toby sees the sky below him — and discovers a truth about reflection and the heart.</p>
-      <a class="story-link" href="skys-mirror.html">Read Story</a>
+  <section id="play" class="section" aria-labelledby="play-title">
+    <div class="section-heading"><h2 id="play-title">A little moment to play.</h2><p>No hurry. Go at your own pace.</p></div>
+    <div class="play-card">
+      <div><p class="eyebrow">Look · Listen · Breathe</p><h3>Blue Toby’s First Wait</h3><p>Take a quiet moment with the three friends. Notice something near you, listen for a sound, and take a gentle breath.</p><a class="button" href="blue-toby-wait/">Play with Toby →</a></div>
+      <div><p class="activity">Try a tiny pond adventure today</p><ol><li>Find something green, like Taboshi.</li><li>Notice a triangle, like Patience.</li><li>Tell someone one kind thing, like a good friend of Toby.</li></ol></div>
     </div>
-  </div>
+  </section>
 
-  <!-- Classics Section -->
-  <h2 style="margin:2rem 0 1rem;color:#355e3b;text-align:center;">📜 Chinese Classics for Families</h2>
-
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/qianziwen.jpg');"></div>
-    <div class="story-content">
-      <h2>《千字文》 · Qianziwen (Thousand Character Classic)</h2>
-      <p>Read two lines a day with your child — clear English meaning and a tiny Parent Note. Build wonder, manners, and calm.</p>
-      <ul>
-        <li><a class="story-link" href="/childrens-corner/qianziwen/index.html">Explore Qianziwen</a></li>
-        <li><a class="story-link" href="/childrens-corner/qianziwen/booklet-english.pdf" target="_blank" rel="noopener">Booklet (EN)</a></li>
-        <li><a class="story-link" href="/childrens-corner/qianziwen/booklet-bilingual.pdf" target="_blank" rel="noopener">Booklet (Bilingual)</a></li>
-        <li><a class="story-link" href="/childrens-corner/qianziwen/print-pack.pdf" target="_blank" rel="noopener">Print Pack</a></li>
-      </ul>
+  <section id="friends" class="section" aria-labelledby="friends-title">
+    <div class="section-heading"><h2 id="friends-title">Meet your Tobyworld friends.</h2><p>Every adventure starts with Toby.</p></div>
+    <div class="friend-grid">
+      <article class="friend"><p class="friend-label">The little blue frog</p><h3>Blue Toby</h3><p>Our main adventure friend. Follow Toby as he asks questions, tries small steps, and discovers the world with his companions.</p></article>
+      <article class="friend taboshi"><p class="friend-label">The green leaf</p><h3>Taboshi</h3><p>Look for the green leaf beside Toby. In these stories, Taboshi helps the friends notice nature and care for growing things.</p></article>
+      <article class="friend patience"><p class="friend-label">The red triangle</p><h3>Patience</h3><p>Look for the red triangle beside Toby. In these stories, Patience reminds the friends that some good things need time.</p></article>
     </div>
-  </div>
+  </section>
 
-
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/dizigui.jpg');"></div>
-    <div class="story-content">
-      <h2>《弟子规》 · Di Zi Gui</h2>
-      <p>A Confucian classic teaching children respect, honesty, and virtue through daily practice.</p>
-      <ul>
-        <li><a class="story-link" href="dizigui.html">Bilingual — simplified</a></li>
-        <li><a class="story-link" href="dizigui_complete.html">Complete Bilingual Edition</a></li>
-        <li><a class="story-link" href="about_dizigui.html">About (for Parents)</a></li>
-      </ul>
+  <section id="family" class="section" aria-labelledby="family-title">
+    <div class="family">
+      <p class="eyebrow">For the grown-ups beside them</p><h2 id="family-title">Read a little. Talk a little. Grow together.</h2>
+      <p>Follow your child’s questions. Pause for a picture, share something you noticed, or try one tiny act of kindness after the story.</p>
+      <div class="family-links">
+        <article><h3>千字文 · Qianziwen</h3><p>Nature, learning, and everyday life.</p><a href="qianziwen/">Explore together →</a><br><a href="qianziwen/booklet-bilingual.pdf">Bilingual booklet</a> · <a href="qianziwen/print-pack.pdf">Print pack</a></article>
+        <article><h3>弟子规 · Di Zi Gui</h3><p>Respect, honesty, and care in daily life.</p><a href="dizigui.html">Read together →</a><br><a href="dizigui_complete.html">Complete edition</a> · <a href="about_dizigui.html">Parent guide</a></article>
+        <article><h3>三字经 · San Zi Jing</h3><p>Little rhymes for learning together.</p><a href="sanzijing.html">Read together →</a><br><a href="sanzijing_complete.html">Complete edition</a> · <a href="about_sanzijing.html">Parent guide</a></article>
+      </div>
+      <details><summary>Where these stories come from</summary><p>Children’s Corner stories are original family adaptations inspired by Tobyworld themes of patience, kindness, learning, and community. Character identities were provided by ToadAid’s creator. The imagined adventures and dialogue are not original Toadgod tweets.</p><p>For the original records, grown-ups can visit the <a href="/lore/">Toadgod Lore Library</a> and <a href="https://tobyworld.app/">Tobyworld website</a>.</p></details>
     </div>
-  </div>
-
-  <div class="story-card">
-    <div class="story-image" style="background-image: url('images/sanzijing.jpg');"></div>
-    <div class="story-content">
-      <h2>《三字经》 · San Zi Jing</h2>
-      <p>The Three-Character Classic — simple rhymes that introduce children to culture, history, and moral lessons.</p>
-      <ul>
-        <li><a class="story-link" href="sanzijing.html">Bilingual — simplified</a></li>
-        <li><a class="story-link" href="sanzijing_complete.html">Complete Bilingual Edition</a></li>
-        <li><a class="story-link" href="about_sanzijing.html">About (for Parents)</a></li>
-      </ul>
-    </div>
-  </div>
-
+  </section>
 </main>
-
-<footer>
-  📜 Part of the <a href="/childrens-corner/">ToadAid Children's Corner</a> — One scroll for the wise, one leaf for the young.
-</footer>
-
-</body>
-</html>
+<footer><div class="wrap"><p>One leaf for the young. One kind step at a time.</p><nav aria-label="More from ToadAid"><a href="/">ToadAid Home</a><a href="submit.html">Grown-ups: share a story</a></nav></div></footer>
+</body></html>
