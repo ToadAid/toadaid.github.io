@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toby’s Little Garden · Play | ToadAid Children’s Corner</title>
+<meta name="description" content="Plant a pretend seed with Blue Toby, check the soil with Taboshi, and enjoy the waiting with Patience. A gentle garden adventure to play together.">
+<link rel="canonical" href="https://toadaid.github.io/childrens-corner/little-garden/">
+<meta property="og:title" content="Toby’s Little Garden · ToadAid Children’s Corner">
+<meta property="og:description" content="A little seed, six story days, and three good friends.">
+<meta property="og:image" content="https://toadaid.github.io/childrens-corner/art/little-seed.webp">
+<link rel="icon" href="/assets/icons/favicon.svg"><meta name="theme-color" content="#195d75">
+<link rel="stylesheet" href="../corner.css"><link rel="stylesheet" href="garden.css">
+<script type="module" src="garden.mjs"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the garden</a>
+<header class="site-top wrap"><a class="brand" href="../">TOADAID <small>Children’s Corner</small></a><nav aria-label="Children’s Corner"><a href="../#play">More to play</a><a href="#grown-ups">For grown-ups</a></nav></header>
+<main id="main" class="garden-wrap">
+  <div class="garden-heading"><p class="eyebrow">Plant · Notice · Grow together</p><h1>Toby’s Little Garden</h1><p>Choose a pretend seed and care for it with Blue Toby, Taboshi, and Patience. Six little story days, at your own pace.</p></div>
+  <div id="garden" class="garden-layout" hidden>
+    <div class="garden-view">
+      <svg id="scene" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-labelledby="scene-title scene-description">
+        <title id="scene-title">Toby’s little pond garden</title><desc id="scene-description">Blue Toby, Taboshi, and Patience beside an empty flowerpot, with clouds, a butterfly, and a lily pond.</desc>
+        <defs>
+          <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#d7eef5"/><stop offset="1" stop-color="#fff5d9"/></linearGradient>
+          <symbol id="petals" viewBox="-55 -55 110 110"><g fill="currentColor" stroke="#754b39" stroke-width="2"><ellipse cy="-28" rx="17" ry="25"/><ellipse cy="-28" rx="17" ry="25" transform="rotate(72)"/><ellipse cy="-28" rx="17" ry="25" transform="rotate(144)"/><ellipse cy="-28" rx="17" ry="25" transform="rotate(216)"/><ellipse cy="-28" rx="17" ry="25" transform="rotate(288)"/></g><circle r="16" fill="#f3c861" stroke="#754b39" stroke-width="2"/></symbol>
+        </defs>
+        <rect width="800" height="480" fill="url(#sky)"/>
+        <circle cx="669" cy="72" r="38" fill="#f3c861"/><g fill="#fffaf1"><path d="M72 96C50 97 45 73 63 65C59 40 101 36 110 58C135 45 157 65 150 80C171 91 157 106 134 103H75Z"/><path d="M464 76C442 74 444 53 461 49C462 25 498 22 509 44C537 33 551 62 532 72Z"/></g>
+        <path d="M0 280Q130 189 293 277Q483 174 800 264V480H0Z" fill="#b8d995"/><path d="M0 360Q294 266 800 345V480H0Z" fill="#d7e8af"/>
+        <ellipse cx="671" cy="340" rx="159" ry="62" fill="#a4dbe8"/><ellipse cx="671" cy="344" rx="137" ry="46" fill="#bce5ec"/>
+        <path d="M654 360C610 369 598 335 634 319C662 307 697 321 701 341L676 338Z" fill="#8cc076" stroke="#397145" stroke-width="3"/>
+        <path d="M744 314h28M591 351h22M724 378h29" stroke="#6dabb9" stroke-width="3" stroke-linecap="round"/>
+        <g transform="translate(225 114)" stroke="#754b39" stroke-width="3"><path d="M0 12C-42-25-52 22-10 27C-45 37-12 55 0 30C18 55 45 33 11 26C52 19 42-25 0 12Z" fill="#f3c861"/><path d="M0 8V35" stroke="#754b39" stroke-linecap="round"/></g>
+        <g fill="#fffaf1" stroke="#397145" stroke-width="2"><path d="M63 329v-20M73 409v-20M733 439v-20"/><circle cx="63" cy="304" r="8"/><circle cx="73" cy="384" r="8"/><circle cx="733" cy="414" r="8"/></g>
+        <ellipse cx="370" cy="427" rx="104" ry="14" fill="#93b779" opacity=".45"/>
+        <use href="../pond-pairs/friends.svg#taboshi" x="61" y="226" width="133" height="165"/>
+        <use href="../pond-pairs/friends.svg#toby" x="160" y="292" width="173" height="151"/>
+        <use href="../pond-pairs/friends.svg#patience" x="479" y="269" width="153" height="160"/>
+        <path d="M311 355H435L417 431Q373 442 329 431Z" fill="#cc8762" stroke="#754b39" stroke-width="4"/>
+        <rect x="300" y="337" width="146" height="30" rx="9" fill="#e1a178" stroke="#754b39" stroke-width="4"/>
+        <ellipse id="soil" cx="373" cy="343" rx="63" ry="9" fill="#8b6651"/>
+        <g id="shoot" hidden=""><path d="M373 340V310" fill="none" stroke="#397145" stroke-width="6" stroke-linecap="round"/><path d="M373 319Q340 320 345 302Q369 301 373 319Q375 298 401 299Q405 318 373 319Z" fill="#87d95f" stroke="#397145" stroke-width="3"/></g>
+        <g id="leaves" hidden=""><path d="M373 340V247" fill="none" stroke="#397145" stroke-width="7" stroke-linecap="round"/><path d="M373 290Q322 293 316 263Q357 251 373 290Q391 251 431 263Q427 295 373 290Z" fill="#87d95f" stroke="#397145" stroke-width="3"/></g>
+        <g id="bud" hidden=""><ellipse id="bud-colour" cx="373" cy="226" rx="22" ry="30" fill="#f5b8ae" stroke="#754b39" stroke-width="3"/><path d="M355 250Q373 241 391 250" fill="none" stroke="#397145" stroke-width="5"/></g>
+        <g id="flower" hidden=""><use id="bloom" href="#petals" x="318" y="180" width="110" height="110" color="#f5b8ae"/></g>
+        <g id="drink" hidden="" fill="#75bace" stroke="#195d75" stroke-width="2"><path d="M340 314Q329 329 340 331Q351 329 340 314Z"/><path d="M409 318Q398 333 409 335Q420 333 409 318Z"/></g>
+      </svg>
+      <p class="scene-caption">A pretend garden to explore together. Real plants grow in their own time.</p>
+    </div>
+    <section class="garden-panel" aria-labelledby="day-title">
+      <p id="day-count" class="garden-day">Choose your seed</p><h2 id="day-title">A little beginning</h2>
+      <p id="story" class="garden-story"></p>
+      <fieldset id="seed-choices" class="seed-choices"><legend>Which flower shall we grow?</legend><div class="seed-buttons">
+        <button id="pink" class="seed-choice" type="button" aria-pressed="true"><svg viewBox="-55 -55 110 110" aria-hidden="true" focusable="false"><use href="#petals" width="110" height="110" x="-55" y="-55" color="#f5b8ae"/></svg>Pink blossom</button>
+        <button id="gold" class="seed-choice" type="button" aria-pressed="false"><svg viewBox="-55 -55 110 110" aria-hidden="true" focusable="false"><use href="#petals" width="110" height="110" x="-55" y="-55" color="#f3c861"/></svg>Golden flower</button>
+      </div></fieldset>
+      <p id="message" class="garden-status" role="status" aria-live="polite" aria-atomic="true">Choose a flower, then give your seed a home.</p>
+      <div class="garden-actions"><button id="primary" class="button" type="button">Plant my seed</button><button id="look" class="button secondary" type="button">Look around</button></div>
+      <div id="discovery" class="discovery" hidden><h3>A little discovery</h3><p id="discovery-text" role="status" aria-live="polite"></p></div>
+      <div id="finished" class="garden-finished" hidden><h3>We grew together.</h3><p>You checked, cared, and made room for waiting. Tell someone about your little flower—or plant another seed.</p><p><a href="../blue-toby-and-the-little-seed.html">Read Toby’s Little Seed story →</a></p></div>
+      <p id="save-note" class="garden-save"></p>
+      <button id="reset" class="garden-reset" type="button" hidden>Start a new garden</button>
+    </section>
+  </div>
+  <noscript><div class="notice-box"><p>This garden game needs JavaScript. You can still <a href="../blue-toby-and-the-little-seed.html">read the Little Seed story</a> together.</p></div></noscript>
+  <div class="garden-story-link"><img src="../art/little-seed.webp" width="1672" height="941" loading="lazy" alt="Blue Toby, Taboshi, and Patience looking at a small seedling."><div><p>The story behind our little garden</p><a href="../blue-toby-and-the-little-seed.html">Blue Toby and the Little Seed →</a></div></div>
+  <details id="grown-ups" class="parent-notes garden-notes"><summary>For grown-ups: play, pause, and come back</summary><p>These are six pretend story days. Your child chooses when to move to the next day; there is no timer. Check the soil first: some days it is dry, and some days it is still damp. The simplified game is an imagined adventure, not a schedule for watering real plants.</p><p>This browser saves the selected flower, story day, and care progress on this device. Returning opens the same garden; it does not grow while you are away. If browser saving is unavailable, the game still works for the current visit. “Start a new garden” replaces this garden with a fresh one.</p><p>Try a real seed together with a grown-up and follow that plant’s care instructions. Ask what you can notice today, including things that are still small. Different plants need different conditions and time.</p><p>The story and dialogue are new Children’s Corner adaptations. Blue Toby is the main friend, Taboshi the green leaf, and Patience the red triangle.</p></details>
+  <nav class="garden-extras" aria-label="Keep exploring"><a href="../#play">Back to play</a><a href="../pond-pairs/">Play Pond Pairs</a><a href="../lore-lands.html">Explore the Lore Lands</a></nav>
+</main>
+<footer><div class="wrap"><p>One little seed. One kind moment at a time.</p><nav aria-label="More from ToadAid"><a href="../">Children’s Corner</a><a href="/">ToadAid Home</a></nav></div></footer>
+</body></html>
