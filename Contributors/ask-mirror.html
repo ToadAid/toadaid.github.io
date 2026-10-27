@@ -4,12 +4,12 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>ToadAid — Ask the Mirror</title>
-<meta name="description" content="Ask the Mirror for guidance drawn from the Tobyworld scrolls. Use the embedded mini app right on this page." />
+<title>ToadAid — Mirror Archive</title>
+<meta name="description" content="Archived Mirror experience. The embedded chat widget is retired." />
 
 <!-- Open Graph -->
-<meta property="og:title" content="ToadAid — Ask the Mirror" />
-<meta property="og:description" content="Ask the Mirror for guidance drawn from the Tobyworld scrolls." />
+<meta property="og:title" content="ToadAid — Mirror Archive" />
+<meta property="og:description" content="Archived Mirror experience and build history." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://toadaid.github.io/Contributors/ask-mirror.html" />
 <meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
@@ -53,47 +53,18 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Ask the Mirror</h1>
-    <p class="lead">The Mirror reflects the Lore. Ask a question, and it returns passages and guidance from the scrolls — right here on this page.</p>
+    <h1>Mirror · Legacy Archive</h1>
+    <p class="lead">An archive of the earlier Mirror conversation experience.</p>
     <div style="margin-top:10px">
       <a class="btn" href="/Contributors/">← Back to Contributors</a>
       <a class="btn" href="/">Back to Home</a>
     </div>
   </header>
 
-  <!-- Embedded mini app -->
   <section class="card">
-    <div class="iframe-wrap">
-      <iframe
-        id="mirrorFrame"
-        class="mirror-frame"
-        src="/mirror-app/index.html"
-        title="Ask the Mirror"
-        loading="eager"
-        referrerpolicy="no-referrer"
-        allow="clipboard-write"
-      ></iframe>
-
-    </div>
-    <p style="color:#687a6b;margin-top:8px">If the embedded app doesn’t load (adblock or CSP), use the fallback widget below.</p>
-
-    <!-- Fallback mini widget (direct API) -->
-    <div id="fallbackBox" class="fallback">
-      <div class="row">
-        <input id="mirrorQuestion" type="text" placeholder="Ask the Mirror…" />
-        <button class="btn solid" id="askBtn">Ask</button>
-      </div>
-      <pre id="mirrorAnswer" style="display:none"></pre>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2 style="margin:0 0 10px;color:var(--leaf)">Tips</h2>
-    <ul style="margin:8px 0 0 20px">
-      <li>Ask clearly: “What does Scroll 2 say about patience?”</li>
-      <li>Try keywords: <em>virtues, lotus, reflection</em></li>
-      <li>Use your browser’s translate feature if needed.</li>
-    </ul>
+    <h2>Archived experience</h2>
+    <p>The earlier embedded Mirror chat and fallback widget are retired. This legacy page no longer sends questions to the old API.</p>
+    <p><a href="/Mirror/">Read the Mirror build notes</a> · <a href="https://portal.toadaid.org/">Living Portal</a></p>
   </section>
 
   <footer>
@@ -101,60 +72,6 @@
   </footer>
 </div>
 
-<script>
-  // Auto-resize when mini app posts its height
-  window.addEventListener('message', (e) => {
-    if (!e || !e.data) return;
-    try {
-      const msg = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-      if (msg && msg.type === 'mirror:height' && Number.isFinite(msg.height)) {
-        const frame = document.getElementById('mirrorFrame');
-        frame.style.minHeight = Math.max(600, msg.height) + 'px';
-      }
-    } catch (_) {}
-  });
 
-  // Show fallback if iframe fails to render in time
-  const frame = document.getElementById('mirrorFrame');
-  let failTimer = setTimeout(() => {
-    document.getElementById('fallbackBox').style.display = 'block';
-  }, 4000);
-
-  frame.addEventListener('load', () => clearTimeout(failTimer));
-
-  // Fallback widget → calls your API directly
-  const MIRROR_API = "https://toadaid.duckdns.org/ask";
-  const askBtn = document.getElementById('askBtn');
-  const qInput = document.getElementById('mirrorQuestion');
-  const ansDiv = document.getElementById('mirrorAnswer');
-
-  async function askMirrorFallback() {
-    const question = (qInput?.value || "").trim();
-    if (!question) return;
-    ansDiv.style.display = 'block';
-    ansDiv.textContent = "⏳ Seeking reflection...";
-    try {
-      const res = await fetch(MIRROR_API, {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question })
-      });
-      const data = await res.json();
-      let reply = data.answer || data.reply || JSON.stringify(data);
-      reply = String(reply).replace(/\\n/g, "\n");
-      ansDiv.innerHTML = `<strong>You asked:</strong> <i>${escapeHtml(question)}</i>\n\n${reply}`;
-      qInput.value = "";
-      qInput.focus();
-    } catch (err) {
-      ansDiv.textContent = "⚠️ The Mirror is silent for now. Please try again later.";
-    }
-  }
-  askBtn?.addEventListener('click', askMirrorFallback);
-  qInput?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') askMirrorFallback(); });
-
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
-  }
-</script>
 </body>
 </html>

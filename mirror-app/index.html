@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tobyworld Mini App — Ask the Mirror</title>
-<meta name="description" content="Ask the Mirror about the Tobyworld Lore." />
+<title>Mirror Mini App — Legacy Archive</title>
+<meta name="description" content="Archived Mirror mini app. The earlier chat interface is retired." />
 <link rel="icon" href="/assets/icons/favicon.ico">
 <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
@@ -52,150 +52,16 @@
 
 <body>
 <header>
-  <h1>Ask the Mirror · Legacy Mini App</h1>
-  <p>This is the earlier mini app. For ongoing conversations, use the live Mirror app.</p>
-  <p><a href="https://toadaid.duckdns.org/" style="display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border-radius:12px;background:#fff;color:#275b30;font-weight:700">Talk to Mirror →</a> · <a href="/" style="color:#fff">ToadAid Home</a></p>
+  <h1>Mirror Mini App · Legacy Archive</h1>
+  <p>This earlier chat and image-reflection interface is retired.</p>
+  <p><a href="/" style="color:#fff">ToadAid archive</a> · <a href="https://portal.toadaid.org/" style="color:#fff">Living Portal</a></p>
 </header>
-
 <main>
-
-  <!-- =============== TEXT QUESTION PANEL =============== -->
   <section class="panel">
-    <div class="row">
-      <label for="mirror-question">Your question</label>
-      <input id="mirror-question" type="text" placeholder="Ask the Mirror…" />
-      <div class="actions">
-        <button id="mirror-ask-btn" onclick="askMirror()">Ask</button>
-      </div>
-    </div>
-    <pre id="mirror-answer" style="display:none"></pre>
+    <h2>Archived experience</h2>
+    <p>This page preserves the location of the earlier Mirror mini app. It no longer accepts questions or uploads.</p>
+    <p><a href="/Mirror/">Read the Mirror build notes</a> · <a href="/lore/">Read the Lore Library</a></p>
   </section>
-
-
-  <!-- =============== VISION SUTRA PANEL =============== -->
-  <section class="panel">
-    <h3 style="margin-top:0;margin-bottom:12px;font-size:18px;">Vision Sutra — Image Reflection 👁️🪞</h3>
-
-    <label for="vision-file">Upload Image</label>
-    <input id="vision-file" type="file" accept="image/*" />
-
-    <img id="vision-preview" class="preview" style="display:none" />
-
-    <div class="actions">
-      <button id="vision-btn" onclick="sendVision()">Analyze Image</button>
-    </div>
-
-    <pre id="vision-answer" style="display:none"></pre>
-  </section>
-
 </main>
-
-
-<script>
-const MIRROR_API = "https://toadaid.duckdns.org/ask";
-const VISION_API = "https://toadaid.duckdns.org/v8/vision/analyze";
-
-const qInput = document.getElementById('mirror-question');
-const ansDiv = document.getElementById('mirror-answer');
-const askBtn = document.getElementById('mirror-ask-btn');
-
-const visionInput = document.getElementById("vision-file");
-const visionPreview = document.getElementById("vision-preview");
-const visionAns = document.getElementById("vision-answer");
-
-let lastVisionBase64 = null;
-
-/* ENTER to submit text question */
-qInput.addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter' && !e.shiftKey){
-    e.preventDefault();
-    askMirror();
-  }
-});
-
-/* IMAGE LOADED → convert to base64 */
-visionInput.addEventListener("change", () => {
-  const file = visionInput.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    const dataUrl = reader.result;
-    visionPreview.src = dataUrl;
-    visionPreview.style.display = "block";
-
-    // extract actual base64
-    lastVisionBase64 = dataUrl.split(",")[1];
-    visionAns.style.display = "block";
-    visionAns.textContent = "Image loaded. Ready to analyze.";
-  };
-  reader.readAsDataURL(file);
-});
-
-
-/* =============== TEXT ASK =============== */
-async function askMirror() {
-  const question = (qInput.value || "").trim();
-  if (!question) return;
-
-  ansDiv.style.display = 'block';
-  ansDiv.textContent = "⏳ Seeking reflection...";
-
-  try {
-    const res = await fetch(MIRROR_API, {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question })
-    });
-
-    const data = await res.json();
-    let reply = data.reply || data.answer || JSON.stringify(data);
-    reply = String(reply).replace(/\\n/g, "\n");
-
-    ansDiv.innerHTML =
-      `<strong>You asked:</strong> <i>${escapeHtml(question)}</i>\n\n${reply}`;
-    qInput.value = "";
-  } catch (err) {
-    ansDiv.textContent = "⚠️ The Mirror is silent for now.";
-  }
-}
-
-
-/* =============== VISION ASK =============== */
-async function sendVision() {
-  if (!lastVisionBase64) {
-    visionAns.style.display = 'block';
-    visionAns.textContent = "⚠️ No image selected.";
-    return;
-  }
-
-  visionAns.style.display = 'block';
-  visionAns.textContent = "👁️ Reflecting on image...";
-
-  try {
-    const res = await fetch(VISION_API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: "web_user",
-        image_data: lastVisionBase64
-      })
-    });
-
-    const data = await res.json();
-    visionAns.textContent = JSON.stringify(data, null, 2);
-  } catch (err) {
-    visionAns.textContent = "⚠️ Vision Sutra is quiet.";
-  }
-}
-
-
-function escapeHtml(s){
-  return s.replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-  }[c]));
-}
-</script>
-
 </body>
 </html>
