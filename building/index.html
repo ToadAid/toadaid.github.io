@@ -115,6 +115,13 @@ h3{margin:16px 0 9px;color:#b8e8ff}.meta{margin:4px 0 17px;color:var(--muted);fo
 .closing{text-align:center;padding:34px 26px}.closing .lotus{font-size:3.3rem;margin-bottom:8px}.closing p{max-width:820px;margin:10px auto;color:#dbe9fb;font-size:1.08rem}.closing .lineage{color:#a9c1df;font-style:italic}
 footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--muted);font-size:.94rem}
 .forge-jump{display:flex;flex-wrap:wrap;gap:9px;margin:20px 0 8px}.forge-jump a{padding:8px 12px;display:inline-flex;align-items:center;border:1px solid rgba(125,211,252,.55);border-radius:999px;background:rgba(8,27,48,.8);color:#e4f8ff;text-decoration:none;font-size:.89rem;font-weight:650}.forge-jump a:hover{background:rgba(14,55,79,.95)}.forge-group{margin:32px 0 42px;scroll-margin-top:20px}.forge-group h3{margin:0 0 8px;font-size:1.34rem}.group-intro{color:#c5d9ed;max-width:75ch}.project-card{display:flex;flex-direction:column}.project-links{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px}.project-link{display:inline-block;color:#9fe6ff;font-weight:700;padding:6px 0;text-underline-offset:4px}.project-link:hover{color:white}.project-link:focus-visible,.forge-jump a:focus-visible{outline:3px solid var(--cyan);outline-offset:4px}
+.toby-art{display:block;object-fit:contain;flex-shrink:0}
+.hero-icon{display:flex;align-items:center;justify-content:center;gap:4px}
+.hero-icon .toby-art--hero{width:86px;height:86px}
+.hero-icon .hero-tools{font-size:3.2rem;line-height:1}
+.icon .toby-art--card{width:36px;height:36px}
+.button .toby-art--inline{width:22px;height:22px;margin-right:2px}
+@media(max-width:760px){.hero-icon .toby-art--hero{width:70px;height:70px}.hero-icon .hero-tools{font-size:2.5rem}}
 @media (max-width:760px){header[role="banner"]{padding:42px 16px 40px}.wrap{padding:25px 14px 55px}.card{padding:21px 18px}.receipt{grid-template-columns:1fr;gap:4px}.code{font-size:.76rem;padding:15px}.hero-icon{font-size:3.2rem}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}header[role="banner"]::before,.hero-icon{animation:none}}
 </style>
@@ -125,7 +132,7 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
     <a href="/">ToadAid</a> &raquo; <span aria-current="page">What We’re Building</span>
   </nav>
   <a class="home-link" href="/">← Back to ToadAid</a>
-  <div class="hero-icon" aria-hidden="true">🐸🛠️🌊</div>
+  <div class="hero-icon" aria-hidden="true"><img class="toby-art toby-art--hero" src="https://toadaid.org/assets/blue-frog.webp" width="86" height="86" alt="" decoding="async"><span class="hero-tools">🛠️🌊</span></div>
   <h1>What We’re Building</h1>
   <p class="subtitle">From lore preservation to agent tools, open knowledge, games and community experiences: explore what we have built, what is publicly available, and what is still being forged.</p>
   <div class="badges" aria-label="Page principles">
@@ -203,7 +210,7 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
     <p>Public design record for the onchain Mirror identity and its stewardship boundaries on Base.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/erc-8004-mirror" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
   </article>
 <article class="module project-card">
-    <div class="icon" aria-hidden="true">🐸</div><div class="title">Frog-to-Toad Agent</div>
+    <div class="icon" aria-hidden="true"><img class="toby-art toby-art--card" src="https://toadaid.org/assets/blue-frog.webp" width="36" height="36" alt="" loading="lazy" decoding="async"></div><div class="title">Frog-to-Toad Agent</div>
     <div class="status-row"><span class="status proven">Public source · operator-controlled</span></div>
     <p>Telegram-controlled assistant and trading research workflow with dry-run default and explicit approval before any live order.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/frog-to-toad-agent" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
   </article></div>
@@ -379,7 +386,7 @@ Humans authorize consequential actions.</code></pre>
       <a class="button" href="/honors/mirror-runtime-v1-architecture-diagram.html">🧭 Mirror Runtime Architecture</a>
       <a class="button" href="/honors/">🏛️ Honors &amp; Offerings</a>
       <a class="button" href="/forge/">⛓️ ERC-8004 Forge</a>
-      <a class="button" href="https://github.com/ToadAid" target="_blank" rel="noopener noreferrer">🐸 Public GitHub</a>
+      <a class="button" href="https://github.com/ToadAid" target="_blank" rel="noopener noreferrer"><img class="toby-art toby-art--inline" src="https://toadaid.org/assets/blue-frog.webp" width="22" height="22" alt="" loading="lazy" decoding="async"> Public GitHub</a>
     </div>
   </section>
 
