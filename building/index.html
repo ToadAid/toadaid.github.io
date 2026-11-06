@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>What We’re Building | ToadAid</title>
-<meta name="description" content="A public window into the governed systems ToadAid is building for Toadgang, for the fallen, and for the people." />
+<meta name="description" content="Explore ToadAid's public open-source forge: Knowledge Forge, Agent Capabilities, A2A, lore tools, games and our growing governed-agent ecosystem." />
 <meta property="og:title" content="What We’re Building | ToadAid" />
-<meta property="og:description" content="The systems being forged beneath the pond: what is proven, what remains private, and what authority stays locked." />
+<meta property="og:description" content="Explore the public repositories, community games, lore tools and governed agent foundations built across the ToadAid forge." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://toadaid.github.io/building/" />
 <meta property="og:image" content="https://toadaid.github.io/assets/icons/web-app-manifest-512x512.png" />
@@ -114,6 +114,7 @@ h3{margin:16px 0 9px;color:#b8e8ff}.meta{margin:4px 0 17px;color:var(--muted);fo
 .links{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.button{display:inline-flex;align-items:center;gap:.45rem;padding:9px 14px;border:1px solid rgba(125,211,252,.55);border-radius:999px;background:rgba(8,27,48,.85);color:#dff7ff;font-weight:700}.button:hover{text-decoration:none;background:rgba(10,42,70,.95)}
 .closing{text-align:center;padding:34px 26px}.closing .lotus{font-size:3.3rem;margin-bottom:8px}.closing p{max-width:820px;margin:10px auto;color:#dbe9fb;font-size:1.08rem}.closing .lineage{color:#a9c1df;font-style:italic}
 footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--muted);font-size:.94rem}
+.forge-jump{display:flex;flex-wrap:wrap;gap:9px;margin:20px 0 8px}.forge-jump a{padding:8px 12px;display:inline-flex;align-items:center;border:1px solid rgba(125,211,252,.55);border-radius:999px;background:rgba(8,27,48,.8);color:#e4f8ff;text-decoration:none;font-size:.89rem;font-weight:650}.forge-jump a:hover{background:rgba(14,55,79,.95)}.forge-group{margin:32px 0 42px;scroll-margin-top:20px}.forge-group h3{margin:0 0 8px;font-size:1.34rem}.group-intro{color:#c5d9ed;max-width:75ch}.project-card{display:flex;flex-direction:column}.project-links{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px}.project-link{display:inline-block;color:#9fe6ff;font-weight:700;padding:6px 0;text-underline-offset:4px}.project-link:hover{color:white}.project-link:focus-visible,.forge-jump a:focus-visible{outline:3px solid var(--cyan);outline-offset:4px}
 @media (max-width:760px){header[role="banner"]{padding:42px 16px 40px}.wrap{padding:25px 14px 55px}.card{padding:21px 18px}.receipt{grid-template-columns:1fr;gap:4px}.code{font-size:.76rem;padding:15px}.hero-icon{font-size:3.2rem}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}header[role="banner"]::before,.hero-icon{animation:none}}
 </style>
@@ -126,12 +127,12 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
   <a class="home-link" href="/">← Back to ToadAid</a>
   <div class="hero-icon" aria-hidden="true">🐸🛠️🌊</div>
   <h1>What We’re Building</h1>
-  <p class="subtitle">A public window into the systems being forged beneath the pond — what has been proven, what remains in active development, and what authority stays deliberately locked.</p>
+  <p class="subtitle">From lore preservation to agent tools, open knowledge, games and community experiences: explore what we have built, what is publicly available, and what is still being forged.</p>
   <div class="badges" aria-label="Page principles">
-    <span class="badge live">ACTIVE DEVELOPMENT</span>
+    <span class="badge live">OPEN SOURCE + ACTIVE DEVELOPMENT</span>
     <span class="badge">EVIDENCE-BACKED</span>
-    <span class="badge">PRIVATE DURING HARDENING</span>
-    <span class="badge locked">DEFAULT-OFF AUTHORITY</span>
+    <span class="badge">PUBLIC WORK + PRIVATE WORKSHOPS</span>
+    <span class="badge locked">HUMAN AUTHORITY</span>
     <span class="badge">BUILT FOR THE PEOPLE</span>
   </div>
 </header>
@@ -140,7 +141,7 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
   <section class="card" id="why">
     <h2>🌱 Why this page exists</h2>
     <div class="meta">Public mission · private workshop · truthful progress</div>
-    <p class="lead">ToadAid is built for Toadgang, for the fallen, and for the people. Some systems remain private while their security, authority, provenance, and personal-data boundaries are hardened. This page shows the work without pretending unfinished systems are finished.</p>
+    <p class="lead">ToadAid is built for Toadgang, for the fallen, and for the people. Many of our libraries, tools, lore archives and games are now public. Other workshops remain private while security, provenance and personal-data boundaries mature. This page links to real public work without pretending unfinished systems are finished.</p>
     <blockquote class="quote">Public visibility does not require exposing every unfinished repository. The people can see the roots growing while the forge remains governed.</blockquote>
     <div class="kpi">
       <div class="item"><strong>Show the work</strong><br />Architecture, milestones, screenshots, and sanitized proof receipts.</div>
@@ -148,6 +149,141 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
       <div class="item"><strong>Open with discipline</strong><br />Shared components are released only after provenance, security, and installation review.</div>
     </div>
   </section>
+
+  <section class="card" id="public-forge">
+  <h2>🌱 Explore the public forge</h2>
+  <div class="meta">Snapshot reviewed 6 November 2026 · public source is not the same as production readiness</div>
+  <p class="lead">A growing portion of our work is already open for anyone to inspect, test, learn from and contribute to. Follow each repository for its current setup instructions, caveats and release state.</p>
+  <div class="forge-jump" aria-label="Project categories">
+    <a href="#agents">🤖 Agents, knowledge &amp; collaboration</a>
+    <a href="#lore-tools">📜 Lore, archives &amp; research</a>
+    <a href="#games">🎮 Games &amp; Tobyworld experiences</a>
+    <a href="#foundations">⚙️ Infrastructure, stewardship &amp; foundations</a>
+  </div>
+  <div class="forge-group" id="agents">
+    <h3>🤖 Agents, knowledge &amp; collaboration</h3><p class="group-intro">The reusable foundations that let agents find knowledge, collaborate, manage context, and work through explicit permissions.</p>
+    <div class="grid"><article class="module project-card">
+    <div class="icon" aria-hidden="true">🔖</div><div class="title">Knowledge Forge</div>
+    <div class="status-row"><span class="status proven">Public source · guided workflow</span></div>
+    <p>Local-first, source-grounded knowledge packages with provenance, included/omitted coverage, and a guided Forge → Accept → Ask workflow.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/knowledge-forge-public" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🧰</div><div class="title">Agent Capabilities</div>
+    <div class="status-row"><span class="status proven">Public alpha</span></div>
+    <p>Alpha capability contracts for browsing, delegation, host services, desktop observation, budgets, evidence, and governed invocation.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toadaid-agent-capabilities" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🔗</div><div class="title">ToadAid A2A</div>
+    <div class="status-row"><span class="status proven">Public source · evolving protocol</span></div>
+    <p>Architecture, local protocol probes, and the Agent Pond web experience. Public previews do not imply a production A2A gateway.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toadaid-a2a" target="_blank" rel="noopener noreferrer">Explore source →</a><a class="project-link" href="https://agent.toadaid.org/" target="_blank" rel="noopener noreferrer">Visit experience →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🧠</div><div class="title">Context Core</div>
+    <div class="status-row"><span class="status proven">Public alpha</span></div>
+    <p>Provider-neutral, bounded model context with exact-evidence retrieval, continuity handoffs, and measurable savings.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toadaid-context-core" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🌿</div><div class="title">ToadAid Pond</div>
+    <div class="status-row"><span class="status proven">Public work in progress</span></div>
+    <p>Human-first interface for coordinating personal, project, shared, and public agent scopes without merging their authority.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toadaid-app" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🖥️</div><div class="title">Windows Host Adapter</div>
+    <div class="status-row"><span class="status proven">Public source · bounded adapter</span></div>
+    <p>Observation-first Windows host adapter implementing shared capability contracts; mutating desktop authority is outside its initial scope.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toadaid-windows-host-adapter" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🪞</div><div class="title">Agent0 Core</div>
+    <div class="status-row"><span class="status proven">Public infrastructure</span></div>
+    <p>Governance-aligned identity, infrastructure and orchestration concepts for Agent0 without autonomous treasury control.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/agent0-core" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🆔</div><div class="title">ERC-8004 Mirror</div>
+    <div class="status-row"><span class="status proven">Public identity record</span></div>
+    <p>Public design record for the onchain Mirror identity and its stewardship boundaries on Base.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/erc-8004-mirror" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🐸</div><div class="title">Frog-to-Toad Agent</div>
+    <div class="status-row"><span class="status proven">Public source · operator-controlled</span></div>
+    <p>Telegram-controlled assistant and trading research workflow with dry-run default and explicit approval before any live order.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/frog-to-toad-agent" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article></div>
+  </div>
+<div class="forge-group" id="lore-tools">
+    <h3>📜 Lore, archives &amp; research</h3><p class="group-intro">Public, verifiable ways to preserve the scrolls, study their sources, and make them accessible to more builders.</p>
+    <div class="grid"><article class="module project-card">
+    <div class="icon" aria-hidden="true">📖</div><div class="title">Lore Reader</div>
+    <div class="status-row"><span class="status proven">Public reader</span></div>
+    <p>An offline-capable reader generated from exact-commit canonical lore, with provenance-bound imports.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toadaid-lore-reader" target="_blank" rel="noopener noreferrer">Explore source →</a><a class="project-link" href="https://toadaid.github.io/toadaid-lore-reader/" target="_blank" rel="noopener noreferrer">Visit experience →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🗂️</div><div class="title">Toad Lore Guardian Kit</div>
+    <div class="status-row"><span class="status proven">Public research kit</span></div>
+    <p>Portable source-aware lore corpus and setup material for creating Gemini Gems and ChatGPT GPTs.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toad-lore-guardian-kit" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🪷</div><div class="title">Tobyworld Lore Archive</div>
+    <div class="status-row"><span class="status proven">Public archive</span></div>
+    <p>Historical source scrolls, community editions and the evolving foundations of the Tobyworld canon.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/tobyworld-lore-v2" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🌊</div><div class="title">Toadgang Lore</div>
+    <div class="status-row"><span class="status proven">Public community archive</span></div>
+    <p>Community lore theories in human-readable and machine-readable formats, clearly marked as speculative unless confirmed.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toadgang-lore" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🗺️</div><div class="title">Lore Land Deed Viewer</div>
+    <div class="status-row"><span class="status proven">Public read-only tool</span></div>
+    <p>Read-only multi-wallet viewer that verifies canonical deed ownership from Base without asking for signatures.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/tobyworld-lore-land-deed-viewer" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🪞</div><div class="title">Mirror V4</div>
+    <div class="status-row"><span class="status proven">Public source</span></div>
+    <p>Lore-grounded retrieval, reflection and safety-oriented research stack preserved as an open community foundation.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/mirror-v4" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">📚</div><div class="title">Children’s Corner</div>
+    <div class="status-row"><span class="status proven">Public community project</span></div>
+    <p>Stories, art and participatory learning around patience, courage, kindness and community.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/childrens-corner" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article></div>
+  </div>
+<div class="forge-group" id="games">
+    <h3>🎮 Games &amp; Tobyworld experiences</h3><p class="group-intro">Games are part of the forge too: original community experiences grounded in Tobyworld themes, built to be played and explored.</p>
+    <div class="grid"><article class="module project-card">
+    <div class="icon" aria-hidden="true">🌎</div><div class="title">Paths of Patience</div>
+    <div class="status-row"><span class="status proven">Public game</span></div>
+    <p>A free, wallet-free browser adventure with a twelve-world campaign and a Lore Land explorer.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/tobyworld-game-public" target="_blank" rel="noopener noreferrer">Explore source →</a><a class="project-link" href="https://tobyworld-game.vercel.app/" target="_blank" rel="noopener noreferrer">Visit experience →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🔵</div><div class="title">Don’t Fade the Blue Frog</div>
+    <div class="status-row"><span class="status proven">Public game</span></div>
+    <p>A desktop-and-mobile survivors-style browser game with stillness mechanics, lore zones and offline support.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/dont-fade-the-blue-frog" target="_blank" rel="noopener noreferrer">Explore source →</a><a class="project-link" href="https://toadaid.github.io/dont-fade-the-blue-frog/" target="_blank" rel="noopener noreferrer">Visit experience →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🪑</div><div class="title">The Empty Seats</div>
+    <div class="status-row"><span class="status proven">Public game</span></div>
+    <p>A turn-based lore duel built around the 1,131 unminted Lore Land seats and source-linked sayings.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/tobyworld-empty-seats" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article></div>
+  </div>
+<div class="forge-group" id="foundations">
+    <h3>⚙️ Infrastructure, stewardship &amp; foundations</h3><p class="group-intro">Open architecture and specialist research that establish evidence, execution boundaries, and accountable human control.</p>
+    <div class="grid"><article class="module project-card">
+    <div class="icon" aria-hidden="true">🧭</div><div class="title">ToadAid Architecture</div>
+    <div class="status-row"><span class="status proven">Public architecture</span></div>
+    <p>Canonical blueprints and cross-project design principles: capability, evidence, governance and human authority remain separate.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/toadaid-architecture" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">📊</div><div class="title">Bashō Market Oracle</div>
+    <div class="status-row"><span class="status proven">Public research · no autonomous live trading</span></div>
+    <p>Market-risk analysis and paper-trading research with live-wallet and live-trading tools disabled by default.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/basho-market-oracle" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article>
+<article class="module project-card">
+    <div class="icon" aria-hidden="true">🔎</div><div class="title">Agent Explorer</div>
+    <div class="status-row"><span class="status proven">Public fork</span></div>
+    <p>Adapted ERC-8004 agent identity explorer, clearly identified as a fork of its upstream project.</p><div class="project-links"><a class="project-link" href="https://github.com/ToadAid/agent-explorer" target="_blank" rel="noopener noreferrer">Explore source →</a></div>
+  </article></div>
+  </div>
+  <p class="meta">Project descriptions summarize published README files as reviewed on 6 November 2026. They are not guarantees of security, uptime, compatibility, or investment outcomes.</p>
+</section>
 
   <section class="card" id="available">
     <h2>🪞 Mirror build archive</h2>
@@ -158,94 +294,47 @@ footer[role="contentinfo"]{padding:0 18px 34px;text-align:center;color:var(--mut
 
   <section class="card" id="map">
     <h2>🧭 The ToadAid system map</h2>
-    <div class="meta">One public mission · modular governed systems</div>
-    <p><a href="https://github.com/ToadAid/toadaid-architecture/blob/53de8698a6da1c14da752b637b825ca80ebd9d0f/ECOSYSTEM.md">Canonical ecosystem architecture</a> · reviewed 2026-10-09. Architectural roles do not imply that every component is publicly available.</p>
-<pre class="code"><code>TOADAID · governed ecosystem
+    <div class="meta">One community mission · independent experiences · reusable governed foundations</div>
+    <p>Read our <a href="https://github.com/ToadAid/toadaid-architecture" target="_blank" rel="noopener noreferrer">public ecosystem architecture</a> for the principles. The map below is an orientation, not a claim that every subsystem is deployed or interoperable today.</p>
+<pre class="code"><code>TOADAID COMMUNITY
+  toadaid.org            — The front gate
+  portal.toadaid.org     — Human-centered community experiences
+  agent.toadaid.org      — Public Agent Pond / preview
 
-Mirror             Context, reasoning, and proposals
-Mirror Core        Governance evaluation kernel
-Living Agent       Continuity and scoped knowledge
-ToadAid Coder      Bounded software construction
-ToadAid MCP        Protocol and capability fabric
-Desktop Bridge     Local governed execution boundary
-Specialists        Domain expertise under explicit scope
-Humans             Review and authorize consequences
+PUBLIC BUILDING BLOCKS
+  Knowledge Forge        — Source-grounded agent knowledge
+  Agent Capabilities     — Explicit, bounded tools
+  Context Core           — Context, continuity and exact evidence
+  ToadAid A2A            — Agent communication research and prototypes
+  Lore tools & games     — Public archives and community experiences
 
-Capability does not create authority.</code></pre>
+ACTIVE PRIVATE WORKSHOPS
+  Agent0 / Diamond OS · Sentinel · MCP · Deed Atlas · Go Pond
+
+Capability is not authority.
+Evidence is not permission.
+Humans authorize consequential actions.</code></pre>
   </section>
-
-  <section class="card" id="systems">
-    <h2>⚙️ Systems in active development</h2>
-    <div class="meta">No invented completion percentages · each card states its real boundary</div>
-    <div class="grid">
-      <article class="module">
-        <div class="icon" aria-hidden="true">🪞</div>
-        <div class="title">Mirror Core</div>
-        <div class="repo">Governance evaluation kernel · explicit capability and authority boundaries</div>
-        <div class="status-row"><span class="status proven">PROVEN FOUNDATIONS</span><span class="status private">PRIVATE DURING EXTRACTION</span></div>
-        <p>Mirror Core evaluates governance boundaries. Living Agent owns continuity and scoped knowledge; execution remains bounded through governed components.</p>
-        <ul class="facts"><li>Governance evaluation remains separate from reasoning and proposals.</li><li>Living Agent carries continuity and scoped knowledge.</li><li>The Desktop Bridge provides the local governed consequence boundary.</li></ul>
-      </article>
-
-      <article class="module">
-        <div class="icon" aria-hidden="true">🛠️</div>
-        <div class="title">ToadAid Coder</div>
-        <div class="repo">Provider-neutral governed coding and task execution</div>
-        <div class="status-row"><span class="status proven">ACTIVE PROOFS</span><span class="status locked">WRITE AUTHORITY GATED</span></div>
-        <p>A coding system designed to accept a task, form a visible plan, and run through governed provider and tool boundaries.</p>
-        <ul class="facts"><li>Codex and Grok ACP integration lanes are being hardened.</li><li>Writes require explicit authority and evidence-backed receipts.</li><li>Provider output does not become task completion by assertion.</li></ul>
-      </article>
-
-      <article class="module">
-        <div class="icon" aria-hidden="true">🌿</div>
-        <div class="title">TOMI / Toadgang Agents</div>
-        <div class="repo">Persistent living-agent identity, continuity, and future community adaptation</div>
-        <div class="status-row"><span class="status proven">TOMI LIVE CANARY</span><span class="status private">PERSONAL STATE PRIVATE</span></div>
-        <p>TOMI is the first personal governed living agent. The wider path is for Toadgang agents that preserve identity without inheriting hidden authority.</p>
-        <ul class="facts"><li>Local identity, heartbeat, continuity, governed sleep, and desktop presence are proven.</li><li>Conversation and inference remain separate future capabilities.</li><li>Personal memory is never treated as public source material.</li></ul>
-      </article>
-
-      <article class="module">
-        <div class="icon" aria-hidden="true">🖥️</div>
-        <div class="title">Mirror Desktop</div>
-        <div class="repo">The calm human-facing operating surface</div>
-        <div class="status-row"><span class="status proven">SHELL ESTABLISHED</span><span class="status locked">LOCAL AUTHORITY HARDENING</span></div>
-        <p>A quiet desktop home for presence, memory, projects, workflows, approvals, receipts, and system truth.</p>
-        <ul class="facts"><li>Calm visual contracts and responsive application foundations exist.</li><li>Approvals and receipts remain visible rather than hidden behind automation.</li><li>The interface consumes governed contracts instead of owning runtime truth.</li></ul>
-      </article>
-
-      <article class="module">
-        <div class="icon" aria-hidden="true">🔌</div>
-        <div class="title">ToadAid MCP</div>
-        <div class="repo">Shared governed capability and tool fabric</div>
-        <div class="status-row"><span class="status">FOUNDATION DEVELOPMENT</span><span class="status locked">CAPABILITIES DEFAULT OFF</span></div>
-        <p>The common tool boundary through which agents may request narrow capabilities without becoming the owner of those capabilities.</p>
-        <ul class="facts"><li>Tool contracts separate context, proposal, approval, execution, and receipts.</li><li>Credentials and dangerous authority do not belong in model context.</li><li>Future research tools may advise without receiving execution keys.</li></ul>
-      </article>
-
-      <article class="module">
-        <div class="icon" aria-hidden="true">⛓️</div>
-        <div class="title">ToadAid Zora Agent</div>
-        <div class="repo">Human-approved onchain stewardship</div>
-        <div class="status-row"><span class="status proven">STEWARD LANE</span><span class="status locked">UNATTENDED WRITES DENIED</span></div>
-        <p>An onchain specialist that prepares bounded actions and evidence while human approval remains the source of authority.</p>
-        <ul class="facts"><li>Proposal, review, execution, and receipt boundaries are separated.</li><li>Wallet credentials are not model-owned.</li><li>No autonomous public posting or unrestricted onchain execution.</li></ul>
-      </article>
-    </div>
-  </section>
-
+<section class="card" id="systems">
+ <h2>🛠️ Active workshops behind the scenes</h2>
+ <div class="meta">Public direction · private implementation where appropriate · no private repository links</div>
+ <p>Not every workshop is ready for a public source release. We can still explain what we are building without disclosing credentials, operator details, security configurations or unreviewed components.</p>
+ <div class="grid"><article class="module"><div class="icon" aria-hidden="true">🛡️</div><div class="title">ToadAid Sentinel</div><div class="status-row"><span class="status private">IN DEVELOPMENT · PRIVATE WORKSPACE</span></div><p>Rust-based defensive sensor evidence and IDS/IPS development. Live producer deployment and operational readiness are separate validation steps.</p></article><article class="module"><div class="icon" aria-hidden="true">💎</div><div class="title">Agent0 / Diamond Temple</div><div class="status-row"><span class="status private">IN DEVELOPMENT · PRIVATE WORKSPACE</span></div><p>A proposed personal VM home, desktop and layered defense for Agent0, under staged qualification rather than general public release.</p></article><article class="module"><div class="icon" aria-hidden="true">🔌</div><div class="title">ToadAid MCP</div><div class="status-row"><span class="status private">IN DEVELOPMENT · PRIVATE WORKSPACE</span></div><p>A governed tool-and-host capability fabric, with execution permissions separate from agent reasoning and tool discovery.</p></article><article class="module"><div class="icon" aria-hidden="true">🌿</div><div class="title">Living Portal &amp; Deed Atlas</div><div class="status-row"><span class="status private">IN DEVELOPMENT · PRIVATE WORKSPACE</span></div><p>The community front door and a Lore Land workshop; active deployment and individual features have their own release boundaries.</p></article><article class="module"><div class="icon" aria-hidden="true">⚫</div><div class="title">Go Pond &amp; game rooms</div><div class="status-row"><span class="status private">IN DEVELOPMENT · PRIVATE WORKSPACE</span></div><p>Go play across humans and agents, with broader room-based Tobyworld experiences under development; no claim of completed multiplayer.</p></article><article class="module"><div class="icon" aria-hidden="true">📈</div><div class="title">Trading Desk &amp; specialists</div><div class="status-row"><span class="status private">IN DEVELOPMENT · PRIVATE WORKSPACE</span></div><p>Research, market signals and specialist tools, with wallet authority and live actions subject to separate operator controls.</p></article></div>
+ <div class="links"><a class="button" href="https://portal.toadaid.org/" target="_blank" rel="noopener noreferrer">🌿 Living Portal</a><a class="button" href="https://agent.toadaid.org/" target="_blank" rel="noopener noreferrer">🤖 Agent Pond</a></div>
+ <p class="meta">Those links point to public-facing experiences, not private source. Availability and features can change independently of this archive.</p>
+</section>
   <section class="card" id="proofs">
-    <h2>🧾 Development milestone summaries</h2>
-    <div class="meta">Historical milestone summaries · current applicability requires dated source and evidence review</div>
+    <h2>🧾 From preserved lore to a growing forge</h2>
+    <div class="meta">Source-linked developments · no invented completion percentages</div>
     <div class="timeline">
-      <div class="receipt"><div class="when">Mirror Core</div><div><strong>Governed durable memory lane advanced.</strong><br />Identity, admission, release, handoff, and closure boundaries are being verified as explicit contracts rather than informal model memory.</div></div>
-      <div class="receipt"><div class="when">TOMI</div><div><strong>Living local canary entered operation.</strong><br />Identity, continuity, heartbeat, governed sleep, and desktop presence now persist without granting conversation or execution authority.</div></div>
-      <div class="receipt"><div class="when">ToadAid Coder</div><div><strong>Provider-neutral harness boundaries expanded.</strong><br />Codex and Grok ACP work is evaluated through exact state, evidence, interruption, and completion semantics.</div></div>
-      <div class="receipt"><div class="when">Mirror Desktop</div><div><strong>Human-facing shell and governed bridge foundations established.</strong><br />The desktop is becoming the calm surface over projects, memory, workflows, approvals, and receipts.</div></div>
-      <div class="receipt"><div class="when">Zora Agent</div><div><strong>Human-gated stewardship work continues.</strong><br />The system may prepare and review onchain proposals without silently inheriting wallet authority.</div></div>
+      <div class="receipt"><div class="when">Preserve</div><div><strong>Lore archives and provenance.</strong><br />Historical scrolls, source-linked interpretations, the Lore Reader and portable Guardian kits make knowledge accessible without rewriting the source.</div></div>
+      <div class="receipt"><div class="when">Equip</div><div><strong>Reusable agent capabilities.</strong><br />Public capability contracts, context handling and host adapters advance a modular approach to agents and tools.</div></div>
+      <div class="receipt"><div class="when">Teach</div><div><strong>Knowledge Forge.</strong><br />Local-first source-to-skill workflows let agents study user-approved materials while keeping approval and execution authority separate.</div></div>
+      <div class="receipt"><div class="when">Connect</div><div><strong>Agent Pond and A2A.</strong><br />Public web previews and offline protocol development explore how humans and agents can meet without treating chat as execution permission.</div></div>
+      <div class="receipt"><div class="when">Play</div><div><strong>Games, lands and community art.</strong><br />Released browser games coexist with evolving workshops for Lore Lands, Go Pond and future Tobyworld rooms.</div></div>
+      <div class="receipt"><div class="when">Protect</div><div><strong>Security and accountable operations.</strong><br />Sentinel and Diamond Temple are being qualified in private, while architecture and selected tools are published for community inspection.</div></div>
     </div>
   </section>
-
   <section class="card" id="locked">
     <h2>🔒 Authority still deliberately locked</h2>
     <div class="meta">Unfinished authority is not presented as a feature</div>
@@ -297,7 +386,7 @@ Capability does not create authority.</code></pre>
   <section class="card closing" id="roots">
     <div class="lotus" aria-hidden="true">🪷</div>
     <h2 style="justify-content:center;border-bottom:0">The roots beneath the pond</h2>
-    <p>Some will notice the flower only after it appears. ToadAid is tending the roots first: governed tools, living agents, shared memory, calm human surfaces, and onchain stewardship built to endure beyond a single market cycle or a single person.</p>
+    <p>Some see a new website. Beneath it are years of preserved scrolls, public code, patient testing, community games and evolving agent tools. We keep building for people first: preserve the lore, empower the people, build together.</p>
     <p class="lineage">For Toadgang. For the fallen. For the people. The pond is quiet, but the work is alive.</p>
   </section>
 </main>
