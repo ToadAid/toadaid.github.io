@@ -23,6 +23,10 @@ We are **the people who keep the fire lit**.
 
 ## 🔗 Links
 
+- **🏡 Current ToadAid home** → https://toadaid.org/
+- **📚 Living Lore Library** → https://portal.toadaid.org/lore/
+- **📜 Historical Lore Reader (this archive)** → https://toadaid.github.io/lore/
+
 - **📘 Blue Paper** → [Read the ToadAid Blue Paper](https://toadaid.github.io/bluepaper.html)  
 - **🌱 Zora Mint** → [Support ToadAid]
 - **💠 Powered by** → [$TOBY](https://basescan.org/token/0xb8D98a102b0079B69FFbc760C8d857A31653e56e)  
